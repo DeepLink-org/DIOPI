@@ -1354,7 +1354,7 @@ diopi_configs = {
         ),
     ),
 
-    'pow': dict(
+    'pow_scalar_base_float_exp': dict(
         name=['pow'],
         interface=['torch'],
         is_inplace=True,
@@ -1376,7 +1376,7 @@ diopi_configs = {
         ),
     ),
 
-    'pow_int': dict(
+    'pow_scalar_base_int_exp': dict(
         name=['pow'],
         interface=['torch'],
         is_inplace=True,
@@ -1391,30 +1391,8 @@ diopi_configs = {
                               (2, 128, 3072), (2, 512, 38, 38),
                               (0,), (0, 8), (7, 0, 9)),
                     "dtype": [np.int16, np.int32, np.int64,
-                              np.int8, np.uint8],
+                              np.int8, np.uint8, np.bool_],
                     "gen_fn": dict(fn='Genfunc.randint', low=-4, high=4),
-                }
-            ],
-        ),
-    ),
-
-    'pow_bool': dict(
-        name=['pow'],
-        interface=['torch'],
-        is_inplace=True,
-        para=dict(
-            exponent=[0, -1.2, 2, 0.6, 1.2, 0.],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (20267, 80),
-                              (2, 128, 3072),
-                              (2, 512, 38, 38),
-                              (0,), (0, 8)),
-                    "dtype": [np.bool_],
-                    "gen_fn": 'Genfunc.mask',
                 }
             ],
         ),
@@ -1422,7 +1400,7 @@ diopi_configs = {
 
     # attention: Integers to negative integer powers are not allowed.
     # may cause overflow if both base and exponet are uint8
-    'pow_tensor_positive_exp': dict(
+    'pow_tensor_base_positive_exp': dict(
         name=['pow'],
         interface=['torch'],
         is_inplace=True,
@@ -1452,7 +1430,7 @@ diopi_configs = {
     ),
 
     # attention: Integers to negative integer powers are not allowed.
-    'pow_tensor_negative_exp': dict(
+    'pow_tensor_base_negative_exp': dict(
         name=['pow'],
         interface=['torch'],
         is_inplace=True,
@@ -1479,7 +1457,6 @@ diopi_configs = {
         ),
     ),
 
-    # attention: Integers to negative integer powers are not allowed.
     'pow_tensor_only_0_1': dict(
         name=['pow'],
         interface=['torch'],
@@ -1553,6 +1530,7 @@ diopi_configs = {
     ),
 
     # attention: Integers to negative integer powers are not allowed.
+    # may cause overflow if both base and exponet are uint8
     'pow_diff_dtype_cast': dict(
         name=['pow'],
         interface=['torch'],
@@ -1576,8 +1554,8 @@ diopi_configs = {
         ),
     ),
 
-    # FIXME pow的input与exponent输入uint8和int8，结果不一致
     # attention: Integers to negative integer powers are not allowed.
+    # may cause overflow if both base and exponet are uint8
     'pow_diff_dtype': dict(
         name=['pow'],
         interface=['torch'],
@@ -1587,9 +1565,6 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((1024, ),),
-                    # "dtype":[np.float64, np.float32, np.float16,
-                    #          np.int32, np.float64, np.float64,
-                    #          np.int8, np.float32, np.uint8],
                     "dtype": [np.float64, np.float32, np.float16,
                               np.int32, np.float64, np.float32,
                               np.float32, np.int16, np.int64],
@@ -1598,9 +1573,6 @@ diopi_configs = {
                 {
                     "ins": ['exponent'],
                     "shape": ((1024, ),),
-                    # "dtype":[np.int32, np.uint8, np.bool_,
-                    #          np.int64, np.float16, np.float32,
-                    #          np.uint8, np.bool_, np.int8],
                     "dtype": [np.int32, np.uint8, np.bool_,
                               np.int64, np.float16, np.float64,
                               np.bool_, np.uint8, np.bool_],
