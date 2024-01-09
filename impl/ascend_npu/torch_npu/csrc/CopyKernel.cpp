@@ -49,7 +49,10 @@ std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef str
     std::vector<int64_t> originSizes(sizes.begin(), sizes.end());
     for (size_t i = sizes.size() - 1; i > 0; i--) {
         if (originSizes[i] < strides[i - 1]) {
-            originSizes[i] = strides[i - 1] / strides[i];
+            int64_t originDim = strides[i - 1] / strides[i];
+            if (originDim > 0) {
+                originSizes[i] = strides[i - 1] / strides[i];
+            }
         }
     }
     return originSizes;
