@@ -532,7 +532,7 @@ public:
 
     static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
     // check output tensor
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size) {
         INTERFACE_NOT_IMPL
