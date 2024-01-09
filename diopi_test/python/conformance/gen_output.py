@@ -12,6 +12,7 @@ from conformance.utils import logger, get_data_from_file
 from conformance.db_operation import db_conn
 from conformance.exception import GenDataFailedException
 
+
 def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
     xq = xq.view(bs, seqlen, num_head, head_dim)
     xk = xk.view(bs, seqlen, num_head, head_dim)

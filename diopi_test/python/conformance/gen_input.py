@@ -8,6 +8,7 @@ from conformance.utils import logger
 from conformance.db_operation import db_conn
 from conformance.exception import GenDataFailedException
 
+
 class GenPolicy:
     default = "default"
     gen_tensor_by_value = "gen_tensor_by_value"
