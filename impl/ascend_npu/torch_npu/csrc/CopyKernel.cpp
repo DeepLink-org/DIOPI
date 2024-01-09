@@ -305,14 +305,10 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
         } else {
             // General trans-contiguous method
             RECORD_FUNCTION("contiguous_d_AsStrided", std::vector<c10::IValue>({src}));
-            DEBUG_ARGS(src);
-            DEBUG_ARGS(self);
 #if 0
             custom_ops::npu_stride_copy_out(src, src.sizes(), src.strides(), src.storage_offset(), self);
 #else
             std::vector<int64_t> shape(src.sizes().size(), 1);
-            // shape[0] = src.size(0) * src.stride(0);
-            // shape[0] = src.numel();
             shape[0] = at::detail::computeStorageNbytes(src.sizes(), src.strides(), src.itemsize()) / src.itemsize();
             custom_ops::npu_stride_copy_out(impl::aten::viewStorage(src, shape), src.sizes(), src.strides(), src.storage_offset(), self);
 #endif
