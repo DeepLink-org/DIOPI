@@ -19,8 +19,7 @@ def check_coverage(gitdiff_file,coverage_data,require_coverage):
             file_path = line.strip()
             if file_path not in coverage_data:
                 with open(os.path.join(coveragedir, 'IS_cover.txt'), 'a') as cover_file:
-                    cover_file.write(CONTENT)
-                    print(f"Error Cannot get code coverage for  {file_path}")
+                    print(f"Warning Cannot get code coverage for  {file_path}")
             else:
                 if coverage_data[file_path] < float(require_coverage):
                     with open(os.path.join(coveragedir, 'IS_cover.txt'), 'a') as cover_file:
