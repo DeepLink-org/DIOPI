@@ -73,7 +73,7 @@ jobs:
           PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
           cd ${GITHUB_WORKSPACE}/source && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
           if [ $CLUSTER_1988 == "SH1424" ]; then
-          RUN_RESULT_TMP="${RUN_RESULT//GENDATA/}"
+          RUN_RESULT_TMP="${RUN_RESULT}_GENDATA"
           fi
           echo "RUN_RESULT=$RUN_RESULT_TMP" >> "$GITHUB_OUTPUT"
       - name: Rsync to Server
