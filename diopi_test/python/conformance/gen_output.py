@@ -417,7 +417,7 @@ class GenTensor(object):
             self.output = eval(func_call)
             self.if_forward_success = True
         except Exception as e:
-            logger.error(f"Failed to execute function {func_call}, caused by {e}")
+            raise GenDataFailedException(f"Failed to execute function {func_call}, caused by {e}")
         return self.output
 
     def gen_backward_data(self, input_data):
