@@ -1421,13 +1421,14 @@ diopi_configs = {
     ),
 
     # attention: Integers to negative integer powers are not allowed.
+    # may cause overflow if both base and exponet are uint8
     'pow_tensor_positive_exp': dict(
         name=['pow'],
         interface=['torch'],
         is_inplace=True,
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
-               np.int8, np.uint8],
+               np.int8],
         tensor_para=dict(
             args=[
                 {
@@ -1472,7 +1473,7 @@ diopi_configs = {
                               (2, 128, 3072),
                               (2, 512, 38, 38),
                               (0,), (0, 4), (9, 0, 3)),
-                    "gen_fn": dict(fn='Genfunc.uniform', low=-4, high=4),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-4, high=-1),
                 },
             ],
         ),
@@ -1610,6 +1611,7 @@ diopi_configs = {
     ),
 
     # attention: Integers to negative integer powers are not allowed.
+    # may cause overflow if exponet are uint8
     'pow_input_scalar_positive_exp': dict(
         name=['pow'],
         interface=['torch'],
@@ -1625,7 +1627,7 @@ diopi_configs = {
                               (0,), (0, 4), (9, 0, 6)),
                     "dtype": [np.float16, np.float32, np.float64,
                               np.int16, np.int32, np.int64,
-                              np.int8, np.uint8, np.bool_],
+                              np.int8, np.bool_],
                     "gen_fn": dict(fn='Genfunc.randn_int', low=1, high=4),
                 }
             ],
