@@ -24,7 +24,7 @@ def parse_args():
         "--mode",
         type=str,
         default="test",
-        help="running mode, available options: gen_data, run_test and utest",
+        help="running mode, available options: gen_data, gen_case, run_test and utest",
     )
     general_args.add_argument(
         "--use_db", action="store_true", help="use database to save test data"
