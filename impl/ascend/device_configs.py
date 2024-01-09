@@ -170,30 +170,6 @@ device_configs = {
         ),
     ),
 
-    'hardswish': dict(
-        name=['hardswish'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'hardswish_domain': dict(
-        name=['hardswish'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'gelu': dict(
         name=['gelu'],
         atol=1e-3,
