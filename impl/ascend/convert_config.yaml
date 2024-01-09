@@ -276,6 +276,16 @@
 - diopiRemainder:
     dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
 
+- diopiHardswish:
+    # data type DT_DOUBLE of input [x] is not supported
+    dtype: (float64)->float32
+
+- diopiHardswishInp:
+    dtype: (float64)->float32
+
+- diopiHardswishBackward:
+    dtype: (float64)->float32
+
 - diopiAtan:
     dtype: (uint8, int8, int32, int16, int64, bool)->float32
 
