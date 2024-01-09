@@ -9,6 +9,7 @@ include_directories("${PROJECT_SOURCE_DIR}/../adaptor/csrc")
 
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "use cpp_17")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# add stdc++ but not gnuc++
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set (ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
