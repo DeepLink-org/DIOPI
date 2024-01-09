@@ -1243,6 +1243,18 @@ c10::SmallVector<int64_t, 5> OpPreparation::get_tensor_desc_base_sizes(const at:
     return torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->get_npu_desc().base_sizes_;
 }
 
+at::Tensor OpPreparation::CastBackToOriFormat(const at::Tensor& tensor) {
+    auto& tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->npu_desc_;
+    auto ret = custom_ops::npu_format_cast(tensor, tensor_desc.origin_format_);
+    return ret;
+}
+
+at::Tensor& OpPreparation::CastBackToOriFormat(at::Tensor& tensor) {
+    auto& tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->npu_desc_;
+    NPUNativeFunctions::npu_format_cast_(tensor, tensor_desc.origin_format_);
+    return tensor;
+}
+
 at::Tensor OpPreparation::apply_tensor(const at::Tensor& src) { return apply_tensor(src, src.sizes()); }
 
 at::Tensor OpPreparation::apply_tensor(const at::Tensor& src, c10::IntArrayRef sizes) {

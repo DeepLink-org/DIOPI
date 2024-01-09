@@ -148,8 +148,8 @@
         }                                                                                                                                              \
     } while (0)
 
-#define INTERFACE_NOT_IMPL
-// #define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
+// #define INTERFACE_NOT_IMPL
+#define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
 static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 
@@ -570,8 +570,8 @@ public:
     static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst, c10::IntArrayRef shape);
     static void CheckOut(const std::initializer_list<at::Tensor>& input, at::Tensor& output, int64_t format, at::ScalarType dtype, c10::IntArrayRef shape);
     // DEPRECATED: CastBackToOriFormat will be deprecated, please use cast_to_ori_format instead.
-    static at::Tensor CastBackToOriFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static at::Tensor& CastBackToOriFormat(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static at::Tensor CastBackToOriFormat(const at::Tensor& tensor);
+    static at::Tensor& CastBackToOriFormat(at::Tensor& tensor);
     // DEPRECATED: ApplyTensor will be deprecated, please use apply_tensor instead.
     TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src) { return apply_tensor(src); }
     TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor(src, sizes); }
