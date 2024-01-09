@@ -1767,6 +1767,18 @@ device_configs = {
         ),
     ),
 
+    'sort_no_stable': dict(
+        name=['sort'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip(()),Skip((11400,)),Skip((12, 8)),Skip((8, 12, 9)),Skip((4, 4, 16, 20)),Skip((4, 4, 16, 2, 20)),Skip((24180,)),Skip((0,)),Skip((12, 0)),Skip((4, 0, 5)),],
+                },
+            ]
+        ),
+    ),
+
     'topk_nonzero': dict(
         name=['topk'],
         tensor_para=dict(
