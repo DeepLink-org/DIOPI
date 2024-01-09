@@ -12,10 +12,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # add stdc++ but not gnuc++
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if (DIPU_TORCH_VERSION)
-  message(STATUS "passed torch_version from dipu: " ${DIPU_TORCH_VERSION})
-endif()
-
 set (ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
 set (DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
 
