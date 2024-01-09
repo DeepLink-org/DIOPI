@@ -1635,6 +1635,18 @@ device_configs = {
         ),
     ),
 
+    'apply_penalty': dict(
+        name=['apply_penalty'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logits'],
+                    "dtype": [Skip(np.float64)],
+                },
+            ]
+        )
+    ),
+
     'rotary_emb': dict(
         name=["rotary_emb"],
         tensor_para=dict(
