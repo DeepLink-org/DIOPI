@@ -2371,25 +2371,6 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertHostTensorToAclInput(const at::
     return std::tie(aclDesc, aclBuff);
 }
 
-#if 0
-
-std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& tensor, const string& forceDataType) {
-    aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
-    auto format = CalcuOpUtil::GetTensorNpuFormat(tensor);
-    AclTensorDescMaker desc;
-    aclTensorDesc* aclDesc = nullptr;
-    if (tensor.sizes().size() > 0) {
-        aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).Get();
-    } else {
-        aclDesc = desc.Create(aclDataType, ACL_FORMAT_ND).Get();
-    }
-    AclTensorBufferMaker aclBuffer(tensor, tensor.numel());
-    auto aclBuff = aclBuffer.Get();
-    return std::tie(aclDesc, aclBuff);
-}
-
-#else
-
 std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& tensor, const string& forceDataType) {
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
     const auto& npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
@@ -2403,7 +2384,6 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& t
     return std::tie(aclDesc, aclBuff);
 }
 
-#endif
 // This class maintain the position of the current
 // OpCommandImpl object in vector, the resources in
 // the object is
