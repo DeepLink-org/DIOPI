@@ -332,58 +332,16 @@ at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::
 
 at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) { return acl_op::npu_dtype_cast(self, dtype); }
 
-#if 1
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
     at::Tensor source = src.contiguous();
-
-    if (src.sizes() != self.sizes()) {
-        source = npu_broadcast(source, self.sizes());
-    }
-    if (source.strides() == self.strides() && self.is_contiguous()) {
-        acl_op::npu_dtype_cast_(self, source);
+    if (self.sizes() == source.sizes() && self.strides() == source.strides()) {
+        return acl_op::npu_dtype_cast_(self, source);
     } else {
-        at::Tensor selfTemp = at_npu::native::empty_npu(source.sizes(), self.options());
-        acl_op::npu_dtype_cast_(selfTemp, source);
-        self.copy_(selfTemp);
-    }
-    return self;
-}
-#else
-
-at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
-    DEBUG_ARGS(self)
-    DEBUG_ARGS(src)
-    if (self.sizes() == src.sizes() && self.strides() == src.strides()) {
-        acl_op::npu_dtype_cast_(self, src);
+        auto temp = acl_op::npu_dtype_cast(source, self.scalar_type());
+        self.copy_(temp);
         return self;
     }
-
-    if (self.sizes() == src.sizes() && self.strides() != src.strides()) {
-        at::Tensor srcContiguous;
-        if (src.is_contiguous()) {
-            srcContiguous = src;
-        } else {
-            srcContiguous = at_npu::native::empty_npu(src.sizes(), src.options());
-            srcContiguous.copy_(src);
-        }
-        if (self.is_contiguous()) {
-            return npu_dtype_cast_(self, srcContiguous);
-        } else {
-            auto selfContiguous = at_npu::native::empty_npu(self.sizes(), self.options());
-            npu_dtype_cast_(selfContiguous, srcContiguous);
-            self.copy_(selfContiguous);
-            return self;
-        }
-    }
-    if (self.sizes() != src.sizes()) {
-        auto srcBroaded = npu_broadcast(src.contiguous(), self.sizes());
-        return npu_dtype_cast_(self, srcBroaded);
-    }
-
-    TORCH_CHECK(false, "unhandled situation");
-    return self;
 }
-#endif
 
 at::Tensor npu_alloc_float_status(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor npu_get_float_status(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
