@@ -1550,7 +1550,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     # attention: Integers to negative integer powers are not allowed.
     'pow_diff_dtype_cast': dict(
         name=['pow'],
