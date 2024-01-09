@@ -2,33 +2,11 @@
 import numpy as np
 from skip import Skip
 
+# topk llm used
+# normal llm used
+# norm llm used
+
 device_configs = {
-    # temp for 910B
-    'join': dict(
-        name=['stack'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'join_int': dict(
-        name=['stack'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
-                },
-            ],
-        ),
-    ),
-
     # temp for 910B
     'uniform': dict(
         name=['uniform'],
@@ -199,7 +177,7 @@ device_configs = {
         ),
     ),
 
-    'pow_tensor': dict(
+    'pow_tensor': dict( # llm used
         name=['pow'],
         tensor_para=dict(
             args=[
@@ -211,7 +189,7 @@ device_configs = {
         ),
     ),
 
-    'pow_tensor_only_0_1': dict(
+    'pow_tensor_only_0_1': dict( # llm used
         name=['pow'],
         tensor_para=dict(
             args=[
@@ -223,7 +201,7 @@ device_configs = {
         ),
     ),
 
-    'pow_diff_dtype': dict(
+    'pow_diff_dtype': dict( # llm used
         name=['pow'],
         tensor_para=dict(
             args=[
@@ -235,19 +213,19 @@ device_configs = {
         ),
     ),
 
-    'bmm': dict(
+    'bmm': dict( # llm used
         name=['bmm'],
         atol=3e-2,
         rtol=3e-2,
     ),
 
-    'reduce_op': dict(
+    'reduce_op': dict( # llm used
         name=['sum'],
         atol=1e-3,
         rtol=1e-3,
     ),
 
-    'reduce_partial_op': dict(
+    'reduce_partial_op': dict( # llm used
         atol=1e-3,
         rtol=1e-3,
         name=['sum'],
@@ -303,7 +281,7 @@ device_configs = {
         ),
     ),
 
-    'split': dict(
+    'split': dict( # llm used
         name=['split'],
         tensor_para=dict(
             args=[
@@ -339,13 +317,13 @@ device_configs = {
         ),
     ),
 
-    'mm': dict(
+    'mm': dict( # llm used
         name=['mm'],
         atol=2e-2,
         rtol=2e-2,
     ),
 
-    'mm_diff_dtype': dict(
+    'mm_diff_dtype': dict( # llm used
         name=['mm'],
         atol=2e-2,
         rtol=2e-2,
@@ -403,7 +381,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_one_indices': dict(
+    'index_put_acc_one_indices': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -415,7 +393,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_bool_indices_value': dict(
+    'index_put_bool_indices_value': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -445,7 +423,7 @@ device_configs = {
         ),
     ),
 
-    'copy': dict(
+    'copy': dict( # llm used
         name=["copy_"],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX128 of input [dst] is not supported
@@ -463,7 +441,7 @@ device_configs = {
         )
     ),
 
-    'copy_input_no_contiguous': dict(
+    'copy_input_no_contiguous': dict( # llm used
         name=["copy_"],
         tensor_para=dict(
             # FIXME not supported complex
@@ -481,7 +459,7 @@ device_configs = {
         )
     ),
 
-    'copy_other_no_contiguous': dict(
+    'copy_other_no_contiguous': dict( # llm used
         name=["copy_"],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX64 of input [dst] is not supported
@@ -500,7 +478,7 @@ device_configs = {
         )
     ),
 
-    'copy_all_no_contiguous': dict(
+    'copy_all_no_contiguous': dict( # llm used
         name=["copy_"],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX64 of input [dst] is not supported
@@ -542,7 +520,7 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op_4': dict(
+    'reduce_partial_op_4': dict( # llm used
         name=['sum'],
         interface=['torch'],
         atol=1e-4,
