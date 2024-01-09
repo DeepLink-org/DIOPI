@@ -2815,14 +2815,14 @@ DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t o
 /**
  * \brief Applies Group Normalization over a mini-batch of inputs.
  * @param[in] ctx Context environment.
- * @param[in] save_mean the input tensor mean.
- * @param[in] save_invstd the input tensor rstd.
- * @param[in] input the input tensor.
- * @param[in] weight the weight tensor.
- * @param[in] bias the bias tensor.
- * @param[in] num_groups number of groups to separate the channels into.
- * @param[in] eps a value added to the denominator for numerical stability.
- * @param[out] out the output tensor.
+ * @param[in] input the input tensor. type=[float32, float64, float16].
+ * @param[in] weight the input tensor weight. type=[float32, float64, float16].
+ * @param[in] bias the input tensor bias. type=[float32, float64, float16].
+ * @param[in] num_groups number of groups to separate the channels into. type=[float32, float64, float16].
+ * @param[in] eps a value added to the denominator for numerical stability. type=[float32, float64, float16].
+ * @param[out] out the output tensor. type=[float32, float64, float16].
+ * @param[out] save_mean the output mean tensor. type=[float32, float64, float16].
+ * @param[out] save_invstd the inverse of the variance tensor. type=[float32, float64, float16].
  */
 DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
                                       diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups,
@@ -2831,15 +2831,15 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
 /**
  * @brief Compute the backward pass of diopiGroupNorm().
  * @param[in] ctx Context environment.
- * @param[in] grad_output the grad of output.
- * @param[in] input the input tensor.
- * @param[in] weight the weight tensor.
- * @param[in] mean the input tensor mean.
- * @param[in] rstd the input tensor rstd.
- * @param[in] num_groups number of groups to separate the channels into.
- * @param[out] grad_input the grad of input.
- * @param[out] grad_weight the grad of weight.
- * @param[out] grad_bias the grad of bias.
+ * @param[in] grad_output the grad of output. type=[float32, float64, float16].
+ * @param[in] input the input tensor. type=[float32, float64, float16].
+ * @param[in] weight the input tensor weight. type=[float32, float64, float16].
+ * @param[in] mean the input tensor mean. type=[float32, float64, float16].
+ * @param[in] rstd the input tensor rstd. type=[float32, float64, float16].
+ * @param[in] num_groups number of groups to separate the channels into. type=[float32, float64, float16].
+ * @param[out] grad_input the grad of input. type=[float32, float64, float16].
+ * @param[out] grad_weight the grad of weight. type=[float32, float64, float16].
+ * @param[out] grad_bias the grad of bias. type=[float32, float64, float16].
  */
 DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                               diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
