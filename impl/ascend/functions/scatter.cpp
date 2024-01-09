@@ -29,6 +29,7 @@ diopiError_t scatterTensorInp(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         .setAttr("axis", dim)
         .setAttr("reduction", reduction)
         .run();
+    return diopiSuccess;
 }
 
 diopiError_t diopiScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim, diopiConstTensorHandle_t src,
