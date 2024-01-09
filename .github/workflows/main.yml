@@ -72,7 +72,10 @@ jobs:
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
           cd ${GITHUB_WORKSPACE}/source && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
-          echo "RUN_RESULT=$RUN_RESULT" >> "$GITHUB_OUTPUT"
+          if [ $CLUSTER_1988 == "SH1424" ]; then
+          RUN_RESULT_TMP="${RUN_RESULT//GENDATA/}"
+          fi
+          echo "RUN_RESULT=$RUN_RESULT_TMP" >> "$GITHUB_OUTPUT"
       - name: Rsync to Server
         run: |
           ssh ${CLUSTER_1988} "mkdir -p ${NFS_PATH}/${GITHUB_RUN_NUMBER}/source" \
@@ -207,7 +210,7 @@ jobs:
         run: |
           ssh ${CLUSTER_1988} """
           set -e
-          if [ \"${{ needs.Rsync.outputs.output }}\" == *GENDATA* ] && [ ! -d ${GEN_DATA_PATH}/${GEN_DATA}/diopi ];then
+          if [[ \"${{ needs.Rsync.outputs.output }}\" == *GENDATA* ]];then
             source ${ENV_PATH}/github_bashrc && source /mnt/cache/share/platform/env/${ENV_NAME}
             cd ${NFS_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
             srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1988} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
