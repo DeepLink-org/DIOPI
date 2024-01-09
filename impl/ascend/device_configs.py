@@ -1645,4 +1645,16 @@ device_configs = {
             other=[Skip(False),],
         ),
     ),
+    
+    'pow_input_scalar_positive_exp': dict(
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['exponent'],
+                    "shape": [Skip((0,)), Skip((0, 4)), Skip((9, 0, 6)),],
+                },
+            ]
+            
+        )
+     )
 }
