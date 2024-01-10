@@ -60,20 +60,16 @@ std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef str
 }  // namespace
 
 bool isPartOfOther(const at::Tensor& tensor) {
-    DEBUG_ARGS(tensor);
     const auto& strides = tensor.strides();
     std::vector<int64_t> contiguousStrides(tensor.sizes().size());
     int64_t stride = 1;
     for (int i = contiguousStrides.size() - 1; i >= 0; --i) {
         contiguousStrides[i] = stride;
-        DEBUG_ARGS(contiguousStrides);
-        DEBUG_ARGS(i);
         stride *= tensor.sizes()[i];
         if (strides[i] > contiguousStrides[i]) {
             return true;
         }
     }
-    DEBUG_ARGS(contiguousStrides);
     return false;
 }
 
