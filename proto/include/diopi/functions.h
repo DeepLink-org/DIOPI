@@ -3433,6 +3433,26 @@ DIOPI_API diopiError_t diopiAmpUpdateScaleInp(diopiContextHandle_t ctx, diopiTen
                                               diopiConstTensorHandle_t found_inf, double scale_growth_factor, double scale_backoff_factor,
                                               int32_t growth_interval);
 
+// ============================================custom api begin========================================
+/**
+ * @brief          Cast tensor memory format.
+ * @param[out]     out              A tensor with target native memory format.
+ * @param[in]      in               A tensor.
+ */
+DIOPI_API diopiError_t diopiNativeMemoryFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiTensorHandle_t in, int64_t format);
+/**
+ * @brief          Get tensor memory format.
+ * @param[out]     format           Tensor Memory format.
+ * @param[in]      input            A tensor.
+ */
+DIOPI_API diopiError_t diopiGetNativeMemoryFormat(diopiContextHandle_t ctx, diopiConstTensorHandle_t input, int64_t* format);
+/**
+ * @brief          Tensor destruction hook.
+ * @param[in]      ptr            tensor.data_ptr().
+ */
+DIOPI_API diopiError_t diopiTensorDestructionHook(diopiContextHandle_t ctx, void* ptr);
+// ============================================custom api end========================================
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus

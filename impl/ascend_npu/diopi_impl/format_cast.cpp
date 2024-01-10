@@ -9,7 +9,7 @@
 
 namespace OP_IMPL_NS {
 static std::unordered_map<void*, torch_npu::NPUStorageDesc> dataMap;
-diopiError_t diopiCustomFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiTensorHandle_t in, int64_t format) {
+diopiError_t diopiNativeMemoryFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiTensorHandle_t in, int64_t format) {
     BEGIN_CALL_ACL_OP(in);
     const auto& dataItr = dataMap.find(inAt.data_ptr());
     if (dataItr != dataMap.end()) {
@@ -32,7 +32,7 @@ diopiError_t diopiCustomFormatCast(diopiContextHandle_t ctx, diopiTensorHandle_t
     return diopiSuccess;
 }
 
-diopiError_t diopiGetCustomFormat(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, int64_t* result) {
+diopiError_t diopiGetNativeMemoryFormat(diopiContextHandle_t ctx, diopiConstTensorHandle_t in, int64_t* result) {
     BEGIN_CALL_ACL_OP(in);
     aclFormat format = aclFormat::ACL_FORMAT_UNDEFINED;
     const auto& dataItr = dataMap.find(inAt.data_ptr());
