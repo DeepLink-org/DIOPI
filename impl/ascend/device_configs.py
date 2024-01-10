@@ -2,7 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm, nll_loss llm used
+# topk, normal, norm, nll_loss, gather llm used
 
 device_configs = {
     # temp for 910B
@@ -162,33 +162,9 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
+                    "dtype": [Skip(np.float64)],
                 },
             ],
-        ),
-    ),
-
-    'hardswish': dict(
-        name=['hardswish'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'hardswish_domain': dict(
-        name=['hardswish'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
         ),
     ),
 
@@ -1170,42 +1146,6 @@ device_configs = {
         ),
     ),
 
-    'gather': dict( # llm used
-        name=['gather'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'gather_0dim': dict( # llm used
-        name=['gather'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'gather_not_float': dict( # llm used
-        name=['gather'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'scatter': dict( # llm used
         name=['scatter'],
         tensor_para=dict(
@@ -1381,8 +1321,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((12, 0, 9)), Skip((8,))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
@@ -1399,8 +1338,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((12, 1, 12)),],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
@@ -1419,11 +1357,11 @@ device_configs = {
                 {
                     "ins": ["input"],
                     "shape": [Skip((6, 5, 384)), Skip((2, 4, 38, 45))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex128), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128)],
                 },
             ]
         )
@@ -1437,11 +1375,11 @@ device_configs = {
                 {
                     "ins": ["input"],
                     "shape": [Skip((192, 147)), Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex64)],
                 },
             ]
         )

@@ -27,8 +27,7 @@ diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     // calculate beta x input;
     const std::vector<int64_t>& inputShape = asInput.shape();
     AscendTensor asBXinput;
-    diopiDtype_t highDType2 = promoteTypes(asInput.dtype(), beta->stype);
-    makeTensor(ctx, asBXinput, inputShape, highDType2);
+    makeTensor(ctx, asBXinput, inputShape, asInput.dtype());
     diopiTensorHandle_t bXinput = const_cast<diopiTensorHandle_t>(asBXinput.tensorHandle());
     diopiMulScalar(ctx, bXinput, input, beta);
 
