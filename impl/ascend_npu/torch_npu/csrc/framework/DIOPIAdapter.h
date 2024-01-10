@@ -868,10 +868,7 @@ inline bool CheckMmBmmNDDisable() {
     INTERFACE_NOT_IMPL;
     return true;
 }
-inline bool CheckForbidInternalFormat() {
-    INTERFACE_NOT_IMPL;
-    return true;
-}
+inline bool CheckForbidInternalFormat() { return true; }
 inline bool IsAllowFP32ToFP16() {
     INTERFACE_NOT_IMPL;
     return false;
