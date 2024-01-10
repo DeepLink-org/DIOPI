@@ -230,9 +230,6 @@
 - diopiRsqrt:
     dtype: (int8, uint8, int16, int32, int64, bool)->float32
 
-- diopiAddmm:
-    dtype: (float16, float32)->float64
-
 - diopiEmbeddingBackward:
     dtype: (float64)->float32
 
@@ -299,4 +296,7 @@
     dtype: (float64)->float32
 
 - diopiNormalTensorScalar:
+    dtype: (float64)->float32
+
+- diopiGatherBackward:
     dtype: (float64)->float32
