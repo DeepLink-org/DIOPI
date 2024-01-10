@@ -300,3 +300,6 @@
 
 - diopiNormalTensorScalar:
     dtype: (float64)->float32
+
+- diopiGatherBackward:
+    dtype: (float64)->float32
