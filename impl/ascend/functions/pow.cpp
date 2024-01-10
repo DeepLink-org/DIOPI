@@ -48,7 +48,7 @@ diopiError_t diopiPowInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, co
 diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* input, diopiConstTensorHandle_t exponent) {
     diopiTensorHandle_t inputTensor;
     AscendTensor expAt(exponent);
-    
+
     if (isFloatingType(input->stype) && isFloatingType(expAt.dtype())) {
         makeTensorFromScalar(ctx, input, &inputTensor, expAt.dtype(), diopi_device);
     } else if (isIntegralTypeWithBool(input->stype) && isIntegralTypeWithBool(expAt.dtype())) {
