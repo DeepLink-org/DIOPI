@@ -6,10 +6,10 @@ import pickle
 import numpy as np
 from collections import defaultdict
 
-from torch import is_floating_point
 from codegen.filemanager import FileManager
 from codegen.case_template import CaseTemplate
-from conformance.db_operation import db_conn
+from codegen.case_priority import CasePriority
+from codegen.priority_config import priority_config
 from conformance.utils import gen_pytest_case_nodeid
 from conformance.global_settings import glob_vars
 from conformance.global_op_list import dtype_op, dtype_out_op, nhwc_op, ops_with_states
@@ -86,17 +86,17 @@ class GenTestCase(object):
         mt_name = f"test_{self._module}_{self._suite_name}_{self._func_name}.py"
         self._fm.will_write(mt_name)
 
-    def _gen_test_priority(self, case_cfg):
-        priority = 'P0'
-        if len(case_cfg["tensor_para"]["args"]) > 0:
-                for t in case_cfg["tensor_para"]["args"]:
-                    if t['ins'] == 'input':
-                        if not np.issubdtype(t['dtype'], np.floating):
-                            priority = 'P1'
-                        if  t.get('shape') and (len(t['shape']) == 0 or 0 in t['shape']):
-                            priority = 'P2'
-                        break
-        return priority
+    def _gen_test_priority(self, case_name, case_cfg):
+        cp = CasePriority(case_name, case_cfg, priority_config)
+        # if len(case_cfg["tensor_para"]["args"]) > 0:
+        #         for t in case_cfg["tensor_para"]["args"]:
+        #             if t['ins'] == 'input':
+        #                 if not np.issubdtype(t['dtype'], np.floating):
+        #                     priority = 'P1'
+        #                 if  t.get('shape') and (len(t['shape']) == 0 or 0 in t['shape']):
+        #                     priority = 'P2'
+        #                 break
+        return cp.get_case_priority()
 
     def gen_test_module(self, fname):
         test_diopi_head_import = ""
@@ -237,6 +237,7 @@ class GenTestCase(object):
                 "case_name": ck,
                 "model_name": self._module,
                 "pytest_nodeid": nodeid,
+                "priority": 'P0',
                 "inplace_flag": 0,
                 "backward_flag": 0,
                 "func_name": self._func_name,
@@ -293,8 +294,10 @@ class GenTestCase(object):
                     if mark not in test_dtype_marks:
                         test_dtype_marks.append(mark)
 
+            priority = self._gen_test_priority(self._suite_name, cv)
+            item['priority'] = priority
             test_priority_mark = CaseTemplate.test_function_case_marks.substitute(
-                        env=dict(mark=self._gen_test_priority(cv))
+                        env=dict(mark=priority)
                     ).strip()
 
             test_function_templ = CaseTemplate.test_function_templ.substitute(

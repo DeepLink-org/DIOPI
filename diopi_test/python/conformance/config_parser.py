@@ -434,6 +434,8 @@ class ConfigItem(object):
             # set [] for defalut para, tensor_para, para
             if "tensor_para" not in case_v.keys():
                 case_v["tensor_para"] = {}
+            if "priority" not in case_v.keys():
+                case_v["priority"] = ""
             if "args" not in case_v["tensor_para"].keys():
                 case_v["tensor_para"]["args"] = []
             if "seq_name" not in case_v["tensor_para"].keys():

@@ -103,6 +103,12 @@ def parse_args():
         help="The dtype in filter_dtype will not be processed",
     )
     run_test_args.add_argument(
+        "--priority",
+        type=str,
+        nargs="*",
+        help="The priority will be processed",
+    )
+    run_test_args.add_argument(
         "--test_result_path",
         type=str,
         default="report.xlsx",
@@ -171,11 +177,24 @@ if __name__ == "__main__":
         else:
             test_cases_path = args.test_cases_path
         pytest_args = [test_cases_path]
-        if args.filter_dtype:
+        if args.filter_dtype and args.priority:
+            filter_dtype_str = " and ".join(
+                [f"not {dtype}" for dtype in args.filter_dtype]
+            )
+            priority_str = " or ".join(
+                [f"{priority}" for priority in args.priority]
+            )
+            pytest_args.append(f"-m ({filter_dtype_str}) and ({priority_str})")
+        elif args.filter_dtype:
             filter_dtype_str = " and ".join(
                 [f"not {dtype}" for dtype in args.filter_dtype]
             )
             pytest_args.append(f"-m {filter_dtype_str}")
+        elif args.priority:
+            priority_str = " or ".join(
+                [f"{priority}" for priority in args.priority]
+            )
+            pytest_args.append(f"-m {priority_str}")
         if args.html_report:
             pytest_args.extend(
                 ["--report=report.html", "--title=DIOPI Test", "--template=2"]
