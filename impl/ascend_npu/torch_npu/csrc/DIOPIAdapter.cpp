@@ -2926,7 +2926,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("sub.Tensor", TORCH_FN(wrapper_Tensor_sub));
     m.impl("index_select", TORCH_FN(wrapper__index_select));
     m.impl("_softmax", TORCH_FN(wrapper___softmax));
-    // m.impl("eq.Scalar", TORCH_FN(wrapper_Scalar_eq));
+    m.impl("eq.Scalar", TORCH_FN(wrapper_Scalar_eq));
     m.impl("masked_fill_.Scalar", TORCH_FN(wrapper_Scalar_masked_fill_));
     m.impl("repeat", TORCH_FN(wrapper__repeat));
     m.impl("transpose.int", TORCH_FN(wrapper__transpose));
