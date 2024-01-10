@@ -446,13 +446,12 @@ DIOPI_API diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     xdnn::Context* ctx_xpu = impl::kunlunxin::set_cur_ctx(ctx);
     xdnn_pytorch::Tensor _out = impl::kunlunxin::build_xtorch_tensor(out);
     xdnn_pytorch::Tensor _input = impl::kunlunxin::build_xtorch_tensor(input);
-    // xdnn_pytorch::ScalarType _dtype = impl::kunlunxin::get_xtorch_type(dtype);
-    xdnn_pytorch::ScalarType _dtype = xdnn_pytorch::ScalarType::kfloat32;
+
     if (dim.len == 0) {
-        DIOPI_CALL_XDNN(xdnn_pytorch::sum(ctx_xpu, _input, _dtype, _out));
+        DIOPI_CALL_XDNN(xdnn_pytorch::sum(ctx_xpu, _input, _out.type, _out));
     } else {
         xtorch_vec _dim = impl::kunlunxin::build_xtorch_vec(dim);
-        DIOPI_CALL_XDNN(xdnn_pytorch::sum_dim_IntList(ctx_xpu, _input, _dim, false, _dtype, _out));
+        DIOPI_CALL_XDNN(xdnn_pytorch::sum_dim_IntList(ctx_xpu, _input, _dim, false, _out.type, _out));
     }
     return diopiSuccess;
 }
@@ -461,14 +460,13 @@ DIOPI_API diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t o
     xdnn::Context* ctx_xpu = impl::kunlunxin::set_cur_ctx(ctx);
     xdnn_pytorch::Tensor _out = impl::kunlunxin::build_xtorch_tensor(out);
     xdnn_pytorch::Tensor _input = impl::kunlunxin::build_xtorch_tensor(input);
-    // xdnn_pytorch::ScalarType _dtype = impl::kunlunxin::get_xtorch_type(dtype);
-    xdnn_pytorch::ScalarType _dtype = xdnn_pytorch::ScalarType::kfloat32;
+
     if (dim.len == 0) {
         xdnn_pytorch::Tensor _inputTemp = impl::kunlunxin::build_xtorch_tensor(input);
-        DIOPI_CALL_XDNN(xdnn_pytorch::mean(ctx_xpu, _input, _dtype, _out));
+        DIOPI_CALL_XDNN(xdnn_pytorch::mean(ctx_xpu, _input, _out.type, _out));
     } else {
         xtorch_vec _dim = impl::kunlunxin::build_xtorch_vec(dim);
-        DIOPI_CALL_XDNN(xdnn_pytorch::mean_dim(ctx_xpu, _input, _dim, false, _dtype, _out));
+        DIOPI_CALL_XDNN(xdnn_pytorch::mean_dim(ctx_xpu, _input, _dim, false, _out.type, _out));
     }
     return diopiSuccess;
 }

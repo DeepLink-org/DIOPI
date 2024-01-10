@@ -223,8 +223,11 @@ ascend_npu:
 - diopiTokenSoftmaxReduceVInference
 - diopiApplyPenalty
 - diopiContextAttentionInference
-- diopiCustomFormatCast
-- diopiGetCustomFormat
+- diopiNativeMemoryFormatCast
+- diopiGetNativeMemoryFormat
 - diopiTensorDestructionHook
+- diopiHardswish
+- diopiHardswishInp
+- diopiHardswishBackward
 - diopiAtan
 - diopiAtanInp
