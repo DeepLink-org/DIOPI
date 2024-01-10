@@ -523,32 +523,6 @@ device_configs = {
         ),
     ),
 
-    'nll_loss': dict( # llm used
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): dtype float16 is not supported
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'nll_loss_empty_tensor': dict( # llm used
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): dtype float16 is not supported
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
     'cross_entropy': dict(
         name=['cross_entropy'],
         tensor_para=dict(
