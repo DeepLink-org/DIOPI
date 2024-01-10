@@ -90,7 +90,7 @@ void copy_d2d_last_method(at::Tensor& self, const at::Tensor& src, bool same_typ
     // general copy method but Low performance
     RECORD_FUNCTION("contiguous_d_ViewCopy", std::vector<c10::IValue>({src}));
     auto originShape = inferOriginShape(self.sizes(), self.strides());
-    if (originShape != self.sizes()) {
+    if (0 && originShape != self.sizes()) {
         npu_view_copy(self, src, originShape, non_blocking);
 
         // custom_ops::npu_view_copy(self, src, non_blocking);
