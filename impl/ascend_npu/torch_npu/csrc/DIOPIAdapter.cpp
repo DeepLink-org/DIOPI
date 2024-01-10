@@ -3,7 +3,6 @@
 #include <ATen/EmptyTensor.h>
 #include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
-#include <diopi/diopirt.h>
 #include <torch/library.h>
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
@@ -1604,11 +1603,13 @@ int64_t StorageDescHelper::GetValidMemorySize(const at::Tensor& tensor) {
 void StorageDescHelper::SetDesc(at::Tensor& dst) { torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype()); }
 
 void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) {
-    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides);
+    diopiConstTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
+    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, tmp_tensor);
 }
 
 void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format) {
-    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, format);
+    diopiConstTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
+    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, format, tmp_tensor);
 }
 
 void StorageDescHelper::CopyDesc(at::Tensor& dst, const at::Tensor& src) { CopyDesc(dst, src.storage()); }
@@ -1631,12 +1632,13 @@ void StorageDescHelper::ReflushDescBySelf(const at::Tensor& src) {
 
 torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype) { return SetDesc(dtype, {0}, {}); }
 
-torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) {
-    return SetDesc(dtype, size, strides, InferFormat::GuessBaseFormat(size));
+torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
+                                                     diopiConstTensorHandle_t tensor) {
+    return SetDesc(dtype, size, strides, InferFormat::GuessBaseFormat(size), tensor);
 }
 
 torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
-                                                     aclFormat format) {
+                                                     aclFormat format, diopiConstTensorHandle_t tensor) {
     struct torch_npu::NPUStorageDesc npu_desc;
     npu_desc.data_type_ = dtype;
     npu_desc.base_sizes_ = size;
@@ -1651,6 +1653,7 @@ torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dty
     npu_desc.storage_sizes_ = FormatHelper::GetStorageSizes(npuFormat, size);
     npu_desc.origin_format_ = baseFormat;
     npu_desc.npu_format_ = npuFormat;
+    npu_desc.diopi_tensor_ = tensor;
     return npu_desc;
 }
 
@@ -2846,7 +2849,9 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     at::IntArrayRef atStrides(stride.data, stride.len);
 
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
-    return fromPreAllocated(data, atDims, atStrides, options);
+    at::Tensor out = fromPreAllocated(data, atDims, atStrides, options);
+    torch_npu::NPUBridge::GetNpuStorageImpl(out)->npu_desc_.diopi_tensor_ = tensor;
+    return out;
 }
 
 at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
