@@ -1388,6 +1388,9 @@ private:
         int64_t storage_offsets = src_desc.offset_;
         // src.storage_offset() == start[narrow_dims[i]]*stride[narrow_dims[i]]
         for (const auto i : c10::irange(view_strides.size())) {
+            if (!view_strides[i]) {
+                return false;
+            }
             offsets.emplace_back(storage_offsets / view_strides[i]);
             storage_offsets = storage_offsets % view_strides[i];
         }

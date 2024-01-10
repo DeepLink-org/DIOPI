@@ -199,7 +199,6 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
-- diopiFormatCast
 ascend_npu:
 - diopiCastDtype
 - diopiCopyInp
@@ -224,3 +223,8 @@ ascend_npu:
 - diopiTokenSoftmaxReduceVInference
 - diopiApplyPenalty
 - diopiContextAttentionInference
+- diopiHardswish
+- diopiHardswishInp
+- diopiHardswishBackward
+- diopiAtan
+- diopiAtanInp

@@ -68,7 +68,7 @@ inline void sync(diopiContextHandle_t ctx) {
 
 caffe2::TypeMeta getATenType(diopiDtype_t dt);
 
-diopiDtype_t getDIOPITensorType(at::Tensor& input);
+diopiDtype_t getDIOPITensorType(const at::Tensor& input);
 
 inline diopiDevice_t getDIOPIDevice(c10::DeviceType device) {
     if (device == c10::DeviceType::CPU) {
@@ -84,8 +84,7 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     return c10::DeviceType::CUDA;
 }
 
-template <typename T>
-at::Tensor buildATen(T tensor);
+at::Tensor buildATen(diopiConstTensorHandle_t tensor);
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 
@@ -107,10 +106,11 @@ inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
 }
 
 inline void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
-    // TODO(fengsibo): add device and nbytes check
     if (out != nullptr) {
-        at::Tensor atOutput = buildATen(out);
-        atOutput.reshape_as(atOut).copy_(atOut, true);
+        at::Tensor atOutput = buildATen(out).reshape_as(atOut);
+        // Set non_blocking=true to improve performance.
+        // The data is not ready when this function returns.
+        at::native::copy_(atOutput, atOut, true);
     }
 }
 

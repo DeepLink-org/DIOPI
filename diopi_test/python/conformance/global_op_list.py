@@ -75,5 +75,5 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "random": {"input"},
                    "uniform": {"input"},
                    "normal_": {"input"},
-                   "bernoulli": {"input"},
+                   "bernoulli": {"input"},  # compared in manual_test
                    }

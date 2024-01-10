@@ -532,7 +532,7 @@ public:
 
     static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
     // check output tensor
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size) {
         INTERFACE_NOT_IMPL
@@ -570,8 +570,8 @@ public:
     static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst, c10::IntArrayRef shape);
     static void CheckOut(const std::initializer_list<at::Tensor>& input, at::Tensor& output, int64_t format, at::ScalarType dtype, c10::IntArrayRef shape);
     // DEPRECATED: CastBackToOriFormat will be deprecated, please use cast_to_ori_format instead.
-    static at::Tensor CastBackToOriFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static at::Tensor& CastBackToOriFormat(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static at::Tensor CastBackToOriFormat(const at::Tensor& tensor);
+    static at::Tensor& CastBackToOriFormat(at::Tensor& tensor);
     // DEPRECATED: ApplyTensor will be deprecated, please use apply_tensor instead.
     TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src) { return apply_tensor(src); }
     TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor(src, sizes); }
