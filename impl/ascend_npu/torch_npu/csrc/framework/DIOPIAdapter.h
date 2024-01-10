@@ -35,10 +35,21 @@
 
 #define __FILENAME__ __FILE__
 
-#define ASCEND_LOGE(fmt, ...) aclAppLog(ACL_ERROR, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__)
-#define ASCEND_LOGW(fmt, ...) aclAppLog(ACL_WARNING, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__)
-#define ASCEND_LOGI(fmt, ...) aclAppLog(ACL_INFO, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__)
-#define ASCEND_LOGD(fmt, ...) aclAppLog(ACL_DEBUG, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__)
+#define ASCEND_LOGE(fmt, ...)                                                                 \
+    aclAppLog(ACL_ERROR, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
+    printf("%s:%s:%d \n[PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
+
+#define ASCEND_LOGW(fmt, ...)                                                                   \
+    aclAppLog(ACL_WARNING, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
+    printf("%s:%s:%d [PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
+
+#define ASCEND_LOGI(fmt, ...)                                                                \
+    aclAppLog(ACL_INFO, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
+    printf("%s:%s:%d [PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
+
+#define ASCEND_LOGD(fmt, ...)                                                                 \
+    aclAppLog(ACL_DEBUG, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
+    printf("%s:%s:%d [PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
 
 #define NPU_LOGE(fmt, ...) printf("[ERROR]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
 #define NPU_LOGW(fmt, ...) printf("[WARN]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
@@ -149,7 +160,7 @@
     } while (0)
 
 #define INTERFACE_NOT_IMPL
-// #define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
+#define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
 static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 
@@ -391,6 +402,7 @@ public:
     aclFormat npu_format_ = ACL_FORMAT_ND;
     // used to make CANN GE tensor from storagImpl
     caffe2::TypeMeta data_type_;
+    diopiConstTensorHandle_t diopi_tensor_;
 };  // struct NPUStorageDesc
 
 struct NPUStorageImpl : public c10::StorageImpl {
@@ -686,26 +698,11 @@ public:
         static CopyOptRegister instance;
         return &instance;
     }
-    void Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr) {
-        std::lock_guard<std::mutex> lock(mu_);
-        registry.emplace(name, std::move(ptr));
-    }
+    void Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr);
 
-    bool CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc) {
-        auto itr = registry.find(name);
-        if (itr != registry.end()) {
-            return itr->second->CanOptimizer(src_desc);
-        }
-        return false;
-    }
+    bool CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc);
 
-    bool Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
-        auto itr = registry.find(name);
-        if (itr != registry.end()) {
-            return itr->second->Optimizer(self, src, src_desc);
-        }
-        return false;
-    }
+    bool Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc);
 
 private:
     CopyOptRegister() {}
@@ -756,8 +753,8 @@ public:
     static void ProfReportMarkDataToNpuProfiler(uint32_t category, void* data, size_t offset);
 };  // class NpuUtils
 
-inline const std::string AclDateTypeToString(aclDataType descDType) { INTERFACE_NOT_IMPL; }
-inline const std::string AclFormatToString(aclFormat descFormat) { INTERFACE_NOT_IMPL; }
+const std::string AclDateTypeToString(aclDataType descDType);
+const std::string AclFormatToString(aclFormat descFormat);
 
 using PROC_FUNC = std::function<int()>;
 // in npu device, the max shape size is 8
@@ -874,7 +871,7 @@ inline bool CheckMmBmmNDDisable() {
 }
 inline bool CheckForbidInternalFormat() {
     INTERFACE_NOT_IMPL;
-    return true;
+    return false;
 }
 inline bool IsAllowFP32ToFP16() {
     INTERFACE_NOT_IMPL;
@@ -1031,8 +1028,10 @@ private:
     static int64_t GetMemorySize(const torch_npu::NPUStorageDesc& dst);
     // Set Part
     static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype);
-    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides);
-    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format);
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
+                                             diopiConstTensorHandle_t tensor = nullptr);
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format,
+                                             diopiConstTensorHandle_t tensor = nullptr);
 };  // class StorageDescHelper
 
 bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src);
