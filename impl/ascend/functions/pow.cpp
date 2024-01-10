@@ -30,11 +30,11 @@ diopiError_t diopiPow(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     AscendTensor inputAt(input);
 
     if ((isFloatingType(inputAt.dtype()) && isFloatingType(exponent->stype)) ||
-        ((isIntegralTypeWithBool(inputAt.dtype()) && isIntegralTypeWithBool(inputAt.dtype())))) {
+        ((isIntegralTypeWithBool(inputAt.dtype()) && isIntegralTypeWithBool(exponent->stype)))) {
         makeTensorFromScalar(ctx, exponent, &exponentTensor, inputAt.dtype(), diopi_device);
     } else if (isIntegralTypeWithBool(inputAt.dtype()) && isFloatingType(exponent->stype)) {
         makeTensorFromScalar(ctx, exponent, &exponentTensor, diopi_dtype_float32, diopi_device);
-    } else if (isFloatingType(inputAt.dtype()) && isIntegralTypeWithBool(inputAt.dtype())) {
+    } else if (isFloatingType(inputAt.dtype()) && isIntegralTypeWithBool(exponent->stype)) {
         makeTensorFromScalar(ctx, exponent, &exponentTensor, inputAt.dtype(), diopi_device);
     }
 
