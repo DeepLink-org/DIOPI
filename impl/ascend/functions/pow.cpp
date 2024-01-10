@@ -27,9 +27,11 @@ diopiError_t diopiPowInpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 
 diopiError_t diopiPow(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* exponent) {
     diopiTensorHandle_t exponentTensor;
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    makeTensorFromScalar(ctx, exponent, &exponentTensor, dtype, diopi_device);
+    if (isFloatingType(exponent->stype)) {
+        makeTensorFromScalar(ctx, exponent, &exponentTensor, diopi_dtype_float32, diopi_device);
+    } else {
+        makeTensorFromScalar(ctx, exponent, &exponentTensor, diopi_dtype_int32, diopi_device);
+    }
     return diopiPowTensor(ctx, out, input, exponentTensor);
 }
 
@@ -37,7 +39,11 @@ diopiError_t diopiPowInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, co
 
 diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* input, diopiConstTensorHandle_t exponent) {
     diopiTensorHandle_t inputTensor;
-    makeTensorFromScalar(ctx, input, &inputTensor, diopi_device);
+    if (isFloatingType(input->stype)) {
+        makeTensorFromScalar(ctx, input, &inputTensor, diopi_dtype_float32, diopi_device);
+    } else {
+        makeTensorFromScalar(ctx, input, &inputTensor, diopi_dtype_int32, diopi_device);
+    }
     return diopiPowTensor(ctx, out, inputTensor, exponent);
 }
 
