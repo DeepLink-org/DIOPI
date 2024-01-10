@@ -93,9 +93,9 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     比如不支持 float64, 那么可以通过设置 filter_dtype 为 float64 来过滤掉对于 float64 的测试。
 
     ```
-        python main.py --mode run_test --test_cases_path --filter_dtype float64
+        python main.py --mode run_test --filter_dtype float64
         # 可叠加不支持的数据类型
-        python main.py --mode run_test --test_cases_path --filter_dtype float64 int64
+        python main.py --mode run_test --filter_dtype float64 int64
     ```
 
 * nhwc : 使用 channel_last 格式的张量测试
