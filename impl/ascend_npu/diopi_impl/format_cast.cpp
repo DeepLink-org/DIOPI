@@ -4,7 +4,7 @@
  * @copyright  (c) 2024, DeepLink.
  */
 
-#include "../helper.hpp"
+#include "helper.hpp"
 #include "torch_npu/csrc/aten/CustomFunctions.h"
 
 namespace OP_IMPL_NS {
