@@ -2,7 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm llm, nll_loss used
+# topk, normal, norm, nll_loss llm used
 
 device_configs = {
     # temp for 910B
