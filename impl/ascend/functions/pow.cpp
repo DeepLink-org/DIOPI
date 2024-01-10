@@ -38,9 +38,7 @@ diopiError_t diopiPow(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         } else {
             makeTensorFromScalar(ctx, exponent, &exponentTensor, inputAt.dtype(), diopi_device);
         }
-    }
-
-    else if (isIntegralTypeWithBool(inputAt.dtype()) && isFloatingType(exponent->stype)) {
+    } else if (isIntegralTypeWithBool(inputAt.dtype()) && isFloatingType(exponent->stype)) {
         makeTensorFromScalar(ctx, exponent, &exponentTensor, diopi_dtype_float32, diopi_device);
     } else if (isFloatingType(inputAt.dtype()) && isIntegralTypeWithBool(exponent->stype)) {
         makeTensorFromScalar(ctx, exponent, &exponentTensor, inputAt.dtype(), diopi_device);
@@ -55,7 +53,7 @@ diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, c
     diopiTensorHandle_t inputTensor;
     AscendTensor expAt(exponent);
 
-    if (isFloatingType(input->stype) && (expAt.dtype())) {
+    if (isFloatingType(input->stype) && isFloatingType(expAt.dtype())) {
         makeTensorFromScalar(ctx, input, &inputTensor, expAt.dtype(), diopi_device);
     } else if (isIntegralTypeWithBool(input->stype) && isIntegralTypeWithBool(expAt.dtype())) {
         // if expAt.dtype() is Bool
@@ -65,9 +63,7 @@ diopiError_t diopiPowScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, c
             makeTensorFromScalar(ctx, input, &inputTensor, expAt.dtype(), diopi_device);
         }
 
-    }
-
-    else if (isIntegralTypeWithBool(input->stype) && isFloatingType(expAt.dtype())) {
+    } else if (isIntegralTypeWithBool(input->stype) && isFloatingType(expAt.dtype())) {
         makeTensorFromScalar(ctx, input, &inputTensor, expAt.dtype(), diopi_device);
     } else if (isFloatingType(input->stype) && isIntegralTypeWithBool(expAt.dtype())) {
         makeTensorFromScalar(ctx, input, &inputTensor, diopi_dtype_float32, diopi_device);
