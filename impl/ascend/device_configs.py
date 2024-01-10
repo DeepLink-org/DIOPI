@@ -2,9 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk llm used
-# normal llm used
-# norm llm used
+# topk, normal, norm, nll_loss, gather llm used
 
 device_configs = {
     # temp for 910B
@@ -1169,42 +1167,6 @@ device_configs = {
                 {
                     "ins": ['log_probs'],
                     "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'gather': dict( # llm used
-        name=['gather'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'gather_0dim': dict( # llm used
-        name=['gather'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'gather_not_float': dict( # llm used
-        name=['gather'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
                 },
             ]
         ),
