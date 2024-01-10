@@ -35,10 +35,21 @@
 
 #define __FILENAME__ __FILE__
 
-#define ASCEND_LOGE(fmt, ...) aclAppLog(ACL_ERROR, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__)
-#define ASCEND_LOGW(fmt, ...) aclAppLog(ACL_WARNING, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__)
-#define ASCEND_LOGI(fmt, ...) aclAppLog(ACL_INFO, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__)
-#define ASCEND_LOGD(fmt, ...) aclAppLog(ACL_DEBUG, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__)
+#define ASCEND_LOGE(fmt, ...)                                                                 \
+    aclAppLog(ACL_ERROR, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
+    printf("%s:%s:%d \n[PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
+
+#define ASCEND_LOGW(fmt, ...)                                                                   \
+    aclAppLog(ACL_WARNING, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
+    printf("%s:%s:%d [PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
+
+#define ASCEND_LOGI(fmt, ...)                                                                \
+    aclAppLog(ACL_INFO, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
+    printf("%s:%s:%d [PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
+
+#define ASCEND_LOGD(fmt, ...)                                                                 \
+    aclAppLog(ACL_DEBUG, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
+    printf("%s:%s:%d [PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
 
 #define NPU_LOGE(fmt, ...) printf("[ERROR]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
 #define NPU_LOGW(fmt, ...) printf("[WARN]%s,%s:%u:" #fmt "\n", __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__)
@@ -149,7 +160,7 @@
     } while (0)
 
 #define INTERFACE_NOT_IMPL
-// #define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
+#define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
 
 static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 
@@ -391,6 +402,7 @@ public:
     aclFormat npu_format_ = ACL_FORMAT_ND;
     // used to make CANN GE tensor from storagImpl
     caffe2::TypeMeta data_type_;
+    diopiConstTensorHandle_t diopi_tensor_;
 };  // struct NPUStorageDesc
 
 struct NPUStorageImpl : public c10::StorageImpl {
@@ -532,7 +544,7 @@ public:
 
     static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
     // check output tensor
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size) {
         INTERFACE_NOT_IMPL
@@ -570,8 +582,8 @@ public:
     static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst, c10::IntArrayRef shape);
     static void CheckOut(const std::initializer_list<at::Tensor>& input, at::Tensor& output, int64_t format, at::ScalarType dtype, c10::IntArrayRef shape);
     // DEPRECATED: CastBackToOriFormat will be deprecated, please use cast_to_ori_format instead.
-    static at::Tensor CastBackToOriFormat(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static at::Tensor& CastBackToOriFormat(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static at::Tensor CastBackToOriFormat(const at::Tensor& tensor);
+    static at::Tensor& CastBackToOriFormat(at::Tensor& tensor);
     // DEPRECATED: ApplyTensor will be deprecated, please use apply_tensor instead.
     TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src) { return apply_tensor(src); }
     TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor(src, sizes); }
@@ -686,26 +698,11 @@ public:
         static CopyOptRegister instance;
         return &instance;
     }
-    void Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr) {
-        std::lock_guard<std::mutex> lock(mu_);
-        registry.emplace(name, std::move(ptr));
-    }
+    void Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr);
 
-    bool CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc) {
-        auto itr = registry.find(name);
-        if (itr != registry.end()) {
-            return itr->second->CanOptimizer(src_desc);
-        }
-        return false;
-    }
+    bool CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc);
 
-    bool Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
-        auto itr = registry.find(name);
-        if (itr != registry.end()) {
-            return itr->second->Optimizer(self, src, src_desc);
-        }
-        return false;
-    }
+    bool Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc);
 
 private:
     CopyOptRegister() {}
@@ -756,8 +753,8 @@ public:
     static void ProfReportMarkDataToNpuProfiler(uint32_t category, void* data, size_t offset);
 };  // class NpuUtils
 
-inline const std::string AclDateTypeToString(aclDataType descDType) { INTERFACE_NOT_IMPL; }
-inline const std::string AclFormatToString(aclFormat descFormat) { INTERFACE_NOT_IMPL; }
+const std::string AclDateTypeToString(aclDataType descDType);
+const std::string AclFormatToString(aclFormat descFormat);
 
 using PROC_FUNC = std::function<int()>;
 // in npu device, the max shape size is 8
@@ -872,10 +869,7 @@ inline bool CheckMmBmmNDDisable() {
     INTERFACE_NOT_IMPL;
     return true;
 }
-inline bool CheckForbidInternalFormat() {
-    INTERFACE_NOT_IMPL;
-    return true;
-}
+inline bool CheckForbidInternalFormat() { return false; }
 inline bool IsAllowFP32ToFP16() {
     INTERFACE_NOT_IMPL;
     return false;
@@ -1031,8 +1025,10 @@ private:
     static int64_t GetMemorySize(const torch_npu::NPUStorageDesc& dst);
     // Set Part
     static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype);
-    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides);
-    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format);
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
+                                             diopiConstTensorHandle_t tensor = nullptr);
+    static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format,
+                                             diopiConstTensorHandle_t tensor = nullptr);
 };  // class StorageDescHelper
 
 bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src);

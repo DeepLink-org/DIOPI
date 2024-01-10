@@ -43,13 +43,71 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
     return TransContiguous::ContiguousOptimizeWithAnyFormat(self, src);
 }
 
+namespace {
+
+std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef strides) {
+    std::vector<int64_t> originSizes(sizes.size(), 1);
+    originSizes[0] = sizes[0] * strides[0];
+    for (size_t i = 1; i < sizes.size(); i++) {
+        int64_t dim = sizes[i] * strides[i];
+        if (originSizes[0] < dim) {
+            originSizes[0] = dim;
+        }
+    }
+    return originSizes;
+}
+
+}  // namespace
+
+bool isPartOfOther(const at::Tensor& tensor) {
+    const auto& strides = tensor.strides();
+    std::vector<int64_t> contiguousStrides(tensor.sizes().size());
+    int64_t stride = 1;
+    for (int i = contiguousStrides.size() - 1; i >= 0; --i) {
+        contiguousStrides[i] = stride;
+        stride *= tensor.sizes()[i];
+        if (strides[i] > contiguousStrides[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    auto self_size = self.sizes();
+    auto self_stride = self.strides();
+    auto src_size = src.sizes();
+    auto src_stride = src.strides();
+    auto originShape = inferOriginShape(self.sizes(), self.strides());
+    auto originSizeTensor = at_npu::native::empty_npu(originShape, self.options());
+
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ViewCopy")
+        .InputWithoutContiguous(impl::aten::viewStorage(self, originShape))
+        .Input(self_size, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+        .Input(self_stride, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+        .Input(at::Scalar(0), at::kLong)
+        .InputWithoutContiguous(src)
+        .Input(src_size, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+        .Input(src_stride, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+        .Input(at::Scalar(0), at::kLong)
+        .Output(originSizeTensor)
+        .Attr("_exclude_engines", (string) "AiCore")
+        .Run();
+}
+
 // the dst and src are same format now
 // the dst and src are base format now
 // the dst and src maybe non-contiguous
 void copy_d2d_last_method(at::Tensor& self, const at::Tensor& src, bool same_type, bool non_blocking) {
     // general copy method but Low performance
     RECORD_FUNCTION("contiguous_d_ViewCopy", std::vector<c10::IValue>({src}));
-    custom_ops::npu_view_copy(self, src, non_blocking);
+    if (isPartOfOther(self)) {
+        npu_view_copy(self, src, non_blocking);
+        // custom_ops::npu_view_copy(self, src, non_blocking);
+    } else {
+        custom_ops::npu_view_copy(self, src, non_blocking);
+    }
 }
 
 // the dst and src are same format now
@@ -258,7 +316,13 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
         } else {
             // General trans-contiguous method
             RECORD_FUNCTION("contiguous_d_AsStrided", std::vector<c10::IValue>({src}));
+#if 0
             custom_ops::npu_stride_copy_out(src, src.sizes(), src.strides(), src.storage_offset(), self);
+#else
+            std::vector<int64_t> shape(src.sizes().size(), 1);
+            shape[0] = at::detail::computeStorageNbytes(src.sizes(), src.strides(), src.itemsize()) / src.itemsize();
+            custom_ops::npu_stride_copy_out(impl::aten::viewStorage(src, shape), src.sizes(), src.strides(), src.storage_offset(), self);
+#endif
             return;
         }
     } else {
@@ -898,7 +962,8 @@ public:
             src_desc.base_strides_ = StorageDescHelper::ComputeStrideFromShape(static_cast<FormatShape>(sizes));
             src_desc.storage_sizes_ = sizes;
 
-            custom_ops::npu_transpose_out(src, perm, false, self);
+            custom_ops::npu_transpose_out(impl::aten::viewStorage(src, src_desc.base_sizes_, src_desc.base_strides_), perm, false, self);
+            // custom_ops::npu_transpose_out(src, perm, false, self);
             src_desc = src_desc_stored;
             return true;
         }
