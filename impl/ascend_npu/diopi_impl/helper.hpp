@@ -249,6 +249,13 @@ inline diopiDtype_t getDIOPITensorType(at::ScalarType scalarType) {
             return diopi_dtype_float32;
         case at::ScalarType::Double:
             return diopi_dtype_float64;
+        case at::ScalarType::ComplexHalf:
+            return diopi_dtype_complex32;
+        case at::ScalarType::ComplexFloat:
+            return diopi_dtype_complex64;
+        case at::ScalarType::ComplexDouble:
+            return diopi_dtype_complex128;
+
         default:
             NOT_SUPPORTED("aten dtype");
             return diopi_dtype_unsupported;

@@ -333,10 +333,17 @@ at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) { return 
 
 at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
 
-at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) { return acl_op::npu_dtype_cast(self, dtype); }
+at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
+    auto out = at_npu::native::empty_npu(self.sizes(), self.options().dtype(dtype));
+    npu_dtype_cast_(out, self);
+    return out;
+}
 
 at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
     at::Tensor source = src.contiguous();
+    if (src.scalar_type() == at::kDouble && self.scalar_type() == at::kByte) {
+        source = source.to(at::kFloat);
+    }
     if (self.sizes() == source.sizes() && self.strides() == source.strides()) {
         return acl_op::npu_dtype_cast_(self, source);
     } else {
