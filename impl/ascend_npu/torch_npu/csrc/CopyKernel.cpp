@@ -46,13 +46,12 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
 namespace {
 
 std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef strides) {
-    std::vector<int64_t> originSizes(sizes.begin(), sizes.end());
-    for (size_t i = sizes.size() - 1; i > 0; i--) {
-        if (originSizes[i] < strides[i - 1]) {
-            int64_t originDim = strides[i - 1] / strides[i];
-            if (originDim > 0) {
-                originSizes[i] = strides[i - 1] / strides[i];
-            }
+    std::vector<int64_t> originSizes(sizes.size(), 1);
+    originSizes[0] = sizes[0] * strides[0];
+    for (size_t i = 1; i < sizes.size(); i++) {
+        int64_t dim = sizes[i] * strides[i];
+        if (originSizes[0] < dim) {
+            originSizes[0] = dim;
         }
     }
     return originSizes;
@@ -60,12 +59,26 @@ std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef str
 
 }  // namespace
 
-at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& src, at::IntArrayRef originShape, bool non_blocking) {
+bool isPartOfOther(const at::Tensor& tensor) {
+    const auto& strides = tensor.strides();
+    std::vector<int64_t> contiguousStrides(tensor.sizes().size());
+    int64_t stride = 1;
+    for (int i = contiguousStrides.size() - 1; i >= 0; --i) {
+        contiguousStrides[i] = stride;
+        stride *= tensor.sizes()[i];
+        if (strides[i] > contiguousStrides[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     auto self_size = self.sizes();
     auto self_stride = self.strides();
     auto src_size = src.sizes();
     auto src_stride = src.strides();
-
+    auto originShape = inferOriginShape(self.sizes(), self.strides());
     auto originSizeTensor = at_npu::native::empty_npu(originShape, self.options());
 
     at_npu::native::OpCommand cmd;
@@ -89,10 +102,8 @@ at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& src, at::IntArrayR
 void copy_d2d_last_method(at::Tensor& self, const at::Tensor& src, bool same_type, bool non_blocking) {
     // general copy method but Low performance
     RECORD_FUNCTION("contiguous_d_ViewCopy", std::vector<c10::IValue>({src}));
-    auto originShape = inferOriginShape(self.sizes(), self.strides());
-    if (originShape != self.sizes()) {
-        npu_view_copy(self, src, originShape, non_blocking);
-
+    if (isPartOfOther(self)) {
+        npu_view_copy(self, src, non_blocking);
         // custom_ops::npu_view_copy(self, src, non_blocking);
     } else {
         custom_ops::npu_view_copy(self, src, non_blocking);
