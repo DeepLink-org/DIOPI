@@ -3,7 +3,7 @@ set -e
 
 CURRENT_DIR=$(dirname $0)
 
-DIOPI_TEST_DIR=$(readlink -f $CURRENT_DIR/../)
+DIOPI_TEST_DIR=$(readlink -e $CURRENT_DIR/../)
 
 case $1 in
   py-lint)
