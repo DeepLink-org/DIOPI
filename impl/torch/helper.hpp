@@ -68,7 +68,7 @@ inline void sync(diopiContextHandle_t ctx) {
 
 caffe2::TypeMeta getATenType(diopiDtype_t dt);
 
-diopiDtype_t getDIOPITensorType(at::Tensor& input);
+diopiDtype_t getDIOPITensorType(const at::Tensor& input);
 
 inline diopiDevice_t getDIOPIDevice(c10::DeviceType device) {
     if (device == c10::DeviceType::CPU) {
@@ -84,8 +84,7 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     return c10::DeviceType::CUDA;
 }
 
-template <typename T>
-at::Tensor buildATen(T tensor);
+at::Tensor buildATen(diopiConstTensorHandle_t tensor);
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 

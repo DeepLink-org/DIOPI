@@ -488,8 +488,8 @@ jobs:
           set -e
           cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          echo "no partitions, just execute the script directly on the machine"
-
+          source /mnt/cache/share/deeplinkci/env.sh
+          cd impl && bash scripts/build_impl.sh kunlunxin
 
   Op-Test-Kunlunxin:
     name: Op-Test-Kunlunxin
@@ -502,5 +502,8 @@ jobs:
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}
           echo "data is /mnt/cache/share/deeplinkci/data/"
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          echo "test and clean, you can refer to the Topsrider"
+          cd ${BUILD_TEST1}
+          cd diopi_test/python && mkdir -p cache/diopi
+          ln -sf /mnt/cache/share/deeplinkci/data/inputs ./cache/diopi && ln -sf /mnt/cache/share/deeplinkci/data/outputs ./cache/diopi && ln -sf /mnt/cache/share/deeplinkci/data/diopi_case_items.cfg ./cache/diopi
+          python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/kunlunxin/
+          python main.py --mode run_test
