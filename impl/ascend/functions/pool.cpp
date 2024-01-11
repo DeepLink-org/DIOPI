@@ -5,7 +5,6 @@
  */
 
 #include "../common/acloprunner.hpp"
-#include <iostream>
 namespace impl {
 namespace ascend {
 
