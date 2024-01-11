@@ -1792,7 +1792,7 @@ diopi_configs = {
     # FIXME sub输入int8、uint8结果不一致
     # 'pointwise_binary_diff_dtype_without_bool_inplace': dict(
     #     name=['sub'],
-        # priority='P1',
+    #     priority='P1',
     #     interface=['torch'],
     #     is_inplace=True,
     #     tensor_para=dict(
@@ -2751,7 +2751,7 @@ diopi_configs = {
     # FIXME clamp broadcast报错
     # 'clamp_tensor_broadcast': dict(
     #     name=['clamp'],
-        # priority='P1',
+    #     priority='P1',
     #     interface=['torch'],
     #     atol=1e-4,
     #     rtol=1e-5,
@@ -2849,7 +2849,7 @@ diopi_configs = {
     # FIXME clamp_max broadcast报错
     # 'clamp_max_broadcast': dict(
     #     name=['clamp_max'],
-        # priority='P1',
+    #     priority='P1',
     #     interface=['torch'],
     #     atol=1e-4,
     #     rtol=1e-5,
@@ -2876,7 +2876,7 @@ diopi_configs = {
     # FIXME clamp_max输入不同dtype结果不一致
     # 'clamp_max_tensor_diff_dtype': dict(
     #     name=['clamp_max'],
-        # priority='P1',
+    #     priority='P1',
     #     interface=['torch'],
     #     is_inplace=True,
     #     atol=1e-4,
@@ -2933,7 +2933,7 @@ diopi_configs = {
     # FIXME clamp_min broadcast报错
     # 'clamp_min_broadcast': dict(
     #     name=['clamp_min'],
-        # priority='P1',
+    #     priority='P1',
     #     interface=['torch'],
     #     atol=1e-4,
     #     rtol=1e-5,
@@ -2960,7 +2960,7 @@ diopi_configs = {
     # FIXME clamp_min输入不同dtype结果不一致
     # 'clamp_min_tensor_diff_dtype': dict(
     #     name=['clamp_min'],
-        # priority='P1',
+    #     priority='P1',
     #     interface=['torch'],
     #     is_inplace=True,
     #     atol=1e-4,
@@ -4366,7 +4366,7 @@ diopi_configs = {
     # FIXME where输入不同dtype，计算结果不一致
     # 'where_diff_dtype': dict(
     #     name=['where'],
-        # priority='P1',
+    #     priority='P1',
     #     interface=['torch'],
     #     tensor_para=dict(
     #         args=[
@@ -5526,7 +5526,7 @@ diopi_configs = {
     # FIXME smooth_l1_loss input输入int报错
     # 'smooth_l1_loss_int': dict(
     #     name=["smooth_l1_loss"],
-        # priority='P2',
+    #     priority='P2',
     #     para=dict(
     #         reduction=['mean', 'none', 'sum'],
     #         beta=[0.5, 0.1, 0.1]

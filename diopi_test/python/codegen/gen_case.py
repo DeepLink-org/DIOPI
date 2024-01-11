@@ -58,7 +58,8 @@ class GenConfigTestCase(object):
 
     def gen_test_cases(self, fname="all_ops"):
         for tk, tv in self.__function_set.items():
-            gc = GenTestCase(self._module, tk, tv, module_path=self._tests_path)
+            gc = GenTestCase(self._module, tk, tv,
+                             module_path=self._tests_path)
             gc.gen_test_module(fname)
             self.db_case_items.extend(gc.db_case_items)
 
@@ -114,7 +115,8 @@ class GenTestCase(object):
             output_data_path = ck
 
             # get tol
-            test_compare_tol = dict(atol=cv["atol"], rtol=cv["rtol"], mismatch_ratio_threshold=cv["mismatch_ratio_threshold"])
+            test_compare_tol = dict(
+                atol=cv["atol"], rtol=cv["rtol"], mismatch_ratio_threshold=cv["mismatch_ratio_threshold"])
             for tensor in cv["tensor_para"]["args"]:
                 if tensor["dtype"] in [
                     np.int16,
@@ -166,7 +168,8 @@ class GenTestCase(object):
                         nhwc_min_dim=glob_vars.nhwc_min_dim,
                     )
                 )
-                test_diopi_nhwc_import = CaseTemplate.test_diopi_nhwc_import.substitute(env={})
+                test_diopi_nhwc_import = CaseTemplate.test_diopi_nhwc_import.substitute(env={
+                })
             test_set_stride = ""
             has_stride = {
                 i["ins"] + "stride": i[i["ins"] + "stride"]
@@ -206,7 +209,8 @@ class GenTestCase(object):
             )
 
             # compare_input
-            ignore_paras_for_input_check = ops_with_states.get(self._func_name, set())
+            ignore_paras_for_input_check = ops_with_states.get(
+                self._func_name, set())
 
             forward = CaseTemplate.test_function_body_forward.substitute(
                 env=dict(
@@ -266,7 +270,8 @@ class GenTestCase(object):
                 item["inplace_flag"] = 1
                 if requires_grad is True:
                     test_diopi_func_inp_remove_grad_args = (
-                        CaseTemplate.test_diopi_func_inp_remove_grad_args.substitute({})
+                        CaseTemplate.test_diopi_func_inp_remove_grad_args.substitute({
+                        })
                     )
                 else:
                     test_diopi_func_inp_remove_grad_args = ""
@@ -297,8 +302,8 @@ class GenTestCase(object):
             priority = self._gen_test_priority(self._suite_name, cv)
             item['priority'] = priority
             test_priority_mark = CaseTemplate.test_function_case_marks.substitute(
-                        env=dict(mark=priority)
-                    ).strip()
+                env=dict(mark=priority)
+            ).strip()
 
             test_function_templ = CaseTemplate.test_function_templ.substitute(
                 env=dict(
