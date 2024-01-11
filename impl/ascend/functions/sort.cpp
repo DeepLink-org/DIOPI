@@ -12,7 +12,7 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t dim,
-                       bool descending, const bool *stable) {
+                       bool descending, const bool* pStable) {
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
 
@@ -39,7 +39,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
             .addInput(inputT)
             .setAttr("axis", lastdim)
             .setAttr("descending", descending)
-            .setAttr("stable", *stable)
+            .setAttr("stable", nullptr == pStable ? false : *pStable)
             .addOutput(valuesT)
             .addOutput(indicesT)
             .run();
@@ -52,7 +52,7 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
             .addInput(input)
             .setAttr("axis", dim)
             .setAttr("descending", descending)
-            .setAttr("stable", *stable)
+            .setAttr("stable", nullptr == pStable ? false : *pStable)
             .addOutput(values)
             .addOutput(indices)
             .run();

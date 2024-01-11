@@ -47,13 +47,20 @@ class ${test_class_name}(object):
         r"""
 from conformance.diopi_functions import ${test_diopi_func_name}
 ${test_import_diopi_bp_func}
+${test_diopi_nhwc_import}
 """
     )
 
     # import
     test_diopi_manual_import = CodeTemplate(
         r"""
-from conformance.diopi_manual_functions import ManualTest
+from conformance.diopi_manual_test import ManualTest
+"""
+    )
+
+    test_diopi_nhwc_import = CodeTemplate(
+        r"""
+from conformance.diopi_runtime import set_nhwc
 """
     )
 
@@ -93,7 +100,7 @@ np_inputs_orign = deepcopy(function_kwargs)
 
 ${preprocess_parameters}
 
-# output of device: dev_out
+# output of device: dev_foward_out
 ${test_function_forward_call}
 """
     )
@@ -115,72 +122,12 @@ for para_key, para_val in function_kwargs.items():
 
     test_set_nhwc = CodeTemplate(
         r"""
-# set nhwc
-def compute_nhwc_stride_2d(sizes, itemsize=1):
-    dim = len(sizes)
-    strides = [itemsize for i in range(dim)]
-    assert dim == 3 or dim == 4, "not supported dim"
-    if dim == 3:
-        strides[0] = itemsize
-        strides[2] = strides[0] * sizes[0]
-        strides[1] = strides[2] * sizes[2]
-    elif dim == 4:
-        strides[1] = itemsize
-        strides[3] = strides[0] * sizes[1]
-        strides[2] = strides[3] * sizes[3]
-        strides[0] = strides[2] * sizes[2]
-    return strides
-
-def compute_nhwc_stride_3d(sizes, itemsize=1):
-    dim = len(sizes)
-    strides = [itemsize for i in range(dim)]
-    assert dim == 4 or dim == 5, "not supported dim"
-    if dim == 4:
-        strides[0] = itemsize
-        strides[3] = strides[0] * sizes[0]
-        strides[2] = strides[3] * sizes[3]
-        strides[1] = strides[2] * sizes[2]
-    elif dim == 5:
-        strides[1] = itemsize
-        strides[4] = strides[0] * sizes[1]
-        strides[3] = strides[4] * sizes[4]
-        strides[2] = strides[3] * sizes[3]
-        strides[0] = strides[2] * sizes[2]
-    return strides
-
-def compute_nhwc_stride(size, itemsize=1, name=None):
-    if name == '2d':
-        return compute_nhwc_stride_2d(size, itemsize)
-    if name == '3d':
-        return compute_nhwc_stride_3d(size, itemsize)
-
-    dim = len(size)
-    if dim < 5:
-        return compute_nhwc_stride_2d(size, itemsize)
-    else:
-        return compute_nhwc_stride_3d(size, itemsize)
-
 for para_key, para_val in function_kwargs.items():
     if isinstance(para_val, np.ndarray) and para_key in ${nhwc_list}:
-        ndim = para_val.ndim
-        if ndim < ${nhwc_min_dim} or ndim > 5:
+        if para_val.ndim < ${nhwc_min_dim} or para_val.ndim > 5:
             default_context.clear_tensors()
-            pytest.xfail(f"Skipped: {ndim}-dim Tensor skipped for nhwc test")
-        para_val_nchw = para_val
-        ndim = para_val_nchw.ndim
-        if ndim == 3:
-            axis = (1, 2, 0)
-        elif ndim == 4 and '3d' in ${nhwc_list}:
-            axis = (1, 2, 3, 0)
-        elif ndim == 4:
-            axis = (0, 2, 3, 1)
-        elif ndim == 5:
-            axis = (0, 2, 3, 4, 1)
-        para_val_nhwc = np.transpose(para_val_nchw, axis).copy()
-        para_val_nhwc.shape = para_val_nchw.shape
-        para_val_nhwc.strides = compute_nhwc_stride(para_val_nchw.shape, para_val_nchw.itemsize, ${nhwc_list}[0])
-        para_val = para_val_nhwc
-        function_kwargs[para_key] = para_val
+            pytest.xfail(f"Skipped: {para_val.ndim}-dim Tensor skipped for nhwc test")
+        function_kwargs[para_key] = set_nhwc(para_val, ${nhwc_list}[0])
 """
     )
 
@@ -235,19 +182,20 @@ tol = ${test_compare_tol}
 sum_to_compare = True if 'sorted' in function_kwargs and ~function_kwargs['sorted'] else False
 tol['sum_to_compare'] = sum_to_compare
 try:
-    dev_out = ${test_diopi_func_name}(**function_kwargs)
+    dev_foward_out = ${test_diopi_func_name}(**function_kwargs)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
 
-# read ref_out
+# read ref_foward_out
 with open(f_out, 'rb') as f:
-    ref_out = pickle.load(f)
+    ref_foward_out = pickle.load(f)
 
 try:
-    CheckResult.compare_input(function_kwargs, np_inputs_orign, ignore_paras_for_input_check)
-    CheckResult.compare_output(dev_out, ref_out, **tol)
+    CheckResult.compare_input_dict(function_kwargs, np_inputs_orign, ignore_paras_for_input_check, **tol)
+    CheckResult.compare_output(dev_foward_out, ref_foward_out, **tol)
 except Exception as e:
+    default_context.clear_tensors()
     assert False, f'Test {function_config["name"]}: {function_config} traceback: {e}'
 """
     )
@@ -257,16 +205,17 @@ except Exception as e:
 # inplace call for the function
 ${test_diopi_func_inp_remove_grad_args}
 try:
-    dev_inp_out = ${test_diopi_func_name}(inplace=True, **function_kwargs)
+    dev_inp_forward_out = ${test_diopi_func_name}(inplace=True, **function_kwargs)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
 
 try:
     ignore_paras_for_input_check.add('input')
-    CheckResult.compare_input(function_kwargs, np_inputs_orign, ignore_paras_for_input_check)
-    CheckResult.compare_output(dev_inp_out, ref_out, **tol)
+    CheckResult.compare_input_dict(function_kwargs, np_inputs_orign, ignore_paras_for_input_check, **tol)
+    CheckResult.compare_output(dev_inp_forward_out, ref_foward_out, **tol)
 except Exception as e:
+    default_context.clear_tensors()
     assert False, f'Test {function_config["name"]}  inplace: {function_config} traceback: {e}'
 """
     )
@@ -280,6 +229,7 @@ function_kwargs = {key: value for key, value in function_kwargs.items() if key n
         r"""
 try:
     ManualTest.test_${test_diopi_func_name}(**function_kwargs)
+    CheckResult.compare_input_dict(function_kwargs, np_inputs_orign, ignore_paras_for_input_check)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
@@ -303,17 +253,19 @@ except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
 # grad_output_path
 f_bp_out = os.path.join(data_path, '${test_module_name}', 'outputs', '${bp_output_data_path}')
 
-if not isinstance(dev_out, (list, tuple)):
-    dev_out = [dev_out]
+if not isinstance(dev_foward_out, (list, tuple)):
+    dev_foward_out = [dev_foward_out]
 requires_backward = function_config['requires_backward']
-outputs_for_backward = dev_out if len(requires_backward) == 0 \
-    else [dev_out[i] for i in requires_backward]
+outputs_for_backward = dev_foward_out if len(requires_backward) == 0 \
+    else [dev_foward_out[i] for i in requires_backward]
 backward_para = {}
 grad_outputs = [ones_like(i) for i in outputs_for_backward]
 backward_para["grad_outputs"] = grad_outputs
 for k, v in function_config['saved_args'].items():
-    backward_para[k] = dev_out[v]
+    backward_para[k] = dev_foward_out[v]
 
+backward_para_compare = [item for value in backward_para.values() for item in (value if isinstance(value, list) else [value])]
+backward_para_origin = deepcopy([item.numpy() for item in backward_para_compare])
 try:
     dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs, **backward_para)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
@@ -325,9 +277,11 @@ with open(f_bp_out, 'rb') as f:
 
 # checkout
 try:
-    CheckResult.compare_input(function_kwargs, np_inputs_orign, ignore_paras_for_input_check)
+    CheckResult.compare_input_dict(function_kwargs, np_inputs_orign, ignore_paras_for_input_check, **tol)
+    CheckResult.compare_input_list(backward_para_compare, backward_para_origin, **tol)
     CheckResult.compare_output(dev_bp_out, ref_bp_out, **tol)
 except Exception as e:
+    default_context.clear_tensors()
     assert False, f'Test {function_config["name"]} backward: {function_config} traceback: {e}'
 """
     )

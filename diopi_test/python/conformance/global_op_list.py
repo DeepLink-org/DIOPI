@@ -71,5 +71,9 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "context_attention": {"out"},
                    "destindex_copy_kv": {"out"},
                    "token_attention": {"out"},
-                   "token_softmax_reducev": {"out"}
+                   "token_softmax_reducev": {"out"},
+                   "random": {"input"},
+                   "uniform": {"input"},
+                   "normal_": {"input"},
+                   "bernoulli": {"input"},  # compared in manual_test
                    }

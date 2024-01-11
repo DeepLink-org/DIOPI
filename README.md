@@ -78,7 +78,7 @@ DIOPI主要包含以下几个组件：
     python main.py --mode gen_case  # 生成pytest测例
     python main.py --mode run_test  # 执行测试
     ```
-    如需指定模型，以resnet50为例：
+    如需指定模型，以resnet50为例（需要生成resnet50基准数据）：
     ```
     python main.py --mode gen_case --model_name resnet50
     python main.py --mode run_test --model_name resnet50

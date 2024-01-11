@@ -10,6 +10,11 @@
 namespace OP_IMPL_NS {
 
 diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numTensors, int64_t dim) {
+    at::Tensor tensor0 = impl::aten::buildATen(tensors[0]);
+    if (tensor0.numel() == 0) {
+        return diopiSuccess;
+    }
+
     BEGIN_CALL_ACL_OP(out);
     std::vector<at::Tensor> tensorsVec(numTensors);
     for (size_t i = 0; i < numTensors; i++) {

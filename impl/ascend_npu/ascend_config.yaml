@@ -17,8 +17,6 @@ ascend:
 - diopiBitwiseAnd
 - diopiBitwiseNot
 - diopiBmm
-- diopiCastDtype
-- diopiCat
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
@@ -32,7 +30,6 @@ ascend:
 - diopiClampMinScalar
 - diopiClampScalar
 - diopiContiguous
-- diopiCopyInp
 - diopiCos
 - diopiCosInp
 - diopiCrossEntropyLoss
@@ -202,8 +199,10 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
-- diopiApplyPenalty
 ascend_npu:
+- diopiCastDtype
+- diopiCopyInp
+- diopiCat
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
@@ -215,3 +214,20 @@ ascend_npu:
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiCol2Im
+- diopiIndexPut
+- diopiIndexPutInp
+- diopiIndex
+- diopiIndexBackward
+- diopiDestIndexCopyKV
+- diopiTokenAttentionInference
+- diopiTokenSoftmaxReduceVInference
+- diopiApplyPenalty
+- diopiContextAttentionInference
+- diopiNativeMemoryFormatCast
+- diopiGetNativeMemoryFormat
+- diopiTensorDestructionHook
+- diopiHardswish
+- diopiHardswishInp
+- diopiHardswishBackward
+- diopiAtan
+- diopiAtanInp

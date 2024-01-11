@@ -1,7 +1,6 @@
 #ifndef IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 #define IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 
-#include <diopi/diopirt.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -24,6 +23,7 @@
 #include "debug.hpp"
 #include "gil_scoped_release.hpp"
 #include "impl_functions.hpp"
+#include "stream_lock.hpp"
 #include "utils.hpp"
 
 namespace impl {
@@ -390,12 +390,8 @@ public:
         auto& buffer = inputBuffers_[inputIndex_];
 
         std::vector<int64_t> dims = at.getAclMemShape();
-        std::vector<int64_t> storageDims = at.storageDims();
-        aclFormat baseFormat = FormatHelper::getAclBaseFormat(format);
-        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), baseFormat);
+        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), format);
         ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
-        aclSetTensorFormat(desc, format);
-        aclSetTensorShape(desc, storageDims.size(), storageDims.data());
         buffer = aclCreateDataBuffer(const_cast<void*>(at.data()), at.getAclMemBufferSize());
         inputIndex_++;
         return *this;
@@ -511,12 +507,9 @@ public:
         auto& buffer = outputBuffers_[outputIndex_];
 
         std::vector<int64_t> dims = at.getAclMemShape();
-        const std::vector<int64_t>& storageDims = at.storageDims();
-        aclFormat baseFormat = FormatHelper::getAclBaseFormat(format);
-        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), baseFormat);
+        desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), format);
         ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
-        aclSetTensorFormat(desc, format);
-        aclSetTensorShape(desc, storageDims.size(), storageDims.data());
+        // change const void* to void*
         buffer = aclCreateDataBuffer(const_cast<void*>(at.data()), at.getAclMemBufferSize());
         outputIndex_++;
         return *this;
@@ -630,6 +623,7 @@ public:
         diopiGetStream(context_, &stream);
         diopi::GilScopedRelease gilReleaeGuard;
         if (sync_) {
+            diopi::StreamLockGuard streamLockGuard(stream);
             CALL_ACLRT(aclopCompileAndExecuteV2(opname_.data(),
                                                 inputIndex_,
                                                 inputDescs_.data(),
@@ -643,6 +637,7 @@ public:
                                                 nullptr,
                                                 stream));
         } else {
+            diopi::StreamLockGuard streamLockGuard(stream);
             CALL_ACLRT(aclopCompileAndExecute(opname_.data(),
                                               inputIndex_,
                                               inputDescs_.data(),

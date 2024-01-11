@@ -432,9 +432,9 @@ DIOPI_API diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 DIOPI_API diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t dim,
-                                 bool descending, const bool *stable) {
+                                 bool descending, const bool *pStable) {
     TOPSOP_LOG();
-    return impl::tops::topsSort(ctx, values, indices, input, dim, descending, stable);
+    return impl::tops::topsSort(ctx, values, indices, input, dim, descending, pStable);
 }
 
 DIOPI_API diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,

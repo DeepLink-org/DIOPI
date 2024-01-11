@@ -3,10 +3,10 @@
 #include <ATen/EmptyTensor.h>
 #include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
-#include <diopi/diopirt.h>
 #include <torch/library.h>
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
+#include "../../../ascend/common/stream_lock.hpp"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
@@ -68,17 +68,84 @@ static std::map<const string, const aclDataType> STRING_SCALAR_TYPE_TO_ACL_TYPE_
 
 aclError AclrtMemcpyAsyncParamCheck(void* dst, size_t destMax, const void* src, size_t count, aclrtMemcpyKind kind, aclrtStream stream) {
     auto ret = aclrtMemcpyAsync(dst, destMax, src, count, kind, stream);
+    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     return ret;
 }
 
 aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_t count, aclrtMemcpyKind kind) {
+    c10_npu::getCurrentNPUStream().synchronize();
     auto ret = aclrtMemcpy(dst, destMax, src, count, kind);
+    c10_npu::getCurrentNPUStream().synchronize();
     return ret;
 }
+
 }  // namespace
 
 namespace at_npu {
 namespace native {
+
+bool FormatCastHelper::IsSameGroupType(const at::Tensor& src, const at::Tensor& dst) {
+    auto src_format = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_.npu_format_;
+    auto dst_format = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.npu_format_;
+    return FormatHelper::GetBaseFormat(src_format) == FormatHelper::GetBaseFormat(dst_format);
+}
+
+void FormatCastHelper::base_format_cast_nocheck(at::Tensor& dst, const at::Tensor& src) {
+    dst.set_(dst.storage(), src.storage_offset(), src.sizes(), src.strides());
+    NPUNativeFunctions::copy_memory_(dst, src, true);
+}
+
+void FormatCastHelper::format_cast_as_base_format(const at::Tensor& src, aclFormat format) {
+    AT_ASSERT(FormatHelper::IsBaseFormatType(format), "dst format must be base format");
+    AT_ASSERT(FormatHelper::IsBaseFormatType(src), "src format must be base format");
+
+    auto& src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
+    // due to CANN principle : if the ori format of a tensor is the
+    // same as the npu format, then its base shape must be same as storage shape
+    // so we should not change the storage shape when format cast between base format
+    src_desc.origin_format_ = format;
+    src_desc.npu_format_ = format;
+    return;
+}
+
+bool FormatCastHelper::format_cast_between_group(at::Tensor& dst, const at::Tensor& src, FormatCastHelper::FormatCastFunc format_cast_inside_group) {
+    if (FormatHelper::IsBaseFormatType(src)) {
+        if (FormatHelper::IsBaseFormatType(dst)) {
+            // src base format (src format) -> dst base format
+            base_format_cast_nocheck(dst, src);  // only need to copy memory
+            return true;
+        } else {
+            // src base format (src format) -> dst base format
+            // dst base format -> dst format
+            auto src_base_format = FormatHelper::GetBaseFormat(src);
+            format_cast_as_base_format(src, FormatHelper::GetBaseFormat(dst));  // prepare: covert src to dst base format
+            format_cast_inside_group(dst, src);                                 // src base format (src format) -> dst base format
+            format_cast_as_base_format(src, src_base_format);                   // recover: dst base format -> dst format
+            return true;
+        }
+    } else {
+        if (FormatHelper::IsBaseFormatType(dst)) {
+            // src format -> src base format
+            // src base format -> dst base format (dst format)
+            auto dst_base_format = FormatHelper::GetBaseFormat(dst);
+            format_cast_as_base_format(dst, FormatHelper::GetBaseFormat(src));  // prepare: cover dst to src base format
+            format_cast_inside_group(dst, src);                                 // src format -> src base format
+            format_cast_as_base_format(dst, dst_base_format);                   // recover: src base format -> dst format
+            return true;
+        }
+    }
+    return false;
+}
+
+at::Tensor FormatCastHelper::ApplyBaseFormatTensorBy(const at::Tensor& src) {
+    auto format = FormatHelper::GetBaseFormat(src);
+    return custom_ops::npu_format_cast(src, format);
+}
+
+at::Tensor& FormatCastHelper::CovertSelfToBaseFormat(at::Tensor& src) {
+    auto format = FormatHelper::GetBaseFormat(src);
+    return custom_ops::npu_format_cast_(src, format);
+}
 
 UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap) {
     UnifiedResult unified_result;
@@ -189,6 +256,49 @@ void NpuUtils::RefreshFormat(const at::Tensor& tensor) {
         tensor_desc.npu_format_ = ACL_FORMAT_ND;
         tensor_desc.origin_format_ = ACL_FORMAT_ND;
     }
+}
+
+const std::string AclDateTypeToString(aclDataType descDType) {
+    static const std::map<const aclDataType, const std::string> ACL_TYPE_TO_STRING_TYPE_MAP = {{ACL_DT_UNDEFINED, "ACL_DT_UNDEFINED"},
+                                                                                               {ACL_FLOAT, "ACL_FLOAT"},
+                                                                                               {ACL_FLOAT16, "ACL_FLOAT16"},
+                                                                                               {ACL_INT8, "ACL_INT8"},
+                                                                                               {ACL_INT32, "ACL_INT32"},
+                                                                                               {ACL_UINT8, "ACL_UINT8"},
+                                                                                               {ACL_INT16, "ACL_INT16"},
+                                                                                               {ACL_UINT16, "ACL_UINT16"},
+                                                                                               {ACL_UINT32, "ACL_UINT32"},
+                                                                                               {ACL_INT64, "ACL_INT64"},
+                                                                                               {ACL_UINT64, "ACL_UINT64"},
+                                                                                               {ACL_DOUBLE, "ACL_DOUBLE"},
+                                                                                               {ACL_BOOL, "ACL_BOOL"},
+                                                                                               {ACL_STRING, "ACL_STRING"},
+                                                                                               {ACL_COMPLEX32, "ACL_COMPLEX32"},
+                                                                                               {ACL_COMPLEX64, "ACL_COMPLEX64"},
+                                                                                               {ACL_COMPLEX128, "ACL_COMPLEX128"},
+                                                                                               {ACL_BF16, "ACL_BF16"}};
+
+    const auto iter = ACL_TYPE_TO_STRING_TYPE_MAP.find(descDType);
+    return iter != ACL_TYPE_TO_STRING_TYPE_MAP.end() ? iter->second : "DescDType not exists, descDType:" + std::to_string(descDType);
+}
+
+const std::string AclFormatToString(aclFormat descFormat) {
+    static const std::map<const aclFormat, const std::string> ACL_FORMAT_TO_STRING_TYPE_MAP = {{ACL_FORMAT_UNDEFINED, "ACL_FORMAT_UNDEFINED"},
+                                                                                               {ACL_FORMAT_NCHW, "ACL_FORMAT_NCHW"},
+                                                                                               {ACL_FORMAT_NHWC, "ACL_FORMAT_NHWC"},
+                                                                                               {ACL_FORMAT_ND, "ACL_FORMAT_ND"},
+                                                                                               {ACL_FORMAT_NC1HWC0, "ACL_FORMAT_NC1HWC0"},
+                                                                                               {ACL_FORMAT_FRACTAL_Z, "ACL_FORMAT_FRACTAL_Z"},
+                                                                                               {ACL_FORMAT_NC1HWC0_C04, "ACL_FORMAT_NC1HWC0_C04"},
+                                                                                               {ACL_FORMAT_HWCN, "ACL_FORMAT_HWCN"},
+                                                                                               {ACL_FORMAT_NDHWC, "ACL_FORMAT_NDHWC"},
+                                                                                               {ACL_FORMAT_FRACTAL_NZ, "ACL_FORMAT_FRACTAL_NZ"},
+                                                                                               {ACL_FORMAT_NCDHW, "ACL_FORMAT_NCDHW"},
+                                                                                               {ACL_FORMAT_NDC1HWC0, "ACL_FORMAT_NDC1HWC0"},
+                                                                                               {ACL_FRACTAL_Z_3D, "ACL_FRACTAL_Z_3D"}};
+
+    const auto iter = ACL_FORMAT_TO_STRING_TYPE_MAP.find(descFormat);
+    return iter != ACL_FORMAT_TO_STRING_TYPE_MAP.end() ? iter->second : "DescFormat not exists, descFormat:" + std::to_string(descFormat);
 }
 
 at::Tensor metadata_convert_match(const at::Tensor& src, bool numelEq) {
@@ -778,6 +888,7 @@ void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSi
     }
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), ACL_MEMCPY_DEVICE_TO_DEVICE, stream));
+    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
 }
 
 float CalcuOpUtil::GetScalarFloatValue(const c10::Scalar& scalar) {
@@ -915,7 +1026,7 @@ NPUStatus CalcuOpUtil::AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t>& ds
     void* src_ptr = reinterpret_cast<uint8_t*>(src.first.data_ptr()) + src.second * src.first.itemsize();
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst_ptr, dst_size, src_ptr, src_size, kind, stream));
-
+    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     return "SUCCESS";
 }
 
@@ -939,6 +1050,7 @@ aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(void* dst, size_t dstMax, const 
 aclError CalcuOpUtil::LaunchAsyncCopyTaskWithModeSwitch(const at::Tensor& dst, size_t dstMax, const at::Tensor& src, size_t count, aclrtMemcpyKind kind) {
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), kind, stream));
+    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
 }
 
 void ContiguousTensorDesc::refresh_contiguous_using_size_and_stride() {
@@ -988,8 +1100,7 @@ void ContiguousTensorDesc::find_match_optimization_cases() {
 }
 
 OptimizationCases TransContiguous::optCasesDefault = {};
-OptimizationCases TransContiguous::optCasesAnyFormat = {"reshape", "slice"};
-
+OptimizationCases TransContiguous::optCasesAnyFormat = {"permute"};
 ContiguousTensorDesc TransContiguous::GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases) {
     auto src_base_info = torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc();
     c10::SmallVector<int64_t, MAX_DIM> src_size_inferred;
@@ -1058,6 +1169,7 @@ bool TransContiguous::contiguous_optimize_with_anyformat_(at::Tensor& self, cons
     }
     for (auto& opt_case : src_desc.opt_cases_) {
         bool res = register_opt::CopyOptRegister::GetInstance()->Run(opt_case, self, src, src_desc);
+        NPU_LOGD("%s: %d", opt_case.c_str(), res);
         if (res) {
             return true;
         }
@@ -1092,8 +1204,36 @@ bool TransContiguous::ContiguousOptimizeWithBaseFormat(at::Tensor& self, const a
     if (OpenCombined) {
         src_desc.add_optimization_case("combined");
     }
+    // return contiguous_optimize_with_anyformat_(self, src, src_desc);
     return contiguous_optimize_with_anyformat_(self, src, src_desc);
 }
+
+namespace register_opt {
+
+void CopyOptRegister::Register(std::string& name, ::std::unique_ptr<ContiguousOpt>& ptr) {
+    NPU_LOGD(": %s", name.c_str());
+    std::lock_guard<std::mutex> lock(mu_);
+    registry.emplace(name, std::move(ptr));
+}
+
+bool CopyOptRegister::CanOptimize(std::string& name, const ContiguousTensorDesc& src_desc) {
+    auto itr = registry.find(name);
+    NPU_LOGD(": %s", name.c_str());
+    if (itr != registry.end()) {
+        return itr->second->CanOptimizer(src_desc);
+    }
+    return false;
+}
+
+bool CopyOptRegister::Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
+    auto itr = registry.find(name);
+    if (itr != registry.end()) {
+        return itr->second->Optimizer(self, src, src_desc);
+    }
+    return false;
+}
+
+}  // namespace register_opt
 
 // OpPreparation part
 
@@ -1173,6 +1313,22 @@ at::Tensor clone(const at::Tensor& src, c10::optional<at::MemoryFormat> memory_f
         copy_d2d_dtype_baseformat(baseSelf, baseSrc, false);
         return baseSelf;
     }
+}
+
+c10::SmallVector<int64_t, 5> OpPreparation::get_tensor_desc_base_sizes(const at::Tensor& tensor) {
+    return torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->get_npu_desc().base_sizes_;
+}
+
+at::Tensor OpPreparation::CastBackToOriFormat(const at::Tensor& tensor) {
+    auto& tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->npu_desc_;
+    auto ret = custom_ops::npu_format_cast(tensor, tensor_desc.origin_format_);
+    return ret;
+}
+
+at::Tensor& OpPreparation::CastBackToOriFormat(at::Tensor& tensor) {
+    auto& tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->npu_desc_;
+    NPUNativeFunctions::npu_format_cast_(tensor, tensor_desc.origin_format_);
+    return tensor;
 }
 
 at::Tensor OpPreparation::apply_tensor(const at::Tensor& src) { return apply_tensor(src, src.sizes()); }
@@ -1447,11 +1603,13 @@ int64_t StorageDescHelper::GetValidMemorySize(const at::Tensor& tensor) {
 void StorageDescHelper::SetDesc(at::Tensor& dst) { torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype()); }
 
 void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) {
-    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides);
+    diopiConstTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
+    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, tmp_tensor);
 }
 
 void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format) {
-    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, format);
+    diopiConstTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
+    torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, format, tmp_tensor);
 }
 
 void StorageDescHelper::CopyDesc(at::Tensor& dst, const at::Tensor& src) { CopyDesc(dst, src.storage()); }
@@ -1474,12 +1632,13 @@ void StorageDescHelper::ReflushDescBySelf(const at::Tensor& src) {
 
 torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype) { return SetDesc(dtype, {0}, {}); }
 
-torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) {
-    return SetDesc(dtype, size, strides, InferFormat::GuessBaseFormat(size));
+torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
+                                                     diopiConstTensorHandle_t tensor) {
+    return SetDesc(dtype, size, strides, InferFormat::GuessBaseFormat(size), tensor);
 }
 
 torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
-                                                     aclFormat format) {
+                                                     aclFormat format, diopiConstTensorHandle_t tensor) {
     struct torch_npu::NPUStorageDesc npu_desc;
     npu_desc.data_type_ = dtype;
     npu_desc.base_sizes_ = size;
@@ -1494,6 +1653,7 @@ torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dty
     npu_desc.storage_sizes_ = FormatHelper::GetStorageSizes(npuFormat, size);
     npu_desc.origin_format_ = baseFormat;
     npu_desc.npu_format_ = npuFormat;
+    npu_desc.diopi_tensor_ = tensor;
     return npu_desc;
 }
 
@@ -1572,6 +1732,7 @@ public:
             dims = storageDesc.base_sizes_;
         }
         auto format = storageDesc.origin_format_;
+
         desc = aclCreateTensorDesc(dataType, dims.size(), dims.data(), format);
         return *this;
     }
@@ -2011,6 +2172,57 @@ void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N>& sync_index, c10
     NPU_LOGD("Op %s run over.", opName.c_str());
 }
 
+void printErrorLog(ExecuteParas* cur_paras) {
+    ASCEND_LOGE("---OpName---%s", cur_paras->opType);
+    for (int i = 0; i < cur_paras->paras.input_num; i++) {
+        const aclTensorDesc* tensorDesc = cur_paras->paras.input_desc[i];
+        aclDataType dataType = aclGetTensorDescType(tensorDesc);
+        aclFormat descformat = aclGetTensorDescFormat(tensorDesc);
+
+        int descNumDims = static_cast<int>(aclGetTensorDescNumDims(tensorDesc));
+        std::string descShape = "[";
+        for (int j = 0; j < descNumDims; j++) {
+            int64_t dimSize = 0;
+            aclGetTensorDescDimV2(tensorDesc, j, &dimSize);
+            descShape = descShape + std::to_string(dimSize);
+            if (j < descNumDims - 1) {
+                descShape += ", ";
+            }
+        }
+        descShape += "]";
+
+        ASCEND_LOGE("InputDesc[%d]: DescType = %s, DescFormat = %s, DescShape = %s",
+                    i,
+                    (AclDateTypeToString(dataType)).c_str(),
+                    (AclFormatToString(descformat)).c_str(),
+                    descShape.c_str());
+    }
+
+    for (int i = 0; i < cur_paras->paras.output_num; i++) {
+        const aclTensorDesc* tensorDesc = cur_paras->paras.output_desc[i];
+        aclDataType dataType = aclGetTensorDescType(tensorDesc);
+        aclFormat descformat = aclGetTensorDescFormat(tensorDesc);
+
+        int descNumDims = static_cast<int>(aclGetTensorDescNumDims(tensorDesc));
+        std::string descShape = "[";
+        for (int j = 0; j < descNumDims; j++) {
+            int64_t dimSize = 0;
+            aclGetTensorDescDimV2(tensorDesc, j, &dimSize);
+            descShape = descShape + std::to_string(dimSize);
+            if (j < descNumDims - 1) {
+                descShape += ", ";
+            }
+        }
+        descShape += "]";
+
+        ASCEND_LOGE("OutputDesc[%d]: DescType = %s, DescFormat = %s, DescShape = %s",
+                    i,
+                    (AclDateTypeToString(dataType)).c_str(),
+                    (AclFormatToString(descformat)).c_str(),
+                    descShape.c_str());
+    }
+}
+
 aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool sync, c10::SmallVector<int64_t, N>& sync_index,
                                  c10::SmallVector<at::Tensor, N>& outputTensor) {
     aclError ret;
@@ -2059,20 +2271,21 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
           }
         }
 #endif
-        ret = AclopCompileAndExecuteV2(name.c_str(),
-                                       inputSize,
-                                       const_cast<aclTensorDesc**>(params.inDesc.data()),
-                                       const_cast<aclDataBuffer**>(params.inBuffer.data()),
-                                       outputSize,
-                                       const_cast<aclTensorDesc**>(params.outDesc.data()),
-                                       params.outBuffer.data(),
-                                       params.attr,
-                                       ACL_ENGINE_SYS,
-                                       ACL_COMPILE_SYS,
-                                       NULL,
-                                       stream);
-        NPU_CHECK_ERROR(ret);
+        diopi::StreamLockGuard streamLockGuard(stream.stream());
         if (sync) {
+            ret = AclopCompileAndExecuteV2(name.c_str(),
+                                           inputSize,
+                                           const_cast<aclTensorDesc**>(params.inDesc.data()),
+                                           const_cast<aclDataBuffer**>(params.inBuffer.data()),
+                                           outputSize,
+                                           const_cast<aclTensorDesc**>(params.outDesc.data()),
+                                           params.outBuffer.data(),
+                                           params.attr,
+                                           ACL_ENGINE_SYS,
+                                           ACL_COMPILE_SYS,
+                                           NULL,
+                                           stream);
+            NPU_CHECK_ERROR(ret);
             int64_t dimSize;
             for (size_t i = 0; i < sync_index.size(); i++) {
                 c10::SmallVector<int64_t, N> real_shape;
@@ -2082,11 +2295,46 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
                 }
                 outputTensor[sync_index[i]].resize_(real_shape);
             }
+        } else {
+            if (0) {
+                ret = aclopCompileAndExecute(name.c_str(),
+                                             inputSize,
+                                             params.inDesc.data(),
+                                             params.inBuffer.data(),
+                                             outputSize,
+                                             params.outDesc.data(),
+                                             params.outBuffer.data(),
+                                             params.attr,
+                                             ACL_ENGINE_SYS,
+                                             ACL_COMPILE_SYS,
+                                             NULL,
+                                             stream);
+            } else {
+                ret = AclopCompileAndExecuteV2(name.c_str(),
+                                               inputSize,
+                                               const_cast<aclTensorDesc**>(params.inDesc.data()),
+                                               const_cast<aclDataBuffer**>(params.inBuffer.data()),
+                                               outputSize,
+                                               const_cast<aclTensorDesc**>(params.outDesc.data()),
+                                               params.outBuffer.data(),
+                                               params.attr,
+                                               ACL_ENGINE_SYS,
+                                               ACL_COMPILE_SYS,
+                                               NULL,
+                                               stream);
+            }
+            NPU_CHECK_ERROR(ret);
         }
         ++index;
     } while (NpuUtils::IsOomError(ret, index) && (index < NPU_MAX_OP_EXEC_TRY_NUM));
     if (reset_flag) {
         AclSetCompileopt(aclCompileOpt::ACL_OP_JIT_COMPILE, "disable");
+    }
+
+    if (enableDumpArgs()) {
+        ExecuteParas exeParams;
+        ExportParams(exeParams);
+        printErrorLog(&exeParams);
     }
     return ret;
 }
@@ -2150,15 +2398,13 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertHostTensorToAclInput(const at::
 
 std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& tensor, const string& forceDataType) {
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
-    auto format = CalcuOpUtil::GetTensorNpuFormat(tensor);
+    const auto& npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
+    const auto& dims = tensor.sizes();
+    auto& storageDims = npuDesc.storage_sizes_;
     AclTensorDescMaker desc;
-    aclTensorDesc* aclDesc = nullptr;
-    if (tensor.sizes().size() > 0 && tensor.numel() == 0) {
-        aclDesc = desc.Create(aclDataType, tensor.sizes(), static_cast<aclFormat>(format)).Get();
-    } else {
-        aclDesc = desc.Create(aclDataType, ACL_FORMAT_ND).Get();
-    }
-    AclTensorBufferMaker aclBuffer(tensor, tensor.numel());
+    auto aclDesc = desc.Create(aclDataType, dims, npuDesc.origin_format_).SetFormat(npuDesc.npu_format_).SetShape(storageDims).Get();
+    auto numel = c10::multiply_integers(storageDims);
+    AclTensorBufferMaker aclBuffer(tensor, numel);
     auto aclBuff = aclBuffer.Get();
     return std::tie(aclDesc, aclBuff);
 }
@@ -2166,19 +2412,7 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& t
 // This class maintain the position of the current
 // OpCommandImpl object in vector, the resources in
 // the object is
-class OpCommandImpls {
-public:
-    TORCH_NPU_API static OpCommandImpls* GetInstanceByTid(std::thread::id tid);
-    TORCH_NPU_API void Push(OpCommandImpl*& ptr);
-    TORCH_NPU_API void Pop();
 
-private:
-    int32_t offset = -1;
-    c10::SmallVector<OpCommandImpl, N> objs;
-};  // class OpCommandImpls
-
-static std::unordered_map<std::thread::id, OpCommandImpls> opcommand_impls_map;
-static std::mutex map_mutex;
 static bool deterministicaclnn_oldstatus = false;
 
 void OpCommandImpl::SetDeterministic() {
@@ -2192,38 +2426,12 @@ void OpCommandImpl::SetDeterministic() {
     }
 }
 
-OpCommandImpls* OpCommandImpls::GetInstanceByTid(std::thread::id tid) {
-    if (opcommand_impls_map.find(tid) == opcommand_impls_map.end()) {
-        OpCommandImpls impl;
-        std::lock_guard<std::mutex> lock(map_mutex);
-        opcommand_impls_map[tid] = std::move(impl);
-    }
-    return &opcommand_impls_map[tid];
-}
-
-void OpCommandImpls::Push(OpCommandImpl*& ptr) {
-    ++offset;
-    if (static_cast<int32_t>(objs.size()) <= offset) {
-        OpCommandImpl impl;
-        objs.emplace_back(std::move(impl));
-    }
-    TORCH_CHECK(objs.size() > offset, "OpCommand size (", objs.size(), ") is smaller than offset (", offset, ")");
-    ptr = &objs[offset];
-}
-
-void OpCommandImpls::Pop() {
-    TORCH_CHECK(offset >= 0, "OpCommand current offset should not be less than ", offset);
-    offset -= 1;
-}
-
 OpCommand::OpCommand() {
-    aclCmds = OpCommandImpls::GetInstanceByTid(std::this_thread::get_id());
-
-    aclCmds->Push(aclCmd);
+    aclCmd = new OpCommandImpl();
     aclCmd->SetCustomHandler(nullptr);
 }
 
-OpCommand::~OpCommand() {}
+OpCommand::~OpCommand() { delete aclCmd; }
 
 OpCommand& OpCommand::Name(const string& name) {
     aclCmd->SetName(name);
@@ -2415,7 +2623,6 @@ void OpCommand::Run() {
         Sync();
     }
     aclCmd->releaseSource();
-    aclCmds->Pop();
 }
 
 OpCommand& OpCommand::Sync(c10::SmallVector<int64_t, N>& index) {
@@ -2532,7 +2739,10 @@ void NPUStream::synchronize() const {
 
 aclError queue::LaunchAsyncCopyTask(void* dst, size_t dstLen, void* src, size_t srcLen, aclrtMemcpyKind kind) {
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
-    return aclrtMemcpyAsync(dst, dstLen, src, srcLen, kind, stream);
+    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
+    auto ret = aclrtMemcpyAsync(dst, dstLen, src, srcLen, kind, stream);
+    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
+    return ret;
 }
 
 }  // namespace c10_npu
@@ -2639,13 +2849,9 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     at::IntArrayRef atStrides(stride.data, stride.len);
 
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
-    int64_t numel = 0;
-    diopiGetTensorNumel(tensor, &numel);
-    if (numel <= 0) {
-        return at::Tensor();
-    }
-
-    return fromPreAllocated(data, atDims, atStrides, options);
+    at::Tensor out = fromPreAllocated(data, atDims, atStrides, options);
+    torch_npu::NPUBridge::GetNpuStorageImpl(out)->npu_desc_.diopi_tensor_ = tensor;
+    return out;
 }
 
 at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
@@ -2672,7 +2878,7 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
-    TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
+    // TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
     std::vector<int64_t> stridesVec(sizes.size(), 1);
     if (strides.size() > 0) {
@@ -2689,6 +2895,19 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
     return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
 }
 
+c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices) {
+    c10::List<c10::optional<at::Tensor>> result;
+    for (c10::optional<at::Tensor> indexOpt : indices) {
+        if (!indexOpt.has_value()) {
+            result.emplace_back();
+        } else {
+            at::Tensor index = std::move(*indexOpt);
+            result.emplace_back(index.scalar_type() == at::kInt ? index.toType(at::kLong) : index);
+        }
+    }
+    return result;
+}
+
 void setCurCtx(diopiContextHandle_t ctx) {
     context = ctx;
     at_npu::native::markedOutputs.clear();
@@ -2701,6 +2920,8 @@ void unsetCurCtx() { context = nullptr; }
 }  // namespace impl
 
 namespace {
+
+at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
@@ -2781,19 +3002,65 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     return self;
 }
 
+at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return acl_op::cat(tensors, dim); }
+
+at::Tensor& wrapper__index_put_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate) {
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, false);
+}
+
+at::Tensor& wrapper___index_put_impl_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate,
+                                      bool unsafe) {
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, unsafe);
+}
+
+at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices) {
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::index(self, indicesCast);
+}
+
+at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return acl_op::bmm(self, mat2); }
+
+at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return acl_op::div(self, other); }
+
 at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
 
 at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return acl_op::mul(self, other); }
 
 at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
 
-at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return acl_op::cat(tensors, dim); }
+at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::sub(self, other, alpha); }
+
+at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return acl_op::index_select(self, dim, index); }
+
+at::Tensor wrapper___softmax(const at::Tensor& self, int64_t dim, bool half_to_float) { return acl_op::_softmax(self, dim, half_to_float); }
+
+at::Tensor wrapper_Scalar_eq(const at::Tensor& self, const at::Scalar& other) { return acl_op::eq(self, other); }
+
+at::Tensor& wrapper_Scalar_masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value) { return acl_op::masked_fill_(self, mask, value); }
+
+at::Tensor wrapper__repeat(const at::Tensor& self, at::IntArrayRef repeats) { return acl_op::repeat(self, repeats); }
+
+at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1) {
+    int64_t inputSize = self.dim();
+    if (dim0 < 0) dim0 = dim0 + inputSize;
+    if (dim1 < 0) dim1 = dim1 + inputSize;
+    std::vector<int64_t> perms(inputSize);
+    std::iota(perms.begin(), perms.end(), 0);
+    perms[dim0] = dim1;
+    perms[dim1] = dim0;
+    return acl_op::npu_transpose(self, perms);
+}
+
+at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
 
 }  // namespace
 
 namespace at {
 
 TORCH_LIBRARY_IMPL(aten, XLA, m) {
+    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill_));
     m.impl("copy_", TORCH_FN(wrapper__copy_));
     m.impl("reshape", TORCH_FN(wrapper__view));
     m.impl("view", TORCH_FN(wrapper__view));
@@ -2805,10 +3072,23 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("clone", TORCH_FN(wrapper__clone));
     m.impl("set_.source_Storage", TORCH_FN(wrapper_source_Storage_set_));
     m.impl("set_.source_Storage_storage_offset", TORCH_FN(wrapper_source_Storage_storage_offset_set_));
+    m.impl("cat", TORCH_FN(wrapper__cat));
+    m.impl("index_put_", TORCH_FN(wrapper__index_put_));
+    m.impl("_index_put_impl_", TORCH_FN(wrapper___index_put_impl_));
+    m.impl("index.Tensor", TORCH_FN(wrapper_Tensor_index));
+    m.impl("bmm", TORCH_FN(wrapper__bmm));
+    m.impl("div.Tensor", TORCH_FN(wrapper_Tensor_div));
     m.impl("mul.Tensor", TORCH_FN(wrapper_Tensor_mul));
     m.impl("mul.Scalar", TORCH_FN(wrapper_Scalar_mul));
     m.impl("add.Tensor", TORCH_FN(wrapper_Tensor_add));
-    m.impl("cat", TORCH_FN(wrapper__cat));
+    m.impl("sub.Tensor", TORCH_FN(wrapper_Tensor_sub));
+    m.impl("index_select", TORCH_FN(wrapper__index_select));
+    m.impl("_softmax", TORCH_FN(wrapper___softmax));
+    m.impl("eq.Scalar", TORCH_FN(wrapper_Scalar_eq));
+    m.impl("masked_fill_.Scalar", TORCH_FN(wrapper_Scalar_masked_fill_));
+    m.impl("repeat", TORCH_FN(wrapper__repeat));
+    m.impl("transpose.int", TORCH_FN(wrapper__transpose));
+    m.impl("_local_scalar_dense", TORCH_FN(wrapper___local_scalar_dense));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }

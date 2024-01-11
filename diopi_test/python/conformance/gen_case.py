@@ -37,6 +37,7 @@ def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder=""
     os.makedirs(case_output_dir)
 
     if impl_folder != "":
+        cfg_path = device_case_item_path % os.path.basename(impl_folder)
         sys.path.append(impl_folder)
 
         from device_configs import device_configs
