@@ -5,10 +5,8 @@ option(HIP "Whether to use HIP when available" OFF)
 
 find_package(Torch 2.0 REQUIRED)
 if (Torch_FOUND)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++14 -fPIC")
+    message(STATUS "TORCH_CXX_FLAGS: ${TORCH_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-    list(APPEND CUDA_NVCC_FLAGS "-D__CUDA_NO_HALF_OPERATORS__")
-    message(STATUS "CXX compile options: ${CMAKE_CXX_FLAGS}")
     add_definitions(-DTORCH_VERSION_MAJOR=${Torch_VERSION_MAJOR})
     add_definitions(-DTORCH_VERSION_MINOR=${Torch_VERSION_MINOR})
     add_definitions(-DTORCH_VERSION_PATCH=${Torch_VERSION_PATCH})
@@ -17,6 +15,10 @@ if (Torch_FOUND)
 else()
     message(FATAL_ERROR "Libtorch version 1.10 is required, no suitable version was found")
 endif()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+list(APPEND CUDA_NVCC_FLAGS "-D__CUDA_NO_HALF_OPERATORS__;-std=c++17")
+
 
 if (DYLOAD)
     # creat an empty file to pass wrap_func.cpp's existence check
