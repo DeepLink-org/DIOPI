@@ -2784,7 +2784,7 @@ diopi_configs = {
     # FIXME clamp输入不同dtype结果不一致
     # 'clamp_tensor_diff_dtype': dict(
     #     name=['clamp'],
-        # priority='P1',
+    #     priority='P1',
     #     interface=['torch'],
     #     is_inplace=True,
     #     atol=1e-4,
