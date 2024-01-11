@@ -57,17 +57,24 @@ std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef str
     return originSizes;
 }
 
-at::Tensor viewToSameDim(const at::Tensor& tensor, at::IntArrayRef destShape) {
+at::Tensor viewToSameDim(const at::Tensor& tensor, const at::IntArrayRef destShape) {
     const auto originShape = tensor.sizes();
-    std::vector<int64_t> shape(originShape.begin(), originShape.end());
     std::vector<int64_t> strides(destShape.size(), 0);
-    std::vector<int64_t> sameDims;
-    for (int i = destShape.size() - 1; i >= 0; i--) {
-        for (int j = originShape.size() - 1 - sameDims.size(); j >= 0; j--) {
-            if (destShape[i] == originShape[j]) {
-                sameDims.push_back(i);
-                strides[i] = tensor.strides()[j];
-                break;
+    if (originShape.size() < destShape.size()) {
+        std::vector<int64_t> sameDims;
+        for (int i = destShape.size() - 1; i >= 0; i--) {
+            for (int j = originShape.size() - 1 - sameDims.size(); j >= 0; j--) {
+                if (destShape[i] == originShape[j]) {
+                    sameDims.push_back(i);
+                    strides[i] = tensor.strides()[j];
+                    break;
+                }
+            }
+        }
+    } else if (originShape.size() == destShape.size()) {
+        for (size_t i = 0; i < destShape.size(); i++) {
+            if (destShape[i] == originShape[i]) {
+                strides[i] = tensor.stride(i);
             }
         }
     }
@@ -336,7 +343,7 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
                 // General trans-contiguous method
                 RECORD_FUNCTION("contiguous_d_AsStrided", std::vector<c10::IValue>({src}));
                 at::Tensor source = src;
-                if (self.sizes().size() > src.sizes().size()) {
+                if (self.sizes() != src.sizes()) {
                     source = viewToSameDim(source, self.sizes());
                 }
 
