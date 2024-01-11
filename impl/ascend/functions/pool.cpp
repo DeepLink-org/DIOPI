@@ -5,7 +5,7 @@
  */
 
 #include "../common/acloprunner.hpp"
-
+#include <iostream>
 namespace impl {
 namespace ascend {
 
@@ -37,12 +37,14 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
         diopiMulInp(ctx, gradInput, gradOutput);
         return diopiSuccess;
     }
-
+    std::vector<int32_t> shapeVector;
+    shapeVector.reserve(shape.len);
+    for (int i = 0; i < shape.len; ++i) {
+        shapeVector.push_back(static_cast<int>(shape.data[i]));
+    }
     AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx)
         .addInput(gradOutput)
-        .setAttr("orig_input_shape",
-                 std::vector<int32_t>{
-                     static_cast<int>(shape.data[0]), static_cast<int>(shape.data[1]), static_cast<int>(shape.data[2]), static_cast<int>(shape.data[3])})
+        .setAttr("orig_input_shape",shapeVector)
         .addOutput(gradInput)
         .run();
     return diopiSuccess;
