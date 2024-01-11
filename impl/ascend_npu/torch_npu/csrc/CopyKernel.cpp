@@ -102,16 +102,18 @@ at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& src, bool non_bloc
     auto self_stride = self.strides();
     auto src_size = src.sizes();
     auto src_stride = src.strides();
-    auto originShape = inferOriginShape(self.sizes(), self.strides());
-    auto originSizeTensor = at_npu::native::empty_npu(originShape, self.options());
+    auto originSelfShape = inferOriginShape(self.sizes(), self.strides());
+    auto originSizeTensor = at_npu::native::empty_npu(originSelfShape, self.options());
+
+    auto originSrcShape = inferOriginShape(src.sizes(), src.strides());
 
     at_npu::native::OpCommand cmd;
     cmd.Name("ViewCopy")
-        .InputWithoutContiguous(impl::aten::viewStorage(self, originShape))
+        .InputWithoutContiguous(impl::aten::viewStorage(self, originSelfShape))
         .Input(self_size, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
         .Input(self_stride, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
         .Input(at::Scalar(0), at::kLong)
-        .InputWithoutContiguous(src)
+        .InputWithoutContiguous(impl::aten::viewStorage(src, originSrcShape))
         .Input(src_size, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
         .Input(src_stride, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
         .Input(at::Scalar(0), at::kLong)
@@ -126,9 +128,8 @@ at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& src, bool non_bloc
 void copy_d2d_last_method(at::Tensor& self, const at::Tensor& src, bool same_type, bool non_blocking) {
     // general copy method but Low performance
     RECORD_FUNCTION("contiguous_d_ViewCopy", std::vector<c10::IValue>({src}));
-    if (isPartOfOther(self)) {
+    if (1 || isPartOfOther(self)) {
         npu_view_copy(self, src, non_blocking);
-        // custom_ops::npu_view_copy(self, src, non_blocking);
     } else {
         custom_ops::npu_view_copy(self, src, non_blocking);
     }
