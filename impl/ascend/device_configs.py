@@ -1356,7 +1356,6 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((6, 5, 384)), Skip((2, 4, 38, 45))],
                     "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
@@ -1374,7 +1373,6 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((192, 147)), Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
                     "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
