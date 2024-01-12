@@ -87,12 +87,12 @@ jobs:
           set -e
           ssh ${CLUSTER_CAMB} """
           mkdir -p ${DATA_DIR}/source/${GEN_DATA}
-          rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/ ${DATA_DIR}/source/${GEN_DATA}/
+          rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
           """
           ssh ${CLUSTER_ASCEND_910B} """
           mkdir -p ${DATA_DIR}/source/${GEN_DATA}
-          rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/ ${DATA_DIR}/source/${GEN_DATA}/
+          rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
           """
 #          ssh ${CLUSTER_SUPA} """
-#          rsync -a ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA} ${DATA_DIR}/source/
+#          rsync -a ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
 #          """
