@@ -46,6 +46,9 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
 namespace {
 
 std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef strides) {
+    if (sizes.size() <= 0) {
+        return std::vector<int64_t>();
+    }
     std::vector<int64_t> originSizes(sizes.size(), 1);
     originSizes[0] = sizes[0] * strides[0];
     for (size_t i = 1; i < sizes.size(); i++) {
