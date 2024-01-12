@@ -469,23 +469,23 @@ device_configs = {
         ),
     ),
 
-    'bmm': dict( # llm used
-        name=['bmm'],
-        atol=3e-2,
-        rtol=3e-2,
-    ),
+    # 'bmm': dict( # llm used
+    #     name=['bmm'],
+    #     atol=3e-2,
+    #     rtol=3e-2,
+    # ),
 
-    'matmul': dict(
-        name=['matmul'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((128, 49, 128)),Skip((5,)),Skip((128, 4, 49, 32)),Skip((2, 1, 3136, 3136)),Skip((2, 784, 64)),Skip((2, 16, 8, 64)),Skip((2, 31, 6, 40, 512)),],
-                },
-            ]
-        ),
-    ),
+    # 'matmul': dict(
+    #     name=['matmul'],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 "shape": [Skip((128, 49, 128)),Skip((5,)),Skip((128, 4, 49, 32)),Skip((2, 1, 3136, 3136)),Skip((2, 784, 64)),Skip((2, 16, 8, 64)),Skip((2, 31, 6, 40, 512)),],
+    #             },
+    #         ]
+    #     ),
+    # ),
 
     'reduce_op': dict( # llm used
         name=['sum'],
@@ -1171,61 +1171,36 @@ device_configs = {
 
     'index_put_acc_three_indices': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
     'index_put_acc_two_indices': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
     'index_put_acc_one_indices': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
     'index_put_acc_bool_indices_zeros': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.int64),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
     'index_put_one_indices': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
