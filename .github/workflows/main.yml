@@ -263,7 +263,6 @@ jobs:
           set -e
           source ${ENV_PATH}/pt2.0_diopi  && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
-          """
 
   # Rt-Test-Nvidia:
   #   name: Rt-Test-Nvidia
