@@ -48,10 +48,10 @@ jobs:
       - name: gen-test-data
         run: |
           set -e
-          srun bash -c "cd ${DATA_DIR}/${{ github.event.repository.name }}/diopi_test/python \
+          srun bash -c "cd ${DATA_DIR}/source/diopi_test/python \
           && source ${ENV_PATH}/pt2.0_diopi \
           && python main.py --mode gen_data \
-          || ( cd ${DATA_DIR}/${{ github.event.repository.name }}/diopi_test/python && git clean -xdf ${GEN_DATA} && exit 1 ) "
+          || ( cd ${DATA_DIR}/source/diopi_test/python && git clean -xdf ${GEN_DATA} && exit 1 ) "
 
   CheckAndRsync:
     name: check and rsync
