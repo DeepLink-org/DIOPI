@@ -174,6 +174,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
         // prepared attention_mask_ and none padding_offset_ and none cu_seqlens_
         if (!is_prepared) {
             diopiScalar_t mask_value{dtype, double(-1.0f)};
+            diopiScalar_t d10000{dtype, double(10000.0f)};
             for (int64_t i = 0; i < batch_size; i++) {
                 int64_t input_length = intdtype == diopiDtype_t::diopi_dtype_int32 ? *(reinterpret_cast<int32_t*>(input_lengths_host_data) + i)
                                                                                    : *(reinterpret_cast<int64_t*>(input_lengths_host_data) + i);
@@ -227,6 +228,9 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 }
                 // cat
                 impl::cuda::diopiCat(ctx, attention_mask_i, attention_mask_members, attention_mask_members_length, 1);
+                // for cal
+                impl::cuda::diopiAddInpScalar(ctx, attention_mask_i, &mask_value, &scalar_done);
+                impl::cuda::diopiMulInpScalar(ctx, attention_mask_i, &d10000);
             }
             return diopiSuccess;
         }
