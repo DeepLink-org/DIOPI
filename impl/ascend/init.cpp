@@ -26,7 +26,7 @@ public:
     }
 
 private:
-    bool beInitedInDiopi = false;
+    bool beInitedInDiopi_ = false;
 };
 
 class InitDiopi {
@@ -35,7 +35,7 @@ public:
 
 private:
     // init the module here.
-    PyInterpreteInit pyInit;
+    PyInterpreteInit pyInit_;
 };
 
 InitDiopi initDiopi;  // initialize diopi
