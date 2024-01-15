@@ -7,8 +7,8 @@
 #include <iostream>
 #include <vector>
 
-#include "../common/debug.hpp"
 #include "common.hpp"
+#include "debug.hpp"
 
 namespace impl {
 namespace camb {
@@ -220,9 +220,20 @@ diopiError_t permuteTensor(DiopiTensor& t, const std::vector<int32_t>& order) {
 
 // inplace contiguous, support NCHW <-> NHWC, NCDHW <-> NDHWC  NCL <-> NLC
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat) {
+    if(!denseCheck(src) && memoryFormat== diopiMemoryFormat_t::Preserve){
+        DiopiTensor denseOut;
+        toDense(ctx,src,denseOut);
+        src = denseOut;
+        if(memoryFormat != diopiMemoryFormat_t::Preserve){
+            //no need for further permute, if memoryFormat is Preserve.
+            return diopiSuccess;
+        }
+    }
+    
     if (src.isContiguous(memoryFormat)) {
         return diopiSuccess;
     }
+
     int64_t dim = src.dim();
     DIOPI_CHECK(dim <= 8, "only support less than 8d tensor currently");
     diopiMemoryFormat_t srcMemoryFormat;
@@ -260,7 +271,7 @@ diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTens
     int64_t dim = src.dim();
     DIOPI_CHECK(dim <= 8, "only support less than 8d tensor currently");
     std::vector<int32_t> order(dim, 0);
-    std::vector<int32_t> reverseOrder(dim, 0);
+    std::vector<int32_t> reverseOrder(dim, 0); 
 
     if (src.isContiguous()) {
         getPermuteOrder(dest, reverseOrder, order);

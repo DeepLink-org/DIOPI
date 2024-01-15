@@ -14,6 +14,9 @@
 - diopiAddInp:
     layout: NCL, NLC, NCHW, NHWC, NDHWC
 
+- diopiDivScalar:
+    layout: UD
+
 - diopiUpsampleNearest:
     layout: NHWC, NDHWC
 
@@ -67,9 +70,9 @@
 - diopiMaxPool2dBackward:
     layout: NHWC
 
-- diopiReluInp:
-    layout: NLC, NHWC, NDHWC
-
 - diopiThresholdBackward:
     layout: NLC, NHWC, NDHWC
 #* Ops above are not neccesary to convert format *#
+
+- diopiReluInp:
+    layout: UD

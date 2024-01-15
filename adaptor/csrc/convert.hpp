@@ -13,6 +13,8 @@
 #include <ostream>
 #include <vector>
 
+bool denseCheckAdaptor(diopiSize_t shape, diopiSize_t stride);
+
 std::vector<int64_t> calcStrides(diopiSize_t size, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 
 bool isLikeChannelsLast(diopiConstTensorHandle_t tensor, bool checkContiguous, diopiMemoryFormat_t format = diopiMemoryFormat_t::ChannelsLast);
@@ -77,13 +79,13 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiM
     strategy::getDstDtype(srcDtype, dstDtype);
     std::vector<diopiMemoryFormat_t> targetMemoryFormats = obtainTargetMemoryFormats(srcSize.len, supportMemoryFormats);
     diopiTensorHandle_t memoryFormatedTensor = nullptr;
-
     // convertDtype
 
     diopiDevice_t device;
     diopiGetTensorDevice(src, &device);
     diopiTensorHandle_t tmp0 = nullptr;
     bool needConvertDtype = srcDtype != dstDtype;
+
     if (needConvertDtype) {
         diopiRequireTensor(ctx, &tmp0, &srcSize, &srcStride, dstDtype, device);
         diopiCastDtype(ctx, tmp0, src);
@@ -99,7 +101,7 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiM
     bool needConvertMemoryFormat = true;
     if (targetMemoryFormats.empty()) {
         needConvertMemoryFormat = false;
-    }
+    } 
     for (auto memoryFormat : targetMemoryFormats) {
         if (isContiguous(srcSize, srcStride, memoryFormat)) {
             needConvertMemoryFormat = false;
@@ -108,6 +110,12 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiM
     }
     diopiSize_t dstStride = srcStride;
     diopiSize_t dstSize = srcSize;
+
+    if(!denseCheckAdaptor(srcSize,srcStride) && supportMemoryFormats[0] == diopiMemoryFormat_t::Preserve){
+        targetMemoryFormats.push_back(diopiMemoryFormat_t::Preserve);
+        needConvertMemoryFormat = true;
+    }
+
     if (needConvertMemoryFormat) {
         diopiContiguous(ctx, &memoryFormatedTensor, tmp0, targetMemoryFormats[0]);
         convertType.setMemoryFormatConverted();
@@ -138,7 +146,8 @@ ConvertType requireTensorIfMemoryFormatConvert(diopiContextHandle_t ctx, T src, 
     bool needConvertMemoryFormat = true;
     if (targetMemoryFormats.empty()) {
         needConvertMemoryFormat = false;
-    }
+    } 
+
     for (auto memoryFormat : targetMemoryFormats) {
         if (isContiguous(srcSize, srcStride, memoryFormat)) {
             needConvertMemoryFormat = false;
@@ -230,26 +239,6 @@ public:
         if (convertType_.isDtypeConverted()) {
             diopiCastDtype(ctx_, payload_, memoryFormatedTensor);
         }
-
-        // if (convertType_.isDtypeConverted() &&
-        // !convertType_.isMemoryFormatConverted()) {
-        //     diopiCastDtype(ctx_, payload_, tmp_);
-        // } else if (!convertType_.isDtypeConverted() &&
-        // convertType_.isMemoryFormatConverted()) {
-        //     diopiCopyInp(ctx_, tmp_, payload_);
-        // } else {
-        //     diopiDtype_t dtype;
-        //     diopiGetTensorDtype(tmp_, &dtype);
-        //     diopiSize_t size, stride, dstStride;
-        //     diopiGetTensorShape(payload_, &size);
-        //     diopiGetTensorStride(payload_, &stride);
-        //     diopiDevice_t device;
-        //     diopiGetTensorDevice(payload_, &device);
-        //     diopiTensorHandle_t tmp = nullptr;
-        //     diopiRequireTensor(ctx_, &tmp, &size, &stride, dtype, device);
-        //     diopiCopyInp(ctx_, tmp_, tmp);
-        //     diopiCastDtype(ctx_, payload_, tmp);
-        // }
     }
 
 public:

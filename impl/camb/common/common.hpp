@@ -55,6 +55,14 @@ diopiError_t transpose(diopiContextHandle_t ctx, const DiopiTensor& inputTensor,
 
 bool denseCheck(const DiopiTensor& src);
 
+bool isSlice(const DiopiTensor& src);
+
+diopiError_t getDenseStride(const DiopiTensor& src, std::vector<int64_t>& dstStride);
+
+diopiError_t sliceToDense(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dst);
+
+diopiError_t toDense(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dst);
+
 }  // namespace camb
 }  // namespace impl
 
