@@ -1399,7 +1399,8 @@ diopi_configs = {
     ),
 
     # attention: Integers to negative integer powers are not allowed.
-    # may cause overflow if both base and exponet are uint8
+    # may cause overflow if both base and exponet are uint8.
+    # int zero to negative int exp powers are not defined.
     'pow_tensor_base_positive_exp': dict(
         name=['pow'],
         interface=['torch'],
@@ -1430,6 +1431,7 @@ diopi_configs = {
     ),
 
     # attention: Integers to negative integer powers are not allowed.
+    # int zero to negative int exp powers are not defined.
     'pow_tensor_base_negative_exp': dict(
         name=['pow'],
         interface=['torch'],
@@ -1457,6 +1459,7 @@ diopi_configs = {
         ),
     ),
 
+    # int zero to negative int exp powers are not defined.
     'pow_tensor_only_0_1': dict(
         name=['pow'],
         interface=['torch'],
@@ -1531,6 +1534,7 @@ diopi_configs = {
 
     # attention: Integers to negative integer powers are not allowed.
     # may cause overflow if both base and exponet are uint8
+    # int zero to negative int exp powers are not defined.
     'pow_diff_dtype_cast': dict(
         name=['pow'],
         interface=['torch'],
@@ -1556,6 +1560,7 @@ diopi_configs = {
 
     # attention: Integers to negative integer powers are not allowed.
     # may cause overflow if both base and exponet are uint8
+    # int zero to negative int exp powers are not defined.
     'pow_diff_dtype': dict(
         name=['pow'],
         interface=['torch'],
@@ -1584,6 +1589,7 @@ diopi_configs = {
 
     # attention: Integers to negative integer powers are not allowed.
     # may cause overflow if exponet are uint8
+    # int zero to negative int exp powers are not defined.
     'pow_input_scalar_positive_exp': dict(
         name=['pow'],
         interface=['torch'],
