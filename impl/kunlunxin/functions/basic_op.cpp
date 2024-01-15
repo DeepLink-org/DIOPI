@@ -2,6 +2,7 @@
 #include <math.h>
 
 #include <cstring>
+#include <iostream>
 
 #include "../common/common.hpp"
 #include "xdnn_pytorch/xdnn_pytorch.h"
@@ -511,6 +512,48 @@ DIOPI_API diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto _inputs = impl::kunlunxin::build_xtorch_tensorlist(tensors, num_inputs);
 
     DIOPI_CALL_XDNN(xdnn_pytorch::cat(ctx_xpu, _inputs, dim, _out));
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
+    xdnn::Context* ctx_xpu = impl::kunlunxin::set_cur_ctx(ctx);
+    xdnn_pytorch::Tensor _in = impl::kunlunxin::build_xtorch_tensor(input);
+    xdnn_pytorch::Tensor _out = impl::kunlunxin::build_xtorch_tensor(out);
+    xtorch_vec _dims = impl::kunlunxin::build_xtorch_vec(dims);
+
+    DIOPI_CALL_XDNN(xdnn_pytorch::flip(ctx_xpu, _in, _dims, _out));
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                              diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding,
+                                              diopiSize_t dilation, bool ceil_mode, diopiConstTensorHandle_t indices) {
+    xdnn::Context* ctx_xpu = impl::kunlunxin::set_cur_ctx(ctx);
+    xdnn_pytorch::Tensor _in = impl::kunlunxin::build_xtorch_tensor(input);
+    xdnn_pytorch::Tensor _grad_in = impl::kunlunxin::build_xtorch_tensor(grad_input);
+    xdnn_pytorch::Tensor _grad_out = impl::kunlunxin::build_xtorch_tensor(grad_output);
+    xdnn_pytorch::Tensor _indices = impl::kunlunxin::build_xtorch_tensor(indices);
+    xtorch_vec _kernel_size = impl::kunlunxin::build_xtorch_vec(kernel_size);
+    xtorch_vec _stride = impl::kunlunxin::build_xtorch_vec(stride);
+    xtorch_vec _padding = impl::kunlunxin::build_xtorch_vec(padding);
+    xtorch_vec _dilation = impl::kunlunxin::build_xtorch_vec(dilation);
+
+    DIOPI_CALL_XDNN(
+        xdnn_pytorch::max_pool2d_with_indices_backward(ctx_xpu, _grad_out, _in, _kernel_size, _stride, _padding, _dilation, ceil_mode, _indices, _grad_in));
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
+                                                 diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode) {
+    xdnn::Context* ctx_xpu = impl::kunlunxin::set_cur_ctx(ctx);
+    xdnn_pytorch::Tensor _in = impl::kunlunxin::build_xtorch_tensor(input);
+    xdnn_pytorch::Tensor _out = impl::kunlunxin::build_xtorch_tensor(out);
+    xdnn_pytorch::Tensor _indices = impl::kunlunxin::build_xtorch_tensor(indices);
+    xtorch_vec _kernel_size = impl::kunlunxin::build_xtorch_vec(kernel_size);
+    xtorch_vec _stride = impl::kunlunxin::build_xtorch_vec(stride);
+    xtorch_vec _padding = impl::kunlunxin::build_xtorch_vec(padding);
+    xtorch_vec _dilation = impl::kunlunxin::build_xtorch_vec(dilation);
+    DIOPI_CALL_XDNN(xdnn_pytorch::max_pool2d_with_indices(ctx_xpu, _in, _kernel_size, _stride, _padding, _dilation, ceil_mode, _out, _indices));
     return diopiSuccess;
 }
 
