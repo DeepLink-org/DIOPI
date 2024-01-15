@@ -9,7 +9,6 @@
 namespace impl {
 namespace camb {
 
-
 bool denseCheck(const DiopiTensor& src) {
     int dim = src.dim();
     std::vector<std::pair<int, int>> stridesSizes(dim, std::pair<int, int>(1, 1));
