@@ -41,11 +41,7 @@ diopiError_t diopiAdaptiveAvgPool2dBackward(diopiContextHandle_t ctx, diopiTenso
     for (int i = 0; i < shape.len; ++i) {
         shapeVector.push_back(static_cast<int>(shape.data[i]));
     }
-    AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx)
-        .addInput(gradOutput)
-        .setAttr("orig_input_shape", shapeVector)
-        .addOutput(gradInput)
-        .run();
+    AclOpRunner<1, 1>("AdaptiveAvgPool2dGrad", ctx).addInput(gradOutput).setAttr("orig_input_shape", shapeVector).addOutput(gradInput).run();
     return diopiSuccess;
 }
 
