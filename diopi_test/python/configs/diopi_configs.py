@@ -8152,10 +8152,12 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8)),
                 },
                 {
                     "ins": ['weight'],
+                    "requires_grad": [True],
                     "shape": ((5, ), (32, ), (64, ), (8, )),
                 },
                 {
@@ -8164,6 +8166,8 @@ diopi_configs = {
                 },
             ],
         ),
+        saved_args=dict(grad_outputs=0, inv_rms=1),
+        requires_backward=[0],
     ),
 
     # 'multihead_attention_forward': dict(
