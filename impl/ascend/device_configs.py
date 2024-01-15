@@ -662,18 +662,6 @@ device_configs = {
         ),
     ),
 
-    'split': dict( # llm used
-        name=['split'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-
     'transpose': dict(
         name=['transpose'],
         tensor_para=dict(
@@ -1356,7 +1344,6 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((6, 5, 384)), Skip((2, 4, 38, 45))],
                     "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
@@ -1374,7 +1361,6 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((192, 147)), Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
                     "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {

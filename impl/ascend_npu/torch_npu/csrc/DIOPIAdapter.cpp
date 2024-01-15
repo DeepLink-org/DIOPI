@@ -2400,7 +2400,10 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& t
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
     const auto& npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
     const auto& dims = tensor.sizes();
-    auto& storageDims = npuDesc.storage_sizes_;
+    auto storageDims = npuDesc.storage_sizes_;
+    if (storageDims.size() == 0 && tensor.numel() > 0) {
+        storageDims.push_back(1);
+    }
     AclTensorDescMaker desc;
     auto aclDesc = desc.Create(aclDataType, dims, npuDesc.origin_format_).SetFormat(npuDesc.npu_format_).SetShape(storageDims).Get();
     auto numel = c10::multiply_integers(storageDims);
