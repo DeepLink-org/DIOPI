@@ -6,6 +6,7 @@ from functools import partial
 from generator import Genfunc
 from conformance.utils import logger
 from conformance.db_operation import db_conn
+from conformance.exception import GenDataFailedException
 
 
 class GenPolicy:
@@ -73,12 +74,9 @@ class GenInputData(object):
                 )
                 item["result"] = "passed"
             except Exception as err_msg:
-                logger.error(
-                    f"Generate input data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}"
-                )
-                item.update({"result": "failed", "err_msg": err_msg})
-            finally:
-                GenInputData.db_case_items.append(item)
+                raise GenDataFailedException(f"Generate input data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}")
+
+            GenInputData.db_case_items.append(item)
 
         logger.info(f"Generate test cases number for input data: {case_counter}")
         if case_counter == 0:

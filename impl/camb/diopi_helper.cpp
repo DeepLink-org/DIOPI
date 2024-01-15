@@ -27,6 +27,8 @@ void getFuncName(const char* expr, char* name) {
 
 bool DiopiDataType::isInteger(diopiDtype_t dtype) { return dtype < 8; }
 
+bool DiopiDataType::isIntegerWithBool(diopiDtype_t dtype) { return dtype < 8 || dtype == 11; }
+
 bool DiopiDataType::isFloatPoint(diopiDtype_t dtype) { return (dtype <= 10 && dtype >= 8) || dtype == 12 || dtype == 13; }
 
 diopiDtype_t DiopiDataType::complexDtype2Real(diopiDtype_t complexDtype) {

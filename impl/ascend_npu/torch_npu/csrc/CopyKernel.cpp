@@ -43,13 +43,99 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
     return TransContiguous::ContiguousOptimizeWithAnyFormat(self, src);
 }
 
+namespace {
+
+std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef strides) {
+    if (sizes.size() <= 0) {
+        return std::vector<int64_t>();
+    }
+    std::vector<int64_t> originSizes(sizes.size(), 1);
+    originSizes[0] = sizes[0] * strides[0];
+    for (size_t i = 1; i < sizes.size(); i++) {
+        int64_t dim = sizes[i] * strides[i];
+        if (originSizes[0] < dim) {
+            originSizes[0] = dim;
+        }
+    }
+    return originSizes;
+}
+
+at::Tensor viewToSameDim(const at::Tensor& tensor, const at::IntArrayRef destShape) {
+    const auto originShape = tensor.sizes();
+    std::vector<int64_t> strides(destShape.size(), 0);
+    if (originShape.size() < destShape.size()) {
+        std::vector<int64_t> sameDims;
+        for (int i = destShape.size() - 1; i >= 0; i--) {
+            for (int j = originShape.size() - 1 - sameDims.size(); j >= 0; j--) {
+                if (destShape[i] == originShape[j]) {
+                    sameDims.push_back(i);
+                    strides[i] = tensor.strides()[j];
+                    break;
+                }
+            }
+        }
+    } else if (originShape.size() == destShape.size()) {
+        for (size_t i = 0; i < destShape.size(); i++) {
+            if (destShape[i] == originShape[i]) {
+                strides[i] = tensor.stride(i);
+            }
+        }
+    }
+    return impl::aten::viewStorage(tensor, destShape, strides);
+}
+
+}  // namespace
+
+bool isPartOfOther(const at::Tensor& tensor) {
+    const auto& strides = tensor.strides();
+    std::vector<int64_t> contiguousStrides(tensor.sizes().size());
+    int64_t stride = 1;
+    for (int i = contiguousStrides.size() - 1; i >= 0; --i) {
+        contiguousStrides[i] = stride;
+        stride *= tensor.sizes()[i];
+        if (strides[i] > contiguousStrides[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    auto self_size = self.sizes();
+    auto self_stride = self.strides();
+    auto src_size = src.sizes();
+    auto src_stride = src.strides();
+    auto originSelfShape = inferOriginShape(self.sizes(), self.strides());
+    auto originSizeTensor = at_npu::native::empty_npu(originSelfShape, self.options());
+
+    auto originSrcShape = inferOriginShape(src.sizes(), src.strides());
+
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ViewCopy")
+        .InputWithoutContiguous(impl::aten::viewStorage(self, originSelfShape))
+        .Input(self_size, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+        .Input(self_stride, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+        .Input(at::Scalar(0), at::kLong)
+        .InputWithoutContiguous(impl::aten::viewStorage(src, originSrcShape))
+        .Input(src_size, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+        .Input(src_stride, at::kLong, at_npu::native::CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+        .Input(at::Scalar(0), at::kLong)
+        .Output(originSizeTensor)
+        .Attr("_exclude_engines", (string) "AiCore")
+        .Run();
+}
+
 // the dst and src are same format now
 // the dst and src are base format now
 // the dst and src maybe non-contiguous
 void copy_d2d_last_method(at::Tensor& self, const at::Tensor& src, bool same_type, bool non_blocking) {
     // general copy method but Low performance
     RECORD_FUNCTION("contiguous_d_ViewCopy", std::vector<c10::IValue>({src}));
-    custom_ops::npu_view_copy(self, src, non_blocking);
+    if (1 || isPartOfOther(self)) {
+        npu_view_copy(self, src, non_blocking);
+    } else {
+        custom_ops::npu_view_copy(self, src, non_blocking);
+    }
 }
 
 // the dst and src are same format now
@@ -256,10 +342,20 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
             // Optimized trans-contiguous method
             return;
         } else {
-            // General trans-contiguous method
-            RECORD_FUNCTION("contiguous_d_AsStrided", std::vector<c10::IValue>({src}));
-            custom_ops::npu_stride_copy_out(src, src.sizes(), src.strides(), src.storage_offset(), self);
-            return;
+            // AsStride not support double
+            if (src.scalar_type() != at::kDouble) {
+                // General trans-contiguous method
+                RECORD_FUNCTION("contiguous_d_AsStrided", std::vector<c10::IValue>({src}));
+                at::Tensor source = src;
+                if (self.sizes() != src.sizes()) {
+                    source = viewToSameDim(source, self.sizes());
+                }
+
+                // custom_ops::npu_stride_copy_out(src, src.sizes(), src.strides(), src.storage_offset(), self);
+                auto shape = inferOriginShape(source.sizes(), source.strides());
+                custom_ops::npu_stride_copy_out(impl::aten::viewStorage(source, shape), source.sizes(), source.strides(), source.storage_offset(), self);
+                return;
+            }
         }
     } else {
         // Contiguous source tensor copy to contiguous self tensor
@@ -395,7 +491,7 @@ private:
     }
 };  // class BroadcastContiguousOpt
 
-REGISTER_COPY_OPT(broadcast, BroadcastContiguousOpt)
+// REGISTER_COPY_OPT(broadcast, BroadcastContiguousOpt)
 
 constexpr int MaxCombinedCasesNum = 2;
 constexpr int ViewAndBaseInfoStackNum = 2;
@@ -767,7 +863,7 @@ private:
     }
 };  // class combinedContiguousOpt
 
-REGISTER_COPY_OPT(combined, CombinedContiguousOpt)
+// REGISTER_COPY_OPT(combined, CombinedContiguousOpt)
 
 class IndexingContiguousOpt : public ContiguousOpt {
 public:
@@ -881,7 +977,7 @@ private:
     }
 };  // class IndexingContiguousOpt
 
-REGISTER_COPY_OPT(indexing, IndexingContiguousOpt)
+// REGISTER_COPY_OPT(indexing, IndexingContiguousOpt)
 
 class PermuteContiguousOpt : public ContiguousOpt {
 public:
@@ -898,7 +994,8 @@ public:
             src_desc.base_strides_ = StorageDescHelper::ComputeStrideFromShape(static_cast<FormatShape>(sizes));
             src_desc.storage_sizes_ = sizes;
 
-            custom_ops::npu_transpose_out(src, perm, false, self);
+            custom_ops::npu_transpose_out(impl::aten::viewStorage(src, src_desc.base_sizes_, src_desc.base_strides_), perm, false, self);
+            // custom_ops::npu_transpose_out(src, perm, false, self);
             src_desc = src_desc_stored;
             return true;
         }
@@ -1041,7 +1138,7 @@ private:
     }
 };  // class PermuteContiguousOpt
 
-REGISTER_COPY_OPT(permute, PermuteContiguousOpt)
+// REGISTER_COPY_OPT(permute, PermuteContiguousOpt)
 
 bool can_use_memecpy_for_NZ_format(const ContiguousTensorDesc& tensor_desc) {
     int64_t tensor_shape_size = static_cast<int64_t>(tensor_desc.sizes_.size());
@@ -1128,7 +1225,7 @@ public:
     bool CanOptimizer(const ContiguousTensorDesc& src_desc) override { return check_reshape_match(src_desc); }
 };  // class ReshapeContiguousOpt
 
-REGISTER_COPY_OPT(reshape, ReshapeContiguousOpt)
+// REGISTER_COPY_OPT(reshape, ReshapeContiguousOpt)
 
 class ReshapeV2ContiguousOpt : public ContiguousOpt {
 public:
@@ -1204,7 +1301,7 @@ private:
     }
 };  // class ReshapeV2ContiguousOpt
 
-REGISTER_COPY_OPT(reshapeV2, ReshapeV2ContiguousOpt)
+// REGISTER_COPY_OPT(reshapeV2, ReshapeV2ContiguousOpt)
 
 class SelectContiguousOpt : public ContiguousOpt {
 public:
@@ -1316,7 +1413,7 @@ private:
     }
 };  // class SelectContiguousOpt
 
-REGISTER_COPY_OPT(select, SelectContiguousOpt)
+// REGISTER_COPY_OPT(select, SelectContiguousOpt)
 
 class SliceContiguousOpt : public ContiguousOpt {
 public:
@@ -1424,7 +1521,7 @@ private:
     }
 };  // class SliceContiguousOpt
 
-REGISTER_COPY_OPT(slice, SliceContiguousOpt)
+// REGISTER_COPY_OPT(slice, SliceContiguousOpt)
 
 }  // namespace native
 }  // namespace at_npu
