@@ -13,11 +13,11 @@ public:
     PyInterpreteInit() {
         if (!Py_IsInitialized()) {
             Py_Initialize();
-            beInitedInDiopi = true;
+            beInitedInDiopi_ = true;
         }
     }
     ~PyInterpreteInit() {
-        if (beInitedInDiopi) {
+        if (beInitedInDiopi_) {
             int exState = Py_FinalizeEx();
             if (exState == -1) {
                 std::cerr << "Py_FinalizeEx failed in " << __FILE__ << ":" << __LINE__ << "in func:" << __FUNCTION__ << std::endl;
