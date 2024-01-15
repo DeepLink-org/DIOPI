@@ -1401,15 +1401,12 @@ device_configs = {
         ),
     ),
 
+    # Ascend Not support Tile shape max than 8 on dynamic rank case.
     'repeat': dict( # llm used
         name=['repeat'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((4, 2, 3, 5)), Skip(()), Skip((0,)), Skip((12, 0)), Skip((4, 0, 9))],
-                },
-            ]
+        para=dict(
+            repeats=
+                [Skip((3, 4, 6, 3, 5))],
         ),
     ),
 
