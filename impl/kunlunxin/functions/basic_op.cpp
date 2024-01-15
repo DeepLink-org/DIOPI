@@ -2,7 +2,6 @@
 #include <math.h>
 
 #include <cstring>
-#include <iostream>
 
 #include "../common/common.hpp"
 #include "xdnn_pytorch/xdnn_pytorch.h"
