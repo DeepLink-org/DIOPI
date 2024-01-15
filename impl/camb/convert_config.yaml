@@ -23,7 +23,6 @@
 - diopiBmm:
     layout: NCL, NLC, NCHW, NHWC, NCDHW, NDHWC
 
-
 - diopiUpsampleNearest:
     layout: NHWC, NDHWC
 

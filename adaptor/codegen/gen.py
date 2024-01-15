@@ -34,6 +34,7 @@ str_to_diopi_dtype = {
 str_to_diopi_format = {
     "NCHW": "diopiMemoryFormat_t::Contiguous",
     "NCL": "diopiMemoryFormat_t::Contiguous",
+    "NCDHW": "diopiMemoryFormat_t::Contiguous",
     "NLC": "diopiMemoryFormat_t::ChannelsLast1d",
     "NHWC": "diopiMemoryFormat_t::ChannelsLast",
     "NDHWC": "diopiMemoryFormat_t::ChannelsLast3d",
