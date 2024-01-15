@@ -2,7 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm, nll_loss, gather, fill_, triu llm used
+# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm llm used
 
 device_configs = {
     # temp for 910B
@@ -469,12 +469,6 @@ device_configs = {
         ),
     ),
 
-    'bmm': dict( # llm used
-        name=['bmm'],
-        atol=3e-2,
-        rtol=3e-2,
-    ),
-
     'matmul': dict(
         name=['matmul'],
         tensor_para=dict(
@@ -938,18 +932,6 @@ device_configs = {
         ),
     ),
 
-    'mm': dict( # llm used
-        name=['mm'],
-        atol=2e-2,
-        rtol=2e-2,
-    ),
-
-    'mm_diff_dtype': dict( # llm used
-        name=['mm'],
-        atol=2e-2,
-        rtol=2e-2,
-    ),
-
     'index_fill_scalar': dict(
         name=['index_fill'],
         tensor_para=dict(
@@ -1129,18 +1111,6 @@ device_configs = {
                 {
                     "ins": ['log_probs'],
                     "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'scatter': dict( # llm used
-        name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
                 },
             ]
         ),
