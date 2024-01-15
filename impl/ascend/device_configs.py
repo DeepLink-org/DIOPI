@@ -2,7 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm llm used
+# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow llm used
 
 device_configs = {
     # temp for 910B
@@ -428,42 +428,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((16,)),Skip((8, 64)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_tensor': dict( # llm used
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_tensor_only_0_1': dict( # llm used
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_diff_dtype': dict( # llm used
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),Skip(np.float32),Skip(np.float16),Skip(np.int32),Skip(np.float64),Skip(np.float32),Skip(np.float32),Skip(np.int16),Skip(np.int64),],
                 },
             ]
         ),
