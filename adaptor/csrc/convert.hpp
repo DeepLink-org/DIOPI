@@ -54,7 +54,7 @@ struct RemoveConst<diopiConstTensorHandle_t> {
 
 class NoCast {
 public:
-    static bool getDstDtype(diopiDtype_t srcDtype, diopiDtype_t &targetDtype) {
+    static bool getDstDtype(diopiDtype_t srcDtype, diopiDtype_t& targetDtype) {
         bool convert = false;
         switch (srcDtype) {
             default:
@@ -65,7 +65,7 @@ public:
 };
 
 template <class T, class strategy = NoCast>
-ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiMemoryFormat_t> supportMemoryFormats = {}) {
+ConvertType castImpl(diopiContextHandle_t ctx, T src, T* dst, std::vector<diopiMemoryFormat_t> supportMemoryFormats = {}) {
     ConvertType convertType;
     if (!src) {
         *dst = src;
@@ -101,7 +101,7 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiM
     bool needConvertMemoryFormat = true;
     if (targetMemoryFormats.empty()) {
         needConvertMemoryFormat = false;
-    } 
+    }
     for (auto memoryFormat : targetMemoryFormats) {
         if (isContiguous(srcSize, srcStride, memoryFormat)) {
             needConvertMemoryFormat = false;
@@ -111,7 +111,7 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiM
     diopiSize_t dstStride = srcStride;
     diopiSize_t dstSize = srcSize;
 
-    if(!denseCheckAdaptor(srcSize,srcStride) && supportMemoryFormats[0] == diopiMemoryFormat_t::Preserve){
+    if (!denseCheckAdaptor(srcSize, srcStride) && supportMemoryFormats[0] == diopiMemoryFormat_t::Preserve) {
         targetMemoryFormats.push_back(diopiMemoryFormat_t::Preserve);
         needConvertMemoryFormat = true;
     }
@@ -130,7 +130,7 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiM
 }
 
 template <class T, class strategy>
-ConvertType requireTensorIfMemoryFormatConvert(diopiContextHandle_t ctx, T src, T *dst, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
+ConvertType requireTensorIfMemoryFormatConvert(diopiContextHandle_t ctx, T src, T* dst, std::vector<diopiMemoryFormat_t> supportMemoryFormats) {
     ConvertType convertType;
     if (!src) {
         *dst = src;
@@ -146,7 +146,7 @@ ConvertType requireTensorIfMemoryFormatConvert(diopiContextHandle_t ctx, T src, 
     bool needConvertMemoryFormat = true;
     if (targetMemoryFormats.empty()) {
         needConvertMemoryFormat = false;
-    } 
+    }
 
     for (auto memoryFormat : targetMemoryFormats) {
         if (isContiguous(srcSize, srcStride, memoryFormat)) {
@@ -183,7 +183,7 @@ ConvertType requireTensorIfMemoryFormatConvert(diopiContextHandle_t ctx, T src, 
 }
 
 template <typename Adaptor, typename... Args>
-void dispatchDiopi(diopiContextHandle_t ctx, Args &&...args) {
+void dispatchDiopi(diopiContextHandle_t ctx, Args&&... args) {
     auto adaptor = Adaptor();
     adaptor(ctx, std::forward<Args>(args)...);
 }
@@ -204,10 +204,10 @@ template <class strategy = NoCast>
 class DiopiTensorWrapper {
 public:
     // forbid copy/move constructor/assignment
-    DiopiTensorWrapper(const DiopiTensorWrapper &) = delete;
-    DiopiTensorWrapper &operator=(const DiopiTensorWrapper &) = delete;
-    DiopiTensorWrapper(DiopiTensorWrapper &&) = delete;
-    DiopiTensorWrapper &operator=(DiopiTensorWrapper &&) = delete;
+    DiopiTensorWrapper(const DiopiTensorWrapper&) = delete;
+    DiopiTensorWrapper& operator=(const DiopiTensorWrapper&) = delete;
+    DiopiTensorWrapper(DiopiTensorWrapper&&) = delete;
+    DiopiTensorWrapper& operator=(DiopiTensorWrapper&&) = delete;
 
 private:
     diopiContextHandle_t ctx_;
