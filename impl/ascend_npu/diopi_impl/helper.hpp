@@ -249,6 +249,13 @@ inline diopiDtype_t getDIOPITensorType(at::ScalarType scalarType) {
             return diopi_dtype_float32;
         case at::ScalarType::Double:
             return diopi_dtype_float64;
+        case at::ScalarType::ComplexHalf:
+            return diopi_dtype_complex32;
+        case at::ScalarType::ComplexFloat:
+            return diopi_dtype_complex64;
+        case at::ScalarType::ComplexDouble:
+            return diopi_dtype_complex128;
+
         default:
             NOT_SUPPORTED("aten dtype");
             return diopi_dtype_unsupported;
@@ -300,6 +307,7 @@ at::Tensor buildATen(diopiTensorHandle_t tensor);
 template <typename T>
 inline std::string dumpArgs(const T& t) {
     std::stringstream stream;
+    stream << t;
     return stream.str();
 }
 
@@ -326,11 +334,29 @@ template <>
 inline std::string dumpArgs(const at::IntArrayRef& t) {
     std::stringstream stream;
     stream << "[";
-    for (size_t i = 0; i < t.size(); i++) {
+    for (long i : t) {
         stream << i << ",";
     }
     stream << "]";
     return stream.str();
+}
+
+template <>
+inline std::string dumpArgs(const c10::OptionalArrayRef<long int>& t) {
+    std::stringstream stream;
+    stream << "[";
+    if (t.has_value()) {
+        for (const auto& i : t.value()) {
+            stream << i << ",";
+        }
+    }
+    stream << "]";
+    return stream.str();
+}
+
+template <>
+inline std::string dumpArgs(const at::Generator& t) {
+    return std::string();
 }
 
 inline at::IntArrayRef buildATen(const diopiSize_t* size) { return at::IntArrayRef(size->data, size->len); }

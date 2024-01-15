@@ -2,59 +2,9 @@
 import numpy as np
 from skip import Skip
 
+# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow llm used
+
 device_configs = {
-    # temp for 910B
-    'join': dict(
-        name=['stack'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'join_int': dict(
-        name=['stack'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "shape": [Skip((0, 50, 76)), Skip((0,)), Skip((16, 0))],
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'topk_nonzero': dict(
-        name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": (Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),),
-                },
-            ],
-        ),
-    ),
-
-    # temp for 910B
-    'topk_zero': dict(
-        name=['topk'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ],
-        ),
-    ),
-
     # temp for 910B
     'uniform': dict(
         name=['uniform'],
@@ -65,19 +15,6 @@ device_configs = {
                     "shape": [Skip(()),],
                 },
             ],
-        ),
-    ),
-
-    # temp for 910B
-    'normal_tensor': dict(
-        name=["normal"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
         ),
     ),
 
@@ -225,33 +162,9 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
+                    "dtype": [Skip(np.float64)],
                 },
             ],
-        ),
-    ),
-
-    'hardswish': dict(
-        name=['hardswish'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'hardswish_domain': dict(
-        name=['hardswish'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
         ),
     ),
 
@@ -377,7 +290,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'asin', 'ceil', 'atan'],
+        name=['erf', 'erfinv', 'asin', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -389,7 +302,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'asin', 'atan'],
+        name=['erf', 'asin'],
         tensor_para=dict(
             args=[
                 {
@@ -401,7 +314,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'asin', 'atan'],
+        name=['erf', 'asin'],
         tensor_para=dict(
             args=[
                 {
@@ -413,7 +326,7 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'asin', 'atan'],
+        name=['erf', 'asin'],
         tensor_para=dict(
             args=[
                 {
@@ -520,48 +433,6 @@ device_configs = {
         ),
     ),
 
-    'pow_tensor': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_tensor_only_0_1': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_diff_dtype': dict(
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),Skip(np.float32),Skip(np.float16),Skip(np.int32),Skip(np.float64),Skip(np.float32),Skip(np.float32),Skip(np.int16),Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
-
-    'bmm': dict(
-        name=['bmm'],
-        atol=3e-2,
-        rtol=3e-2,
-    ),
-
     'matmul': dict(
         name=['matmul'],
         tensor_para=dict(
@@ -574,13 +445,13 @@ device_configs = {
         ),
     ),
 
-    'reduce_op': dict(
+    'reduce_op': dict( # llm used
         name=['sum'],
         atol=1e-3,
         rtol=1e-3,
     ),
 
-    'reduce_partial_op': dict(
+    'reduce_partial_op': dict( # llm used
         atol=1e-3,
         rtol=1e-3,
         name=['sum'],
@@ -605,32 +476,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((64,)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2964, 32)),Skip((0,)),Skip((16, 0)),Skip((4, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'nll_loss': dict(
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): dtype float16 is not supported
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
-    'nll_loss_empty_tensor': dict(
-        name=['nll_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # TODO(someone): dtype float16 is not supported
-                    "dtype": [Skip(np.float16)],
                 },
             ]
         ),
@@ -696,30 +541,6 @@ device_configs = {
         ),
     ),
 
-    'index_select': dict(
-        name=['index_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'index_select_not_float': dict(
-        name=['index_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int32),Skip(np.int16),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'masked_scatter': dict(
         name=['masked_scatter'],
         tensor_para=dict(
@@ -738,7 +559,7 @@ device_configs = {
         rtol = 1e-1,
     ),
 
-    'embedding': dict(
+    'embedding': dict( # llm used
         name=["embedding"],
         tensor_para=dict(
             args=[
@@ -794,18 +615,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
-
-    'split': dict(
-        name=['split'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensor'],
-                    "dtype": [Skip(np.float64)],
                 },
             ]
         ),
@@ -1087,18 +896,6 @@ device_configs = {
         ),
     ),
 
-    'mm': dict(
-        name=['mm'],
-        atol=2e-2,
-        rtol=2e-2,
-    ),
-
-    'mm_diff_dtype': dict(
-        name=['mm'],
-        atol=2e-2,
-        rtol=2e-2,
-    ),
-
     'index_fill_scalar': dict(
         name=['index_fill'],
         tensor_para=dict(
@@ -1219,18 +1016,6 @@ device_configs = {
         ),
     ),
 
-    'norm': dict(
-        name=['norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'group_norm': dict(
         name=['group_norm'],
         atol=5e-2,
@@ -1295,55 +1080,7 @@ device_configs = {
         ),
     ),
 
-    'gather': dict(
-        name=['gather'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'gather_0dim': dict(
-        name=['gather'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'gather_not_float': dict(
-        name=['gather'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'scatter': dict(
-        name=['scatter'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'scatter_scalar': dict(
+    'scatter_scalar': dict( # llm used
         name=['scatter'],
         para=dict(
             # In this case, for float32 (but not float64), no matter what the value parameter is,
@@ -1354,7 +1091,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_three_indices': dict(
+    'index_put_acc_three_indices': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1366,7 +1103,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_two_indices': dict(
+    'index_put_acc_two_indices': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1378,7 +1115,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_one_indices': dict(
+    'index_put_acc_one_indices': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1390,7 +1127,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_acc_bool_indices_zeros': dict(
+    'index_put_acc_bool_indices_zeros': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1402,7 +1139,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_one_indices': dict(
+    'index_put_one_indices': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1414,7 +1151,7 @@ device_configs = {
         ),
     ),
 
-    'index_put_bool_indices_value': dict(
+    'index_put_bool_indices_value': dict( # llm used
         name=['index_put'],
         tensor_para=dict(
             args=[
@@ -1499,15 +1236,14 @@ device_configs = {
         ),
     ),
 
-    'copy': dict(
+    'copy': dict( # llm used
         name=["copy_"],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX128 of input [dst] is not supported
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((12, 0, 9)), Skip((8,))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
@@ -1517,15 +1253,14 @@ device_configs = {
         )
     ),
 
-    'copy_input_no_contiguous': dict(
+    'copy_input_no_contiguous': dict( # llm used
         name=["copy_"],
         tensor_para=dict(
             # FIXME not supported complex
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((12, 1, 12)),],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
@@ -1535,7 +1270,7 @@ device_configs = {
         )
     ),
 
-    'copy_other_no_contiguous': dict(
+    'copy_other_no_contiguous': dict( # llm used
         name=["copy_"],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX64 of input [dst] is not supported
@@ -1543,45 +1278,31 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((6, 5, 384)), Skip((2, 4, 38, 45))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex128), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128)],
                 },
             ]
         )
     ),
 
-    'copy_all_no_contiguous': dict(
+    'copy_all_no_contiguous': dict( # llm used
         name=["copy_"],
         tensor_para=dict(
             # FIXME data type DT_COMPLEX64 of input [dst] is not supported
             args=[
                 {
                     "ins": ["input"],
-                    "shape": [Skip((192, 147)), Skip((192, 147, 2)), Skip((2, 12, 38, 45, 3))],
-                    "dtype": [Skip(np.complex128), Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex128), Skip(np.complex64)],
                 },
                 {
                     "ins": ["other"],
-                    "dtype": [Skip(np.complex64), Skip(np.float64)],
+                    "dtype": [Skip(np.complex64)],
                 },
             ]
         )
-    ),
-
-    'fill_not_float': dict(
-        name=["fill_"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.bool_), Skip(np.int64), Skip(np.int32), Skip(np.int16), Skip(np.int8), Skip(np.uint8)]
-                },
-            ]
-        ),
     ),
 
     'interpolate': dict(
@@ -1644,15 +1365,12 @@ device_configs = {
         ),
     ),
 
-    'repeat': dict(
+    # Ascend Not support Tile shape max than 8 on dynamic rank case.
+    'repeat': dict( # llm used
         name=['repeat'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((4, 2, 3, 5)), Skip(()), Skip((0,)), Skip((12, 0)), Skip((4, 0, 9))],
-                },
-            ]
+        para=dict(
+            repeats=
+                [Skip((3, 4, 6, 3, 5))],
         ),
     ),
 
@@ -1704,18 +1422,6 @@ device_configs = {
         ),
     ),
 
-    'triu': dict(
-        name=['triu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'amax': dict(
         name=['amax'],
         tensor_para=dict(
@@ -1740,7 +1446,7 @@ device_configs = {
         ),
     ),
 
-    'reduce_partial_op_4': dict(
+    'reduce_partial_op_4': dict( # llm used
         name=['sum'],
         interface=['torch'],
         atol=1e-4,
@@ -1756,42 +1462,78 @@ device_configs = {
         ),
     ),
 
-    # temp for 910B
-    'normal_': dict(
-        name=["normal_"],
+    'remainder_self_scalar': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+
+    # in case for zero division
+    'remainder_self_bool': dict(
+        name=['remainder'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['other'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+
+    # in case for zero division
+    'remainder_tensor': dict(
+        name=['remainder'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
                 },
             ]
         ),
     ),
 
-    # temp for 910B
-    'normal_std_tensor': dict(
-        name=["normal"],
+    # in case for zero division
+    'remainder_tensor_zero': dict(
+        name=['remainder'],
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['std'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int16),Skip(np.uint8),Skip(np.int8),],
                 },
             ]
         ),
     ),
 
-    # temp for 910B
-    'normal_mean_tensor': dict(
-        name=["normal"],
+    # in case for zero division
+    'remainder_other_scalar': dict(
+        name=['remainder'],
+        para=dict(
+            other=[Skip(0),],
+        ),
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['mean'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "ins": ['input'],
+                    "dtype": [Skip(np.uint8),],
                 },
             ]
+        ),
+    ),
+
+    # in case for zero division
+    'remainder_other_scalar_bool': dict(
+        name=['remainder'],
+        para=dict(
+            other=[Skip(False),],
         ),
     ),
 }

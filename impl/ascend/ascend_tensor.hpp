@@ -54,7 +54,7 @@ namespace ascend {
 inline void error(const char* file, int lineNum, const char* funcName, const char* format, ...) {
     va_list args;
     va_start(args, format);
-    printf("ERROR:[%s:%d in func:%s] : ", __FILE__, __LINE__, __FUNCTION__);
+    printf("ERROR:[%s:%d in func:%s] : ", file, lineNum, funcName);
     vprintf(format, args);
     printf("\n");
     throw std::runtime_error("error occuers");
@@ -63,7 +63,7 @@ inline void error(const char* file, int lineNum, const char* funcName, const cha
 inline void warning(const char* file, int lineNum, const char* funcName, const char* format, ...) {
     va_list args;
     va_start(args, format);
-    printf("WARNING:[%s:%d in func:%s]: ", __FILE__, __LINE__, __FUNCTION__);
+    printf("WARNING:[%s:%d in func:%s]: ", file, lineNum, funcName);
     vprintf(format, args);
     printf("\n");
 }
@@ -71,7 +71,7 @@ inline void warning(const char* file, int lineNum, const char* funcName, const c
 inline void info(const char* file, int lineNum, const char* funcName, const char* format, ...) {
     va_list args;
     va_start(args, format);
-    printf("INFO:[%s:%d in func:%s]: ", __FILE__, __LINE__, __FUNCTION__);
+    printf("INFO:[%s:%d in func:%s]: ", file, lineNum, funcName);
     vprintf(format, args);
     printf("\n");
 }
