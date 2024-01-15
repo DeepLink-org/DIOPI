@@ -13,7 +13,7 @@ echo "entering "$ROOT_DIR
 require_coverage=$1
 
 remote_count=$(git remote | wc -l)
-if [ "$remote_count" -eq 1 ]; then echo "Not from dev repository" && exit 0 ;fi
+
 
 commit_hash=$(git rev-parse HEAD)
 parent_count=$(git log --pretty=%P -n 1 $commit_hash | wc -w)
@@ -40,7 +40,7 @@ fi
 
 cd $ROOT_DIR
 cat coverage/gitdiff.txt |egrep '\.(cpp|hpp)$'|grep "$include/" >coverage/gitdiff_screen.txt || true
-if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" && exit 0;fi
+if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" ;fi
 rm -rf coverage/gitdiff.txt
 while IFS= read -r line; do
   if [ -f "$line" ]; then
@@ -49,8 +49,11 @@ while IFS= read -r line; do
 done < "coverage/gitdiff_screen.txt"
 
 echo "export IS_cover=True" >coverage/IS_cover.txt
+pwd
 gcovr --csv --gcov-ignore-errors=no_working_dir_found > coverage/coverage.csv
+cat coverage/coverage.csv
 sed -i '1d' coverage/coverage.csv
+cat coverage/coverage.csv
 mkdir coverage/html
 gcovr -r . --html --html-details --gcov-ignore-errors=no_working_dir_found -o coverage/html/index.html
 python scripts/increment_coverage.py $ROOT_DIR/coverage/ $require_coverage
