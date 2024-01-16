@@ -277,13 +277,13 @@
     # data type DT_DOUBLE of input [x] is not supported
     dtype: (float64)->float32
 
+- diopiMatmul:
+    dtype: (float64)->float32
+
 - diopiHardswishInp:
     dtype: (float64)->float32
 
 - diopiHardswishBackward:
-    dtype: (float64)->float32
-
-- diopiMatmul:
     dtype: (float64)->float32
 
 - diopiAtan:
