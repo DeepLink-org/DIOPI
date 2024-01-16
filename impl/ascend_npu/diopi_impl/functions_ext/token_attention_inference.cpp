@@ -29,7 +29,7 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
         at::Tensor key = at::index(kAt, {kLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
         at::Tensor outLoc = acl_op::arange(curSeqStartLoc, curSeqStartLoc + curSeqLen, at::kLong, layout, device);
         at::Tensor values =
-            (at::matmul(at::index(qAt, {torch::scalar_to_tensor(i)}).toType(at::kFloat), key.transpose(2, 3).toType(at::kFloat)) / std::sqrt(dim))
+            (at::matmul(at::index(qAt, {torch::scalar_to_tensor(i)}), key.transpose(2, 3)) / std::sqrt(dim))
                 .view({head, curSeqLen})
                 .toType(dtype);
         at::index_put_(attentionOutAt, {at::Tensor(), outLoc}, values);
