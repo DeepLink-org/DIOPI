@@ -16,10 +16,11 @@ namespace ascend {
 extern diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
-    int64_t numel = 0;
-    diopiGetTensorNumel(input, &numel);
-    if (0 == numel) {
-        AclOpRunner<1, 1>("Fills", ctx).addInput(out).setAttr<float>("value", 0).addOutput(out).run();
+    AscendTensor inputAt(input);
+    AscendTensor outAt(out);
+    if (inputAt.numel() == 0) {
+        diopiScalar_t scalarOne = constructDiopiScalarT(diopi_dtype_float64, 1);
+        diopiSubInp(ctx, out, out, &scalarOne);
         return diopiSuccess;
     }
 

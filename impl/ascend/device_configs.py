@@ -2,7 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow llm used
+# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
 
 device_configs = {
     # temp for 910B
@@ -443,18 +443,6 @@ device_configs = {
                 },
             ]
         ),
-    ),
-
-    'reduce_op': dict( # llm used
-        name=['sum'],
-        atol=1e-3,
-        rtol=1e-3,
-    ),
-
-    'reduce_partial_op': dict( # llm used
-        atol=1e-3,
-        rtol=1e-3,
-        name=['sum'],
     ),
 
     'reduce_partial_op_1': dict(
@@ -1418,22 +1406,6 @@ device_configs = {
                     "shape": [Skip((1024, 384)),Skip((384, 1024)),Skip((64, 1, 128)),Skip((128, 64, 32, 3)),Skip((2, 32, 130, 100)),Skip((2, 32, 100, 150)),Skip((4, 2, 1024, 1024)),Skip((4, 284, 284)),Skip((64, 64)),Skip((4, 0)),Skip((0, 16)),Skip((6, 0, 0)),],
                 },
             ]
-        ),
-    ),
-
-    'reduce_partial_op_4': dict( # llm used
-        name=['sum'],
-        interface=['torch'],
-        atol=1e-4,
-        rtol=1e-4,
-        # temp for 910B
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ],
         ),
     ),
 
