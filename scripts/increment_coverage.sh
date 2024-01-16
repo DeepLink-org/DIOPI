@@ -22,7 +22,9 @@ if [ $parent_count -eq 1 ]; then    #no new commits in main branch
   oldcommit=$(git merge-base ${newcommit} mainrepo/main)
   if [ -z $oldcommit ]; then echo "Cannot find merge-base commit" && exit 1; fi
   echo "Found merge-base commit: $oldcommit"
+  echo "$oldcommit $newcommit"
   git diff $oldcommit $newcommit --name-only  > $ROOT_DIR/coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
+  cat $ROOT_DIR/coverage/gitdiff.txt
 else  #has new commits in main branch
   rsync -a --exclude=$cp_exclude ${ROOT_DIR}/../source coverage/ || (echo "cannot find the source dir" && exit 1)
   cd coverage/source && git reset --hard HEAD~1 &&newcommit=$(git rev-parse HEAD) &&git log  --pretty=format:"%H" -n 200 >../commit_merge.txt
@@ -35,18 +37,17 @@ else  #has new commits in main branch
   done < coverage/commit_merge.txt
   if [ -z $oldcommit ]; then echo "Cannot find merge-base commit" && exit 1; fi
   cd coverage/source
+  echo "$oldcommit $newcommit"
   git diff $oldcommit $newcommit --name-only  > $ROOT_DIR/coverage/gitdiff.txt 2>/dev/null || echo "error can be ignored"
+  cat $ROOT_DIR/coverage/gitdiff.txt
 fi
 
 cd $ROOT_DIR
 cat coverage/gitdiff.txt |egrep '\.(cpp|hpp)$'|grep "$include/" >coverage/gitdiff_screen.txt || true
+echo "coverage/gitdiff_screen.txt"
+cat coverage/gitdiff_screen.txt
 if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" ;fi
-rm -rf coverage/gitdiff.txt
-while IFS= read -r line; do
-  if [ -f "$line" ]; then
-    echo "$line" >> "coverage/gitdiff.txt"
-  fi
-done < "coverage/gitdiff_screen.txt"
+
 
 echo "export IS_cover=True" >coverage/IS_cover.txt
 pwd
