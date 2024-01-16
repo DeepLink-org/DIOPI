@@ -11,7 +11,8 @@ fi
 cd $ROOT_DIR && rm -rf coverage && mkdir coverage
 echo "entering "$ROOT_DIR
 require_coverage=$1
-
+git --version
+which git
 remote_count=$(git remote | wc -l)
 
 
@@ -48,16 +49,17 @@ echo "coverage/gitdiff_screen.txt"
 cat coverage/gitdiff_screen.txt
 if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" ;fi
 
-
 echo "export IS_cover=True" >coverage/IS_cover.txt
 pwd
-gcovr --csv --gcov-ignore-errors=no_working_dir_found > coverage/coverage.csv
+gcovr --version
+which gcovr
+gcovr --csv --gcov-ignore-errors=no_working_dir_found > coverage/coverage.csv 2>/dev/null
 cat coverage/coverage.csv
 sed -i '1d' coverage/coverage.csv
 cat coverage/coverage.csv
-mkdir coverage/html
-gcovr -r . --html --html-details --gcov-ignore-errors=no_working_dir_found -o coverage/html/index.html
-python scripts/increment_coverage.py $ROOT_DIR/coverage/ $require_coverage
+#mkdir coverage/html
+#gcovr -r . --html --html-details --gcov-ignore-errors=no_working_dir_found -o coverage/html/index.html
+#python scripts/increment_coverage.py $ROOT_DIR/coverage/ $require_coverage
 source coverage/IS_cover.txt
 if [ $IS_cover == 'True' ]; then
   exit 0
