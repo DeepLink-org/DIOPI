@@ -469,18 +469,6 @@ device_configs = {
         ),
     ),
 
-    'matmul': dict(
-        name=['matmul'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 31, 6, 40, 512)),],
-                },
-            ]
-        ),
-    ),
-
     'reduce_op': dict( # llm used
         name=['sum'],
         atol=1e-3,
