@@ -218,7 +218,7 @@ diopiError_t permuteTensor(DiopiTensor& t, const std::vector<int32_t>& order) {
 
 // inplace contiguous, support NCHW <-> NHWC, NCDHW <-> NDHWC  NCL <-> NLC
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat) {
-    if (!denseCheck(src) && memoryFormat == diopiMemoryFormat_t::Preserve) {
+    if (!denseCheck(src)) {
         DiopiTensor denseOut;
         toDense(ctx, src, denseOut);
         src = denseOut;

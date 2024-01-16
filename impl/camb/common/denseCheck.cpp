@@ -62,6 +62,33 @@ bool isSlice(const DiopiTensor& src) {
     return true;
 }
 
+bool isSparse(const DiopiTensor& src) {
+    int dim = src.dim();
+    std::vector<std::pair<int64_t, int64_t>> stridesSizes(dim, std::pair<int64_t, int64_t>(1, 1));
+
+    for (int i = 0; i < dim; i++) {
+        stridesSizes[i] = std::pair<int64_t, int64_t>(src.stride()[i], src.shape()[i]);
+
+        if (src.stride()[i] == 0 || src.shape()[i] == 0) {
+            return false;
+        }
+    }
+
+    sort(stridesSizes.begin(), stridesSizes.end(), [](std::pair<int64_t, int64_t> a, std::pair<int64_t, int64_t> b) { return a.first < b.first; });
+
+    // sizes: [128, 768, 14, 14], stride: [151296, 1, 10752, 768]
+    int cur = 1;
+
+    for (int i = 0; i < dim; i++) {
+        if (stridesSizes[i].first < cur) {
+            return false;
+        }
+        cur = stridesSizes[i].second * stridesSizes[i].first;
+    }
+
+    return true;
+}
+
 diopiError_t getDenseStride(const DiopiTensor& src, std::vector<int64_t>& dstStride) {
     int64_t dim = src.dim();
     std::vector<std::pair<int64_t, int64_t>> stridesSizes(dim, std::pair<int64_t, int64_t>(1, 1));
