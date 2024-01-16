@@ -154,12 +154,12 @@ diopiError_t toDense(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& ds
         getDenseStride(src, targetStride);
         dst = requiresTensor(ctx, src.shape(), targetStride, src.dtype());
         sliceToDense(ctx, src, dst);
-    }else if(isSparse(src)){
+    } else if (isSparse(src)) {
         std::vector<int64_t> targetStride(src.dim(), 0);
         getDenseStride(src, targetStride);
         dst = requiresTensor(ctx, src.shape(), targetStride, src.dtype());
         sliceToDense(ctx, src, dst);
-    } else{
+    } else {
         // for some special cases(broadcast), we set it as contiguous copy, but can be modified in the future
         dst = requiresTensor(ctx, src.shape(), src.dtype(), diopiMemoryFormat_t::Contiguous);
         CnnlTensorDesc srcTensorDesc(src, CNNL_LAYOUT_ARRAY);
