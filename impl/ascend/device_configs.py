@@ -231,14 +231,6 @@ device_configs = {
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
         atol=2e-2,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((3,16,8)), Skip((4,16,12)), Skip((2,144,65,65))],
-                },
-            ]
-        ),
     ),
 
     'adaptive_max_pool2d': dict(
