@@ -10,9 +10,28 @@
 #include <diopi/diopirt.h>
 
 #include <cstdio>
+#include <map>
+#include <string>
 
 #include "ascend_helper.hpp"
 #include "litert.hpp"
+
+#include "acl/acl.h"
+// #include "all_ops.h"
+#include "graph/ascend_string.h"
+#include "ge/ge_api.h"
+#include "ge/ge_ir_build.h"
+#include "ge/ge_api_types.h"
+#include "ge/ge_error_codes.h"
+#include "ge/ge_ir_build.h"
+#include "graph/gnode.h"
+#include "graph/graph.h"
+// #include "litert.hpp"
+// #include "tensor.h"
+#include "graph/types.h"
+using namespace ge;
+
+
 namespace impl {
 namespace ascend {
 
@@ -72,6 +91,13 @@ diopiError_t initLibrary() {
     CALL_ACLRT(aclrtSetDeviceSatMode(ACL_RT_OVERFLOW_MODE_INFNAN));
     // aclrtContext context;
     // CALL_ACLRT(aclrtCreateContext(&context, 0));
+    
+    std::string path = "/home/code/DIOPI/diopi_test/python/fusion_switch_file.cfg";
+    // std::map<std::string, std::string> global_options = {
+    //     {std::string(ge::ir_option::FUSION_SWITCH_FILE), std::string(path.c_str())},
+    // };
+    // CALL_ACLRT(ge::aclgrphBuildInitialize(global_options));
+    std::cout << "ascend_npu success initLibrary" << std::endl;
     return diopiSuccess;
 }
 
