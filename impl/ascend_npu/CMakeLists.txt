@@ -17,64 +17,37 @@ message(STATUS "op-plugin download done")
 add_custom_target(op_plugin_gen
   COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.0 python
 )
-
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
 
-if(NOT DEFINED PYTHON_INCLUDE_DIR)
-execute_process(
-  COMMAND sh -c "dirname $(find  $(dirname $(which python))/../ -name Python.h)"
-  OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
-endif()
-include_directories(SYSTEM ${PYTHON_INCLUDE_DIR})
-message(STATUS "PYTHON_INCLUDE_DIR: " ${PYTHON_INCLUDE_DIR})
+# find python3
+find_package(Python COMPONENTS Interpreter Development)
+MESSAGE(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+MESSAGE(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
+include_directories(SYSTEM ${Python_INCLUDE_DIRS})
+link_directories(${Python_LIBRARIES})
 
+# find torch
 if(NOT DEFINED PYTORCH_DIR)
   execute_process(
-    COMMAND sh -c "dirname $(python -c 'import torch;print(torch.__path__[0])')"
+    COMMAND sh -c "python -c 'import torch;print(torch.__path__[0])'"
     OUTPUT_VARIABLE PYTORCH_DIR
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
-set(TORCH_LIBRARY_DIR "${PYTORCH_DIR}/torch/lib")
-link_directories(${TORCH_LIBRARY_DIR})
-list(APPEND TORCH_INCLUDE_DIRS ${PYTORCH_DIR}/torch/include/
-     ${PYTORCH_DIR}/torch/include/torch/csrc/api/include/)
+find_package(Torch REQUIRED
+    PATHS  ${PYTORCH_DIR}
+)
+message(STATUS "TORCH_INSTALL_PREFIX:" ${TORCH_INSTALL_PREFIX})
+message(STATUS "TORCH_CXX_FLAGS:" ${TORCH_CXX_FLAGS})   # include -D_GLIBCXX_USE_CXX11_ABI
+message(STATUS "TORCH_INCLUDE_DIRS:" ${TORCH_INCLUDE_DIRS})
+
 include_directories(SYSTEM ${TORCH_INCLUDE_DIRS})
-message(STATUS "Torch TORCH_INCLUDE_DIRS: ${TORCH_INCLUDE_DIRS}")
-
-# if(NOT DEFINED DIPU_ABI_V)
-#   execute_process(
-#     COMMAND
-#       sh -x -c
-#       "python -c 'import torch, builtins; print(next(item[-4:-2] for item in dir(builtins)      \
-#           if \"__pybind11_internals_v4_gcc_libstdcpp_cxxabi10\" in item))'"
-#     OUTPUT_VARIABLE DIPU_ABI_V)
-# endif()
-
-if(NOT DEFINED DIPU_COMPILED_WITH_CXX11_ABI)
-execute_process(
-    COMMAND
-      sh -x -c
-      "python -c 'import torch;print(1 if torch.compiled_with_cxx11_abi() else 0)'"
-    OUTPUT_VARIABLE DIPU_COMPILED_WITH_CXX11_ABI)
-endif()
-
-if(DIPU_COMPILED_WITH_CXX11_ABI GREATER 0)
-  set(DIPU_COMPILED_WITH_CXX11_ABI 1)
-else()
-  set(DIPU_COMPILED_WITH_CXX11_ABI 0)
-endif()
-
-# add_definitions(-fabi-version=${DIPU_ABI_V})
-# message(STATUS "DIPU_ABI_V: ${DIPU_ABI_V}")
+link_directories(${TORCH_INSTALL_PREFIX}/lib)
 
 # Because many interfaces have not yet been implemented, -Wreturn-type=0 option is temporarily added.
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable -g -O0 "
+    "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable -g -O0 "
 )
-add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=${DIPU_COMPILED_WITH_CXX11_ABI})
-message(STATUS "DIPU_COMPILED_WITH_CXX11_ABI:" ${DIPU_COMPILED_WITH_CXX11_ABI})
-
 
 set(OP_PLUGIN_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/aclops/)
 set(OP_PLUGIN_UTILS_DIR ${op_plugin_SOURCE_DIR}/op_plugin/utils/)
@@ -655,6 +628,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
     ${OLD_IMPL_DIR}/common/stream_lock.cpp
     ${OLD_IMPL_DIR}/env_vars.cpp
+    ${OLD_IMPL_DIR}/init.cpp
 )
 
 list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC} ${OLD_IMPL_SRC})
@@ -702,7 +676,7 @@ add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 add_dependencies(${DEVICEIMPL} op_plugin_gen)
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 target_include_directories(${DEVICEIMPL} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE_DIRS})
-target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler graph c10 torch_cpu)
+target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler graph c10 torch_cpu ${Python_LIBRARIES})
 
 if(USE_ADAPTOR)
     add_dependencies(${DEVICEIMPL} adaptor_code_gen)
