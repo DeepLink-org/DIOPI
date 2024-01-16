@@ -4,8 +4,5 @@
 - diopiMaxPool2dWithIndices:
     layout: NCHW
 
-- diopiMaxPool2d:
-    layout: NCHW
-
 - diopiMaxPool2dBackward:
     layout: NCHW
