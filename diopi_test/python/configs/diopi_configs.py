@@ -8166,7 +8166,8 @@ diopi_configs = {
                 },
             ],
         ),
-        saved_args=dict(grad_outputs=0, inv_rms=1),
+        # saved_args=dict(grad_outputs=0, inv_rms=1),
+        saved_args=dict(inv_rms=1),
         requires_backward=[0],
     ),
 

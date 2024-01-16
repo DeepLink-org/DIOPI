@@ -5177,7 +5177,7 @@ def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_sha
     grad_bias = Tensor(list(bias.size().data), bias.get_dtype())
     normalized_shape = Sizes(list(normalized_shape))
 
-    ret = func(input.context(), grad_input, grad_weight, grad_bias, grad_outputs, input, weight, bias, inv_rms,
+    ret = func(input.context(), grad_input, grad_weight, grad_bias, grad_outputs[0], input, weight, bias, inv_rms,
                normalized_shape, eps)
     check_returncode(ret)
     return {'input': grad_input, 'weight': grad_weight}
