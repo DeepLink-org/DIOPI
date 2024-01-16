@@ -222,7 +222,7 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryF
         DiopiTensor denseOut;
         toDense(ctx, src, denseOut);
         src = denseOut;
-        if (memoryFormat != diopiMemoryFormat_t::Preserve) {
+        if (memoryFormat == diopiMemoryFormat_t::Preserve) {
             // no need for further permute, if memoryFormat is Preserve.
             return diopiSuccess;
         }
