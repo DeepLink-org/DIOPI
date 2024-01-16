@@ -2,7 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm llm used
+# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow llm used
 
 device_configs = {
     # temp for 910B
@@ -231,14 +231,6 @@ device_configs = {
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
         atol=2e-2,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((3,16,8)), Skip((4,16,12)), Skip((2,144,65,65))],
-                },
-            ]
-        ),
     ),
 
     'adaptive_max_pool2d': dict(
@@ -428,42 +420,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((16,)),Skip((8, 64)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_tensor': dict( # llm used
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_tensor_only_0_1': dict( # llm used
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_diff_dtype': dict( # llm used
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),Skip(np.float32),Skip(np.float16),Skip(np.int32),Skip(np.float64),Skip(np.float32),Skip(np.float32),Skip(np.int16),Skip(np.int64),],
                 },
             ]
         ),
@@ -1117,61 +1073,36 @@ device_configs = {
 
     'index_put_acc_three_indices': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
     'index_put_acc_two_indices': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
     'index_put_acc_one_indices': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
     'index_put_acc_bool_indices_zeros': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.int64),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
     'index_put_one_indices': dict( # llm used
         name=['index_put'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
+        para=dict(
+            accumulate=[Skip(False),],
         ),
     ),
 
@@ -1389,15 +1320,12 @@ device_configs = {
         ),
     ),
 
+    # Ascend Not support Tile shape max than 8 on dynamic rank case.
     'repeat': dict( # llm used
         name=['repeat'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((4, 2, 3, 5)), Skip(()), Skip((0,)), Skip((12, 0)), Skip((4, 0, 9))],
-                },
-            ]
+        para=dict(
+            repeats=
+                [Skip((3, 4, 6, 3, 5))],
         ),
     ),
 
