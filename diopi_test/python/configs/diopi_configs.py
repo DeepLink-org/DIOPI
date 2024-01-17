@@ -5861,14 +5861,14 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((8, 48), (4, 128), (256, 8)),
-                    "dtype": [np.float32, np.float64],
+                    "shape": ((8, 48), (4, 128), (256, 8), (8, 0), (0, 128), (256, 8)),
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
                 {
                     "ins": ['mat2'],
-                    "shape": ((48, 128), (128, 128), (8, 1)),
-                    "dtype": [np.float32, np.float64],
+                    "shape": ((48, 128), (128, 128), (8, 1), (0, 128), (128, 128), (8, 0)),
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
             ],
@@ -5882,13 +5882,13 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((8, 0), (0, 128), (256, 8)),
+                    "shape": ((8, 48),),
                     "dtype": [np.float32, np.float16, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
                 {
                     "ins": ['mat2'],
-                    "shape": ((0, 128), (128, 128), (8, 0)),
+                    "shape": ((48, 128),),
                     "dtype": [np.float16, np.float64, np.float32],
                     "gen_fn": 'Genfunc.randn',
                 },
