@@ -671,6 +671,18 @@ device_configs = {
         ),
     ),
 
+    'mm_diff_dtype': dict(
+        name=['mm'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": (Skip((8, 0)),),
+                }
+            ],
+        ),
+    ),
+
     'expand': dict(
         name=['expand'],
         interface=['torch.Tensor'],
