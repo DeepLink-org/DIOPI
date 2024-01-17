@@ -40,7 +40,7 @@ fi
 
 cd $ROOT_DIR
 cat coverage/gitdiff.txt |egrep '\.(cpp|hpp)$'|grep "$include/" >coverage/gitdiff_screen.txt || true
-if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" ;fi
+if [ ! -s coverage/gitdiff_screen.txt ]; then echo "No C/C++ in incremental code" && exit 0;fi
 rm -rf coverage/gitdiff.txt
 while IFS= read -r line; do
   if [ -f "$line" ]; then
@@ -49,11 +49,7 @@ while IFS= read -r line; do
 done < "coverage/gitdiff_screen.txt"
 
 echo "export IS_cover=True" >coverage/IS_cover.txt
-pwd
-gcovr --version
-which gcovr
 gcovr --csv --gcov-ignore-errors=no_working_dir_found > coverage/coverage.csv 2>/dev/null
-cat coverage/coverage.csv
 sed -i '1d' coverage/coverage.csv
 mkdir coverage/html
 gcovr -r . --html --html-details --gcov-ignore-errors=no_working_dir_found -o coverage/html/index.html 2>/dev/null
