@@ -5882,13 +5882,13 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((8, 48),),
+                    "shape": ((0, 128),),
                     "dtype": [np.float32, np.float16, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
                 {
                     "ins": ['mat2'],
-                    "shape": ((48, 128),),
+                    "shape": ((128, 128),),
                     "dtype": [np.float16, np.float64, np.float32],
                     "gen_fn": 'Genfunc.randn',
                 },
