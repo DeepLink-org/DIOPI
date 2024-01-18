@@ -660,7 +660,7 @@ device_configs = {
         name=['mm'],
         # FIXME 模型测例精度异常
         atol=1e-2,
-        rtol=1e-2
+        rtol=1e-2,
         tensor_para=dict(
             args=[
                 {
