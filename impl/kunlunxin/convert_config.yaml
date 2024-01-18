@@ -1,2 +1,8 @@
 - common_config:
     dtype: (float64)->float32, (int64)->int32
+
+- diopiMaxPool2dWithIndices:
+    layout: NCHW
+
+- diopiMaxPool2dBackward:
+    layout: NCHW

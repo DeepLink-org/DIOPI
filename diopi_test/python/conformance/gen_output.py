@@ -250,10 +250,12 @@ class CustomizedTest(object):
         return out
 
     def rms_norm(input, normalized_shape, weight, bias, eps):
-        variance = input.to(torch.float32).pow(2).mean(-1, keepdim=True)
-        input = input * torch.rsqrt(variance + eps)
-        out = weight * input
-        return out
+        var = input.to(torch.float32).pow(2).mean(-1, keepdim=True)
+        inv_rms = torch.rsqrt(var + eps)
+        inp = input * inv_rms
+        out = weight * inp
+
+        return (out, inv_rms)
 
     def multihead_attention(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
@@ -341,8 +343,11 @@ class GenOutputData(object):
     db_case_items = {}
 
     @staticmethod
-    def run(diopi_item_config_path='diopi_case_items.cfg', input_path='data/inputs/',
-            output_path='data/outputs/', fname='all_ops', model_name='diopi'):
+    def run(diopi_item_config_path='diopi_case_items.cfg',
+            input_path='data/inputs/',
+            output_path='data/outputs/',
+            fname='all_ops',
+            model_name='diopi'):
         if not os.path.exists(input_path):
             logger.error("Input data is not generated!")
             sys.exit(0)
@@ -375,9 +380,11 @@ class GenOutputData(object):
                 output, saved_grads = gen_tensor_obj.gen_data(input_)
                 item['result'] = 'passed'
             except Exception as err_msg:
-                raise GenDataFailedException(f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
+                raise GenDataFailedException(
+                    f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
             GenOutputData.db_case_items[case_name] = item
             if output is not None:
+                # import pdb; pdb.set_trace()
                 with open(os.path.join(output_path, case_name), "wb") as f:
                     pickle.dump(GenOutputData.to_numpy(output), f, protocol=4)
                     logger_str = "output"

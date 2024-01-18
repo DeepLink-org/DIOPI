@@ -5151,7 +5151,9 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     func = check_function(call)
     size = list(input.size().data)
     out = Tensor(size, input.get_dtype())
-    inv_rms = Tensor(size, input.get_dtype())
+    inv_rms_size = size.copy()
+    inv_rms_size[-1] = 1
+    inv_rms = Tensor(inv_rms_size, input.get_dtype())
     normalized_shape = Sizes(list(normalized_shape))
     ret = func(
         input.context(),
@@ -5164,36 +5166,21 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
         eps,
     )
     check_returncode(ret)
-    GLOBAL_STATE["rms_norm_inv_rms"] = inv_rms
-    return out
+    return (out, inv_rms)
 
 
-def rms_norm_backward(input, grad_outputs, normalized_shape, weight, bias, eps):
-    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_shape, eps):
     call = "diopiRMSNormBackward"
     func = check_function(call)
-    grad_input = raw_like(input)
-    grad_weight = raw_like(weight)
-    grad_bias = raw_like(bias)
-    inv_rms = GLOBAL_STATE.pop('rms_norm_inv_rms')
+    grad_input = Tensor(list(input.size().data), input.get_dtype())
+    grad_weight = Tensor(list(weight.size().data), weight.get_dtype())
+    grad_bias = Tensor(list(bias.size().data), bias.get_dtype())
     normalized_shape = Sizes(list(normalized_shape))
-    out = {'input': grad_input, 'weight': grad_weight}
-    ret = func(
-        input.context(),
-        grad_input,
-        grad_weight,
-        grad_bias,
-        grad_outputs[0],
-        input,
-        weight,
-        bias,
-        inv_rms,
-        normalized_shape,
-        eps,
-    )
-    check_returncode(ret)
-    return out
 
+    ret = func(input.context(), grad_input, grad_weight, grad_bias, grad_outputs[0], input, weight, bias, inv_rms,
+               normalized_shape, eps)
+    check_returncode(ret)
+    return {'input': grad_input, 'weight': grad_weight}
 
 def multihead_attention(
     q, k, v, dropout_p, is_causal, return_debug_mask, scale, generator=None

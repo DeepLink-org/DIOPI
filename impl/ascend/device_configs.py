@@ -231,14 +231,6 @@ device_configs = {
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
         atol=2e-2,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((3,16,8)), Skip((4,16,12)), Skip((2,144,65,65))],
-                },
-            ]
-        ),
     ),
 
     'adaptive_max_pool2d': dict(
@@ -439,7 +431,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((128, 49, 128)),Skip((5,)),Skip((128, 4, 49, 32)),Skip((2, 1, 3136, 3136)),Skip((2, 784, 64)),Skip((2, 16, 8, 64)),Skip((2, 31, 6, 40, 512)),],
+                    "shape": [Skip((2, 31, 6, 40, 512)),],
                 },
             ]
         ),
@@ -786,6 +778,14 @@ device_configs = {
                 },
             ]
         ),
+    ),
+
+    'rms_norm': dict(
+        name=['rms_norm'],
+        atol=1e-3,
+        rtol=1e-3,
+        atol_half=1e-2,
+        rtol_half=1e-2,
     ),
 
     'smooth_l1_loss': dict(
