@@ -1107,7 +1107,7 @@ device_configs = {
 
     'amax': dict(
         name=['amax'],
-        interface=['torch'],,
+        interface=['torch'],
         tensor_para=dict(
             args=[
                 {
