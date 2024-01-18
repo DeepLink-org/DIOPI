@@ -8,14 +8,25 @@
 #include <acl/acl.h>
 #include <acl/acl_op.h>
 #include <acl/acl_op_compiler.h>
+#include <bits/types/FILE.h>
 #include <conform_test.h>
 #include <diopi/diopirt.h>
 
 #include <cstdio>
+#include <map>
 
 #include "../ascend_tensor.hpp"
 #include "../error.hpp"
+#include "ascend_string.h"
+#include "ge_api.h"
+#include "ge_api_types.h"
+#include "ge_error_codes.h"
+#include "ge_ir_build.h"
+#include "gnode.h"
+#include "graph.h"
 #include "litert.hpp"
+#include "tensor.h"
+#include "types.h"
 namespace impl {
 namespace ascend {
 
@@ -69,12 +80,17 @@ diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst
 }
 
 diopiError_t initLibrary() {
-    std::cout << "diopi test in OLD test." << std::endl;
     CALL_ACLRT(aclInit(nullptr));
     CALL_ACLRT(aclrtSetDevice(0));
     CALL_ACLRT(aclrtSetDeviceSatMode(ACL_RT_OVERFLOW_MODE_INFNAN));
     aclrtContext context;
     CALL_ACLRT(aclrtCreateContext(&context, 0));
+    std::string path = "/home/code/DIOPI/diopi_test/python/fusion_switch_file.cfg";
+    std::map<AscendString, AscendString> global_options = {
+        {AscendString(ge::ir_option::FUSION_SWITCH_FILE), AscendString(path.c_str())},
+    };
+    CALL_ACLRT(aclgrphBuildInitialize(global_options));
+    std::cout << "success initLibrary" << std::endl;
     return diopiSuccess;
 }
 

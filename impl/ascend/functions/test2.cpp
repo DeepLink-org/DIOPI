@@ -1,0 +1,22 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+#include <diopi/functions.h>
+#include "../common/acloprunner.hpp"
+namespace impl {
+namespace ascend {
+
+extern "C" {
+DIOPI_API diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
+    std::vector<diopiConstTensorHandle_t> dynamicInput(tensors, tensors + numInputs);
+    AclOpRunner<1, 1>("ConcatD", ctx)
+        .addDynamicInput(dynamicInput, diopi_dtype_float32)
+        .setAttr("N", numInputs)
+        .setAttr("concat_dim", dim)
+        .addOutput(out)
+        .run();
+    return diopiSuccess;
+}
+}

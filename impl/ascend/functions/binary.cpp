@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "../common/acloprunner.hpp"
+#include "../common/debug.hpp"
 #include "../aclnn/aclnn.hpp"
 
 namespace impl {
@@ -64,7 +65,13 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     int32_t deviceId = 0;
     aclrtContext context;
     aclrtStream stream;
+    diopiGetStream(ctx, &stream);
+    AscendTensor inAt(input), oAt(other);
+    printContiguousTensor(ctx, inAt, "inAT");
+    printContiguousTensor(ctx, oAt, "oAt");
     auto ret = aclnnAddTest(deviceId, context, stream, input, other, alpha, out);
+    AscendTensor outAt(out);
+    printContiguousTensor(ctx, outAt, "outAt");
 #endif
     return diopiSuccess;
 }
