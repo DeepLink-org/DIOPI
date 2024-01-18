@@ -10,3 +10,8 @@ class InputChangedException(Exception):
 class OutputCheckFailedException(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
+
+class GenDataFailedException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
