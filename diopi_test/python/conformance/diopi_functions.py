@@ -5182,6 +5182,7 @@ def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_sha
     check_returncode(ret)
     return {'input': grad_input, 'weight': grad_weight}
 
+
 def multihead_attention(
     q, k, v, dropout_p, is_causal, return_debug_mask, scale, generator=None
 ):
