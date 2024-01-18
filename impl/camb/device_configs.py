@@ -212,6 +212,31 @@ device_configs = {
         ),
     ),
 
+    'binary_cross_entropy_with_logits': dict(
+        name=["binary_cross_entropy_with_logits"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": (Skip((0,)), Skip((4, 0)), Skip((9, 0, 16))),
+                },
+                {
+                    "ins": ['weight'],
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.uint8), Skip(np.int8)],
+                },
+                {
+                    "ins": ['pos_weight'],
+                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64),
+                              Skip(np.uint8), Skip(np.int8)],
+                },
+            ],
+        ),
+    ),
+
     # FIXME 模型测例精度异常
     'atan': dict(
         name=["atan"],
@@ -353,6 +378,14 @@ device_configs = {
         atol=0.001,
         rtol=0.0001,
         name=['mean', 'sum'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float16)],
+                },
+            ],
+        ),
     ),
 
     'sum': dict(
@@ -706,8 +739,13 @@ device_configs = {
 
     'norm': dict(
         name=['norm'],
-        para=dict(
-            p=[Skip(0), Skip(2.5), Skip(float('inf')), Skip(-float('inf')), Skip(-2), Skip(2), Skip(0)],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ],
         ),
     ),
 
@@ -992,6 +1030,18 @@ device_configs = {
                     "ins": ['input'],
                     # input dims should be 4D for cnnlReflectionPad2d
                     "shape": [Skip((4, 5)),],
+                },
+            ],
+        ),
+    ),
+
+    'constant_pad': dict(
+        name=['pad'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip(())],
                 },
             ],
         ),
