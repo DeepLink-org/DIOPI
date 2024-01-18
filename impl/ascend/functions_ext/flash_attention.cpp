@@ -64,31 +64,31 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     ASCEND_CHECK_ABORT(vTensor.dim() == 4, "The shapes of the input value should be 4-dimensional");
     ASCEND_CHECK_ABORT(keepProb >= 0 && keepProb <= 1, "The keep_prob value must be in range of [0, 1]");
 
-    // 华为位置编码pse、paddmask直接传undefined tensor
-    AscendTensor pseTensor;            // flash attention标准定义用不到位置编码
-    AscendTensor paddingMaskTensor;    // 华为暂不支持，只支持定长
-    AscendTensor attentionMaskTensor;  // attention mask依赖是否用到casual
-    if (isCausal) {
-        // makeTensorLike(ctx, attentionMaskTensor, qTensor);
-        // diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float64, -INFINITY);
-        // diopiFill(ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), &value);
-        // diopiTriuInp(ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), 1);
-
-        // 最新文档 attenMaskOptional（aclTensor*，计算输入）：数据类型支持：BOOL。数据格式支持ND。
-        makeTensorLike(ctx, attentionMaskTensor, qTensor, diopi_dtype_bool);
-        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_int64, 1);
-        diopiFill(ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), &value);
-        diopiTril(
-            ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), 1);
-    }
-
     std::string inputLayout = "BSND";
-
     int64_t B = qTensor.shape[0];
     int64_t S0 = qTensor.shape[1];  // S for query
     int64_t S1 = kTensor.shape[1];  // S for key & value
     int64_t N = qTensor.shape[2];
     int64_t D = qTensor.shape[3];
+
+    // 华为位置编码pse、paddmask直接传undefined tensor
+    AscendTensor pseTensor;            // flash attention标准定义用不到位置编码
+    AscendTensor paddingMaskTensor;    // 华为暂不支持，只支持定长
+    AscendTensor attentionMaskTensor;  // attention mask依赖是否用到casual
+    if (isCausal) {
+        // makeTensor(ctx, attentionMaskTensor, {S0, S1}, qTensor.type());
+        // diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float64, -INFINITY);
+        // diopiFill(ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), &value);
+        // diopiTriuInp(ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), 1);
+
+        // 最新文档 attenMaskOptional（aclTensor*，计算输入）：数据类型支持：BOOL。数据格式支持ND。
+        // 完整的attenmask矩阵（S1 * S2）
+        makeTensor(ctx, attentionMaskTensor, {S0, S1}, diopi_dtype_bool);
+        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_int64, 1);
+        diopiFill(ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), &value);
+        diopiTril(
+            ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), 1);
+    }
 
     diopiTensorHandle_t dropMask;
     int64_t numels = B * N * S0 * S0;  // （B,N,S,S）
@@ -109,26 +109,6 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     int32_t innerPrecise = 0;  // 数据类型支持INT32，保留参数，暂未使用。0, fp16 high precision. 1, high performance.
     int64_t preTokens = kTensor.shape[1];
     int64_t nextTokens = 0;
-
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScore,
-                                 qTensor,
-                                 kTensor,
-                                 vTensor,
-                                 pseTensor,
-                                 dropMask,
-                                 paddingMaskTensor,
-                                 attentionMaskTensor,
-                                 softmaxScale,
-                                 keepProb,
-                                 preTokens,
-                                 nextTokens,
-                                 N,
-                                 inputLayoutPtr,
-                                 innerPrecise,
-                                 softmaxMaxTensor,
-                                 softmaxSumTensor,
-                                 softmaxOutTensor,
-                                 outTensor);
 
     // aclnnStatus aclnnFlashAttentionScoreGetWorkspaceSize(
     // const aclTensor *query,
@@ -153,6 +133,8 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     // const aclTensor *attentionOutOut,
     // uint64_t *workspaceSize,
     // aclOpExecutor **executor);
+
+
     *softmaxMax = softmaxMaxTensor;
     *softmaxSum = softmaxSumTensor;
     *softmaxOut = softmaxOutTensor;
@@ -184,22 +166,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                                    diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t softmax_max,
                                                    diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, diopiGeneratorHandle_t gen,
-                                                   double p_dropout, double softmax_scale, bool is_causal) {
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                                    
-                                                   }
+                                                   double p_dropout, double softmax_scale, bool is_causal) {}
 
 }  // namespace ascend
 }  // namespace impl
