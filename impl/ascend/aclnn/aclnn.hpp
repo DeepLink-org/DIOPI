@@ -16,6 +16,8 @@
 #include "../ascend_tensor.hpp"
 #include "acl/acl.h"
 #include "aclnnop/aclnn_add.h"  // TODO: add all
+#include "aclnnop/aclnn_sin.h"  // TODO: add all
+#include "aclnnop/aclnn_cos.h"  // TODO: add all
 #include "impl_functions.hpp"
 
 namespace impl {
@@ -36,6 +38,10 @@ namespace ascend {
 
 int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiConstTensorHandle_t other,
                  const diopiScalar_t* alpha, diopiTensorHandle_t out);
+
+int aclnnSinTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiTensorHandle_t out);
+
+int aclnnCosTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiTensorHandle_t out);
 
 }  // namespace ascend
 }  // namespace impl

@@ -117,6 +117,85 @@ int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopi
 }
 
 
+int aclnnSinTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiTensorHandle_t out1) {
+    aclrtStream stream;
+    diopiGetStream(ctx, &stream);
+    // 1.构造输入与输出，需要根据API的接口自定义构造
+    aclTensor* self = nullptr;
+    aclTensor* out = nullptr;
+    // 创建self aclTensor
+    auto ret = createAclTensor1(self1, &self);
+    CHECK_RET(ret == ACL_SUCCESS, return ret);
+    // 创建out aclTensor
+    ret = createAclTensor1(out1, &out);
+    CHECK_RET(ret == ACL_SUCCESS, return ret);
+
+    // 2.调用CANN算子库API
+    uint64_t workspaceSize = 0;
+    aclOpExecutor* executor;
+    // 调用aclnnSin第一段接口
+    ret = aclnnSinGetWorkspaceSize(self, out, &workspaceSize, &executor);
+    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnSinGetWorkspaceSize failed. ERROR: %d\n", ret); return ret);
+    // 根据第一段接口计算出的workspaceSize申请device内存
+    void* workspaceAddr = nullptr;
+    if (workspaceSize > 0) {
+        ret = aclrtMalloc(&workspaceAddr, workspaceSize, ACL_MEM_MALLOC_HUGE_FIRST);
+        CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("allocate workspace failed. ERROR: %d\n", ret); return ret;);
+    }
+    // 调用aclnnSin第二段接口
+    ret = aclnnSin(workspaceAddr, workspaceSize, executor, stream);
+    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnSin failed. ERROR: %d\n", ret); return ret);
+    // 3.(固定写法)同步等待任务执行结束
+    ret = aclrtSynchronizeStream(stream);
+    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
+
+    if (workspaceSize > 0) {
+        aclrtFree(workspaceAddr);
+    }
+
+    return 0;
+}
+
+
+int aclnnCosTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiTensorHandle_t out1) {
+    aclrtStream stream;
+    diopiGetStream(ctx, &stream);
+    // 1.构造输入与输出，需要根据API的接口自定义构造
+    aclTensor* self = nullptr;
+    aclTensor* out = nullptr;
+    // 创建self aclTensor
+    auto ret = createAclTensor1(self1, &self);
+    CHECK_RET(ret == ACL_SUCCESS, return ret);
+    // 创建out aclTensor
+    ret = createAclTensor1(out1, &out);
+    CHECK_RET(ret == ACL_SUCCESS, return ret);
+
+    // 2.调用CANN算子库API
+    uint64_t workspaceSize = 0;
+    aclOpExecutor* executor;
+    // 调用aclnnCos第一段接口
+    ret = aclnnCosGetWorkspaceSize(self, out, &workspaceSize, &executor);
+    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnCosGetWorkspaceSize failed. ERROR: %d\n", ret); return ret);
+    // 根据第一段接口计算出的workspaceSize申请device内存
+    void* workspaceAddr = nullptr;
+    if (workspaceSize > 0) {
+        ret = aclrtMalloc(&workspaceAddr, workspaceSize, ACL_MEM_MALLOC_HUGE_FIRST);
+        CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("allocate workspace failed. ERROR: %d\n", ret); return ret;);
+    }
+    // 调用aclnnCos第二段接口
+    ret = aclnnCos(workspaceAddr, workspaceSize, executor, stream);
+    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnCos failed. ERROR: %d\n", ret); return ret);
+    // 3.(固定写法)同步等待任务执行结束
+    ret = aclrtSynchronizeStream(stream);
+    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
+
+    if (workspaceSize > 0) {
+        aclrtFree(workspaceAddr);
+    }
+
+    return 0;
+}
+
 }  // namespace ascend
 }  // namespace impl
 
