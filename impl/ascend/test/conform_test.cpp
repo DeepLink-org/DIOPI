@@ -69,7 +69,6 @@ diopiError_t device_memcpy_d2d_async(diopiStreamHandle_t streamHandle, void* dst
 }
 
 diopiError_t initLibrary() {
-    std::cout << "diopi test in OLD test." << std::endl;
     CALL_ACLRT(aclInit(nullptr));
     CALL_ACLRT(aclrtSetDevice(0));
     CALL_ACLRT(aclrtSetDeviceSatMode(ACL_RT_OVERFLOW_MODE_INFNAN));
