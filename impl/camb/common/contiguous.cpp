@@ -172,7 +172,7 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     std::vector<int32_t> inputOrder(dim, 0);
     std::vector<int32_t> inputBackOrder(dim, 0);  // permuteTensor(input,inputBackOrder)->contiguous
     std::vector<int32_t> outputOrder(dim, 0);
-    std::vector<int32_t> outputBackOrder(dim, 0);   // permuteTensor(output,outputBackOrder)->contiguous
+    std::vector<int32_t> outputBackOrder(dim, 0);     // permuteTensor(output,outputBackOrder)->contiguous
     std::vector<int32_t> inputToOutputOrder(dim, 0);  // into cnnltranspose
 
     // input shape:2,3,4,5 stride:60,1,15,3 -> inputBackOrder: 0,2,3,1, inputOrder: 0,3,1,2
