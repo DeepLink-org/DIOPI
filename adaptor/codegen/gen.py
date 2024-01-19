@@ -443,7 +443,7 @@ def analysis_configs(config: List[dict], funcs_info: dict) -> dict:
                         or layout == "NCL"
                         or layout == "NDHWC"
                         or layout == "NCDHW"
-                        or layout == ND"
+                        or layout == "ND"
                     ):
                         op_layouts.append(layout)
                     else:
