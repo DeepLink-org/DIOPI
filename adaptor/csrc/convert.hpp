@@ -246,5 +246,4 @@ public:
     operator diopiTensorHandle_t() { return tmp_; }
 };
 
-#endif
-// DIOPI_ADAPTOR_CSRC_CONVERT_HPP_
+#endif  // DIOPI_ADAPTOR_CSRC_CONVERT_HPP_
