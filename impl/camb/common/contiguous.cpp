@@ -169,18 +169,18 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     DIOPI_CHECK(dim <= 8, "only support less than 8d tensor currently");
     bool srcIsContiguous = src.isContiguous();
     bool destIsContiguous = dest.isContiguous();
-    std::vector<int32_t> input_order(dim, 0);
-    std::vector<int32_t> input_back_order(dim, 0);  // permuteTensor(input,input_back_order)->contiguous
-    std::vector<int32_t> output_order(dim, 0);
-    std::vector<int32_t> output_back_order(dim, 0);      // permuteTensor(output,output_back_order)->contiguous
-    std::vector<int32_t> input_to_output_order(dim, 0);  // into cnnltranspose
+    std::vector<int32_t> inputOrder(dim, 0);
+    std::vector<int32_t> inputBackOrder(dim, 0);  // permuteTensor(input,inputBackOrder)->contiguous
+    std::vector<int32_t> outputOrder(dim, 0);
+    std::vector<int32_t> outputBackOrder(dim, 0);     // permuteTensor(oBputO)->contiguous
+    std::vector<int32_t> inputToOutputOrder(dim, 0);  // into cnnltranspose
 
-    // input shape:2,3,4,5 stride:60,1,15,3 -> input_back_order: 0,2,3,1, input_order: 0,3,1,2
-    // output shape:2,3,4,5 stride:60,20,1,4 -> output_back_order: 0,1,3,2, output_order: 0,1,3,2
-    // input_to_output_order: 0,2,1,3
+    // input shape:2,3,4,5 stride:60,1,15,3 -> inputBackOrder: 0,2,3,1, inputOrder: 0,3,1,2
+    // output shape:2,3,4,5 stride:60,20,1B ->O: 0,1,3,2, outputOrder: 0,1,3,2
+    // inputToOutputOrder: 0,2,1,3
 
-    getPermuteOrder(src, input_order, input_back_order);
-    getPermuteOrder(dest, output_order, output_back_order);
+    getPermuteOrder(src, inputOrder, inputBackOrder);
+    getPermuteOrder(dest, outputOBer, O);
 
     cnnlTensorLayout_t srcLayout = CNNL_LAYOUT_ARRAY;
     cnnlTensorLayout_t destLayout = CNNL_LAYOUT_ARRAY;
@@ -192,18 +192,18 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
 
     // permute to get contiguous tensor
     if (!destIsContiguous) {
-        DIOPI_CALL(permuteTensor(dest, output_back_order));
+        DIOPI_CALL(permuteTensor(Bst, O));
     }
 
     if (!srcIsContiguous) {
-        DIOPI_CALL(permuteTensor(src, input_back_order));
+        DIOPI_CALL(permuteTensor(src, inputBackOrder));
     }
 
     for (int i = 0; i < dim; ++i) {
-        input_to_output_order[i] = input_order[output_back_order[i]];
+        inputToOutputOrder[i] = inputBderO[i]];
     }
 
-    DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, input_to_output_order));
+    DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, inputToOutputOrder));
 
     // recovery the shape and strides
     if (!destIsContiguous) {
