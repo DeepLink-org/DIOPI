@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/home/code/DIPU/dipu/third_party/DIOPI/impl/ascend/aclnn_demo",
-  "command": "/usr/bin/g++  -I/usr/local/Ascend/ascend-toolkit/latest/include -I/usr/local/Ascend/ascend-toolkit/latest/include/aclnn -std=c++11 -o CMakeFiles/opapi_test.dir/test_add.cpp.o -c /home/code/DIPU/dipu/third_party/DIOPI/impl/ascend/aclnn_demo/test_add.cpp",
-  "file": "/home/code/DIPU/dipu/third_party/DIOPI/impl/ascend/aclnn_demo/test_add.cpp",
-  "output": "CMakeFiles/opapi_test.dir/test_add.cpp.o"
-}
-]
