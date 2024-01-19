@@ -49,10 +49,10 @@ while IFS= read -r line; do
 done < "coverage/gitdiff_screen.txt"
 
 echo "export IS_cover=True" >coverage/IS_cover.txt
-gcovr --csv --gcov-ignore-errors=no_working_dir_found > coverage/coverage.csv
+gcovr --csv --gcov-ignore-errors=no_working_dir_found > coverage/coverage.csv 2>/dev/null
 sed -i '1d' coverage/coverage.csv
 mkdir coverage/html
-gcovr -r . --html --html-details --gcov-ignore-errors=no_working_dir_found -o coverage/html/index.html
+gcovr -r . --html --html-details --gcov-ignore-errors=no_working_dir_found -o coverage/html/index.html 2>/dev/null
 python scripts/increment_coverage.py $ROOT_DIR/coverage/ $require_coverage
 source coverage/IS_cover.txt
 if [ $IS_cover == 'True' ]; then
