@@ -62,11 +62,7 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     if (outDtype != highType) diopiCastDtype(ctx, out, outTemp);
 #else
-    int32_t deviceId = 0;
-    aclrtContext context;
-    aclrtStream stream;
-    diopiGetStream(ctx, &stream);
-    auto ret = aclnnAddTest(deviceId, context, stream, input, other, alpha, out);
+    auto ret = aclnnAddTest(ctx, input, other, alpha, out);
 #endif
     return diopiSuccess;
 }

@@ -34,7 +34,7 @@ namespace ascend {
     } while (0)
 
 
-int aclnnAddTest(int32_t deviceId, aclrtContext& context, aclrtStream& stream, diopiConstTensorHandle_t self, diopiConstTensorHandle_t other,
+int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiConstTensorHandle_t other,
                  const diopiScalar_t* alpha, diopiTensorHandle_t out);
 
 }  // namespace ascend

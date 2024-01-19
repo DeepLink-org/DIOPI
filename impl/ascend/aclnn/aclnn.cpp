@@ -5,6 +5,7 @@
  */
 
 #include "aclnn.hpp"
+
 #include <acl/acl_rt.h>
 #include <numeric>
 #include <valarray>
@@ -17,22 +18,20 @@
 namespace impl {
 namespace ascend {
 
-int CreateAclTensor1(diopiConstTensorHandle_t input, aclTensor** tensor) {
+int createAclTensor1(diopiConstTensorHandle_t input, aclTensor** tensor) {
     impl::ascend::AscendTensor inAt(input);
     void* deviceAddr = nullptr;
 
     // 调用aclCreateTensor接口创建aclTensor
-    *tensor = aclCreateTensor(inAt.shape().data(),
-                              inAt.shape().size(),
-                              getAclDataType(inAt.dtype()),
+    *tensor = aclCreateTensor(inAt.getAclMemShape().data(),
+                              inAt.getAclMemShape().size(),
+                              inAt.getAclDataType(),
                               inAt.stride().data(),
                               0,
-                            //   aclFormat::ACL_FORMAT_ND,
                               inAt.getAclDataFormat(),
                               inAt.getAclMemShape().data(),
                               inAt.getAclMemShape().size(),
                               const_cast<void*>(inAt.data()));
-                            //   inAt.data());
     return ACL_SUCCESS;
 }
 
@@ -68,31 +67,30 @@ void printContiguousTensor(const aclTensor& tensor, diopiConstTensorHandle_t dio
     return printContiguousTensor(tensor, p);
 }
 
-int aclnnAddTest(int32_t deviceId, aclrtContext& context, aclrtStream& stream, diopiConstTensorHandle_t self1, diopiConstTensorHandle_t other1,
+int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiConstTensorHandle_t other1,
                  const diopiScalar_t* alpha1, diopiTensorHandle_t out1) {
-    // 2.构造输入与输出，需要根据API的接口自定义构造
-    void* selfDeviceAddr = nullptr;
-    void* otherDeviceAddr = nullptr;
-    void* outDeviceAddr = nullptr;
+    aclrtStream stream;
+    diopiGetStream(ctx, &stream);
+    // 1.构造输入与输出，需要根据API的接口自定义构造
     aclTensor* self = nullptr;
     aclTensor* other = nullptr;
     aclScalar* alpha = nullptr;
     aclTensor* out = nullptr;
     // 创建self aclTensor
-    auto ret = CreateAclTensor1(self1, &self);
+    auto ret = createAclTensor1(self1, &self);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     // 创建other aclTensor
-    ret = CreateAclTensor1(other1, &other);
+    ret = createAclTensor1(other1, &other);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     // 创建alpha aclScalar
     alpha = createAclScalar1(alpha1);
 
     CHECK_RET(alpha != nullptr, return ret);
     // 创建out aclTensor
-    ret = CreateAclTensor1(out1, &out);
+    ret = createAclTensor1(out1, &out);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
 
-    // 3.调用CANN算子库API
+    // 2.调用CANN算子库API
     uint64_t workspaceSize = 0;
     aclOpExecutor* executor;
     // 调用aclnnAdd第一段接口
@@ -107,7 +105,7 @@ int aclnnAddTest(int32_t deviceId, aclrtContext& context, aclrtStream& stream, d
     // 调用aclnnAdd第二段接口
     ret = aclnnAdd(workspaceAddr, workspaceSize, executor, stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnAdd failed. ERROR: %d\n", ret); return ret);
-    // 4.(固定写法)同步等待任务执行结束
+    // 3.(固定写法)同步等待任务执行结束
     ret = aclrtSynchronizeStream(stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
 

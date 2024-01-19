@@ -8,8 +8,6 @@ if(DEFINED ENV{ASCEND_CUSTOM_PATH})
 else()
   set(ASCEND_DIR /usr/local/Ascend)
 endif()
-message("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-message(STATUS "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
 if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
   message(STATUS "ascend-toolkit exists:" ${ASCEND_DIR}/ascend-toolkit/latest/)
