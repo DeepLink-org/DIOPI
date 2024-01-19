@@ -284,6 +284,22 @@ device_configs = {
         ),
     ),
 
+    'pointwise_binary_diff_dtype_without_bool': dict(	
+        name=['div'],	
+        tensor_para=dict(	
+            args=[	
+                {	
+                    "ins": ['input'],	
+                    "dtype": [Skip(np.uint8)],	
+                },	
+                {	
+                    "ins": ['other'],	
+                    "dtype": [Skip(np.float16)],	
+                },	
+            ],	
+        ),	
+    ),
+
     'addmm': dict(
         name=["addmm"],
         tensor_para=dict(
