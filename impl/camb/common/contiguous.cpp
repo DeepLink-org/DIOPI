@@ -172,15 +172,15 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     std::vector<int32_t> inputOrder(dim, 0);
     std::vector<int32_t> inputBackOrder(dim, 0);  // permuteTensor(input,inputBackOrder)->contiguous
     std::vector<int32_t> outputOrder(dim, 0);
-    std::vector<int32_t> output_back_order(dim, 0);   // permuteTensor(output,output_back_order)->contiguous
+    std::vector<int32_t> outputBackOrder(dim, 0);   // permuteTensor(output,outputBackOrder)->contiguous
     std::vector<int32_t> inputToOutputOrder(dim, 0);  // into cnnltranspose
 
     // input shape:2,3,4,5 stride:60,1,15,3 -> inputBackOrder: 0,2,3,1, inputOrder: 0,3,1,2
-    // output shape:2,3,4,5 stride:60,20,1,4 -> output_back_order: 0,1,3,2, outputOrder: 0,1,3,2
+    // output shape:2,3,4,5 stride:60,20,1,4 -> outputBackOrder: 0,1,3,2, outputOrder: 0,1,3,2
     // inputToOutputOrder: 0,2,1,3
 
     getPermuteOrder(src, inputOrder, inputBackOrder);
-    getPermuteOrder(dest, outputOrder, output_back_order);
+    getPermuteOrder(dest, outputOrder, outputBackOrder);
 
     cnnlTensorLayout_t srcLayout = CNNL_LAYOUT_ARRAY;
     cnnlTensorLayout_t destLayout = CNNL_LAYOUT_ARRAY;
@@ -192,7 +192,7 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
 
     // permute to get contiguous tensor
     if (!destIsContiguous) {
-        DIOPI_CALL(permuteTensor(dest, output_back_order));
+        DIOPI_CALL(permuteTensor(dest, outputBackOrder));
     }
 
     if (!srcIsContiguous) {
@@ -200,7 +200,7 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     }
 
     for (int i = 0; i < dim; ++i) {
-        inputToOutputOrder[i] = inputOrder[output_back_order[i]];
+        inputToOutputOrder[i] = inputOrder[outputBackOrder[i]];
     }
 
     DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, inputToOutputOrder));
