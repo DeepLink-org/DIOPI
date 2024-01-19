@@ -8,6 +8,7 @@
 
 #include <acl/acl_rt.h>
 
+#include <functional>
 #include <numeric>
 #include <valarray>
 #include <vector>

@@ -15,9 +15,9 @@
 
 #include "../ascend_tensor.hpp"
 #include "acl/acl.h"
-#include "aclnnop/aclnn_add.h"  // TODO: add all
-#include "aclnnop/aclnn_cos.h"  // TODO: add all
-#include "aclnnop/aclnn_sin.h"  // TODO: add all
+#include "aclnnop/aclnn_add.h"  // TODO(zmz): add all
+#include "aclnnop/aclnn_cos.h"  // TODO(zmz): add all
+#include "aclnnop/aclnn_sin.h"  // TODO(zmz): add all
 #include "impl_functions.hpp"
 
 namespace impl {
