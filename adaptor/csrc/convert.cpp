@@ -1,7 +1,12 @@
 #include "convert.hpp"
 
-bool denseCheckAdaptor(diopiSize_t shape, diopiSize_t stride) {
+bool denseCheck(diopiSize_t shape, diopiSize_t stride) {
     int dim = shape.len;
+
+    if (isContiguous(shape, stride, diopiMemoryFormat_t::Contiguous)) {
+        return true;
+    }
+
     std::vector<std::pair<int64_t, int64_t>> stridesSizes(dim, std::pair<int64_t, int64_t>(1, 1));
 
     for (int i = 0; i < dim; i++) {

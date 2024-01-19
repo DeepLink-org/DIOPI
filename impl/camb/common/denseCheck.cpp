@@ -124,6 +124,8 @@ diopiError_t sliceToDense(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTenso
 
     // 得到按照stride从大到小顺序排列的shape，实测这种copy最快，也可以考虑用slice;
     // e.g. shape 128 12 64 197 stride 453888 64 1 2304-> shape 128 197 64 12 stride 453888 2304 64 1
+    // e.g. shape: [128, 768, 14, 14], stride: [151296, 1, 10752, 768]
+    // -> shape: 128 14 14 768, stride:151296, 10752, 768, 1
     std::vector<int64_t> generateShape;
     std::vector<int64_t> generateStride;
     std::vector<int64_t> generateOutStride(dim, 0);
