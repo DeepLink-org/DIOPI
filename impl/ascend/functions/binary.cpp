@@ -6,9 +6,8 @@
 
 #include <cmath>
 
-#include "../common/acloprunner.hpp"
-#include "../common/debug.hpp"
 #include "../aclnn/aclnn.hpp"
+#include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {

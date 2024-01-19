@@ -7,10 +7,10 @@
 #include "aclnn.hpp"
 
 #include <acl/acl_rt.h>
+
 #include <numeric>
 #include <valarray>
 #include <vector>
-#include <numeric>
 
 #include "../common/acloprunner.hpp"
 #include "../common/utils.hpp"
@@ -48,8 +48,8 @@ aclScalar* createAclScalar1(const diopiScalar_t* input) {
 }
 
 void printContiguousTensor(const aclTensor& tensor, const void* tensorPtr) {
-    int64_t * shape = nullptr;
-    uint64_t num= 0;
+    int64_t* shape = nullptr;
+    uint64_t num = 0;
     aclGetViewShape(&tensor, &shape, &num);
     std::vector<int64_t> shapeVec(shape, shape + num);
     int64_t size = std::accumulate(shapeVec.begin(), shapeVec.end(), 1, std::multiplies<>());
@@ -67,8 +67,8 @@ void printContiguousTensor(const aclTensor& tensor, diopiConstTensorHandle_t dio
     return printContiguousTensor(tensor, p);
 }
 
-int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiConstTensorHandle_t other1,
-                 const diopiScalar_t* alpha1, diopiTensorHandle_t out1) {
+int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiConstTensorHandle_t other1, const diopiScalar_t* alpha1,
+                 diopiTensorHandle_t out1) {
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
     // 1.构造输入与输出，需要根据API的接口自定义构造
@@ -116,7 +116,6 @@ int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopi
     return 0;
 }
 
-
 int aclnnSinTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiTensorHandle_t out1) {
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
@@ -155,7 +154,6 @@ int aclnnSinTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopi
 
     return 0;
 }
-
 
 int aclnnCosTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiTensorHandle_t out1) {
     aclrtStream stream;
@@ -198,7 +196,3 @@ int aclnnCosTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopi
 
 }  // namespace ascend
 }  // namespace impl
-
-
-
-
