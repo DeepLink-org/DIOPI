@@ -486,6 +486,21 @@ device_configs = {
         ),
     ),
 
+    # not implement
+    'masked_scatter': dict(
+        name=["masked_scatter"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16),
+                              Skip(np.int64), Skip(np.int32), Skip(np.int16),
+                              Skip(np.int8), Skip(np.uint8), Skip(np.bool_)],
+                },
+            ],
+        ),
+    ),
+
     'masked_select': dict(
         name=['masked_select'],
         interface=['torch'],
@@ -627,6 +642,71 @@ device_configs = {
                 {
                     "ins": ['param', 'param_grad'],
                     "dtype": [Skip(np.float32), Skip(np.float16)],
+                },
+            ]
+        ),
+    ),
+
+    # not implement
+    'max_pool3d': dict(
+        name=['max_pool3d'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
+                },
+            ]
+        ),
+    ),
+
+    # not implement
+    'max_pool3d_return_indices': dict(
+        name=['max_pool3d'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
+                },
+            ]
+        ),
+    ),
+
+    # not implement
+    'adaptive_avg_pool3d': dict(
+        name=["adaptive_avg_pool3d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ]
+        ),
+    ),
+
+    # not implement
+    'adaptive_max_pool3d': dict(
+        name=["adaptive_max_pool3d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ]
+        ),
+    ),
+
+    # not implement
+    'adaptive_max_pool3d_return_indices': dict(
+        name=["adaptive_max_pool3d"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ]
         ),
@@ -1155,6 +1235,74 @@ device_configs = {
         )
     ),
 
+    # not implement
+    'cholesky': dict(
+        name=['cholesky_ex'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32)],
+                },
+            ],
+        ),
+        requires_backward=[0],
+        saved_args=dict(output=0),
+    ),
+
+    # not implement
+    'triangular_solve': dict(
+        name=['triangular_solve'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32)],
+                },
+            ],
+        ),
+        saved_args=dict(output=0),
+    ),
+
+    # not implement
+    'normal_std_tensor': dict(
+        name=["normal"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['std'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ]
+        ),
+    ),
+
+    # not implement
+    'normal_mean_tensor': dict(
+        name=["normal"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['mean'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ]
+        ),
+    ),
+
+    # not implement
+    'normal_tensor': dict(
+        name=["normal"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['mean'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ]
+        ),
+    ),
+
     'amax': dict(
         name=['amax'],
         interface=['torch'],
@@ -1193,6 +1341,32 @@ device_configs = {
         name=["batch_norm_stats"],
         atol=1e-2,
         rtol=5e-3,
+    ),
+
+    # not implement
+    'rotary_emb': dict(
+        name=["rotary_emb"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ],
+        ),
+    ),
+
+    # not implement
+    'rms_norm': dict(
+        name=["rms_norm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float32)],
+                },
+            ],
+        ),
     ),
 
     'copy': dict(
