@@ -15,10 +15,10 @@
     layout: NCL, NLC, NCHW, NHWC, NDHWC
 
 - diopiDivScalar:
-    layout: UD
+    layout: ND
 
 - diopiDivScalar:
-    layout: UD
+    layout: ND
 
 - diopiBmm:
     layout: NCL, NLC, NCHW, NHWC, NCDHW, NDHWC
@@ -81,4 +81,4 @@
 #* Ops above are not neccesary to convert format *#
 
 - diopiReluInp:
-    layout: UD
+    layout: ND

@@ -34,7 +34,7 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
 
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Contiguous);
 
-diopiError_t contiguousOut(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest);
+diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest);
 
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat, cnnlTensorLayout_t layoutIn,
                         cnnlTensorLayout_t layoutOut);
@@ -58,6 +58,10 @@ bool denseCheck(const DiopiTensor& src);
 bool isSlice(const DiopiTensor& src);
 
 bool isSparse(const DiopiTensor& src);
+
+diopiError_t permuteTensor(DiopiTensor& t, const std::vector<int32_t>& order);
+
+diopiError_t getPermuteOrder(const DiopiTensor& src, std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder);
 
 diopiError_t getDenseStride(const DiopiTensor& src, std::vector<int64_t>& dstStride);
 

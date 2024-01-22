@@ -10,6 +10,11 @@ namespace impl {
 namespace camb {
 diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor, diopiMemoryFormat_t memoryFormat) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    if (!denseCheck(const_cast<DiopiTensor&>(inTensor))) {
+        DiopiTensor denseOut;
+        toDense(ctx, const_cast<DiopiTensor&>(inTensor), denseOut);
+        const_cast<DiopiTensor&>(inTensor) = denseOut;
+    }
     if (memoryFormat == diopiMemoryFormat_t::Preserve) {
         // torch.preserve_format: Used in functions like clone to preserve the memory format of the input tensor.
         // If input tensor is allocated in dense non-overlapping memory, the output tensor strides will be copied from the input.
@@ -19,9 +24,10 @@ diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiT
     } else {
         outTensor = requiresTensor(ctx, inTensor.shape(), inTensor.dtype(), memoryFormat);
     }
+
     if (inTensor.shape() == outTensor.shape() && inTensor.dim() != 0 && inTensor.dtype() != diopi_dtype_float64 && inTensor.dtype() == outTensor.dtype() &&
-        denseCheck(inTensor) && denseCheck(outTensor) && (outTensor.isContiguous() || inTensor.isContiguous())) {
-        DIOPI_CALL(contiguousOut(ctx, const_cast<DiopiTensor&>(inTensor), outTensor));
+        denseCheck(outTensor)) {
+        DIOPI_CALL(permuteCopy(ctx, const_cast<DiopiTensor&>(inTensor), outTensor));
         return diopiSuccess;
     }
     CnnlTensorDesc inTensorDesc(inTensor, CNNL_LAYOUT_ARRAY);

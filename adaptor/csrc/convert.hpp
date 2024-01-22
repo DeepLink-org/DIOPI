@@ -13,7 +13,7 @@
 #include <ostream>
 #include <vector>
 
-bool denseCheckAdaptor(diopiSize_t shape, diopiSize_t stride);
+bool denseCheck(diopiSize_t shape, diopiSize_t stride);
 
 std::vector<int64_t> calcStrides(diopiSize_t size, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 
@@ -111,7 +111,7 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T* dst, std::vector<diopiM
     diopiSize_t dstStride = srcStride;
     diopiSize_t dstSize = srcSize;
     if (!targetMemoryFormats.empty()) {
-        if (!denseCheckAdaptor(srcSize, srcStride) && supportMemoryFormats[0] == diopiMemoryFormat_t::Preserve) {
+        if (!denseCheck(srcSize, srcStride) && supportMemoryFormats[0] == diopiMemoryFormat_t::Preserve) {
             targetMemoryFormats.push_back(diopiMemoryFormat_t::Preserve);
             needConvertMemoryFormat = true;
         }

@@ -38,7 +38,7 @@ str_to_diopi_format = {
     "NLC": "diopiMemoryFormat_t::ChannelsLast1d",
     "NHWC": "diopiMemoryFormat_t::ChannelsLast",
     "NDHWC": "diopiMemoryFormat_t::ChannelsLast3d",
-    "UD": "diopiMemoryFormat_t::Preserve",
+    "ND": "diopiMemoryFormat_t::Preserve",
 }
 
 
@@ -443,7 +443,7 @@ def analysis_configs(config: List[dict], funcs_info: dict) -> dict:
                         or layout == "NCL"
                         or layout == "NDHWC"
                         or layout == "NCDHW"
-                        or layout == "UD"
+                        or layout == "ND"
                     ):
                         op_layouts.append(layout)
                     else:
