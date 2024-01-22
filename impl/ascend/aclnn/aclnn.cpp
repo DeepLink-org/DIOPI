@@ -246,8 +246,8 @@ void dropoutGenMask(diopiContextHandle_t ctx, diopiTensorHandle_t* mask, const i
     *mask = maskTensor;
 }
 
-int aclnnFlashAttentionTest(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t softmaxMax, diopiTensorHandle_t softmaxSum,
-                            diopiTensorHandle_t softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+int aclnnFlashAttentionTest(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
+                            diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                             diopiConstTensorHandle_t v, double pDropout, double softmaxScale, bool isCausal) {
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
@@ -369,8 +369,8 @@ int aclnnFlashAttentionTest(diopiContextHandle_t ctx, diopiTensorHandle_t attent
 
 int aclnnFlashAttentionBackwardTest(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
                                     diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                    diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
-                                    diopiConstTensorHandle_t softmaxOut, diopiGeneratorHandle_t gen, double pDropout, double softmaxScale, bool isCausal) {
+                                    diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t* softmaxMax, diopiConstTensorHandle_t* softmaxSum,
+                                    diopiConstTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, double pDropout, double softmaxScale, bool isCausal) {
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
 
