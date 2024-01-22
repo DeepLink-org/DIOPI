@@ -780,6 +780,14 @@ device_configs = {
         ),
     ),
 
+    'rms_norm': dict(
+        name=['rms_norm'],
+        atol=1e-3,
+        rtol=1e-3,
+        atol_half=1e-2,
+        rtol_half=1e-2,
+    ),
+
     'smooth_l1_loss': dict(
         name=['smooth_l1_loss'],
         tensor_para=dict(

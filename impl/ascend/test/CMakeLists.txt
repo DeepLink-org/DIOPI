@@ -24,7 +24,7 @@ pybind11_add_module(${EXPORT_RT} SHARED ${EXPORT_SRC})
 add_library(diopirt SHARED ${RUNTIME_SRC})
 
 target_link_libraries(${EXPORT_RT} PRIVATE diopirt ${DEVICEIMPL})
-target_link_libraries(diopirt ascendcl acl_op_compiler)
+target_link_libraries(diopirt ascendcl acl_op_compiler nnopbase opapi)
 
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=ascend)

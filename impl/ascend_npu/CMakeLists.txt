@@ -627,9 +627,34 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
     ${OLD_IMPL_DIR}/common/stream_lock.cpp
+    ${OLD_IMPL_DIR}/aclnn/aclnn.cpp
     ${OLD_IMPL_DIR}/env_vars.cpp
     ${OLD_IMPL_DIR}/init.cpp
 )
+
+if(DEFINED ENV{ASCEND_CUSTOM_PATH})
+  set(ASCEND_DIR $ENV{ASCEND_CUSTOM_PATH})
+else()
+  set(ASCEND_DIR /usr/local/Ascend)
+endif()
+
+if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
+  message(STATUS "ascend-toolkit exists:" ${ASCEND_DIR}/ascend-toolkit/latest/)
+  message(STATUS "ASCEND_DIR:" ${ASCEND_DIR})
+  include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include)
+#   include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/aclnnop)
+  include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/aclnn)
+#   link_directories(${ASCEND_DIR}/ascend-toolkit/latest/lib64)
+# target_link_libraries(${ASCEND_DIR}/ascend-toolkit/latest/lib64/libascendcl.so
+#     ${ASCEND_DIR}/ascend-toolkit/latest/lib64/libnnopbase.so
+#     ${ASCEND_DIR}/ascend-toolkit/latest/lib64/libopapi.so
+# )
+  message("ACLNN: ${ASCEND_DIR}/ascend-toolkit/latest/include")
+  message("ACLNN: ${ASCEND_DIR}/ascend-toolkit/latest/include/aclnn")
+else()
+    message(FATAL_ERROR "No ascend-toolkit found.")
+endif()
+
 
 list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC} ${OLD_IMPL_SRC})
 
@@ -662,8 +687,12 @@ endif()
 if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
   message(STATUS "ascend-toolkit exists:" ${ASCEND_DIR}/ascend-toolkit/latest/)
   message(STATUS "ASCEND_DIR:" ${ASCEND_DIR})
-  #include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/)
+#   include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include)
+  include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/aclnnop)
+  include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/aclnn)
   link_directories(${ASCEND_DIR}/ascend-toolkit/latest/lib64)
+  message("ACLNN: ${ASCEND_DIR}/ascend-toolkit/latest/include")
+  message("ACLNN: ${ASCEND_DIR}/ascend-toolkit/latest/include/aclnn")
 else()
     message(FATAL_ERROR "No ascend-toolkit found.")
 endif()
@@ -675,8 +704,9 @@ set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/inc
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 add_dependencies(${DEVICEIMPL} op_plugin_gen)
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
+target_include_directories(${DEVICEIMPL} PRIVATE ${ASCEND_DIR}/ascend-toolkit/latest/include/aclnn)
 target_include_directories(${DEVICEIMPL} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE_DIRS})
-target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler graph c10 torch_cpu ${Python_LIBRARIES})
+target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler graph c10 torch_cpu nnopbase opapi ${Python_LIBRARIES})
 
 if(USE_ADAPTOR)
     add_dependencies(${DEVICEIMPL} adaptor_code_gen)

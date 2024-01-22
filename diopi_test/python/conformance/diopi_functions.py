@@ -5151,7 +5151,9 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     func = check_function(call)
     size = list(input.size().data)
     out = Tensor(size, input.get_dtype())
-    inv_rms = Tensor(size, input.get_dtype())
+    inv_rms_size = size.copy()
+    inv_rms_size[-1] = 1
+    inv_rms = Tensor(inv_rms_size, input.get_dtype())
     normalized_shape = Sizes(list(normalized_shape))
     ret = func(
         input.context(),
@@ -5164,7 +5166,21 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
         eps,
     )
     check_returncode(ret)
-    return out
+    return (out, inv_rms)
+
+
+def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_shape, eps):
+    call = "diopiRMSNormBackward"
+    func = check_function(call)
+    grad_input = Tensor(list(input.size().data), input.get_dtype())
+    grad_weight = Tensor(list(weight.size().data), weight.get_dtype())
+    grad_bias = Tensor(list(bias.size().data), bias.get_dtype())
+    normalized_shape = Sizes(list(normalized_shape))
+
+    ret = func(input.context(), grad_input, grad_weight, grad_bias, grad_outputs[0], input, weight, bias, inv_rms,
+               normalized_shape, eps)
+    check_returncode(ret)
+    return {'input': grad_input, 'weight': grad_weight}
 
 
 def multihead_attention_forward(
