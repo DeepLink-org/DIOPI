@@ -9,6 +9,7 @@
 #include "../../../ascend/common/stream_lock.hpp"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "../../third_party/acl/inc/ge/ge_error_codes.h"
 
 namespace {
 constexpr float EPSILON = 1e-6;
@@ -416,7 +417,7 @@ at::Tensor NpuUtils::format_contiguous_add_copy_optimize(const at::Tensor& src) 
 }
 
 bool NpuUtils::IsOomError(aclError ret, int index) {
-    if (ret == ACL_ERROR_GE_DEVICE_MEMORY_OPERATE_FAILED) {
+    if (ret == ACL_ERROR_GE_DEVICE_MEMORY_ALLOCATION_FAILED) {
         int deviceId = 0;
         NPU_CHECK_ERROR(aclrtGetDevice(&deviceId));
         AT_ERROR("NPU out of memory. device id: ", deviceId);
