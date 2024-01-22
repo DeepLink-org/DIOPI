@@ -68,8 +68,8 @@ void printContiguousTensor(const aclTensor& tensor, diopiConstTensorHandle_t dio
     return printContiguousTensor(tensor, p);
 }
 
-int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiConstTensorHandle_t other1, const diopiScalar_t* alpha1,
-                 diopiTensorHandle_t out1) {
+int aclnnAddAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiConstTensorHandle_t other1, const diopiScalar_t* alpha1,
+                    diopiTensorHandle_t out1) {
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
     // 1.构造输入与输出，需要根据API的接口自定义构造
@@ -117,12 +117,16 @@ int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopi
     return 0;
 }
 
-int aclnnSinTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiTensorHandle_t out1) {
+int aclnnSinAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiTensorHandle_t out1) {
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
     // 1.构造输入与输出，需要根据API的接口自定义构造
     aclTensor* self = nullptr;
     aclTensor* out = nullptr;
+    AscendTensor inAt(self1);
+    if (inAt.numel() == 0) {
+        return 0;
+    }
     // 创建self aclTensor
     auto ret = createAclTensor1(self1, &self);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
@@ -156,12 +160,16 @@ int aclnnSinTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopi
     return 0;
 }
 
-int aclnnCosTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiTensorHandle_t out1) {
+int aclnnCosAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, diopiTensorHandle_t out1) {
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
     // 1.构造输入与输出，需要根据API的接口自定义构造
     aclTensor* self = nullptr;
     aclTensor* out = nullptr;
+    AscendTensor inAt(self1);
+    if (inAt.numel() == 0) {
+        return 0;
+    }
     // 创建self aclTensor
     auto ret = createAclTensor1(self1, &self);
     CHECK_RET(ret == ACL_SUCCESS, return ret);

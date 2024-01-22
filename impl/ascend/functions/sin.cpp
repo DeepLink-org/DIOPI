@@ -38,7 +38,7 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         AclOpRunner<1, 1>("Sin", ctx).addInput(input).addOutput(out).run();
     }
 #else
-    aclnnSinTest(ctx, input, out);
+    aclnnSinAdaptor(ctx, input, out);
 #endif
     return diopiSuccess;
 }

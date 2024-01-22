@@ -38,7 +38,7 @@ diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     }
 
 #else
-    aclnnCosTest(ctx, input, out);
+    aclnnCosAdaptor(ctx, input, out);
 #endif
     return diopiSuccess;
 }

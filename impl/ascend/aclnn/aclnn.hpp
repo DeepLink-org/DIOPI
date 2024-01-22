@@ -35,11 +35,12 @@ namespace ascend {
         printf(message, ##__VA_ARGS__); \
     } while (0)
 
-int aclnnAddTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiConstTensorHandle_t other, const diopiScalar_t* alpha, diopiTensorHandle_t out);
+int aclnnAddAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiConstTensorHandle_t other, const diopiScalar_t* alpha,
+                    diopiTensorHandle_t out);
 
-int aclnnSinTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiTensorHandle_t out);
+int aclnnSinAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiTensorHandle_t out);
 
-int aclnnCosTest(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiTensorHandle_t out);
+int aclnnCosAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiTensorHandle_t out);
 
 }  // namespace ascend
 }  // namespace impl

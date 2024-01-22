@@ -61,7 +61,7 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     if (outDtype != highType) diopiCastDtype(ctx, out, outTemp);
 #else
-    auto ret = aclnnAddTest(ctx, input, other, alpha, out);
+    auto ret = aclnnAddAdaptor(ctx, input, other, alpha, out);
 #endif
     return diopiSuccess;
 }
