@@ -4,6 +4,7 @@
  * @copyright  (c) 2024, DeepLink.
  */
 
+#include "../aclnn/aclnn.hpp"
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -50,9 +51,10 @@ void dropoutGenMask(diopiContextHandle_t ctx, diopiTensorHandle_t* mask, const i
  * @param[out] softmax_out Tensor representing the output of the softmax attention.
  * @param[out] gen Handle for the random number generator used in dropout op.
  */
-diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
-                                 diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t softmaxMax, diopiTensorHandle_t softmaxSum,
+                                 diopiTensorHandle_t softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                  diopiConstTensorHandle_t v, double pDropout, double softmaxScale, bool isCausal) {
+#if 0
     AscendTensor qTensor(q);
     AscendTensor kTensor(k);
     AscendTensor vTensor(v);
@@ -88,7 +90,8 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
         diopiScalar_t value = constructDiopiScalarT(diopi_dtype_int64, 1);
         diopiFill(ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), &value);
         diopiTril(
-            ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), 1);
+            ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()),
+            1);
     }
 
     diopiTensorHandle_t dropMask;
@@ -98,13 +101,13 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     diopiTensorHandle_t softmaxMaxTensor;
     diopiTensorHandle_t softmaxSumTensor;
     diopiTensorHandle_t softmaxOutTensor;  // 保留输出，暂未使用
-    // QK^T的shape: （B,N,S,S），暂时不清楚华为底层为了做优化需要保留(B,N,S,8)的用意
-    std::vector<int64_t> softmaxMaxSize{B, N, S0, 8};
-    std::vector<int64_t> softmaxSumSize{B, N, S0, 8};
-    std::vector<int64_t> softmaxSumSize{0};
-    diopiRequireTensor(ctx, &softmaxMaxTensor, &vectorToDiopiSize(softmaxMaxSize), nullptr, diopi_dtype_float32, diopi_device);
-    diopiRequireTensor(ctx, &softmaxSumTensor, &vectorToDiopiSize(softmaxSumSize), nullptr, diopi_dtype_float32, diopi_device);
-    diopiRequireTensor(ctx, &softmaxOutTensor, &vectorToDiopiSize(softmaxSumSize), nullptr, diopi_dtype_float32, diopi_device);
+    // // QK^T的shape: （B,N,S,S），暂时不清楚华为底层为了做优化需要保留(B,N,S,8)的用意
+    // std::vector<int64_t> softmaxMaxSize{B, N, S0, 8};
+    // std::vector<int64_t> softmaxSumSize{B, N, S0, 8};
+    // std::vector<int64_t> softmaxSumSize{0};
+    // diopiRequireTensor(ctx, &softmaxMaxTensor, &vectorToDiopiSize(softmaxMaxSize), nullptr, diopi_dtype_float32, diopi_device);
+    // diopiRequireTensor(ctx, &softmaxSumTensor, &vectorToDiopiSize(softmaxSumSize), nullptr, diopi_dtype_float32, diopi_device);
+    // diopiRequireTensor(ctx, &softmaxOutTensor, &vectorToDiopiSize(softmaxSumSize), nullptr, diopi_dtype_float32, diopi_device);
 
     char* inputLayoutPtr = const_cast<char*>(inputLayout.c_str());
     int32_t innerPrecise = 0;  // 数据类型支持INT32，保留参数，暂未使用。0, fp16 high precision. 1, high performance.
@@ -137,9 +140,12 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
 
     aclnnFlashAttentionScore(void* workspace, uint64_t workspaceSize, aclOpExecutor* executor, const aclrtStream stream);
 
-    *softmaxMax = softmaxMaxTensor;
-    *softmaxSum = softmaxSumTensor;
-    *softmaxOut = softmaxOutTensor;
+    // *softmaxMax = softmaxMaxTensor;
+    // *softmaxSum = softmaxSumTensor;
+    // *softmaxOut = softmaxOutTensor;
+#else
+    aclnnFlashAttentionTest(ctx, attentionOut, softmaxMax, softmaxSum, softmaxOut, gen, q, k, v, pDropout, softmaxScale, isCausal);
+#endif
     return diopiSuccess;
 }
 
@@ -153,7 +159,8 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
  * @param[in] attention_out Output tensor from the forward pass. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float16, float32].
  * @param[in] softmax_max Tensor representing the maximum of the softmax values from the forward pass. shape = [batch_size, head_num, q_seq_len]. type =
  * [float32].
- * @param[in] softmax_sum Tensor representing the sum of the softmax values from the forward pass. shape = [batch_size, head_num, q_seq_len]. type = [float32].
+ * @param[in] softmax_sum Tensor representing the sum of the softmax values from the forward pass. shape = [batch_size, head_num, q_seq_len]. type =
+ * [float32].
  * @param[in] softmax_out Tensor representing the output of the softmax attention from the forward pass. shape = [batch_size, head_num, q_seq_len]. type =
  * [float32].
  * @param[in] gen Handle representing the random number generator used for dropout in the forward pass.
@@ -169,6 +176,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t v, diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t softmaxMax,
                                                    diopiConstTensorHandle_t softmaxSum, diopiConstTensorHandle_t softmaxOut, diopiGeneratorHandle_t gen,
                                                    double pDropout, double softmaxScale, bool isCausal) {
+#if 0
     AscendTensor qTensor(q);
     AscendTensor kTensor(k);
     AscendTensor vTensor(v);
@@ -197,7 +205,8 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
         diopiScalar_t value = constructDiopiScalarT(diopi_dtype_int64, 1);
         diopiFill(ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), &value);
         diopiTril(
-            ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), 1);
+            ctx, const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()),
+            const_cast<diopiTensorHandle_t>(attentionMaskTensor.tensorHandle()), 1);
     }
 
     diopiTensorHandle_t dropMask;
@@ -227,8 +236,8 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                  const aclIntArray* prefixTensor,
                                                  double softmaxScale,
                                                  double keepProb,
-                                                 int64_t preTockens,
-                                                 int64_t nextTockens,
+                                                 int64_t preTokens,
+                                                 int64_t nextTokens,
                                                  int64_t N,
                                                  char* inputLayoutPtr,
                                                  int64_t innerPrecise,
@@ -241,6 +250,11 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                  aclOpExecutor** executor);
 
     aclnnFlashAttentionScoreGrad(void* workspace, uint64_t workspaceSize, aclOpExecutor* executor, const aclrtStream stream);
+#else
+    aclnnFlashAttentionBackwardTest(
+        ctx, gradQ, gradK, gradV, gradOut, q, k, v, attentionOut, softmaxMax, softmaxSum, softmaxOut, gen, pDropout, softmaxScale, isCausal);
+#endif
+    return diopiSuccess;
 }
 
 }  // namespace ascend

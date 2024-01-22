@@ -18,6 +18,8 @@
 #include "aclnnop/aclnn_add.h"  // TODO(zmz): add all
 #include "aclnnop/aclnn_cos.h"  // TODO(zmz): add all
 #include "aclnnop/aclnn_sin.h"  // TODO(zmz): add all
+#include "aclnnop/aclnn_flash_attention_score.h"  // (wx) add flash attention
+#include "aclnnop/aclnn_flash_attention_score_grad.h"  //
 #include "impl_functions.hpp"
 
 namespace impl {
