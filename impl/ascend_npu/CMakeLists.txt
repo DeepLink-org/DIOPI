@@ -676,6 +676,16 @@ else()
   set(ASCEND_DIR /usr/local/Ascend)
 endif()
 
+if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
+  message(STATUS "ascend-toolkit exists:" ${ASCEND_DIR}/ascend-toolkit/latest/)
+  message(STATUS "ASCEND_DIR:" ${ASCEND_DIR})
+  #include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/)
+  link_directories(${ASCEND_DIR}/ascend-toolkit/latest/lib64)
+else()
+    message(FATAL_ERROR "No ascend-toolkit found.")
+endif()
+
+
 # third_party include
 set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/include)
 
