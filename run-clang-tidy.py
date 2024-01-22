@@ -92,7 +92,7 @@ def make_absolute(f, directory):
 def get_tidy_invocation(f, clang_tidy_binary, checks, tmpdir, build_path,
                         header_filter, allow_enabling_alpha_checkers,
                         extra_arg, extra_arg_before, quiet, config_file_path,
-                        config, line_filter, use_color, plugins, system_headers):
+                        config, line_filter, use_color, plugins):
   """Gets a command line for clang-tidy."""
   start = [clang_tidy_binary]
   if allow_enabling_alpha_checkers:
@@ -126,8 +126,6 @@ def get_tidy_invocation(f, clang_tidy_binary, checks, tmpdir, build_path,
       start.append('--config-file=' + config_file_path)
   elif config:
       start.append('-config=' + config)
-  elif system_headers:
-      start.append('--system-headers')
   for plugin in plugins:
       start.append('-load=' + plugin)
   start.append(f)
@@ -202,7 +200,7 @@ def run_tidy(args, clang_tidy_binary, tmpdir, build_path, queue, lock,
                                      args.extra_arg, args.extra_arg_before,
                                      args.quiet, args.config_file, args.config,
                                      args.line_filter, args.use_color,
-                                     args.plugins, args.system_headers)
+                                     args.plugins)
 
     proc = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, err = proc.communicate()
