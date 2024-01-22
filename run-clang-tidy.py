@@ -202,7 +202,7 @@ def run_tidy(args, clang_tidy_binary, tmpdir, build_path, queue, lock,
                                      args.extra_arg, args.extra_arg_before,
                                      args.quiet, args.config_file, args.config,
                                      args.line_filter, args.use_color,
-                                     args.plugins)
+                                     args.plugins, args.system_headers)
 
     proc = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, err = proc.communicate()
