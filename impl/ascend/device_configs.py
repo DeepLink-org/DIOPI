@@ -551,19 +551,6 @@ device_configs = {
         rtol = 1e-1,
     ),
 
-    'embedding': dict( # llm used
-        name=["embedding"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["weight"],
-                    # Wrong weight gradient. torch_npu failed in exactly the same way.
-                    "shape": (Skip((93, 512)),),
-                },
-            ],
-        ),
-    ),
-
     'clip_grad_norm': dict(
         name=['clip_grad_norm_'],
         tensor_para=dict(
