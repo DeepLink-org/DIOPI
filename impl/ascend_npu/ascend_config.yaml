@@ -199,6 +199,7 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
+- diopiFlashAttention
 ascend_npu:
 - diopiMatmul
 - diopiCastDtype

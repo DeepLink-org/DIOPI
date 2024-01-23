@@ -216,6 +216,11 @@ std::pair<uint64_t, int64_t> getSeedAndOffsetForMHA(diopiContextHandle_t ctx, di
     int64_t offsetValue = 0;
     memcpy(&currentSeedValue, statePtr, seedSize);
     memcpy(&offsetValue, static_cast<char*>(statePtr) + seedSize, offsetSize);
+    // // update offset
+    // inc = ((inc + 3) / 4) * 4;
+    // uint64_t updateOffset = offsetValue + inc;
+    // memcpy(static_cast<char*>(statePtr) + seedSize, &updateOffset, offsetSize);
+    // diopiGeneratorSetState(gen, stateHandle);
     return std::make_pair(currentSeedValue, offsetValue);
 }
 
@@ -227,7 +232,7 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
     return dtype;
 }
 
-void dropoutGenMask(diopiContextHandle_t ctx, diopiTensorHandle_t* mask, const int64_t numels, double keepProb, diopiGeneratorHandle_t generator) {
+void dropoutGenMask(diopiContextHandle_t ctx, diopiTensorHandle_t* mask, const int64_t numels, const double keepProb, diopiGeneratorHandle_t generator) {
     diopiTensorHandle_t maskTensor;
     std::vector<int64_t> maskShape{((numels + 128 - 1) / 128 * 128) / 8};
     diopiSize_t maskSize = vectorToDiopiSize(maskShape);
@@ -314,7 +319,7 @@ int aclnnFlashAttentionAdaptor(diopiContextHandle_t ctx, diopiTensorHandle_t att
         makeTensor(ctx, attentionMask, {S0, S1}, diopi_dtype_bool);
         diopiScalar_t value = constructDiopiScalarT(diopi_dtype_int64, 1);
         diopiFill(ctx, const_cast<diopiTensorHandle_t>(attentionMask.tensorHandle()), &value);
-        diopiTril(ctx, const_cast<diopiTensorHandle_t>(attentionMask.tensorHandle()), const_cast<diopiTensorHandle_t>(attentionMask.tensorHandle()), 1);
+        diopiTril(ctx, const_cast<diopiTensorHandle_t>(attentionMask.tensorHandle()), const_cast<diopiTensorHandle_t>(attentionMask.tensorHandle()), 0);
     }
 
     diopiTensorHandle_t dropMask;
@@ -333,10 +338,18 @@ int aclnnFlashAttentionAdaptor(diopiContextHandle_t ctx, diopiTensorHandle_t att
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     ret = createAclTensor1(softmaxSumTensor, &softmaxSumAclTensor);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
-    ret = createAclTensor1(attentionMask.tensorHandle(), &attentionMaskTensor);
-    CHECK_RET(ret == ACL_SUCCESS, return ret);
+    // ret = createAclTensor1(softmaxOutTensor, &softmaxOutAclTensor);
+    // CHECK_RET(ret == ACL_SUCCESS, return ret);
+    if (isCausal) {
+        ret = createAclTensor1(attentionMask.tensorHandle(), &attentionMaskTensor);
+        CHECK_RET(ret == ACL_SUCCESS, return ret);
+    }
     ret = createAclTensor1(dropMask, &dropMaskTensor);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
+    std::cout << "q是否非空: " << (qTensor != nullptr) << std::endl;
+    std::cout << "k是否非空: " << (kTensor != nullptr) << std::endl;
+    std::cout << "v是否非空: " << (vTensor != nullptr) << std::endl;
+    std::cout << "attentionOut是否非空: " << (attentionOutTensor != nullptr) << std::endl;
 
     uint64_t workspaceSize = 0;
     aclOpExecutor* executor;
