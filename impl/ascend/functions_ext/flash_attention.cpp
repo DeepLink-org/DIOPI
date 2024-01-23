@@ -10,31 +10,6 @@
 namespace impl {
 namespace ascend {
 
-void dropoutGenMask(diopiContextHandle_t ctx, diopiTensorHandle_t* mask, const int64_t numels, double keepProb, diopiGeneratorHandle_t generator) {
-    diopiTensorHandle_t maskTensor;
-    std::vector<int64_t> maskShape{((numels + 128 - 1) / 128 * 128) / 8};
-    diopiSize_t maskSize = vectorToDiopiSize(maskShape);
-    diopiRequireTensor(ctx, &maskTensor, &maskSize, nullptr, diopi_dtype_bool, diopi_device);
-
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    const int64_t seed = pair.first;
-    const int64_t offset = pair.second;
-    const int64_t seed1 = 0;
-
-    diopiSize_t offsetSize = vectorToDiopiSize(std::vector<int64_t>{0, offset});
-    diopiSize_t inputSize = vectorToDiopiSize(std::vector<int64_t>{numels});
-
-    AclOpRunner<5, 1, dtypeConvertor>("StatelessDropOutGenMask", ctx)
-        .addConstInput(inputSize)
-        .addConstInput(keepProb, diopi_dtype_float32)
-        .addConstInput(seed, diopi_dtype_int32)
-        .addConstInput(seed1, diopi_dtype_int32)
-        .addConstInput(offsetSize)
-        .addOutput(maskTensor)
-        .run();
-    *mask = maskTensor;
-}
-
 diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
                                  diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                  diopiConstTensorHandle_t v, double pDropout, double softmaxScale, bool isCausal) {
@@ -135,9 +110,8 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
 
 diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
                                          diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                         diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t* softmaxMax, diopiConstTensorHandle_t* softmaxSum,
-                                         diopiConstTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, double pDropout, double softmaxScale,
-                                         bool isCausal) {
+                                         diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
+                                         diopiConstTensorHandle_t softmaxOut, diopiGeneratorHandle_t gen, double pDropout, double softmaxScale, bool isCausal) {
 #if 0
     AscendTensor qTensor(q);
     AscendTensor kTensor(k);

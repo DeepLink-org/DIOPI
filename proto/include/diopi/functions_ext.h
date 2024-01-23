@@ -216,8 +216,8 @@ DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensor
  */
 DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
                                                    diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                                   diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t* softmax_max,
-                                                   diopiConstTensorHandle_t* softmax_sum, diopiConstTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen,
+                                                   diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t softmax_max,
+                                                   diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, diopiGeneratorHandle_t gen,
                                                    double p_dropout, double softmax_scale, bool is_causal);
 
 // ============================================lightllm begin========================================

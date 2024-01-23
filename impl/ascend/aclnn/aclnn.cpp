@@ -270,14 +270,25 @@ int aclnnFlashAttentionTest(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     int64_t N = qTensorTmp.shape(2);
     int64_t D = qTensorTmp.shape(3);
 
+    diopiTensorHandle_t softmaxMaxTensor;
+    diopiTensorHandle_t softmaxSumTensor;
+    diopiTensorHandle_t softmaxOutTensor = nullptr;  // 保留输出，暂未使用
+    // QK^T的shape: （B,N,S,S），暂时不清楚华为底层为了做优化需要保留(B,N,S,8)的用意
+    std::vector<int64_t> softmaxMaxShape{B, N, S0, 8};
+    std::vector<int64_t> softmaxSumShape{B, N, S0, 8};
+    diopiSize_t softmaxMaxSize = vectorToDiopiSize(softmaxMaxShape);
+    diopiSize_t softmaxSumSize = vectorToDiopiSize(softmaxSumShape);
+    diopiRequireTensor(ctx, &softmaxMaxTensor, &softmaxMaxSize, nullptr, diopi_dtype_float32, diopi_device);
+    diopiRequireTensor(ctx, &softmaxSumTensor, &softmaxSumSize, nullptr, diopi_dtype_float32, diopi_device);
+
     aclTensor* qTensor = nullptr;
     aclTensor* kTensor = nullptr;
     aclTensor* vTensor = nullptr;
     aclTensor* attentionOutTensor = nullptr;
 
-    aclTensor* softmaxMaxTensor = nullptr;
-    aclTensor* softmaxSumTensor = nullptr;
-    aclTensor* softmaxOutTensor = nullptr;
+    aclTensor* softmaxMaxAclTensor = nullptr;
+    aclTensor* softmaxSumAclTensor = nullptr;
+    aclTensor* softmaxOutAclTensor = nullptr;
 
     aclTensor* pseTensor = nullptr;
     aclTensor* paddingMaskTensor = nullptr;
@@ -306,9 +317,9 @@ int aclnnFlashAttentionTest(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     ret = createAclTensor1(attentionOut, &attentionOutTensor);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
-    ret = createAclTensor1(softmaxMax, &softmaxMaxTensor);
+    ret = createAclTensor1(softmaxMaxTensor, &softmaxMaxAclTensor);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
-    ret = createAclTensor1(softmaxSum, &softmaxSumTensor);
+    ret = createAclTensor1(softmaxSumTensor, &softmaxSumAclTensor);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     ret = createAclTensor1(attentionMask.tensorHandle(), &attentionMaskTensor);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
@@ -339,9 +350,9 @@ int aclnnFlashAttentionTest(diopiContextHandle_t ctx, diopiTensorHandle_t attent
                                                    inputLayoutPtr,
                                                    innerPrecise,
                                                    sparseMode,
-                                                   softmaxMaxTensor,
-                                                   softmaxSumTensor,
-                                                   softmaxOutTensor,
+                                                   softmaxMaxAclTensor,
+                                                   softmaxSumAclTensor,
+                                                   softmaxOutAclTensor,
                                                    attentionOutTensor,
                                                    &workspaceSize,
                                                    &executor);
@@ -363,14 +374,16 @@ int aclnnFlashAttentionTest(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     if (workspaceSize > 0) {
         aclrtFree(workspaceAddr);
     }
-
+    *softmaxMax = softmaxMaxTensor;
+    *softmaxSum = softmaxSumTensor;
+    *softmaxOut = softmaxOutTensor;
     return 0;
 }
 
 int aclnnFlashAttentionBackwardTest(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
                                     diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                    diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t* softmaxMax, diopiConstTensorHandle_t* softmaxSum,
-                                    diopiConstTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, double pDropout, double softmaxScale, bool isCausal) {
+                                    diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
+                                    diopiConstTensorHandle_t softmaxOut, diopiGeneratorHandle_t gen, double pDropout, double softmaxScale, bool isCausal) {
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
 
