@@ -277,7 +277,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
         diopiRequireTensor(ctx, &sphsteps, &newshape, &sphsteps_stride, ropedtype, device);
         // prepared attention_mask_ and none padding_offset_ and none cu_seqlens_
         if (!is_prepared) {
-            diopiScalar_t mask_value{dtype, double(-1.0f)};
+            diopiScalar_t dnone{dtype, double(-1.0f)};
             diopiScalar_t d10000{dtype, double(10000.0f)};
             for (int64_t i = 0; i < batch_size; i++) {
                 int64_t input_length = intdtype == diopiDtype_t::diopi_dtype_int32 ? *(reinterpret_cast<int32_t*>(input_lengths_host_data) + i)
@@ -294,25 +294,39 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 char* attention_mask_i_ptr = reinterpret_cast<char*>(prework_ptr) + itemsize * i * max_q_len * max_kv_len;
                 diopiSize_t attention_mask_i_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(attention_mask_i_ptr)), -1};
                 diopiRequireTensor(ctx, &attention_mask_i, &newshape, &attention_mask_i_stride, dtype, device);
+                diopiTensorHandle_t mask_i_upper_part;
+                shape[0] = input_length;
+                shape[1] = max_kv_len;
+                newshape.len = 2;
+                char* mask_i_upper_part_ptr = reinterpret_cast<char*>(attention_mask_i_ptr) + itemsize * max_q_len * max_kv_len;
+                diopiSize_t mask_i_upper_part_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(mask_i_upper_part_ptr)), -1};
+                diopiRequireTensor(ctx, &mask_i_upper_part, &newshape, &mask_i_upper_part_stride, dtype, device);
+                diopiTensorHandle_t mask_i_lower_part;
+                shape[0] = max_q_len - input_length;
+                shape[1] = max_kv_len;
+                newshape.len = 2;
+                char* mask_i_lower_part_ptr = reinterpret_cast<char*>(mask_i_upper_part_ptr) + itemsize * input_length * max_kv_len;
+                diopiSize_t mask_i_lower_part_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(mask_i_lower_part_ptr)), -1};
+                diopiRequireTensor(ctx, &mask_i_lower_part, &newshape, &mask_i_lower_part_stride, dtype, device);
+
                 // attention_mask_mask
                 diopiTensorHandle_t attention_mask_mask;
-                shape[0] = max_q_len;
-                shape[1] = max_q_len;
+                shape[0] = input_length;
+                shape[1] = input_length;
                 newshape.len = 2;
                 char* attention_mask_mask_ptr = reinterpret_cast<char*>(workspace_ptr);
                 diopiSize_t attention_mask_mask_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(attention_mask_mask_ptr)), -1};
                 diopiRequireTensor(ctx, &attention_mask_mask, &newshape, &attention_mask_mask_stride, dtype, device);
-                diopiFill(ctx, attention_mask_mask, &mask_value);
+                diopiFill(ctx, attention_mask_mask, &dnone);
                 diopiTriuInp(ctx, attention_mask_mask, 1);
-                diopiAddInpScalar(ctx, attention_mask_mask, &scalar_done, &scalar_done);
                 // attention_mask_zero
                 int64_t context_input = std::max(int64_t(0), int64_t(context_length - input_length));
                 if (context_input > 0) {
                     diopiTensorHandle_t attention_mask_zero;
-                    shape[0] = max_q_len;
+                    shape[0] = input_length;
                     shape[1] = context_input;
                     newshape.len = 2;
-                    char* attention_mask_zero_ptr = reinterpret_cast<char*>(attention_mask_mask_ptr) + itemsize * max_q_len * max_q_len;
+                    char* attention_mask_zero_ptr = reinterpret_cast<char*>(attention_mask_mask_ptr) + itemsize * input_length * input_length;
                     diopiSize_t attention_mask_zero_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(attention_mask_zero_ptr)), -1};
                     diopiRequireTensor(ctx, &attention_mask_zero, &newshape, &attention_mask_zero_stride, dtype, device);
                     diopiFill(ctx, attention_mask_zero, &scalar_dzero);
@@ -323,23 +337,24 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                     attention_mask_members[0] = attention_mask_mask;
                 }
                 // attention_mask_one
-                int64_t others = std::max(int64_t(0), int64_t(max_kv_len - (context_length - input_length + max_q_len)));
+                int64_t others = std::max(int64_t(0), int64_t(max_kv_len - context_length));
                 if (others > 0) {
                     diopiTensorHandle_t attention_mask_one;
-                    shape[0] = max_q_len;
+                    shape[0] = input_length;
                     shape[1] = others;
                     newshape.len = 2;
-                    char* attention_mask_one_ptr = reinterpret_cast<char*>(attention_mask_mask_ptr) + itemsize * max_q_len * (context_input + max_q_len);
+                    char* attention_mask_one_ptr = reinterpret_cast<char*>(attention_mask_mask_ptr) + itemsize * input_length * (context_input + input_length);
                     diopiSize_t attention_mask_one_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(attention_mask_one_ptr)), -1};
                     diopiRequireTensor(ctx, &attention_mask_one, &newshape, &attention_mask_one_stride, dtype, device);
-                    diopiFill(ctx, attention_mask_one, &mask_value);
+                    diopiFill(ctx, attention_mask_one, &dnone);
                     attention_mask_members[2] = attention_mask_one;
                     attention_mask_members_length += 1;
                 }
                 // cat
-                combAsCat(ctx, attention_mask_i, attention_mask_members, attention_mask_members_length, 1);
+                combAsCat(ctx, mask_i_upper_part, attention_mask_members, attention_mask_members_length, 1);
+                diopiFill(ctx, mask_i_lower_part, &dnone);
+                
                 // for cal
-                diopiAddInpScalar(ctx, attention_mask_i, &mask_value, &scalar_done);
                 diopiMulInpScalar(ctx, attention_mask_i, &d10000);
             }
             // zeros
