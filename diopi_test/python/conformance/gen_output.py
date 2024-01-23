@@ -226,11 +226,18 @@ class CustomizedTest(object):
         return out
 
     def rms_norm(input, normalized_shape, weight, bias, eps):
-        var = input.to(torch.float32).pow(2).mean(-1, keepdim=True)
-        inv_rms = torch.rsqrt(var + eps)
-        inp = input * inv_rms
-        out = weight * inp
-
+        square = input.pow(2)
+        normalized_dim = list(range(-(len(normalized_shape)), 0))
+        mean_square = square.mean(dim=normalized_dim)
+        inv_rms = torch.rsqrt(mean_square + eps)
+        while len(inv_rms.shape) < len(input.shape):
+            inv_rms = inv_rms.unsqueeze(dim=-1)
+        out = input * inv_rms
+        if weight == None:
+            weight = 1
+        if bias == None:
+            bias = 0
+        out = weight * out + bias
         return (out, inv_rms)
 
     def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
