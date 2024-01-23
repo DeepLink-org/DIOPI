@@ -2915,7 +2915,8 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
                 diopiTensorHandle_t bad_word_tensor;
                 diopiSize_t bad_word_shape;
                 bad_word_shape.len = 1;
-                bad_word_shape.data = &bad_word_len - 1;
+                int64_t bad_word_to_compare_len = bad_word_len - 1;
+                bad_word_shape.data = &bad_word_to_compare_len;
                 diopiDevice_t bad_word_device;
                 diopiGetTensorDevice(bad_words, &bad_word_device);
                 diopiSize_t stride;
