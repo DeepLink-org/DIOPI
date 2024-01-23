@@ -786,6 +786,10 @@ device_configs = {
         rtol=1e-3,
         atol_half=1e-2,
         rtol_half=1e-2,
+        para=dict(
+            normalized_shape=[Skip(8, ), Skip(5, 3, 5), Skip(128, ), Skip(64, ), Skip(32,),
+                              Skip(3, 5), Skip(2, 16, 128)],
+        ),
     ),
 
     'smooth_l1_loss': dict(
