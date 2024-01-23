@@ -7,8 +7,8 @@ import numpy as np
 ops_with_states = {}
 
 diopi_configs = {
-    'multihead_attention_forward': dict(
-        name=['multihead_attention_forward'],
+    'multihead_attention': dict(
+        name=['multihead_attention'],
         interface=['CustomizedTest'],
         dtype=[np.float16],
         atol=1e-3,
@@ -24,20 +24,25 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['q'],
+                    "requires_grad": [True],
                     "shape": ((2, 2, 2, 8), (2, 5, 7, 8), (4, 103, 8, 32), (8, 256, 16, 256)),
                     "dtype": [np.float16],
                 },
                 {
                     "ins": ['k'],
+                    "requires_grad": [True],
                     "shape": ((2, 2, 2, 8), (2, 5, 7, 8), (4, 103, 8, 32), (8, 256, 16, 256)),
                     "dtype": [np.float16],
                 },
                 {
                     "ins": ['v'],
+                    "requires_grad": [True],
                     "shape": ((2, 2, 2, 8), (2, 5, 7, 8), (4, 103, 8, 32), (8, 256, 16, 256)),
                     "dtype": [np.float16],
                 },
             ],
         ),
+        saved_args=dict(out=0, softmax_lse=1),
+        requires_backward=[0],
     ),
 }

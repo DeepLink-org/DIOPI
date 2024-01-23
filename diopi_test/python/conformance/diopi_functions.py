@@ -5183,14 +5183,14 @@ def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_sha
     return {'input': grad_input, 'weight': grad_weight}
 
 
-def multihead_attention_forward(
+def multihead_attention(
     q, k, v, dropout_p, is_causal, return_debug_mask, scale
 ):
     call = "diopiMultiHeadAttention"
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], dtype=Dtype.float32)
     gen = None
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
@@ -5209,7 +5209,35 @@ def multihead_attention_forward(
         debug_attn_mask,
     )
     check_returncode(ret)
-    return out
+    return (out, softmax_lse)
+
+
+def multihead_attention_backward(grad_outputs, q, k, v, out, softmax_lse, dropout_p, is_causal, scale, return_debug_mask):
+    call = "diopiMultiHeadAttentionBackward"
+    func = check_function(call)
+    grad_q = Tensor(q.size(), q.get_dtype())
+    grad_k = Tensor(k.size(), k.get_dtype())
+    grad_v = Tensor(v.size(), v.get_dtype())
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
+    gen = None
+    ret = func(
+        q.context(),
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        out,
+        softmax_lse,
+        dropout_p,
+        is_causal,
+        gen,
+        softmax_scale,
+        grad_q,
+        grad_k,
+        grad_v
+    )
+    check_returncode(ret)
+    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 
 def apply_penalty(

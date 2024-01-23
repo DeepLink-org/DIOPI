@@ -233,7 +233,7 @@ class CustomizedTest(object):
 
         return (out, inv_rms)
 
-    def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+    def multihead_attention(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
         from einops import rearrange
         import math
@@ -247,8 +247,9 @@ class CustomizedTest(object):
             )
             scores = scores + causal_mask.to(dtype=scores.dtype)
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
+        softmax_lse = torch.logsumexp(scores, dim=3)
         output = torch.einsum("bhts,bshd->bthd", attention, v)
-        return output
+        return (output, softmax_lse)
 
     def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
         batch = logits.shape[0]
