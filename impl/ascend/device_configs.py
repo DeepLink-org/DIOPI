@@ -786,9 +786,18 @@ device_configs = {
         rtol=1e-3,
         atol_half=1e-2,
         rtol_half=1e-2,
-        para=dict(
-            normalized_shape=[Skip(8, ), Skip(5, 3, 5), Skip(128, ), Skip(64, ), Skip(32,),
-                              Skip(3, 5), Skip(2, 16, 128)],
+        para = dict(
+            # skip because normalized_shape not supported
+            normalized_shape=[Skip((5, 3, 5)), Skip((128, )), Skip((64, )), Skip((32,)),
+                              Skip((3, 5)), Skip((2, 16, 128))],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64)],
+                },
+            ]
         ),
     ),
 
