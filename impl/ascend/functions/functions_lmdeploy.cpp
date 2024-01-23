@@ -837,7 +837,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                         // k for cal
                         diopiTensorHandle_t zeros_kv;
                         newshape.len = 3;
-                        shape[0] = max_kv_len - input_length;
+                        shape[0] = max_kv_len - input_length - history_length;
                         shape[1] = local_kv_head_num;
                         shape[2] = size_per_head;
                         diopiSize_t zeros_kv_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(zeros_ptr)), -1};
