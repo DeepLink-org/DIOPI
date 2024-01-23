@@ -233,9 +233,9 @@ class CustomizedTest(object):
         while len(inv_rms.shape) < len(input.shape):
             inv_rms = inv_rms.unsqueeze(dim=-1)
         out = input * inv_rms
-        if weight == None:
+        if weight is None:
             weight = 1
-        if bias == None:
+        if bias is None:
             bias = 0
         out = weight * out + bias
         return (out, inv_rms)
