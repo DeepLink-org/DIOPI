@@ -278,6 +278,9 @@ int aclnnFlashAttentionAdaptor(diopiContextHandle_t ctx, diopiTensorHandle_t att
     int64_t S1 = kTensorTmp.shape(1);  // S for key & value
     int64_t N = qTensorTmp.shape(2);
     int64_t D = qTensorTmp.shape(3);
+    ASCEND_CHECK_ABORT(S0 % 16 == 0, "S must be a multiple of 16");
+    ASCEND_CHECK_ABORT(S1 % 16 == 0, "S must be a multiple of 16");
+    ASCEND_CHECK_ABORT(D == 64 || D == 96 || D == 128 || D == 256, "D must be 64, 96, 128, 256");
 
     diopiTensorHandle_t softmaxMaxTensor;
     diopiTensorHandle_t softmaxSumTensor;
@@ -413,6 +416,9 @@ int aclnnFlashAttentionBackwardAdaptor(diopiContextHandle_t ctx, diopiTensorHand
     int64_t S1 = kTensorTmp.shape(1);  // S for key & value
     int64_t N = qTensorTmp.shape(2);
     int64_t D = qTensorTmp.shape(3);
+    ASCEND_CHECK_ABORT(S0 % 16 == 0, "S must be a multiple of 16");
+    ASCEND_CHECK_ABORT(S1 % 16 == 0, "S must be a multiple of 16");
+    ASCEND_CHECK_ABORT(D == 64 || D == 96 || D == 128 || D == 256, "D must be 64, 96, 128, 256");
 
     aclTensor* qTensor = nullptr;
     aclTensor* kTensor = nullptr;
