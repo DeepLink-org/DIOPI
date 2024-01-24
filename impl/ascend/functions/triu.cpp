@@ -10,7 +10,9 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal) {
-    AclOpRunner<1, 1>("Triu", ctx).addInput(input).setAttr("diagonal", diagonal).addOutput(out).run();
+    aclnnTriuAdaptor(ctx, input, diagonal, out);
+
+    // AclOpRunner<1, 1>("Triu", ctx).addInput(input).setAttr("diagonal", diagonal).addOutput(out).run();
     return diopiSuccess;
 }
 

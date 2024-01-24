@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "../aclnn/aclnn.hpp"
 #include "../common/acloprunner.hpp"
 namespace impl {
 namespace ascend {

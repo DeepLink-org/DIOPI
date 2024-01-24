@@ -22,8 +22,6 @@ namespace ascend {
 
 inline const char* getOpApiLibName(void) { return "libopapi.so"; }
 
-inline const char* getCustOpApiLibName(void) { return "libcust_opapi.so"; }
-
 inline void* getOpApiFuncAddrInLib(void* handler, const char* libName, const char* apiName) {
     auto funcAddr = dlsym(handler, apiName);
     if (funcAddr == nullptr) {
@@ -41,14 +39,6 @@ inline void* getOpApiLibHandler(const char* libName) {
 }
 
 inline void* getOpApiFuncAddr(const char* apiName) {
-    static auto custOpApiHandler = getOpApiLibHandler(getCustOpApiLibName());
-    if (custOpApiHandler != nullptr) {
-        auto funcAddr = getOpApiFuncAddrInLib(custOpApiHandler, getCustOpApiLibName(), apiName);
-        if (funcAddr != nullptr) {
-            return funcAddr;
-        }
-    }
-
     static auto opApiHandler = getOpApiLibHandler(getOpApiLibName());
     if (opApiHandler == nullptr) {
         return nullptr;
@@ -92,7 +82,8 @@ constexpr auto convertTypes(Ts&... args) {
     return std::make_tuple(convertType(args)...);
 }
 
-int aclnn(const std::string& name, diopiContextHandle_t ctx, aclTensor* self, aclTensor* out) {
+template <typename... Args>
+int aclnn(const std::string& name, diopiContextHandle_t ctx, Args... args) {
     // 0. get aclrtStream
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
@@ -106,7 +97,7 @@ int aclnn(const std::string& name, diopiContextHandle_t ctx, aclTensor* self, ac
     uint64_t* workspaceSizeAddr = &workspaceSize;
     aclOpExecutor* executor = nullptr;
     aclOpExecutor** executorAddr = &executor;
-    auto convertedParams = convertTypes(self, out, workspaceSizeAddr, executorAddr);
+    auto convertedParams = convertTypes(args..., workspaceSizeAddr, executorAddr);
     static auto getWorkspaceSizeFunc = convertToOpApiFunc(convertedParams, getWorkspaceSizeFuncAddr);
 
     auto workspaceStatus = call(getWorkspaceSizeFunc, convertedParams);

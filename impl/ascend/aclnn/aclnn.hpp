@@ -40,6 +40,8 @@ int aclnnSinAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, dio
 
 int aclnnCosAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiTensorHandle_t out);
 
+int aclnnTriuAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, int64_t diagonal, diopiTensorHandle_t out1);
+
 }  // namespace ascend
 }  // namespace impl
 
