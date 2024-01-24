@@ -230,9 +230,10 @@ class CustomizedTest(object):
         normalized_dim = list(range(-(len(normalized_shape)), 0))
         mean_square = square.mean(dim=normalized_dim)
         inv_rms = torch.rsqrt(mean_square + eps)
-        while len(inv_rms.shape) < len(input.shape):
-            inv_rms = inv_rms.unsqueeze(dim=-1)
-        out = input * inv_rms
+        inv_rms_tmp = inv_rms
+        while len(inv_rms_tmp.shape) < len(input.shape):
+            inv_rms_tmp = inv_rms_tmp.unsqueeze(dim=-1)
+        out = input * inv_rms_tmp
         if weight is None:
             weight = 1
         if bias is None:
