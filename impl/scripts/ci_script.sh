@@ -17,7 +17,7 @@ case $1 in
     echo "cpp-lint"
     python scripts/cpplint.py --linelength=160 --repository=.. \
       --filter=-build/c++11,-legal/copyright,-build/include_subdir,-runtime/references,-runtime/printf,-runtime/int,-build/namespace \
-      --exclude=${CURRENT_PATH}/../third_party --exclude=${CURRENT_PATH}/../ascend_npu/third_party --exclude=${CURRENT_PATH}/../build \
+      --exclude=${IMPL_PATH}/third_party --exclude=${IMPL_PATH}/ascend_npu/third_party --exclude=${IMPL_PATH}/build \
       --recursive ./
     ;;
   clang-tidy)
