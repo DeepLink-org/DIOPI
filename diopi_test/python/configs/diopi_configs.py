@@ -7451,14 +7451,14 @@ diopi_configs = {
                 {
                     "ins": ["input"],
                     "shape": ((2, 16, 16, 2),),
-                    "stride":((512, 32, 2, 1),)
-                    "dtype": [np.float16, np.float32, np.float32, np.float16, np.int32]
+                    "stride":((512, 32, 2, 1),),
+                    "dtype": [np.float16, np.float32, np.float32, np.float16, np.int32],
                 },
                 {
                     "ins": ["other"],
                     "shape": ((2, 16, 16, 2),),
-                    "stride":((512, 16, 1, 256),)
-                    "dtype": [np.float16, np.float32, np.float16, np.float32, np.int64]
+                    "stride":((512, 16, 1, 256),),
+                    "dtype": [np.float16, np.float32, np.float16, np.float32, np.int64],
                 },
             ]
         )
