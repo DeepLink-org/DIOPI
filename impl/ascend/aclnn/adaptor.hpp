@@ -23,7 +23,7 @@
 namespace impl {
 namespace ascend {
 
-const std::string kWorkspaceSizeSuffix = "GetWorkspaceSize";
+constexpr const char kWorkspaceSizeSuffix[] = "GetWorkspaceSize";
 
 #define CHECK_RET(cond, return_expr) \
     do {                             \
