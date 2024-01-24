@@ -23,6 +23,8 @@
 namespace impl {
 namespace ascend {
 
+const std::string kWorkspaceSizeSuffix = "GetWorkspaceSize";
+
 #define CHECK_RET(cond, return_expr) \
     do {                             \
         if (!(cond)) {               \
@@ -110,7 +112,7 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
     diopiGetStream(ctx, &stream);
 
     // 1. call xxxGetWorkspaceSize function.
-    std::string workSpaceName = name + "GetWorkspaceSize";
+    std::string workSpaceName = name + kWorkspaceSizeSuffix;
     static const auto getWorkspaceSizeFuncAddr = getOpApiFuncAddr(workSpaceName.c_str());
     ASCEND_CHECK_ABORT(getWorkspaceSizeFuncAddr != nullptr, "can't get workSpaceName function.");
 

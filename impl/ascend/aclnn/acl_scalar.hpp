@@ -4,8 +4,8 @@
  * @copyright  (c) 2024, DeepLink.
  */
 
-#ifndef IMPL_ASCEND_ACLNN_ACLSCALAR_HPP_
-#define IMPL_ASCEND_ACLNN_ACLSCALAR_HPP_
+#ifndef IMPL_ASCEND_ACLNN_ACL_SCALAR_HPP_
+#define IMPL_ASCEND_ACLNN_ACL_SCALAR_HPP_
 
 #include "../common/acloprunner.hpp"
 #include "aclnn/acl_meta.h"
@@ -37,4 +37,4 @@ private:
 }  // namespace ascend
 }  // namespace impl
 
-#endif  //  IMPL_ASCEND_ACLNN_ACLSCALAR_HPP_
+#endif  // IMPL_ASCEND_ACLNN_ACL_SCALAR_HPP_

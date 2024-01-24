@@ -4,8 +4,8 @@
  * @copyright  (c) 2024, DeepLink.
  */
 
-#ifndef IMPL_ASCEND_ACLNN_ACLTENSOR_HPP_
-#define IMPL_ASCEND_ACLNN_ACLTENSOR_HPP_
+#ifndef IMPL_ASCEND_ACLNN_ACL_TENSOR_HPP_
+#define IMPL_ASCEND_ACLNN_ACL_TENSOR_HPP_
 
 #include "../ascend_tensor.hpp"
 #include "aclnn/acl_meta.h"
@@ -45,4 +45,4 @@ private:
 }  // namespace ascend
 }  // namespace impl
 
-#endif  //  IMPL_ASCEND_ACLNN_ACLTENSOR_HPP_
+#endif  //  IMPL_ASCEND_ACLNN_ACL_TENSOR_HPP_
