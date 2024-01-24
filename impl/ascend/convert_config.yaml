@@ -303,3 +303,9 @@
 
 - diopiGatherBackward:
     dtype: (float64)->float32
+
+- diopiRMSNorm:
+    dtype: (float64)->float32
+
+- diopiRMSNormBackward:
+    dtype: (float64)->float32

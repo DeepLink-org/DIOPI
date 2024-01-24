@@ -786,19 +786,6 @@ device_configs = {
         rtol=1e-3,
         atol_half=1e-2,
         rtol_half=1e-2,
-        para = dict(
-            # skip because normalized_shape not supported
-            normalized_shape=[Skip((5, 3, 5)), Skip((128, )), Skip((64, )), Skip((32,)),
-                              Skip((3, 5)), Skip((2, 16, 128))],
-        ),
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64)],
-                },
-            ]
-        ),
     ),
 
     'smooth_l1_loss': dict(
@@ -1477,19 +1464,6 @@ device_configs = {
     'rotary_emb_empty_tensor': dict(
         name=["rotary_emb"],
         tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'rms_norm': dict(
-        name=['rms_norm'],
-        tensor_para=dict(
-            gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['input'],

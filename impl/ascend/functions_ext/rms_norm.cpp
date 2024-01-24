@@ -12,7 +12,6 @@ namespace ascend {
 diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t invRms, diopiConstTensorHandle_t input,
                           diopiSize_t normalizedShape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps) {
     AscendTensor inputTensor(input);
-    ASCEND_CHECK_ABORT(1 == normalizedShape.len && normalizedShape.data[0] == inputTensor.shape()[inputTensor.dim() - 1], "normalized shape error!");
     AclOpRunner<2, 2>("RmsNorm", ctx).addInput(input).addInput(weight).setAttr("epsilon", static_cast<float>(eps)).addOutput(out).addOutput(invRms).run();
     diopiScalar_t oneScalar = constructDiopiScalarT(diopi_dtype_float32, 1.0);
     diopiAddInp(ctx, out, bias, &oneScalar);
@@ -23,7 +22,6 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                   diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRms, diopiSize_t normalizedShape, double eps) {
     AscendTensor inputTensor(input);
-    ASCEND_CHECK_ABORT(1 == normalizedShape.len && normalizedShape.data[0] == inputTensor.shape()[inputTensor.dim() - 1], "normalized shape error!");
     AclOpRunner<4, 2>("RmsNormGrad", ctx)
         .addInput(gradOutput)
         .addInput(input)
