@@ -7409,6 +7409,28 @@ diopi_configs = {
         )
     ),
 
+    'copy_input_no_contiguous_1': dict(
+        name=["copy_"],
+        interface=['torch.Tensor'],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 16, 2),),
+                    "stride":((512, 16, 1, 256),)
+                    "dtype": [np.float16, np.float32, np.float32, np.float16, np.int32]
+                },
+                {
+                    "ins": ["other"],
+                    "shape": ((2, 16, 16, 2),),
+                    "stride":((512, 32, 2, 1),)
+                    "dtype": [np.float16, np.float32, np.float16, np.float32, np.int64]
+                },
+            ]
+        )
+    ),
+
     'copy_other_no_contiguous': dict(
         name=["copy_"],
         interface=['torch.Tensor'],
