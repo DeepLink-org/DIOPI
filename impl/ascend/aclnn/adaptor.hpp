@@ -11,6 +11,7 @@
 
 #include <functional>
 #include <iostream>
+#include <string>
 
 #include "../ascend_tensor.hpp"
 #include "acl/acl.h"
@@ -20,7 +21,7 @@
 namespace impl {
 namespace ascend {
 
-inline const char* getOpApiLibName(void) { return "libopapi.so"; }
+inline const char* getOpApiLibName() { return "libopapi.so"; }
 
 inline void* getOpApiFuncAddrInLib(void* handler, const char* libName, const char* apiName) {
     auto funcAddr = dlsym(handler, apiName);
