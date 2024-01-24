@@ -3091,7 +3091,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
                                                            diopiConstTensorHandle_t output_ids, const int64_t batch_size, const int64_t vocab_size,
                                                            diopiConstTensorHandle_t input_lengths, const int64_t max_input_length, const int64_t step,
                                                            const int64_t penalty_type) {
-    if (logits == nullptr || penalties == nullptr || output_ids == nullptr || input_lengths == nullptr) {
+    if (logits == nullptr || penalties == nullptr || output_ids == nullptr) {
         return diopiErrorOccurred;
     }
 
@@ -3106,21 +3106,20 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
     diopiDtype_t logits_type, penalties_type, input_lengths_type, output_ids_type;
     diopiGetTensorDtype(logits, &logits_type);
     diopiGetTensorDtype(penalties, &penalties_type);
-    diopiGetTensorDtype(input_lengths, &input_lengths_type);
     diopiGetTensorDtype(output_ids, &output_ids_type);
-
-    if (input_lengths_type != diopi_dtype_int32) {
-        return diopiErrorOccurred;
-    }
 
     int64_t logits_elem_size, penalties_elem_size, input_lengths_elem_size, output_ids_elem_size;
     diopiGetTensorElemSize(logits, &logits_elem_size);
     diopiGetTensorElemSize(penalties, &penalties_elem_size);
-    diopiGetTensorElemSize(input_lengths, &input_lengths_elem_size);
     diopiGetTensorElemSize(output_ids, &output_ids_elem_size);
 
     int32_t* input_lengths_host_data = nullptr;
     if (input_lengths != nullptr) {
+        diopiGetTensorElemSize(input_lengths, &input_lengths_elem_size);
+        diopiGetTensorDtype(input_lengths, &input_lengths_type);
+        if (input_lengths_type != diopi_dtype_int32) {
+            return diopiErrorOccurred;
+        }
         diopiTensorHandle_t input_lengths_host;
         diopiSize_t input_lengths_shape;
         diopiGetTensorShape(input_lengths, &input_lengths_shape);
