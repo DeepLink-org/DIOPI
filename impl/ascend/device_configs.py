@@ -786,6 +786,14 @@ device_configs = {
         rtol=1e-3,
         atol_half=1e-2,
         rtol_half=1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float16)],
+                },
+            ]
+        ),
     ),
 
     'smooth_l1_loss': dict(

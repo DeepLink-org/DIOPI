@@ -305,7 +305,7 @@
     dtype: (float64)->float32
 
 - diopiRMSNorm:
-    dtype: (float64, float16)->float32
+    dtype: (float64)->float32
 
 - diopiRMSNormBackward:
-    dtype: (float64, float16)->float32
+    dtype: (float64)->float32
