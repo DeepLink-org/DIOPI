@@ -1,7 +1,7 @@
 /**
  * @file
  * @author DeepLink
- * @copyright  (c) 2023, DeepLink.
+ * @copyright  (c) 2024, DeepLink.
  */
 
 #ifndef IMPL_ASCEND_ACLNN_ACLNN_HPP_
@@ -15,7 +15,6 @@
 
 #include "../ascend_tensor.hpp"
 #include "acl/acl.h"
-#include "aclnnop/aclnn_add.h"  // TODO(zmz): add all
 #include "impl_functions.hpp"
 
 namespace impl {

@@ -11,9 +11,12 @@
 
 #include <functional>
 #include <iostream>
+#include <numeric>
 #include <string>
 
 #include "../ascend_tensor.hpp"
+#include "../common/acloprunner.hpp"
+#include "../common/utils.hpp"
 #include "acl/acl.h"
 #include "aclnn.hpp"
 #include "aclnn/acl_meta.h"
@@ -73,6 +76,8 @@ auto convertToOpApiFunc(const Tuple& params, void* opApiAddr) {
     return convertToOpApiFunc(params, opApiAddr, std::make_index_sequence<size>{});
 }
 
+inline aclTensor* convertType(AclTensor& value) { return static_cast<aclTensor*>(value); }
+
 template <typename T>
 T convertType(T value) {
     return value;
@@ -82,6 +87,14 @@ template <typename... Ts>
 constexpr auto convertTypes(Ts&... args) {
     return std::make_tuple(convertType(args)...);
 }
+
+int createAclTensor(diopiConstTensorHandle_t input, aclTensor** tensor);
+
+aclScalar* createAclScalar(const diopiScalar_t* input);
+
+void printContiguousTensor(const aclTensor& tensor, const void* tensorPtr);
+
+void printContiguousTensor(const aclTensor& tensor, diopiConstTensorHandle_t diopi);
 
 template <typename... Args>
 int aclnn(const std::string& name, diopiContextHandle_t ctx, Args... args) {
@@ -114,7 +127,7 @@ int aclnn(const std::string& name, diopiContextHandle_t ctx, Args... args) {
     static const auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());
     ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function.");
 
-    typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, const aclrtStream);
+    typedef int (*OpApiFunc)(const void*, uint64_t, aclOpExecutor*, const aclrtStream);
     OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);
     auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnCos failed. ERROR: %d\n", ret); return ret);

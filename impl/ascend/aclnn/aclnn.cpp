@@ -19,8 +19,7 @@
 
 namespace impl {
 namespace ascend {
-
-int createAclTensor1(diopiConstTensorHandle_t input, aclTensor** tensor) {
+int createAclTensor(diopiConstTensorHandle_t input, aclTensor** tensor) {
     impl::ascend::AscendTensor inAt(input);
     void* deviceAddr = nullptr;
 
@@ -36,8 +35,7 @@ int createAclTensor1(diopiConstTensorHandle_t input, aclTensor** tensor) {
                               const_cast<void*>(inAt.data()));
     return ACL_SUCCESS;
 }
-
-aclScalar* createAclScalar1(const diopiScalar_t* input) {
+aclScalar* createAclScalar(const diopiScalar_t* input) {
     // 创建alpha aclScalar
     if (input->stype == diopiDtype_t::diopi_dtype_float64) {
         auto v = getValue<double>(input);
@@ -48,7 +46,6 @@ aclScalar* createAclScalar1(const diopiScalar_t* input) {
     }
     return nullptr;
 }
-
 void printContiguousTensor(const aclTensor& tensor, const void* tensorPtr) {
     int64_t* shape = nullptr;
     uint64_t num = 0;
@@ -80,16 +77,16 @@ int aclnnAddAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
         return 0;
     }
     // 创建self aclTensor
-    auto ret = createAclTensor1(self1, &self);
+    auto ret = createAclTensor(self1, &self);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     // 创建other aclTensor
-    ret = createAclTensor1(other1, &other);
+    ret = createAclTensor(other1, &other);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     // 创建alpha aclScalar
-    alpha = createAclScalar1(alpha1);
+    alpha = createAclScalar(alpha1);
     CHECK_RET(alpha != nullptr, return ret);
     // 创建out aclTensor
-    ret = createAclTensor1(out1, &out);
+    ret = createAclTensor(out1, &out);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
 
     aclnn("aclnnAdd", ctx, self, other, alpha, out);
@@ -105,10 +102,10 @@ int aclnnSinAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
         return 0;
     }
     // 创建self aclTensor
-    auto ret = createAclTensor1(self1, &self);
+    auto ret = createAclTensor(self1, &self);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     // 创建out aclTensor
-    ret = createAclTensor1(out1, &out);
+    ret = createAclTensor(out1, &out);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
 
     aclnn("aclnnSin", ctx, self, out);
@@ -124,10 +121,10 @@ int aclnnCosAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
         return 0;
     }
     // 创建self aclTensor
-    auto ret = createAclTensor1(self1, &self);
+    auto ret = createAclTensor(self1, &self);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     // 创建out aclTensor
-    ret = createAclTensor1(out1, &out);
+    ret = createAclTensor(out1, &out);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
 
     aclnn("aclnnCos", ctx, self, out);
@@ -143,10 +140,10 @@ int aclnnTriuAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, i
         return 0;
     }
     // 创建self aclTensor
-    auto ret = createAclTensor1(self1, &self);
+    auto ret = createAclTensor(self1, &self);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     // 创建out aclTensor
-    ret = createAclTensor1(out1, &out);
+    ret = createAclTensor(out1, &out);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
 
     aclnn("aclnnTriu", ctx, self, diagonal, out);

@@ -47,6 +47,7 @@ T getValue(const diopiScalar_t* scalar) {
     }
 }
 
+aclDataType getAclDataType(diopiDtype_t type);
 const char* diopiDtypeToStr(const diopiDtype_t dtype);
 
 // Those methods can generate new AscendTensor, so context is needed.

@@ -10,7 +10,15 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal) {
-    AclOpRunner<1, 1>("Tril", ctx).addInput(input).setAttr("diagonal", diagonal).addOutput(out).run();
+    if (useAclnn()) {
+        AclTensor inAcl(input), outAcl(out);
+        if (!inAcl.defined() || inAcl.numel() == 0) {
+            return diopiSuccess;
+        }
+        aclnn("aclnnTril", ctx, inAcl, diagonal, outAcl);
+    } else {
+        AclOpRunner<1, 1>("Tril", ctx).addInput(input).setAttr("diagonal", diagonal).addOutput(out).run();
+    }
     return diopiSuccess;
 }
 
