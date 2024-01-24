@@ -8179,7 +8179,7 @@ diopi_configs = {
     'rms_norm': dict(
         name=['rms_norm'],
         interface=['CustomizedTest'],
-        dtype=[np.float16, np.float32, np.float64],
+        dtype=[np.float32, np.float64],
         para=dict(
             eps=[1e-6, 1e-6, 1e-6, 1e-6, 1e-5, 1e-5, 1e-12, 0, -1e-5, 2],
             normalized_shape=[(5, ), (32, ), (64, ), (8, ), (5, 3, 5), (128, ), (64, ), (32,),

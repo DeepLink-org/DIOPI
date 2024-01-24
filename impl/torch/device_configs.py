@@ -13,7 +13,7 @@ device_configs = {
                 {
                     "ins": ['bias'],
                     # Skip becasuse bias not supported.
-                    "dtype": [Skip((5, )), Skip((32, )), Skip((64, )), Skip((8, )), Skip((128,)), Skip((64,)), Skip((32,)),
+                    "shape": [Skip((5, )), Skip((32, )), Skip((64, )), Skip((8, )), Skip((128,)), Skip((64,)), Skip((32,)),
                               Skip((3, 5)), Skip((2, 16, 128))],
                 },
             ]
