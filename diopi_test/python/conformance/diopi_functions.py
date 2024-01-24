@@ -5152,7 +5152,7 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     size = list(input.size().data)
     out = Tensor(size, input.get_dtype())
     normalized_dim = list(range(-(len(normalized_shape)), 0))
-    inv_rms_size = size[:len(size)-len(normalized_dim)]
+    inv_rms_size = size[:len(size) - len(normalized_dim)]
     inv_rms = Tensor(inv_rms_size, input.get_dtype())
     normalized_shape = Sizes(list(normalized_shape))
     ret = func(
