@@ -374,9 +374,6 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
                     self.set_(selfStorage);
                 }
                 return;
-            } else {
-                NPU_LOGE("copy_d2d_dtype_baseformat not support double when src is not contiguous");
-                return;
             }
         }
     } else {
