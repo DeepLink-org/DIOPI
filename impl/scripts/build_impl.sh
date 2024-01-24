@@ -72,7 +72,7 @@ case $1 in
     ;;
   kunlunxin)
     mkdir -p build && cd build
-    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=kunlunxin -DCMAKE_BUILD_TYPE=Release -DTEST=ON
+    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=kunlunxin -DCMAKE_BUILD_TYPE=Release -DTEST=ON -DENABLE_COVERAGE=${USE_COVERAGE}
     make -j32
     ;;
   *)
