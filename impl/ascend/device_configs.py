@@ -167,42 +167,6 @@ device_configs = {
         ),
     ),
 
-    'pow_tensor': dict( # llm used
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_tensor_only_0_1': dict( # llm used
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1,)),Skip((20267, 80)),Skip((2, 128, 3072)),Skip((2, 512, 38, 38)),Skip((0,)),Skip((0, 4)),Skip((9, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'pow_diff_dtype': dict( # llm used
-        name=['pow'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int32), Skip(np.int16)],
-                },
-            ]
-        ),
-    ),
-
     'matmul': dict(
         name=['matmul'],
         tensor_para=dict(
@@ -213,12 +177,6 @@ device_configs = {
                 },
             ]
         ),
-    ),
-
-    'bmm': dict( # llm used
-        name=['bmm'],
-        atol=3e-2,
-        rtol=3e-2,
     ),
 
     'reduce_op': dict( # llm used
@@ -239,7 +197,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32), Skip(np.float64)],
+                    "dtype": [Skip(np.float64)],
                     "shape": [Skip((16, 0)), Skip((4, 0, 9)),],
                 },
             ]
@@ -318,18 +276,6 @@ device_configs = {
                 },
             ]
         ),
-    ),
-
-    'mm': dict( # llm used
-        name=['mm'],
-        atol=2e-2,
-        rtol=2e-2,
-    ),
-
-    'mm_diff_dtype': dict( # llm used
-        name=['mm'],
-        atol=2e-2,
-        rtol=2e-2,
     ),
 
     'index_fill_scalar': dict(
@@ -566,132 +512,11 @@ device_configs = {
         ),
     ),
 
-    'im2col': dict(
-        name=['im2col'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'flip': dict(
-        name=['flip'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'cholesky': dict(
-        name=['cholesky_ex'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'triangular_solve': dict(
-        name=['triangular_solve'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     # Ascend Not support Tile shape max than 8 on dynamic rank case.
     'repeat': dict( # llm used
         name=['repeat'],
         para=dict(
-            repeats=
-                [Skip((3, 4, 6, 3, 5))],
-        ),
-    ),
-
-    'meshgrid': dict(
-        name=['meshgrid'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['tensors'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'polar': dict(
-        name=['polar'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['abs'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'lerp': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'lerp_tensor': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'amax': dict(
-        name=['amax'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip(()),Skip((18,)),Skip((1024, 64)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((128, 64, 32, 3)),Skip((384, 128)),Skip((3, 0)),Skip((4, 0, 5)),],
-                },
-            ]
-        ),
-    ),
-
-    'linalgqr': dict(
-        name=['linalgqr'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1024, 384)),Skip((384, 1024)),Skip((64, 1, 128)),Skip((128, 64, 32, 3)),Skip((2, 32, 130, 100)),Skip((2, 32, 100, 150)),Skip((4, 2, 1024, 1024)),Skip((4, 284, 284)),Skip((64, 64)),Skip((4, 0)),Skip((0, 16)),Skip((6, 0, 0)),],
-                },
-            ]
+            repeats=[Skip((3, 4, 6, 3, 5))],
         ),
     ),
 
