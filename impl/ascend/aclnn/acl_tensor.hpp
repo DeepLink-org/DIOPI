@@ -18,7 +18,6 @@ public:
     explicit AclTensor(const diopiConstTensorHandle_t& tensor) : at_(tensor) {
         void* deviceAddr = nullptr;
 
-        // 调用aclCreateTensor接口创建aclTensor
         acl_ = aclCreateTensor(at_.getAclMemShape().data(),
                                at_.getAclMemShape().size(),
                                at_.getAclDataType(),

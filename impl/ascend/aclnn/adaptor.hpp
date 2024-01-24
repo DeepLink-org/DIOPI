@@ -101,10 +101,6 @@ constexpr auto convertTypes(Ts&... args) {
     return std::make_tuple(convertType(args)...);
 }
 
-void printContiguousTensor(const aclTensor& tensor, const void* tensorPtr);
-
-void printContiguousTensor(const aclTensor& tensor, diopiConstTensorHandle_t diopi);
-
 template <typename... Args>
 int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args) {
     // 0. get aclrtStream
