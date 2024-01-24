@@ -15,7 +15,7 @@ diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
         if (!inAcl.defined() || inAcl.numel() == 0) {
             return diopiSuccess;
         }
-        aclnn("aclnnTril", ctx, inAcl, diagonal, outAcl);
+        aclnnAdaptor("aclnnTril", ctx, inAcl, diagonal, outAcl);
     } else {
         AclOpRunner<1, 1>("Tril", ctx).addInput(input).setAttr("diagonal", diagonal).addOutput(out).run();
     }

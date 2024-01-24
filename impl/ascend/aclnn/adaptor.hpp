@@ -18,11 +18,22 @@
 #include "../common/acloprunner.hpp"
 #include "../common/utils.hpp"
 #include "acl/acl.h"
-#include "aclnn.hpp"
 #include "aclnn/acl_meta.h"
 
 namespace impl {
 namespace ascend {
+
+#define CHECK_RET(cond, return_expr) \
+    do {                             \
+        if (!(cond)) {               \
+            return_expr;             \
+        }                            \
+    } while (0)
+
+#define LOG_PRINT(message, ...)         \
+    do {                                \
+        printf(message, ##__VA_ARGS__); \
+    } while (0)
 
 inline const char* getOpApiLibName() { return "libopapi.so"; }
 
@@ -88,16 +99,12 @@ constexpr auto convertTypes(Ts&... args) {
     return std::make_tuple(convertType(args)...);
 }
 
-int createAclTensor(diopiConstTensorHandle_t input, aclTensor** tensor);
-
-aclScalar* createAclScalar(const diopiScalar_t* input);
-
 void printContiguousTensor(const aclTensor& tensor, const void* tensorPtr);
 
 void printContiguousTensor(const aclTensor& tensor, diopiConstTensorHandle_t diopi);
 
 template <typename... Args>
-int aclnn(const std::string& name, diopiContextHandle_t ctx, Args... args) {
+int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args) {
     // 0. get aclrtStream
     aclrtStream stream;
     diopiGetStream(ctx, &stream);

@@ -22,7 +22,7 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         if (!inAcl.defined() || inAcl.numel() == 0) {
             return diopiSuccess;
         }
-        aclnn("aclnnSin", ctx, inAcl, outAcl);
+        aclnnAdaptor("aclnnSin", ctx, inAcl, outAcl);
     } else {
         AscendTensor in(input);
         if (0 == in.numel()) {

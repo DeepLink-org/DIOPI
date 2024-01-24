@@ -21,7 +21,7 @@ diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         if (!inAcl.defined() || inAcl.numel() == 0) {
             return diopiSuccess;
         }
-        aclnn("aclnnCos", ctx, inAcl, outAcl);
+        aclnnAdaptor("aclnnCos", ctx, inAcl, outAcl);
     } else {
         AscendTensor in = AscendTensor(input);
         if (0 == in.numel()) {
