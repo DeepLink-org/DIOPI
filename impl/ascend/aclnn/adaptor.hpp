@@ -137,7 +137,7 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
     static const auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());
     ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function.");
 
-    typedef int (*OpApiFunc)(const void*, uint64_t, aclOpExecutor*, const aclrtStream);
+    typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, const aclrtStream);
     OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);
     auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnCos failed. ERROR: %d\n", ret); return ret);
