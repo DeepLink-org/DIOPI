@@ -1,7 +1,7 @@
 /**
  * @file
  * @author DeepLink
- * @copyright  (c) 2023, DeepLink.
+ * @copyright  (c) 2024, DeepLink.
  */
 
 #include "aclnn.hpp"
@@ -122,7 +122,7 @@ int aclnnSinAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
     aclTensor* self = nullptr;
     aclTensor* out = nullptr;
     AscendTensor inAt(self1);
-    if (inAt.numel() == 0) {
+    if (!inAt.defined() || inAt.numel() == 0) {
         return 0;
     }
     // 创建self aclTensor
@@ -132,7 +132,7 @@ int aclnnSinAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
     ret = createAclTensor1(out1, &out);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
 
-    test("aclnnSin", ctx, self, out);
+    aclnn("aclnnSin", ctx, self, out);
 
     return 0;
 }
@@ -141,7 +141,7 @@ int aclnnCosAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
     aclTensor* self = nullptr;
     aclTensor* out = nullptr;
     AscendTensor inAt(self1);
-    if (inAt.numel() == 0) {
+    if (!inAt.defined() || inAt.numel() == 0) {
         return 0;
     }
     // 创建self aclTensor
@@ -151,7 +151,7 @@ int aclnnCosAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
     ret = createAclTensor1(out1, &out);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
 
-    test("aclnnCos", ctx, self, out);
+    aclnn("aclnnCos", ctx, self, out);
 
     return 0;
 }

@@ -89,7 +89,7 @@ public:
             diopiGetTensorStride(tensor_, &diopiStride);
             std::vector<int64_t> strideTmp(diopiStride.data, diopiStride.data + diopiStride.len);
             stride_ = std::move(strideTmp);
-            ASCEND_CHECK_ABORT(stride_.size() == shape_.size(), "stride_.size() == shape_.size() check failed");
+            ASCEND_CHECK_ABORT(stride_.size() == shape_.size(), "stride_.size() == shape_.size() check failed.");
 
             diopiDtype_t diopiDtype;
             diopiGetTensorDtype(tensor_, &diopiDtype);

@@ -12,35 +12,13 @@
 #include <functional>
 #include <iostream>
 
+#include "../ascend_tensor.hpp"
+#include "acl/acl.h"
+#include "aclnn.hpp"
+#include "aclnn/acl_meta.h"
+
 namespace impl {
 namespace ascend {
-
-#define ASCEND_CHECK(condition, ...)                                  \
-    do {                                                              \
-        if (!(condition)) {                                           \
-            printf("[%s:%s:%d]: ", __FILE__, __FUNCTION__, __LINE__); \
-            printf(__VA_ARGS__);                                      \
-            printf("\n");                                             \
-        }                                                             \
-    } while (0);
-
-#define __FILENAME__ __FILE__
-
-#define ASCEND_LOGE(fmt, ...)                                                                 \
-    aclAppLog(ACL_ERROR, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
-    printf("%s:%s:%d \n[PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
-
-#define ASCEND_LOGW(fmt, ...)                                                                   \
-    aclAppLog(ACL_WARNING, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
-    printf("%s:%s:%d [PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
-
-#define ASCEND_LOGI(fmt, ...)                                                                \
-    aclAppLog(ACL_INFO, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
-    printf("%s:%s:%d [PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
-
-#define ASCEND_LOGD(fmt, ...)                                                                 \
-    aclAppLog(ACL_DEBUG, __FILENAME__, __FUNCTION__, __LINE__, "[PTA]:" #fmt, ##__VA_ARGS__); \
-    printf("%s:%s:%d [PTA]:" #fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
 
 inline const char* getOpApiLibName(void) { return "libopapi.so"; }
 
@@ -49,7 +27,7 @@ inline const char* getCustOpApiLibName(void) { return "libcust_opapi.so"; }
 inline void* getOpApiFuncAddrInLib(void* handler, const char* libName, const char* apiName) {
     auto funcAddr = dlsym(handler, apiName);
     if (funcAddr == nullptr) {
-        ASCEND_LOGW("dlsym %s from %s failed, error:%s.", apiName, libName, dlerror());
+        warning(__FILE__, __LINE__, __FUNCTION__, "dlsym %s from %s failed, error:%s.", apiName, libName, dlerror());
     }
     return funcAddr;
 }
@@ -57,7 +35,7 @@ inline void* getOpApiFuncAddrInLib(void* handler, const char* libName, const cha
 inline void* getOpApiLibHandler(const char* libName) {
     auto handler = dlopen(libName, RTLD_LAZY);
     if (handler == nullptr) {
-        ASCEND_LOGW("dlopen %s failed, error:%s.", libName, dlerror());
+        warning(__FILE__, __LINE__, __FUNCTION__, "dlopen %s failed, error:%s.", libName, dlerror());
     }
     return handler;
 }
@@ -114,16 +92,16 @@ constexpr auto convertTypes(Ts&... args) {
     return std::make_tuple(convertType(args)...);
 }
 
-int test(const std::string& name, diopiContextHandle_t ctx, aclTensor* self, aclTensor* out) {
+int aclnn(const std::string& name, diopiContextHandle_t ctx, aclTensor* self, aclTensor* out) {
+    // 0. get aclrtStream
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
-    // 1.1
-    // name = "aclnnCos";
+
+    // 1. call xxxGetWorkspaceSize function.
     std::string workSpaceName = name + "GetWorkspaceSize";
     static const auto getWorkspaceSizeFuncAddr = getOpApiFuncAddr(workSpaceName.c_str());
-    ASCEND_CHECK(getWorkspaceSizeFuncAddr != nullptr, "can't get ", name, " workspace function.");
+    ASCEND_CHECK_ABORT(getWorkspaceSizeFuncAddr != nullptr, "can't get workSpaceName function.");
 
-    // 1.2
     uint64_t workspaceSize = 0;
     uint64_t* workspaceSizeAddr = &workspaceSize;
     aclOpExecutor* executor = nullptr;
@@ -131,10 +109,8 @@ int test(const std::string& name, diopiContextHandle_t ctx, aclTensor* self, acl
     auto convertedParams = convertTypes(self, out, workspaceSizeAddr, executorAddr);
     static auto getWorkspaceSizeFunc = convertToOpApiFunc(convertedParams, getWorkspaceSizeFuncAddr);
 
-    // 1.3 完成workspace调用逻辑
     auto workspaceStatus = call(getWorkspaceSizeFunc, convertedParams);
-    ASCEND_CHECK(workspaceStatus != 0, "workspaceStatus= ", workspaceStatus, " , not equal 0.");
-    // return 0;
+    ASCEND_CHECK_ABORT(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS.");
 
     void* workspaceAddr = nullptr;
     if (workspaceSize > 0) {
@@ -142,11 +118,10 @@ int test(const std::string& name, diopiContextHandle_t ctx, aclTensor* self, acl
         CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("allocate workspace failed. ERROR: %d\n", ret); return ret;);
     }
 
-    // 2.1
+    // 2. call aclnnXXX function
     static const auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());
-    ASCEND_CHECK(opApiFuncAddr != nullptr, "can't get ", name, " op function.");
+    ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function.");
 
-    // 2.2
     typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, const aclrtStream);
     OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);
     auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);
@@ -155,11 +130,12 @@ int test(const std::string& name, diopiContextHandle_t ctx, aclTensor* self, acl
     ret = aclrtSynchronizeStream(stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
 
+    // 3. clear
     if (workspaceSize > 0) {
         aclrtFree(workspaceAddr);
     }
 
-    return 0;
+    return ACL_SUCCESS;
 }
 
 }  // namespace ascend
