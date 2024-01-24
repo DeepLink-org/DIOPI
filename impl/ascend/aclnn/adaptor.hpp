@@ -39,6 +39,11 @@ const std::string kWorkspaceSizeSuffix = "GetWorkspaceSize";
 
 inline const char* getOpApiLibName() { return "libopapi.so"; }
 
+inline bool useAclnn() {
+    static bool enable = std::getenv("DIOPI_USE_ACLNN") != nullptr;
+    return enable;
+}
+
 inline void* getOpApiFuncAddrInLib(void* handler, const char* libName, const char* apiName) {
     auto funcAddr = dlsym(handler, apiName);
     if (funcAddr == nullptr) {

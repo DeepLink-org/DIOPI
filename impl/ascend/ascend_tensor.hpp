@@ -76,11 +76,6 @@ inline void info(const char* file, int lineNum, const char* funcName, const char
     printf("\n");
 }
 
-inline bool useAclnn() {
-    static bool enable = std::getenv("DIOPI_USE_ACLNN") != nullptr;
-    return enable;
-}
-
 class AscendTensor final {
 public:
     explicit AscendTensor(const diopiConstTensorHandle_t& tensor) : tensor_(tensor) {
