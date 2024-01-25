@@ -193,7 +193,8 @@ class GenTestCase(object):
 
             # compare_input
             ignore_paras_for_input_check = ops_with_states.get(self._func_name, set())
-
+            if cv.get('para', {}).get('inplace', False):
+                ignore_paras_for_input_check.add('input')
             forward = CaseTemplate.test_function_body_forward.substitute(
                 env=dict(
                     test_module_name=self._module,
@@ -247,7 +248,8 @@ class GenTestCase(object):
                 item["backward_flag"] = 1
 
             forward_inp = ""
-            if "is_inplace" in cv.keys() and cv["is_inplace"] is True:
+            # if "is_inplace" in cv.keys() and cv["is_inplace"] is True:
+            if cv.get('is_inplace', False):
                 item["inplace_flag"] = 1
                 if requires_grad is True:
                     test_diopi_func_inp_remove_grad_args = (
