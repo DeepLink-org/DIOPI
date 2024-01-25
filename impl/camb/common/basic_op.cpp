@@ -1,19 +1,37 @@
 #include "common.hpp"
-
 namespace impl {
 namespace camb {
 
 template <typename T1, typename T2, typename T3>
-diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t opType, T1 alpha1, T2 alpha2,
+diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTensor& other, DiopiTensor& out, cnnlOpTensorDesc_t opType, T1 alpha1, T2 alpha2,
                           T3 beta) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     std::vector<DiopiTensor*> tensors{&input, &other};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32}));
+    if (input.shape() == other.shape()) {
+        // in these cases, inputA & inputB & output will have the same shape
+        DIOPI_CHECK(input.shape() == out.shape(), "input shape should match output shape")
+        if (input.stride() != other.stride()) {
+            DiopiTensor otherTmp = requiresTensor(ctx, input.shape(), input.stride(), input.dtype());
+            DIOPI_CALL(permuteCopy(ctx, other, otherTmp));
+            other = otherTmp;
+        }
+        if (input.stride() != out.stride()) {
+            DiopiTensor outTmp = requiresTensor(ctx, input.shape(), input.stride(), input.dtype());
+            DIOPI_CALL(permuteCopy(ctx, out, outTmp));
+            out = outTmp;
+        }
+    } else {
+        // in these cases, inputA & inputB should be broadcast operation
+        DIOPI_CHECK(isBroadcast(input, other), "cannot broadcast input & other tensors");
+        // it can be improved in the future, how strides and shapes can best accelerate "cnnlOpTensor"
+        // e.g. shape(3,1)+shape(1,5)
+    }
 
     DiopiTensor outputTmp = out;
     if (outputTmp.dtype() != input.dtype()) {
-        outputTmp = requiresTensor(ctx, out.shape(), input.dtype());
+        outputTmp = requiresTensor(ctx, out.shape(), input.stride(), input.dtype());
     }
 
     cnnlDataType_t compType;
@@ -64,12 +82,14 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTens
                                  outputDesc.get(),
                                  outputTmp.data()));
 
-    DIOPI_CALL(dataTypeCast(ctx, out, outputTmp));
+    if (outputTmp.dtype() != out.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, out, outputTmp));
+    }
     return diopiSuccess;
 }
 
 // Explicitly instantiate the template function for use in other .cpp files.
-template diopiError_t cnnlOpTensor<double, double, double>(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out,
+template diopiError_t cnnlOpTensor<double, double, double>(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTensor& other, DiopiTensor& out,
                                                            cnnlOpTensorDesc_t op_type, double alpha1, double alpha2, double beta);
 
 template <typename T>
@@ -78,7 +98,7 @@ diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, Dio
 
     DiopiTensor outTmp = out;
     if (outTmp.dtype() != input.dtype()) {
-        outTmp = requiresTensor(ctx, out.shape(), input.dtype());
+        outTmp = requiresTensor(ctx, out.shape(), input.stride(), input.dtype());
     }
 
     std::shared_ptr<void> alp = nullptr;
@@ -95,12 +115,107 @@ diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, Dio
     CnnlTensorDesc outTmpDesc(outTmp, CNNL_LAYOUT_ARRAY);
 
     DIOPI_CALL_CNNL(cnnlTransform_v2(handle, CNNL_POINTER_MODE_HOST, alp.get(), inputDesc.get(), input.data(), bet.get(), outTmpDesc.get(), outTmp.data()));
-    DIOPI_CALL(dataTypeCast(ctx, out, outTmp));
 
+    if (outTmp.dtype() != out.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, out, outTmp));
+    }
     return diopiSuccess;
 }
 
 template diopiError_t cnnlTransformAdaptor<double>(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, double other, double alpha, double beta);
+
+diopiError_t diopiDivInternal(diopiContextHandle_t ctx, DiopiTensor& inputTensor, DiopiTensor& otherTensor, DiopiTensor& outTensor,
+                              diopiRoundMode_t roundingMode) {
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+
+    if (inputTensor.shape() == otherTensor.shape()) {
+        // in these cases, inputA & inputB & output will have the same shape
+        DIOPI_CHECK(inputTensor.shape() == outTensor.shape(), "input shape should match output shape")
+        if (inputTensor.stride() != otherTensor.stride()) {
+            DiopiTensor otherTmp = requiresTensor(ctx, inputTensor.shape(), inputTensor.stride(), inputTensor.dtype());
+            DIOPI_CALL(permuteCopy(ctx, otherTensor, otherTmp));
+            otherTensor = otherTmp;
+        }
+        if (inputTensor.stride() != outTensor.stride()) {
+            DiopiTensor outTmp = requiresTensor(ctx, inputTensor.shape(), inputTensor.stride(), inputTensor.dtype());
+            DIOPI_CALL(permuteCopy(ctx, outTensor, outTmp));
+            outTensor = outTmp;
+        }
+    } else {
+        // in these cases, inputA & inputB should be broadcast operation
+        DIOPI_CHECK(isBroadcast(inputTensor, otherTensor), "cannot broadcast input & other tensors");
+        // it can be improved in the future, how strides and shapes can best accelerate "cnnlOpTensor"
+    }
+
+    cnnlComputationPreference_t prefer = CNNL_COMPUTATION_HIGH_PRECISION;
+    cnnlComputationPreference_t preferFloor = CNNL_COMPUTATION_ULTRAHIGH_PRECISION;
+
+    DiopiTensor outTensorTemp = outTensor;
+    if (outTensorTemp.dtype() != inputTensor.dtype()) {
+        outTensorTemp = requiresTensor(ctx, outTensor.shape(), inputTensor.stride(), inputTensor.dtype());
+    }
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &otherTensor, &outTensorTemp};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc otherDesc(otherTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outDesc(outTensorTemp, CNNL_LAYOUT_ARRAY);
+    size_t workspaceSize = 0;
+    void* workspace = nullptr;
+
+    switch (roundingMode) {
+        case RoundModeFloor:
+            DIOPI_CALL_CNNL(cnnlGetFloorDivWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
+            workspace = requiresBuffer(ctx, workspaceSize).data();
+            DIOPI_CALL_CNNL(cnnlFloorDiv_v2(handle,
+                                            preferFloor,
+                                            inputDesc.get(),
+                                            inputTensor.data(),
+                                            otherDesc.get(),
+                                            otherTensor.data(),
+                                            outDesc.get(),
+                                            outTensorTemp.data(),
+                                            workspace,
+                                            workspaceSize));
+            break;
+        case RoundModeTrunc:
+            DIOPI_CALL_CNNL(cnnlGetFloorDivTruncWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
+            workspace = requiresBuffer(ctx, workspaceSize).data();
+            DIOPI_CALL_CNNL(cnnlFloorDivTrunc(handle,
+                                              prefer,
+                                              inputDesc.get(),
+                                              inputTensor.data(),
+                                              otherDesc.get(),
+                                              otherTensor.data(),
+                                              outDesc.get(),
+                                              outTensorTemp.data(),
+                                              workspace,
+                                              workspaceSize));
+            break;
+        case RoundModeNone:
+            DIOPI_CALL_CNNL(cnnlGetDivWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outDesc.get(), &workspaceSize));
+            workspace = requiresBuffer(ctx, workspaceSize).data();
+            DIOPI_CALL_CNNL(cnnlDiv_v2(handle,
+                                       prefer,
+                                       inputDesc.get(),
+                                       inputTensor.data(),
+                                       otherDesc.get(),
+                                       otherTensor.data(),
+                                       workspace,
+                                       workspaceSize,
+                                       outDesc.get(),
+                                       outTensorTemp.data()));
+
+            break;
+        default:
+            break;
+    }
+    if (outTensorTemp.dtype() != outTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
+    }
+    return diopiSuccess;
+}
 
 }  // namespace camb
 }  // namespace impl

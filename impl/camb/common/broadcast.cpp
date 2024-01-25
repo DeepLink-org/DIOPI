@@ -73,5 +73,42 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
     }
     return false;
 }
+
+int isBroadcast(DiopiTensor& inputTensor, DiopiTensor& otherTensor) {
+    // 0:cannot broadcast,1:inputTensor broadcasts,2:otherTensor broadcasts,3:both broadcast
+    int dimA = inputTensor.dim();
+    int dimB = otherTensor.dim();
+    int minDim = dimA;
+    int broadCastA = 0;
+    int broadCastB = 0;
+
+    if (dimA == 0) {
+        broadCastA = 1;
+    }
+
+    if (dimB == 0) {
+        broadCastB = 2;
+    }
+
+    if (dimA > dimB) {
+        minDim = dimB;
+    }
+
+    for (int i = 1; i <= minDim; i++) {
+        if (inputTensor.shape()[dimA - i] == otherTensor.shape()[dimB - i]) {
+            continue;
+        } else if (inputTensor.shape()[dimA - i] == 1) {
+            broadCastA = 1;
+            continue;
+        } else if (otherTensor.shape()[dimB - i] == 1) {
+            broadCastB = 2;
+            continue;
+        } else {
+            return 0;
+        }
+    }
+    return broadCastA + broadCastB;
+}
+
 }  // namespace camb
 }  // namespace impl
