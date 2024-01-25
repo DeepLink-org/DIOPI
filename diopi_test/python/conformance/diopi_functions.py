@@ -5211,6 +5211,8 @@ def multihead_attention(
     except RuntimeError as rte:
         if "unable to call flash mha_fwd: DIOPI is built without flash-attention" == rte.args[0]:
             raise FunctionNotImplementedError
+        else:
+            raise RuntimeError("execute diopiMultiHeadAttention failed!")
     else:
         check_returncode(ret)
         GLOBAL_STATE["multihead_attention_softmax_lse"] = softmax_lse
@@ -5249,6 +5251,8 @@ def multihead_attention_backward(
     except RuntimeError as rte:
         if "unable to call flash mha_bwd: DIOPI is built without flash-attention" == rte.args[0]:
             raise FunctionNotImplementedError
+        else:
+            raise RuntimeError("execute diopiMultiHeadAttentionBackward failed!")
     else:
         check_returncode(ret)
         return {'q': grad_q, 'k': grad_k, 'v': grad_v}
@@ -5269,6 +5273,8 @@ def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_ca
     except RuntimeError as rte:
         if "unable to call flash mha_varlen_fwd: DIOPI is built without flash-attention" == rte.args[0]:
             raise FunctionNotImplementedError
+        else:
+            raise RuntimeError("execute diopiMultiHeadAttentionVarLen failed!")
     else:
         check_returncode(ret)
         GLOBAL_STATE["multihead_attention_varlen_softmax_lse"] = softmax_lse
@@ -5312,6 +5318,8 @@ def multihead_attention_varlen_backward(
     except RuntimeError as rte:
         if "unable to call flash mha_varlen_bwd: DIOPI is built without flash-attention" == rte.args[0]:
             raise FunctionNotImplementedError
+        else:
+            raise RuntimeError("execute diopiMultiHeadAttentionVarLenBackward failed!")
     else:
         check_returncode(ret)
         return {'q': grad_q, 'k': grad_k, 'v': grad_v}
