@@ -248,7 +248,6 @@ class GenTestCase(object):
                 item["backward_flag"] = 1
 
             forward_inp = ""
-            # if "is_inplace" in cv.keys() and cv["is_inplace"] is True:
             if cv.get('is_inplace', False):
                 item["inplace_flag"] = 1
                 if requires_grad is True:
