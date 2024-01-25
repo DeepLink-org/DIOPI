@@ -16,7 +16,7 @@ namespace ascend {
 class AclScalsr final {
 public:
     explicit AclScalsr(const diopiScalar_t* scalar) {
-        // create alpha aclScalar
+        // create aclScalar
         if (scalar->stype == diopiDtype_t::diopi_dtype_float64) {
             auto v = getValue<double>(scalar);
             acl_ = aclCreateScalar(&v, getAclDataType(scalar->stype));
