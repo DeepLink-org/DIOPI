@@ -5149,10 +5149,11 @@ def rotary_emb(input, cos, sin, conj, interleaved):
 def rms_norm(input, normalized_shape, weight, bias, eps):
     call = "diopiRMSNorm"
     func = check_function(call)
-    size = list(input.size().data)
-    out = Tensor(size, input.get_dtype())
+    input_size = list(input.size().data)
+    assert(input_size[-len(normalized_shape):0] == normalized_shape, "Normalized_shape Error! It should be the last few dim of input_shape")
+    out = Tensor(input_size, input.get_dtype())
     normalized_dim = list(range(-(len(normalized_shape)), 0))
-    inv_rms_size = size[:len(size) - len(normalized_dim)]
+    inv_rms_size = input_size[:len(input_size) - len(normalized_dim)]
     inv_rms = Tensor(inv_rms_size, input.get_dtype())
     normalized_shape = Sizes(list(normalized_shape))
     ret = func(
