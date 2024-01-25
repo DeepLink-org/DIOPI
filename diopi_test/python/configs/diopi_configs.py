@@ -8245,6 +8245,39 @@ diopi_configs = {
     #     ),
     # ),
 
+    'flash_attention_forward': dict(
+        name=['flash_attention_forward'],
+        interface=['CustomizedTest'],
+        dtype=[np.float32],
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            p_dropout=[0,],
+            is_causal=[False,],
+            softmax_scale=[None,]
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((1, 16, 8, 64), ),
+                    "dtype": [np.float32],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((1, 16, 8, 64), ),
+                    "dtype": [np.float32],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((1, 16, 8, 64), ),
+                    "dtype": [np.float32],
+                },
+            ],
+        ),
+    ),
+
     'apply_penalty': dict(
         name=['apply_penalty'],
         interface=['CustomizedTest'],
