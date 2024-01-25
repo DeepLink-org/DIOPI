@@ -22,7 +22,14 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRms, diopiSize_t normalizedShape, double eps) {
     AscendTensor inputTensor(input);
     ASCEND_CHECK_ABORT(1 == normalizedShape.len && normalizedShape.data[0] == inputTensor.shape()[inputTensor.dim() - 1], "normalized shape error!");
-    AclOpRunner<4, 2>("RmsNorm", ctx).addInput(gradOutput).addInput(input).addInput(invRms).addInput(weight).addOutput(gradInput).addOutput(gradWeight).run();
+    AclOpRunner<4, 2>("RmsNormGrad", ctx)
+        .addInput(gradOutput)
+        .addInput(input)
+        .addInput(invRms)
+        .addInput(weight)
+        .addOutput(gradInput)
+        .addOutput(gradWeight)
+        .run();
     return diopiSuccess;
 }
 

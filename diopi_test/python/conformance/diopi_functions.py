@@ -5136,12 +5136,12 @@ def linalgqr(input, mode):
     return out
 
 
-def rotary_emb(input, cos, sin, conj):
+def rotary_emb(input, cos, sin, conj, interleaved):
     call = "diopiRotaryEmbedding"
     func = check_function(call)
     size = list(input.size().data)
     out = Tensor(size, input.get_dtype())
-    ret = func(input.context(), out, input, cos, sin, conj, False)
+    ret = func(input.context(), out, input, cos, sin, conj, interleaved)
     check_returncode(ret)
     return out
 
@@ -5151,7 +5151,9 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     func = check_function(call)
     size = list(input.size().data)
     out = Tensor(size, input.get_dtype())
-    inv_rms = Tensor(size, input.get_dtype())
+    inv_rms_size = size.copy()
+    inv_rms_size[-1] = 1
+    inv_rms = Tensor(inv_rms_size, input.get_dtype())
     normalized_shape = Sizes(list(normalized_shape))
     ret = func(
         input.context(),
@@ -5164,18 +5166,31 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
         eps,
     )
     check_returncode(ret)
-    return out
+    return (out, inv_rms)
 
 
-def multihead_attention_forward(
-    q, k, v, dropout_p, is_causal, return_debug_mask, scale
+def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_shape, eps):
+    call = "diopiRMSNormBackward"
+    func = check_function(call)
+    grad_input = Tensor(list(input.size().data), input.get_dtype())
+    grad_weight = Tensor(list(weight.size().data), weight.get_dtype())
+    grad_bias = Tensor(list(bias.size().data), bias.get_dtype())
+    normalized_shape = Sizes(list(normalized_shape))
+
+    ret = func(input.context(), grad_input, grad_weight, grad_bias, grad_outputs[0], input, weight, bias, inv_rms,
+               normalized_shape, eps)
+    check_returncode(ret)
+    return {'input': grad_input, 'weight': grad_weight}
+
+
+def multihead_attention(
+    q, k, v, dropout_p, is_causal, return_debug_mask, scale, generator=None
 ):
     call = "diopiMultiHeadAttention"
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], q.get_dtype())
-    gen = None
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], dtype=Dtype.float32)
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
     ret = func(
@@ -5189,11 +5204,96 @@ def multihead_attention_forward(
         softmax_scale,
         out,
         softmax_lse,
-        gen,
+        generator,
         debug_attn_mask,
     )
     check_returncode(ret)
+    GLOBAL_STATE["multihead_attention_softmax_lse"] = softmax_lse
+    GLOBAL_STATE["multihead_attention_generator"] = generator
     return out
+
+
+def multihead_attention_backward(
+    q, k, v, out, grad_outputs, dropout_p, is_causal, scale, **kwargs
+):
+    call = "diopiMultiHeadAttentionBackward"
+    func = check_function(call)
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    softmax_lse = GLOBAL_STATE.pop('multihead_attention_softmax_lse')
+    generator = GLOBAL_STATE.pop('multihead_attention_generator')
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
+    ret = func(
+        q.context(),
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        out,
+        softmax_lse,
+        dropout_p,
+        is_causal,
+        generator,
+        softmax_scale,
+        grad_q,
+        grad_k,
+        grad_v
+    )
+    check_returncode(ret)
+    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
+
+
+def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale, generator=None):
+    call = "diopiMultiHeadAttentionVarLen"
+    func = check_function(call)
+    q_size = list(q.size().data)
+    out = Tensor(q_size, q.get_dtype())
+    softmax_lse = Tensor([len(cu_seqlens) - 1, q_size[1], max_seqlen], dtype=Dtype.float32)
+    cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
+    debug_attn_mask = Tensor([0], q.get_dtype())
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
+    ret = func(q.context(), q, k, v, cu_seqlens, cu_seqlens, max_seqlen, max_seqlen, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, generator, debug_attn_mask)
+    check_returncode(ret)
+    GLOBAL_STATE["multihead_attention_varlen_softmax_lse"] = softmax_lse
+    GLOBAL_STATE["multihead_attention_varlen_generator"] = generator
+    return out
+
+
+def multihead_attention_varlen_backward(
+    q, k, v, cu_seqlens, max_seqlen, out, grad_outputs, dropout_p, is_causal, scale, **kwargs
+):
+    call = "diopiMultiHeadAttentionVarLenBackward"
+    func = check_function(call)
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    softmax_lse = GLOBAL_STATE.pop('multihead_attention_varlen_softmax_lse')
+    cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
+    generator = GLOBAL_STATE.pop('multihead_attention_varlen_generator')
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
+    ret = func(
+        q.context(),
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        out,
+        softmax_lse,
+        cu_seqlens,
+        cu_seqlens,
+        max_seqlen,
+        max_seqlen,
+        dropout_p,
+        is_causal,
+        generator,
+        softmax_scale,
+        grad_q,
+        grad_k,
+        grad_v
+    )
+    check_returncode(ret)
+    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 
 def apply_penalty(

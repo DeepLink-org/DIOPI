@@ -2,6 +2,7 @@
     dtype: (int64)->int32, (float64)->float32, (complex128)->complex64
     layout: NCHW
 
+#---base operation below---#
 - diopiAdd:
     layout: NCL, NLC, NCHW, NHWC, NDHWC
 
@@ -13,6 +14,14 @@
 
 - diopiAddInp:
     layout: NCL, NLC, NCHW, NHWC, NDHWC
+
+- diopiDivScalar:
+    layout: ND
+
+- diopiDivScalar:
+    layout: ND
+    
+#---base operation above---#
 
 - diopiUpsampleNearest:
     layout: NHWC, NDHWC
@@ -67,9 +76,9 @@
 - diopiMaxPool2dBackward:
     layout: NHWC
 
-- diopiReluInp:
-    layout: NLC, NHWC, NDHWC
-
 - diopiThresholdBackward:
     layout: NLC, NHWC, NDHWC
 #* Ops above are not neccesary to convert format *#
+
+- diopiReluInp:
+    layout: ND

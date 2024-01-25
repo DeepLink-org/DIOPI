@@ -1,5 +1,35 @@
 #include "convert.hpp"
 
+bool denseCheck(diopiSize_t shape, diopiSize_t stride) {
+    int dim = shape.len;
+
+    if (isContiguous(shape, stride, diopiMemoryFormat_t::Contiguous)) {
+        return true;
+    }
+
+    std::vector<std::pair<int64_t, int64_t>> stridesSizes(dim, std::pair<int64_t, int64_t>(1, 1));
+
+    for (int i = 0; i < dim; i++) {
+        stridesSizes[i] = std::pair<int64_t, int64_t>(stride.data[i], shape.data[i]);
+
+        if (stride.data[i] == 0 || shape.data[i] == 0) {
+            return false;
+        }
+    }
+
+    sort(stridesSizes.begin(), stridesSizes.end(), [](std::pair<int64_t, int64_t> a, std::pair<int64_t, int64_t> b) { return a.first < b.first; });
+    // e.g. shape = 2,3,4,5,stride = 1,2,6,24 pass
+    // e.g. shape = 2,3,4,5, stride = 1,2,6,12 should not pass
+    int cur = 1;
+    for (int i = 0; i < dim; i++) {
+        if (stridesSizes[i].first != cur) {
+            return false;
+        }
+        cur *= stridesSizes[i].second;
+    }
+    return true;
+}
+
 std::vector<int64_t> calcStrides(diopiSize_t size, diopiMemoryFormat_t format) {
     size_t ndims = size.len;
     std::vector<int64_t> strides(ndims);
@@ -104,7 +134,7 @@ bool isContiguous(diopiSize_t size, diopiSize_t strideDiopi, diopiMemoryFormat_t
 
     if (format == diopiMemoryFormat_t::Contiguous) {
         for (int64_t i = dim - 1; i >= 0; i--) {
-            const auto &shapeD = shape[i];
+            const auto& shapeD = shape[i];
             if (shapeD == 0) {
                 return true;
             }
@@ -117,8 +147,8 @@ bool isContiguous(diopiSize_t size, diopiSize_t strideDiopi, diopiMemoryFormat_t
         }
     } else if (format == diopiMemoryFormat_t::ChannelsLast) {
         if (dim != 4) return false;
-        for (auto &i : {1, 3, 2, 0}) {
-            const auto &shapeD = shape[i];
+        for (auto& i : {1, 3, 2, 0}) {
+            const auto& shapeD = shape[i];
             if (shapeD != 1) {
                 // shape_d != 1 help dealing with shape like [2, 2048, 1, 1]
                 if (strides[i] != stride) {
@@ -129,8 +159,8 @@ bool isContiguous(diopiSize_t size, diopiSize_t strideDiopi, diopiMemoryFormat_t
         }
     } else if (format == diopiMemoryFormat_t::ChannelsLast3d) {
         if (dim != 5) return false;
-        for (auto &i : {1, 4, 3, 2, 0}) {
-            const auto &shapeD = shape[i];
+        for (auto& i : {1, 4, 3, 2, 0}) {
+            const auto& shapeD = shape[i];
             if (shapeD != 1) {
                 if (strides[i] != stride) {
                     return false;
@@ -140,8 +170,8 @@ bool isContiguous(diopiSize_t size, diopiSize_t strideDiopi, diopiMemoryFormat_t
         }
     } else if (format == diopiMemoryFormat_t::ChannelsLast1d) {
         if (dim != 3) return false;
-        for (auto &i : {1, 2, 0}) {
-            const auto &shapeD = shape[i];
+        for (auto& i : {1, 2, 0}) {
+            const auto& shapeD = shape[i];
             if (shapeD != 1) {
                 if (strides[i] != stride) {
                     return false;
@@ -186,7 +216,7 @@ std::vector<diopiMemoryFormat_t> setIntersection(std::vector<diopiMemoryFormat_t
     case err:                   \
         return #err;
 
-const char *getDiopiErrorStr(diopiError_t err) {
+const char* getDiopiErrorStr(diopiError_t err) {
     switch (err) {
         DIOPI_ERROR_TO_STR(diopiErrorOccurred)
         DIOPI_ERROR_TO_STR(diopiNotInited)
