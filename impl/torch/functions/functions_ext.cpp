@@ -61,7 +61,7 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atInput = impl::aten::buildATen(input);
     auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
     auto atWeight = impl::aten::buildATen(weight);
-    auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
+    auto atBias = impl::aten::buildATen(bias);
     ext::ops::rms_norm_forward(atInput, atNormalizedShape, atWeight, eps, atOut, atInvRMS);
     atOut.add_(atBias);
     return diopiSuccess;
