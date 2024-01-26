@@ -102,6 +102,7 @@ inline aclTensor* convertType(AclTensor& value) {
     static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
     if (aclDebugFlag) {
         std::cout << "aclTensor ptr=" << value.data() << std::endl;
+        std::cout << "ptr()=" << value.ptr() << std::endl;
         printContiTensor(*(value.ptr()), value.data());
     }
 
@@ -131,6 +132,7 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
     // 1. call xxxGetWorkspaceSize function.
     std::string workSpaceName = name + kWorkspaceSizeSuffix;
     static const auto getWorkspaceSizeFuncAddr = getOpApiFuncAddr(workSpaceName.c_str());
+    std::cout << "getWorkspaceSizeFuncAddr ptr = " << getWorkspaceSizeFuncAddr << std::endl;
     ASCEND_CHECK_ABORT(getWorkspaceSizeFuncAddr != nullptr, "can't get workSpaceName function.");
 
     uint64_t workspaceSize = 0;
@@ -151,6 +153,7 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
 
     // 2. call aclnnXXX function
     static const auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());
+    std::cout << "getOpApiFuncAddr ptr = " << opApiFuncAddr << std::endl;
     ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function.");
 
     typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, aclrtStream);

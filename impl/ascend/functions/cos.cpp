@@ -18,6 +18,11 @@ diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 
 diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     if (useAclnn()) {
+        std::cout << "================begin cos====================" << std::endl;
+        aclnnCosAdaptor(ctx, input, out);
+        AscendTensor outAT1(out);
+        printContiguousTensor(ctx, outAT1, "cosOut11111");
+        std::cout << "================finish cos====================" << std::endl;
         AclTensor inAcl(input), outAcl(out);
         if (!inAcl.defined() || inAcl.numel() == 0) {
             std::cout << "no value, return cos." << std::endl;

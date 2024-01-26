@@ -19,6 +19,11 @@ diopiError_t diopiSinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 
 diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     if (useAclnn()) {
+        std::cout << "================begin sin====================" << std::endl;
+        aclnnSinAdaptor(ctx, input, out);
+        AscendTensor outAT1(out);
+        printContiguousTensor(ctx, outAT1, "sinOut11111");
+        std::cout << "================finish sin====================" << std::endl;
         AclTensor inAcl(input), outAcl(out);
         if (!inAcl.defined() || inAcl.numel() == 0) {
             std::cout << "no value, return sin." << std::endl;

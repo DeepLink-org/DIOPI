@@ -123,6 +123,8 @@ class CheckResult(object):
                     f"The shape of {var_name} is {tensor_dev.shape}.\n" + \
                     f"The stride of {var_name} is {np.divide(tensor_dev.strides, tensor_dev.itemsize).astype(np.int32)}.\n"
                 nan_index = np.isnan(tensor_dev) | np.isnan(tensor_ref)
+                print('tensor_dev', tensor_dev)
+                print('tensor_ref', tensor_ref)
                 nan_index[matched] = False          # mismatched nan number index
                 if (len(np.argwhere(nan_index)) > 0):
                     # nan number exists

@@ -17,8 +17,6 @@ namespace ascend {
 class AclTensor final {
 public:
     explicit AclTensor(const diopiConstTensorHandle_t& tensor) : at_(tensor) {
-        void* deviceAddr = nullptr;
-
         acl_ = aclCreateTensor(at_.getAclMemShape().data(),
                                at_.getAclMemShape().size(),
                                at_.getAclDataType(),
