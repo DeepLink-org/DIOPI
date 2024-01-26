@@ -1,4 +1,5 @@
 #include "common.hpp"
+
 namespace impl {
 namespace camb {
 
@@ -24,9 +25,51 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
         }
     } else {
         // in these cases, inputA & inputB should be broadcast operation
-        DIOPI_CHECK(isBroadcast(input, other), "cannot broadcast input & other tensors");
+        int broadcastType = isBroadcast(input, other);
+        DIOPI_CHECK(broadcastType > 0, "cannot broadcast input & other tensors");
+        std::vector<int64_t> targetShape;
+        std::vector<int64_t> targetStride;
+        bool toPermuteFlag;
         // it can be improved in the future, how strides and shapes can best accelerate "cnnlOpTensor"
         // e.g. shape(3,1)+shape(1,5)
+        if (input.isContiguous() && other.isContiguous()) {
+            toPermuteFlag = false;
+        } else if (broadcastType == 2) {
+            opBroadcastCast(input, other, targetShape, targetStride, toPermuteFlag);
+            if (toPermuteFlag) {
+                DiopiTensor otherTmp = requiresTensor(ctx, targetShape, targetStride, other.dtype());
+                DIOPI_CALL(permuteCopy(ctx, other, otherTmp));
+                other = otherTmp;
+            }
+        } else if (broadcastType == 1) {
+            opBroadcastCast(other, input, targetShape, targetStride, toPermuteFlag);
+            if (toPermuteFlag) {
+                DiopiTensor inputTmp = requiresTensor(ctx, targetShape, targetStride, input.dtype());
+                DIOPI_CALL(permuteCopy(ctx, input, inputTmp));
+                input = inputTmp;
+            }
+        } else {
+            bool isInputPermute = true;
+            if ((input.dim() > other.dim()) || (input.dim() == other.dim() && input.numel() > other.numel())) {
+                isInputPermute = false;
+            }
+
+            if (isInputPermute) {
+                opBroadcastCast(input, other, targetShape, targetStride, toPermuteFlag);
+                if (toPermuteFlag) {
+                    DiopiTensor otherTmp = requiresTensor(ctx, targetShape, targetStride, other.dtype());
+                    DIOPI_CALL(permuteCopy(ctx, other, otherTmp));
+                    other = otherTmp;
+                }
+            } else {
+                opBroadcastCast(other, input, targetShape, targetStride, toPermuteFlag);
+                if (toPermuteFlag) {
+                    DiopiTensor inputTmp = requiresTensor(ctx, targetShape, targetStride, input.dtype());
+                    DIOPI_CALL(permuteCopy(ctx, input, inputTmp));
+                    input = inputTmp;
+                }
+            }
+        }
     }
 
     DiopiTensor outputTmp = out;

@@ -78,7 +78,7 @@ int isBroadcast(DiopiTensor& inputTensor, DiopiTensor& otherTensor) {
     // 0:cannot broadcast,1:inputTensor broadcasts,2:otherTensor broadcasts,3:both broadcast
     int dimA = inputTensor.dim();
     int dimB = otherTensor.dim();
-    int minDim = dimA;
+    int minDim;
     int broadCastA = 0;
     int broadCastB = 0;
 
@@ -92,6 +92,12 @@ int isBroadcast(DiopiTensor& inputTensor, DiopiTensor& otherTensor) {
 
     if (dimA > dimB) {
         minDim = dimB;
+        broadCastB = 2;
+    } else if (dimA < dimB) {
+        minDim = dimA;
+        broadCastA = 1;
+    } else {
+        minDim = dimA;
     }
 
     for (int i = 1; i <= minDim; i++) {
@@ -108,6 +114,44 @@ int isBroadcast(DiopiTensor& inputTensor, DiopiTensor& otherTensor) {
         }
     }
     return broadCastA + broadCastB;
+}
+
+diopiError_t opBroadcastCast(DiopiTensor& inputTensor, DiopiTensor& otherTensor, std::vector<int64_t>& targetShape, std::vector<int64_t>& targetStride,
+                             bool& toPermuteFlag) {
+    // get order of Tensor A
+    // change shape and stride of Tensor B
+    //  shape2,3,4,5 stride60,1,15,3 order0,3,1,2 reverseOrder0,2,3,1
+    //  shape3,4,1 stride4,1,1 ->shape1,3,4,1 stride12,4,1,1 ->shape1,3,4,1,stride12,1,3,3 flag = true
+    //  shape32,3,224,224 contiguous order0,1,2,3 reverseOrder0,1,2,3
+    // shape3,1,1 contiguous ->shape1,3,1,1 stride3,3,1,1 ->shape1,3,1,1 stride3,3,1,1 ->flag = flase
+    std::vector<int32_t> order;
+    std::vector<int32_t> reverseOrder;
+    getPermuteOrder(inputTensor, order, reverseOrder);
+    targetShape = otherTensor.shape();
+    std::vector<int64_t> curStride = otherTensor.stride();
+    targetStride = inputTensor.stride();
+    int firstStride = 1;
+    if (otherTensor.dim() > 0) {
+        firstStride = otherTensor.stride()[0] * otherTensor.stride()[0];
+    }
+    if (inputTensor.dim() > otherTensor.dim()) {
+        targetShape.insert(targetShape.begin(), inputTensor.dim() - otherTensor.dim(), 1);
+        curStride.insert(curStride.begin(), inputTensor.dim() - otherTensor.dim(), firstStride);
+        otherTensor.asStrided(targetShape, curStride);
+    }
+
+    int cur = 1;
+    for (int i = inputTensor.dim() - 1; i >= 0; i--) {
+        targetStride[reverseOrder[i]] = cur;
+        cur *= targetShape[reverseOrder[i]];
+    }
+
+    toPermuteFlag = true;
+    if (curStride == targetStride) {
+        toPermuteFlag = false;
+    }
+
+    return diopiSuccess;
 }
 
 }  // namespace camb

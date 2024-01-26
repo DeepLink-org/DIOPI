@@ -34,6 +34,9 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
 
 int isBroadcast(DiopiTensor& inputTensor, DiopiTensor& otherTensor);
 
+diopiError_t opBroadcastCast(DiopiTensor& inputTensor, DiopiTensor& otherTensor, std::vector<int64_t>& targetShape, std::vector<int64_t>& targetStride,
+                             bool& toPermuteFlag);
+
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Contiguous);
 
 diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest);
