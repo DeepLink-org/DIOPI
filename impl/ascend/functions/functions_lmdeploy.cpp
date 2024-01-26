@@ -965,7 +965,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 char* q_withoutpad_ptr = reinterpret_cast<char*>(workspace1_ptr);
                 diopiSize_t q_withoutpad_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_withoutpad_ptr)), -1};
                 diopiRequireTensor(ctx, &q_withoutpad, &newshape, &q_withoutpad_stride, dtype, device);
-                diopiSlice(ctx, q_withoutpad, q_withpad, 1, history_length, input_length + history_length, 1);
+                diopiSlice(ctx, q_withoutpad, q_withpad, 1, 0, input_length, 1);
                 diopiTensorHandle_t q_out;
                 newshape.len = 3;
                 shape[0] = input_length;
