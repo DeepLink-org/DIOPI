@@ -147,7 +147,7 @@ DIOPI_API diopiError_t diopiFusedSiluFfnInp(diopiContextHandle_t ctx, diopiTenso
         diopiDevice_t device;
         diopiGetTensorDevice(workspace, &device);
         diopiDtype_t dtype;
-        diopiGetTensorDtype(workspace, &dtype);
+        diopiGetTensorDtype(inoutput, &dtype);
         std::vector<int64_t> shape(2);
         diopiSize_t newshape{shape.data(), 2};
         shape[0] = token_num;
