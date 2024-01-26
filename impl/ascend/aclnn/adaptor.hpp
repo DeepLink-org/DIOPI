@@ -94,7 +94,19 @@ auto convertToOpApiFunc(const Tuple& params, void* opApiAddr) {
     return convertToOpApiFunc(params, opApiAddr, std::make_index_sequence<size>{});
 }
 
-inline aclTensor* convertType(AclTensor& value) { return static_cast<aclTensor*>(value); }
+void printContiTensor(const aclTensor& tensor, const void* tensorPtr);
+
+void printContiTensor(const aclTensor& tensor, diopiConstTensorHandle_t diopi);
+
+inline aclTensor* convertType(AclTensor& value) {
+    static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+    if (aclDebugFlag) {
+        std::cout << "aclTensor ptr=" << value.data() << std::endl;
+        printContiTensor(*(value.ptr()), value.data());
+    }
+
+    return static_cast<aclTensor*>(value);
+}
 
 template <typename T>
 T convertType(T value) {
@@ -108,6 +120,10 @@ constexpr auto convertTypes(Ts&... args) {
 
 template <typename... Args>
 int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args) {
+    static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
+    if (aclDebugFlag) {
+        std::cout << "aclnnAdaptor for " << name << std::endl;
+    }
     // 0. get aclrtStream
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
@@ -140,7 +156,7 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
     typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, aclrtStream);
     OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);
     auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);
-    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnCos failed. ERROR: %d\n", ret); return ret);
+    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("%s failed. ERROR: %d\n", name, ret); return ret);
 
     ret = aclrtSynchronizeStream(stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);

@@ -7,6 +7,7 @@
 #include <set>
 
 #include "../common/acloprunner.hpp"
+#include "../common/debug.hpp"
 
 namespace impl {
 namespace ascend {
@@ -20,9 +21,13 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     if (useAclnn()) {
         AclTensor inAcl(input), outAcl(out);
         if (!inAcl.defined() || inAcl.numel() == 0) {
+            std::cout << "no value, return sin." << std::endl;
             return diopiSuccess;
         }
+        std::cout << "DEBUG call aclnnSin." << std::endl;
         aclnnAdaptor("aclnnSin", ctx, inAcl, outAcl);
+        AscendTensor outAT(out);
+        printContiguousTensor(ctx, outAT, "sinout");
     } else {
         AscendTensor in(input);
         if (0 == in.numel()) {

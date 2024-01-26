@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "../aclnn/acl_tensor.hpp"
 #include "../ascend_tensor.hpp"
 #include "impl_functions.hpp"
 

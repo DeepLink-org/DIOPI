@@ -8,6 +8,7 @@
 #define IMPL_ASCEND_ACLNN_ACL_TENSOR_HPP_
 
 #include "../ascend_tensor.hpp"
+#include "../common/debug.hpp"
 #include "aclnn/acl_meta.h"
 
 namespace impl {
@@ -35,6 +36,10 @@ public:
     bool defined() const { return acl_; }
 
     int64_t numel() const { return at_.numel(); }
+
+    const void* data() { return at_.data(); }
+
+    const aclTensor* ptr() { return acl_; }
 
 private:
     aclTensor* acl_ = nullptr;

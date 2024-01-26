@@ -6,6 +6,8 @@
 
 #include "debug.hpp"
 
+#include <numeric>
+
 #include "utils.hpp"
 
 namespace impl {
