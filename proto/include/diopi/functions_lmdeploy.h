@@ -107,6 +107,7 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
  * @param[inout] key_cache : Key cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
  * @param[inout] value_cache : Value cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
+ * @param[in] batch_size :batch_size.type = [int64, int32]
  * @param[in] input_lengths : Input lengths.shape = [batch_size].type = [int64, int32]
  * @param[in] history_lengths : History lengths.shape = [batch_size].type = [int64, int32]
  * @param[in] context_lengths : Contextlengths.shape = [batch_size].type = [int64, int32]
@@ -123,7 +124,7 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
 DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t pre_work, int64_t* pre_work_size, bool is_prepared,
                                                      diopiTensorHandle_t workspace, int64_t* workspace_size, int64_t fusion_level,
-                                                     diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, diopiConstTensorHandle_t input_lengths,
+                                                     diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, int64_t batch_size, diopiConstTensorHandle_t input_lengths,
                                                      diopiConstTensorHandle_t history_lengths, diopiConstTensorHandle_t context_lengths, int64_t layer_id,
                                                      int64_t local_head_num, int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len,
                                                      int64_t max_q_len, int64_t max_kv_len, int64_t rotary_embedding, float rope_theta);

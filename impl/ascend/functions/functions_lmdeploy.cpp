@@ -172,7 +172,7 @@ DIOPI_API diopiError_t diopiFusedSiluFfnInp(diopiContextHandle_t ctx, diopiTenso
 DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t pre_work, int64_t* pre_work_size, bool is_prepared,
                                                      diopiTensorHandle_t workspace, int64_t* workspace_size, int64_t fusion_level,
-                                                     diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, diopiConstTensorHandle_t input_lengths,
+                                                     diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, int64_t batch_size, diopiConstTensorHandle_t input_lengths,
                                                      diopiConstTensorHandle_t history_lengths, diopiConstTensorHandle_t context_lengths, int64_t layer_id,
                                                      int64_t local_head_num, int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len,
                                                      int64_t max_q_len, int64_t max_kv_len, int64_t rotary_embedding, float rope_theta) {
@@ -180,7 +180,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
         // workspace_size and pre_work_size
         diopiSize_t shapeinfo;
         diopiGetTensorShape(input_lengths, &shapeinfo);
-        int64_t batch_size = shapeinfo.data[0];
+        assert(batch_size == shapeinfo.data[0]);
         diopiDtype_t intdtype;
         diopiGetTensorDtype(input_lengths, &intdtype);
         int64_t intitemsize = -1;
