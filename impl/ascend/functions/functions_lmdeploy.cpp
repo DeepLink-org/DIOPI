@@ -298,7 +298,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 shape[0] = input_length;
                 shape[1] = max_kv_len;
                 newshape.len = 2;
-                char* mask_i_upper_part_ptr = reinterpret_cast<char*>(attention_mask_i_ptr) + itemsize * max_q_len * max_kv_len;
+                char* mask_i_upper_part_ptr = reinterpret_cast<char*>(attention_mask_i_ptr);
                 diopiSize_t mask_i_upper_part_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(mask_i_upper_part_ptr)), -1};
                 diopiRequireTensor(ctx, &mask_i_upper_part, &newshape, &mask_i_upper_part_stride, dtype, device);
                 diopiTensorHandle_t mask_i_lower_part;
@@ -347,7 +347,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                     diopiSize_t attention_mask_one_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(attention_mask_one_ptr)), -1};
                     diopiRequireTensor(ctx, &attention_mask_one, &newshape, &attention_mask_one_stride, dtype, device);
                     diopiFill(ctx, attention_mask_one, &dnone);
-                    attention_mask_members[2] = attention_mask_one;
+                    attention_mask_members[attention_mask_members_length] = attention_mask_one;
                     attention_mask_members_length += 1;
                 }
                 // cat
