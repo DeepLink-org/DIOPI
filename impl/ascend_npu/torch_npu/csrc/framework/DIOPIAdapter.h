@@ -159,15 +159,14 @@
         }                                                                                                                                              \
     } while (0)
 
-#define INTERFACE_NOT_IMPL \
-    do { \
-        static bool warned = false; \
-        if (!warned) { \
+#define INTERFACE_NOT_IMPL                                                                                           \
+    do {                                                                                                             \
+        static bool warned = false;                                                                                  \
+        if (!warned) {                                                                                               \
             std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not implemented yet" << std::endl; \
-            warned = true; \
-        } \
-    } while(0)
-
+            warned = true;                                                                                           \
+        }                                                                                                            \
+    } while (0)
 
 static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 
