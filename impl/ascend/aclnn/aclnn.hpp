@@ -42,6 +42,7 @@ int aclnnSinAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, dio
 
 int aclnnCosAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self, diopiTensorHandle_t out);
 
+int createAclTensor1(diopiConstTensorHandle_t input, aclTensor** tensor);
 }  // namespace ascend
 }  // namespace impl
 

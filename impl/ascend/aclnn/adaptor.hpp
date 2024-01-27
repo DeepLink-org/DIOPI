@@ -17,6 +17,10 @@
 #include "../ascend_tensor.hpp"
 #include "../common/acloprunner.hpp"
 #include "../common/utils.hpp"
+// #include "acl_tensor.hpp"
+#include <iostream>
+#include <typeinfo>
+
 #include "acl/acl.h"
 #include "aclnn/acl_meta.h"
 
@@ -37,6 +41,10 @@ constexpr const char kWorkspaceSizeSuffix[] = "GetWorkspaceSize";
         printf(message, ##__VA_ARGS__); \
     } while (0)
 
+template <typename T>
+void printType(const T& value) {
+    std::cout << "Type of " << value << " is: " << typeid(value).name() << std::endl;
+}
 inline const char* getOpApiLibName() { return "libopapi.so"; }
 
 inline bool useAclnn() {
@@ -103,6 +111,7 @@ inline aclTensor* convertType(AclTensor& value) {
     if (aclDebugFlag) {
         std::cout << "aclTensor ptr=" << value.data() << std::endl;
         std::cout << "ptr()=" << value.ptr() << std::endl;
+        printType(&value);
         printContiTensor(*(value.ptr()), value.data());
     }
 
@@ -111,7 +120,14 @@ inline aclTensor* convertType(AclTensor& value) {
 
 template <typename T>
 T convertType(T value) {
+    printType(value);
     return value;
+}
+
+template <typename T>
+void printValue(T value) {
+    std::cout << "printValue=" << value << std::endl;
+    return;
 }
 
 template <typename... Ts>
@@ -132,7 +148,7 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
     // 1. call xxxGetWorkspaceSize function.
     std::string workSpaceName = name + kWorkspaceSizeSuffix;
     static const auto getWorkspaceSizeFuncAddr = getOpApiFuncAddr(workSpaceName.c_str());
-    std::cout << "getWorkspaceSizeFuncAddr ptr = " << getWorkspaceSizeFuncAddr << std::endl;
+    std::cout << "workSpaceName = " << workSpaceName << ", getWorkspaceSizeFuncAddr ptr = " << getWorkspaceSizeFuncAddr << std::endl;
     ASCEND_CHECK_ABORT(getWorkspaceSizeFuncAddr != nullptr, "can't get workSpaceName function.");
 
     uint64_t workspaceSize = 0;
@@ -153,7 +169,7 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
 
     // 2. call aclnnXXX function
     static const auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());
-    std::cout << "getOpApiFuncAddr ptr = " << opApiFuncAddr << std::endl;
+    std::cout << "call name = " << name << ", getOpApiFuncAddr ptr = " << opApiFuncAddr << std::endl;
     ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function.");
 
     typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, aclrtStream);
@@ -161,6 +177,8 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
     auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("%s failed. ERROR: %d\n", name, ret); return ret);
 
+    // TODO(zmz): 回写数据，没有必要，构造tensor时候传递的是指针，所以数据会写在里面
+    // aclrtMemcpyAsync(dst, buffersize, src, buffersize, ACL_MEMCPY_DEVICE_TO_DEVICE, stream);
     ret = aclrtSynchronizeStream(stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
 

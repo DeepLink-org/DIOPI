@@ -21,7 +21,6 @@ namespace ascend {
 
 int createAclTensor1(diopiConstTensorHandle_t input, aclTensor** tensor) {
     impl::ascend::AscendTensor inAt(input);
-    void* deviceAddr = nullptr;
 
     // 调用aclCreateTensor接口创建aclTensor
     *tensor = aclCreateTensor(inAt.getAclMemShape().data(),

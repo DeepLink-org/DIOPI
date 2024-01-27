@@ -6,15 +6,13 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "adaptor.hpp"
+#include "acl_tensor.hpp"
 
 #include <numeric>
 
 namespace impl {
 namespace ascend {
-
-
-void printContiTensor(const aclTensor& tensor, const void* tensorPtr) {
+void printContiTensor11(const aclTensor& tensor, const void* tensorPtr) {
     int64_t* shape = nullptr;
     uint64_t num = 0;
     aclGetViewShape(&tensor, &shape, &num);
@@ -28,16 +26,13 @@ void printContiTensor(const aclTensor& tensor, const void* tensorPtr) {
         return;
     }
     for (int64_t i = 0; i < size; i++) {
-        std::cout << "printContiTensor result[" << i << "] is: " << result[i] << std::endl;
+        std::cout << "DEBUGDEBUG out result[" << i << "] is: " << result[i] << std::endl;
     }
 }
 
-void printContiTensor(const aclTensor& tensor, diopiConstTensorHandle_t diopi) {
-    const void* p = nullptr;
-    diopiGetTensorDataConst(diopi, &p);
-    return printContiTensor(tensor, p);
+void AclTensor::print() const {
+    return printContiTensor11(*acl_, at_.data());
 }
-
 
 }  // namespace ascend
 }  // namespace impl
