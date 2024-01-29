@@ -5194,24 +5194,31 @@ def multihead_attention(
     softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], dtype=Dtype.float32)
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
-    ret = func(
-        q.context(),
-        q,
-        k,
-        v,
-        dropout_p,
-        is_causal,
-        return_debug_mask,
-        softmax_scale,
-        out,
-        softmax_lse,
-        generator,
-        debug_attn_mask,
-    )
-    check_returncode(ret)
-    GLOBAL_STATE["multihead_attention_softmax_lse"] = softmax_lse
-    GLOBAL_STATE["multihead_attention_generator"] = generator
-    return out
+    try:
+        ret = func(
+            q.context(),
+            q,
+            k,
+            v,
+            dropout_p,
+            is_causal,
+            return_debug_mask,
+            softmax_scale,
+            out,
+            softmax_lse,
+            generator,
+            debug_attn_mask,
+        )
+    except RuntimeError as rte:
+        if "unable to call flash mha_fwd: DIOPI is built without flash-attention" == rte.args[0]:
+            raise FunctionNotImplementedError
+        else:
+            raise RuntimeError("execute diopiMultiHeadAttention failed!")
+    else:
+        check_returncode(ret)
+        GLOBAL_STATE["multihead_attention_softmax_lse"] = softmax_lse
+        GLOBAL_STATE["multihead_attention_generator"] = generator
+        return out
 
 
 def multihead_attention_backward(
@@ -5225,24 +5232,31 @@ def multihead_attention_backward(
     softmax_lse = GLOBAL_STATE.pop('multihead_attention_softmax_lse')
     generator = GLOBAL_STATE.pop('multihead_attention_generator')
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
-    ret = func(
-        q.context(),
-        grad_outputs[0],
-        q,
-        k,
-        v,
-        out,
-        softmax_lse,
-        dropout_p,
-        is_causal,
-        generator,
-        softmax_scale,
-        grad_q,
-        grad_k,
-        grad_v
-    )
-    check_returncode(ret)
-    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
+    try:
+        ret = func(
+            q.context(),
+            grad_outputs[0],
+            q,
+            k,
+            v,
+            out,
+            softmax_lse,
+            dropout_p,
+            is_causal,
+            generator,
+            softmax_scale,
+            grad_q,
+            grad_k,
+            grad_v
+        )
+    except RuntimeError as rte:
+        if "unable to call flash mha_bwd: DIOPI is built without flash-attention" == rte.args[0]:
+            raise FunctionNotImplementedError
+        else:
+            raise RuntimeError("execute diopiMultiHeadAttentionBackward failed!")
+    else:
+        check_returncode(ret)
+        return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 
 def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale, generator=None):
@@ -5254,11 +5268,19 @@ def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_ca
     cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
-    ret = func(q.context(), q, k, v, cu_seqlens, cu_seqlens, max_seqlen, max_seqlen, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, generator, debug_attn_mask)
-    check_returncode(ret)
-    GLOBAL_STATE["multihead_attention_varlen_softmax_lse"] = softmax_lse
-    GLOBAL_STATE["multihead_attention_varlen_generator"] = generator
-    return out
+
+    try:
+        ret = func(q.context(), q, k, v, cu_seqlens, cu_seqlens, max_seqlen, max_seqlen, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, generator, debug_attn_mask)
+    except RuntimeError as rte:
+        if "unable to call flash mha_varlen_fwd: DIOPI is built without flash-attention" == rte.args[0]:
+            raise FunctionNotImplementedError
+        else:
+            raise RuntimeError("execute diopiMultiHeadAttentionVarLen failed!")
+    else:
+        check_returncode(ret)
+        GLOBAL_STATE["multihead_attention_varlen_softmax_lse"] = softmax_lse
+        GLOBAL_STATE["multihead_attention_varlen_generator"] = generator
+        return out
 
 
 def multihead_attention_varlen_backward(
@@ -5273,28 +5295,35 @@ def multihead_attention_varlen_backward(
     cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
     generator = GLOBAL_STATE.pop('multihead_attention_varlen_generator')
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
-    ret = func(
-        q.context(),
-        grad_outputs[0],
-        q,
-        k,
-        v,
-        out,
-        softmax_lse,
-        cu_seqlens,
-        cu_seqlens,
-        max_seqlen,
-        max_seqlen,
-        dropout_p,
-        is_causal,
-        generator,
-        softmax_scale,
-        grad_q,
-        grad_k,
-        grad_v
-    )
-    check_returncode(ret)
-    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
+    try:
+        ret = func(
+            q.context(),
+            grad_outputs[0],
+            q,
+            k,
+            v,
+            out,
+            softmax_lse,
+            cu_seqlens,
+            cu_seqlens,
+            max_seqlen,
+            max_seqlen,
+            dropout_p,
+            is_causal,
+            generator,
+            softmax_scale,
+            grad_q,
+            grad_k,
+            grad_v
+        )
+    except RuntimeError as rte:
+        if "unable to call flash mha_varlen_bwd: DIOPI is built without flash-attention" == rte.args[0]:
+            raise FunctionNotImplementedError
+        else:
+            raise RuntimeError("execute diopiMultiHeadAttentionVarLenBackward failed!")
+    else:
+        check_returncode(ret)
+        return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 
 def apply_penalty(
