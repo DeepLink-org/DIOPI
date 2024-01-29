@@ -153,6 +153,8 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
     return ACL_SUCCESS;
 }
 
+int createAclTensor(diopiConstTensorHandle_t input, aclTensor** tensor);
+
 }  // namespace ascend
 }  // namespace impl
 

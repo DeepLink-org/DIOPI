@@ -101,6 +101,7 @@ public:
 
             diopiGetTensorNumel(tensor_, &numel_);
             diopiGetTensorElemSize(tensor_, &elemsize_);
+            diopiGetTensorStorageOffset(tensor_, &storageOffset_);
         }
     }
 
@@ -169,6 +170,11 @@ public:
         return elemsize_;
     }
 
+    int64_t storageOffset() {
+        ASCEND_CHECK_NULLPTR_ABORT(tensor_);
+        return storageOffset_;
+    }
+
     bool isContiguous(diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) const;
 
     const void* data() const;
@@ -199,6 +205,7 @@ private:
     diopiDevice_t device_ = diopiDevice_t::diopi_device;
     int64_t numel_{0};
     int64_t elemsize_{0};
+    int64_t storageOffset_{0};
 };
 
 }  // namespace ascend

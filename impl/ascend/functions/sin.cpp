@@ -22,7 +22,12 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         if (!inAcl.defined() || inAcl.numel() == 0) {
             return diopiSuccess;
         }
-        aclnnAdaptor("aclnnSin", ctx, inAcl, outAcl);
+
+        aclTensor* selfAclPtr = nullptr;
+        aclTensor* outAclPtr = nullptr;
+        createAclTensor(input, &selfAclPtr);
+        createAclTensor(out, &outAclPtr);
+        aclnnAdaptor("aclnnSin", ctx, selfAclPtr, outAclPtr);
     } else {
         AscendTensor in(input);
         if (0 == in.numel()) {
