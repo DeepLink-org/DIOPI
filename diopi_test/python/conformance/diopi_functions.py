@@ -5150,8 +5150,7 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     call = "diopiRMSNorm"
     func = check_function(call)
     input_size = list(input.size().data)
-    assert input_size[len(input_size) - len(normalized_shape):len(input_size)] == list(normalized_shape), \
-        "Normalized_shape Error! It should be the last few dim of input_shape"
+    assert input_size[len(input_size) - len(normalized_shape):len(input_size)] == list(normalized_shape), "Normalized_shape Error! It should be the last few dim of input_shape"
     out = Tensor(input_size, input.get_dtype())
     normalized_dim = list(input_size[len(input_size)-len(normalized_shape): len(input_size)])
     inv_rms_size = input_size[:len(input_size) - len(normalized_dim)]
