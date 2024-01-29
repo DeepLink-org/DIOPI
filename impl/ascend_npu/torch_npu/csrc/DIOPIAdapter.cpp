@@ -2670,7 +2670,7 @@ void npu_fast_reshape_(at::Tensor& tensor) {
   auto base_format = InferFormat::GuessBaseFormat(tensor.sizes());
   NPUNativeFunctions::npu_format_cast_(tensor, base_format);
 #else
-    INTERFACE_NOT_IMPL
+    INTERFACE_NOT_IMPL;
 #endif
 }
 
@@ -2691,7 +2691,7 @@ std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t in
 
 namespace detail {
 
-const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL }
+const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL; }
 
 }  // namespace detail
 
