@@ -26,7 +26,7 @@ public:
                                shape.size(),
                                at_.getAclDataType(),
                                stride.data(),
-                               0,
+                               at_.storageOffset(),
                                at_.getAclDataFormat(),
                                shape.data(),
                                shape.size(),

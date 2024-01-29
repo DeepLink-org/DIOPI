@@ -39,7 +39,7 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         std::cout << "DEBUG try sin" << std::endl;
         aclnnAdaptor("aclnnSin", ctx, self00, out00);
         AscendTensor outAT00(out);
-        printContiguousTensor(ctx, outAT00, "outAT00");
+        printContiguousTensor(ctx, outAT00, "outAT00###################################################");
 
         std::cout << "DEBUG finish sin000000000000000000000000000" << std::endl;
         
@@ -54,7 +54,7 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         std::cout << "DEBUG try sin" << std::endl;
         aclnnAdaptor("aclnnSin", ctx, self11, out11);
         AscendTensor outAT11(out);
-        printContiguousTensor(ctx, outAT11, "outAT11");
+        printContiguousTensor(ctx, outAT11, "outAT11###################################################");
 
         std::cout << "DEBUG finish sin1111111111111111111111111111" << std::endl;
 
@@ -70,7 +70,7 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         std::cout << "DEBUG try sin" << std::endl;
         aclnnAdaptor("aclnnSin", ctx, self22, out22);
         AscendTensor outAT22(out);
-        printContiguousTensor(ctx, outAT22, "outAT22");
+        printContiguousTensor(ctx, outAT22, "outAT22###################################################");
 
         std::cout << "DEBUG finish sin222222222222222222222222" << std::endl;
 
@@ -83,7 +83,7 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         aclnnAdaptor("aclnnSin", ctx, inAcl, outAcl);
         outAcl.print();
         AscendTensor outAT33(out);
-        printContiguousTensor(ctx, outAT33, "outAT33");
+        printContiguousTensor(ctx, outAT33, "outAT33###################################################");
         std::cout << std::endl;
     } else {
         AscendTensor in(input);

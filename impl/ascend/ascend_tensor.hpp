@@ -101,6 +101,7 @@ public:
 
             diopiGetTensorNumel(tensor_, &numel_);
             diopiGetTensorElemSize(tensor_, &elemsize_);
+            diopiGetTensorStorageOffset(tensor_, &storageOffset_);
         }
     }
 
@@ -157,6 +158,10 @@ public:
         return static_cast<int64_t>(this->shape().size());
     }
 
+    int64_t storageOffset() {
+        return storageOffset_;
+    }
+
     bool defined() const { return tensor_; }
 
     int64_t numel() const {
@@ -199,6 +204,7 @@ private:
     diopiDevice_t device_ = diopiDevice_t::diopi_device;
     int64_t numel_{0};
     int64_t elemsize_{0};
+    int64_t storageOffset_{0};
 };
 
 }  // namespace ascend
