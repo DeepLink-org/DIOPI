@@ -1,5 +1,4 @@
 #include "common.hpp"
-
 namespace impl {
 namespace camb {
 
@@ -10,6 +9,8 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
 
     std::vector<DiopiTensor*> tensors{&input, &other};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32}));
+    std::vector<int64_t> outTmpStride;
+    std::vector<int64_t> outTmpShape;
     if (input.shape() == other.shape()) {
         // in these cases, inputA & inputB & output will have the same shape
         DIOPI_CHECK(input.shape() == out.shape(), "input shape should match output shape")
@@ -18,11 +19,8 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
             DIOPI_CALL(permuteCopy(ctx, other, otherTmp));
             other = otherTmp;
         }
-        if (input.stride() != out.stride()) {
-            DiopiTensor outTmp = requiresTensor(ctx, input.shape(), input.stride(), input.dtype());
-            DIOPI_CALL(permuteCopy(ctx, out, outTmp));
-            out = outTmp;
-        }
+        outTmpStride = input.stride();
+        outTmpShape = input.shape();
     } else {
         // in these cases, inputA & inputB should be broadcast operation
         int broadcastType = isBroadcast(input, other);
@@ -30,10 +28,9 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
         std::vector<int64_t> targetShape;
         std::vector<int64_t> targetStride;
         bool toPermuteFlag;
-        // it can be improved in the future, how strides and shapes can best accelerate "cnnlOpTensor"
-        // e.g. shape(3,1)+shape(1,5)
         if (input.isContiguous() && other.isContiguous()) {
-            toPermuteFlag = false;
+            outTmpStride = out.stride();
+            outTmpShape = out.shape();
         } else if (broadcastType == 2) {
             opBroadcastCast(input, other, targetShape, targetStride, toPermuteFlag);
             if (toPermuteFlag) {
@@ -41,6 +38,8 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
                 DIOPI_CALL(permuteCopy(ctx, other, otherTmp));
                 other = otherTmp;
             }
+            outTmpStride = input.stride();
+            outTmpShape = input.shape();
         } else if (broadcastType == 1) {
             opBroadcastCast(other, input, targetShape, targetStride, toPermuteFlag);
             if (toPermuteFlag) {
@@ -48,33 +47,21 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
                 DIOPI_CALL(permuteCopy(ctx, input, inputTmp));
                 input = inputTmp;
             }
+            outTmpStride = other.stride();
+            outTmpShape = other.shape();
         } else {
-            bool isInputPermute = true;
-            if ((input.dim() > other.dim()) || (input.dim() == other.dim() && input.numel() > other.numel())) {
-                isInputPermute = false;
-            }
-
-            if (isInputPermute) {
-                opBroadcastCast(input, other, targetShape, targetStride, toPermuteFlag);
-                if (toPermuteFlag) {
-                    DiopiTensor otherTmp = requiresTensor(ctx, targetShape, targetStride, other.dtype());
-                    DIOPI_CALL(permuteCopy(ctx, other, otherTmp));
-                    other = otherTmp;
-                }
-            } else {
-                opBroadcastCast(other, input, targetShape, targetStride, toPermuteFlag);
-                if (toPermuteFlag) {
-                    DiopiTensor inputTmp = requiresTensor(ctx, targetShape, targetStride, input.dtype());
-                    DIOPI_CALL(permuteCopy(ctx, input, inputTmp));
-                    input = inputTmp;
-                }
-            }
+            // it can be improved in the future, how strides and shapes can best accelerate "cnnlOpTensor"
+            // e.g. shape(3,1)+shape(1,5)
+            DIOPI_CALL(contiguous(ctx, input));
+            DIOPI_CALL(contiguous(ctx, other));
+            outTmpShape = out.shape();
+            outTmpStride = calContiguousStride(outTmpShape);
         }
     }
 
     DiopiTensor outputTmp = out;
-    if (outputTmp.dtype() != input.dtype()) {
-        outputTmp = requiresTensor(ctx, out.shape(), input.stride(), input.dtype());
+    if (outputTmp.dtype() != input.dtype() || outTmpStride != out.stride()) {
+        outputTmp = requiresTensor(ctx, outTmpShape, outTmpStride, input.dtype());
     }
 
     cnnlDataType_t compType;
@@ -125,7 +112,9 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
                                  outputDesc.get(),
                                  outputTmp.data()));
 
-    if (outputTmp.dtype() != out.dtype()) {
+    if (outputTmp.stride() != out.stride()) {
+        DIOPI_CALL(diopiCopyInp(ctx, outputTmp.tensorHandle(), out.tensorHandle()));
+    } else if (outputTmp.dtype() != out.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, out, outputTmp));
     }
     return diopiSuccess;
@@ -136,11 +125,11 @@ template diopiError_t cnnlOpTensor<double, double, double>(diopiContextHandle_t 
                                                            cnnlOpTensorDesc_t op_type, double alpha1, double alpha2, double beta);
 
 template <typename T>
-diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, T other, T alpha, T beta) {
+diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor& out, DiopiTensor& input, T other, T alpha, T beta) {
     auto handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor outTmp = out;
-    if (outTmp.dtype() != input.dtype()) {
+    if (outTmp.dtype() != input.dtype() || outTmp.stride() != input.stride()) {
         outTmp = requiresTensor(ctx, out.shape(), input.stride(), input.dtype());
     }
 
@@ -159,18 +148,22 @@ diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, Dio
 
     DIOPI_CALL_CNNL(cnnlTransform_v2(handle, CNNL_POINTER_MODE_HOST, alp.get(), inputDesc.get(), input.data(), bet.get(), outTmpDesc.get(), outTmp.data()));
 
-    if (outTmp.dtype() != out.dtype()) {
+    if (outTmp.stride() != out.stride()) {
+        DIOPI_CALL(diopiCopyInp(ctx, outTmp.tensorHandle(), out.tensorHandle()));
+    } else if (outTmp.dtype() != out.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, out, outTmp));
     }
     return diopiSuccess;
 }
 
-template diopiError_t cnnlTransformAdaptor<double>(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, double other, double alpha, double beta);
+template diopiError_t cnnlTransformAdaptor<double>(diopiContextHandle_t ctx, DiopiTensor& out, DiopiTensor& input, double other, double alpha, double beta);
 
 diopiError_t diopiDivInternal(diopiContextHandle_t ctx, DiopiTensor& inputTensor, DiopiTensor& otherTensor, DiopiTensor& outTensor,
                               diopiRoundMode_t roundingMode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
+    std::vector<int64_t> outTmpStride;
+    std::vector<int64_t> outTmpShape;
     if (inputTensor.shape() == otherTensor.shape()) {
         // in these cases, inputA & inputB & output will have the same shape
         DIOPI_CHECK(inputTensor.shape() == outTensor.shape(), "input shape should match output shape")
@@ -179,23 +172,53 @@ diopiError_t diopiDivInternal(diopiContextHandle_t ctx, DiopiTensor& inputTensor
             DIOPI_CALL(permuteCopy(ctx, otherTensor, otherTmp));
             otherTensor = otherTmp;
         }
-        if (inputTensor.stride() != outTensor.stride()) {
-            DiopiTensor outTmp = requiresTensor(ctx, inputTensor.shape(), inputTensor.stride(), inputTensor.dtype());
-            DIOPI_CALL(permuteCopy(ctx, outTensor, outTmp));
-            outTensor = outTmp;
-        }
+        outTmpShape = inputTensor.shape();
+        outTmpStride = inputTensor.stride();
     } else {
         // in these cases, inputA & inputB should be broadcast operation
-        DIOPI_CHECK(isBroadcast(inputTensor, otherTensor), "cannot broadcast input & other tensors");
-        // it can be improved in the future, how strides and shapes can best accelerate "cnnlOpTensor"
+        int broadcastType = isBroadcast(inputTensor, otherTensor);
+        DIOPI_CHECK(broadcastType > 0, "cannot broadcast input & other tensors");
+        std::vector<int64_t> targetShape;
+        std::vector<int64_t> targetStride;
+        bool toPermuteFlag;
+        if (inputTensor.isContiguous() && otherTensor.isContiguous()) {
+            outTmpShape = outTensor.shape();
+            outTmpStride = outTensor.stride();
+        } else if (broadcastType == 2) {
+            opBroadcastCast(inputTensor, otherTensor, targetShape, targetStride, toPermuteFlag);
+            if (toPermuteFlag) {
+                DiopiTensor otherTmp = requiresTensor(ctx, targetShape, targetStride, otherTensor.dtype());
+                DIOPI_CALL(permuteCopy(ctx, otherTensor, otherTmp));
+                otherTensor = otherTmp;
+            }
+            outTmpStride = inputTensor.stride();
+            outTmpShape = inputTensor.shape();
+        } else if (broadcastType == 1) {
+            opBroadcastCast(otherTensor, inputTensor, targetShape, targetStride, toPermuteFlag);
+            if (toPermuteFlag) {
+                DiopiTensor inputTmp = requiresTensor(ctx, targetShape, targetStride, inputTensor.dtype());
+                DIOPI_CALL(permuteCopy(ctx, inputTensor, inputTmp));
+                inputTensor = inputTmp;
+            }
+            outTmpStride = otherTensor.stride();
+            outTmpShape = otherTensor.shape();
+
+        } else {
+            // it can be improved in the future, how strides and shapes can best accelerate "cnnlOpTensor"
+            // e.g. shape(3,1)+shape(1,5)
+            DIOPI_CALL(contiguous(ctx, inputTensor));
+            DIOPI_CALL(contiguous(ctx, otherTensor));
+            outTmpShape = outTensor.shape();
+            outTmpStride = calContiguousStride(outTmpShape);
+        }
     }
 
     cnnlComputationPreference_t prefer = CNNL_COMPUTATION_HIGH_PRECISION;
     cnnlComputationPreference_t preferFloor = CNNL_COMPUTATION_ULTRAHIGH_PRECISION;
 
     DiopiTensor outTensorTemp = outTensor;
-    if (outTensorTemp.dtype() != inputTensor.dtype()) {
-        outTensorTemp = requiresTensor(ctx, outTensor.shape(), inputTensor.stride(), inputTensor.dtype());
+    if (outTmpStride != outTensor.stride()) {
+        outTensorTemp = requiresTensor(ctx, outTmpShape, outTmpStride, inputTensor.dtype());
     }
     std::vector<DiopiTensor*> pTensors{&inputTensor, &otherTensor, &outTensorTemp};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
@@ -254,9 +277,12 @@ diopiError_t diopiDivInternal(diopiContextHandle_t ctx, DiopiTensor& inputTensor
         default:
             break;
     }
-    if (outTensorTemp.dtype() != outTensor.dtype()) {
+    if (outTensorTemp.stride() != outTensor.stride()) {
+        DIOPI_CALL(diopiCopyInp(ctx, outTensorTemp.tensorHandle(), outTensor.tensorHandle()));
+    } else if (outTensorTemp.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTensorTemp));
     }
+
     return diopiSuccess;
 }
 
