@@ -36,7 +36,7 @@ jobs:
     runs-on: tps-diopi-ci
     steps:
       - name: Checkout Code
-        uses: DeepLink-org/DIOPI/.github/actions/checkout-code@wgs/run_on_sco
+        uses: DeepLink-org/DIOPI/.github/actions/checkout-code@main
         with:
           machine: 'SH1424'
           working_path: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}/${{ github.run_number }}'
