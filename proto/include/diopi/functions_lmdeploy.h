@@ -158,7 +158,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
  */
 DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t workspace, int64_t* workspace_size,
-                                                     int64_t fusion_level, diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache,
+                                                     int64_t fusion_level, diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, int64_t batch_size,
                                                      diopiConstTensorHandle_t finished, diopiConstTensorHandle_t total_padding_tokens,
                                                      diopiConstTensorHandle_t sequence_lengths, int64_t step, int64_t layer_id, int64_t local_head_num,
                                                      int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len, int64_t rotary_embedding,

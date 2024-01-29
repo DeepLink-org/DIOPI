@@ -921,7 +921,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
 
 DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t workspace, int64_t* workspace_size,
-                                                     int64_t fusion_level, diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache,
+                                                     int64_t fusion_level, diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, int batch_size,
                                                      diopiConstTensorHandle_t finished, diopiConstTensorHandle_t total_padding_tokens,
                                                      diopiConstTensorHandle_t sequence_lengths, int64_t step, int64_t layer_id, int64_t local_head_num,
                                                      int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len, int64_t rotary_embedding,
@@ -930,7 +930,7 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
         // workspace_size
         diopiSize_t shapeinfo;
         diopiGetTensorShape(inoutput, &shapeinfo);
-        int64_t batch_size = shapeinfo.data[0];
+        assert(batch_size == shapeinfo.data[0]);
         int64_t intitemsize = -1;
         diopiGetTensorElemSize(sequence_lengths, &intitemsize);
         int64_t itemsize = -1;
@@ -1067,35 +1067,6 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
         impl::cuda::diopiLmdeployCopyD2H(ctx, finished_host, finished, false);
         // keep same
         diopiTensorHandle_t q_buffer_back;
-        if (same) {
-            shape[0] = batch_size;
-            shape[1] = local_head_num;
-            shape[2] = size_per_head;
-            newshape.len = 3;
-            diopiRequireTensor(ctx, &q_buffer_back, &newshape, nullptr, dtype, device);
-            for (int64_t i = 0; i < batch_size; i++) {
-                if (finished_host_data[i]) {
-                    diopiTensorHandle_t q_buffer_back_one;
-                    shape[0] = local_head_num;
-                    shape[1] = size_per_head;
-                    newshape.len = 2;
-                    void* q_buffer_back_one_ptr;
-                    diopiGetTensorData(q_buffer_back, &q_buffer_back_one_ptr);
-                    diopiSize_t q_buffer_back_one_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(reinterpret_cast<char*>(q_buffer_back_one_ptr) +
-                                                                                                                i * itemsize * local_head_num * size_per_head)),
-                                                         -1};
-                    diopiRequireTensor(ctx, &q_buffer_back_one, &newshape, &q_buffer_back_one_stride, dtype, device);
-                    diopiTensorHandle_t q_buffer_one;
-                    shape[0] = local_head_num;
-                    shape[1] = size_per_head;
-                    newshape.len = 2;
-                    char* q_buffer_one_ptr = q_buffer_ptr + i * itemsize * local_head_num * size_per_head;
-                    diopiSize_t q_buffer_one_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_buffer_one_ptr)), -1};
-                    diopiRequireTensor(ctx, &q_buffer_one, &newshape, &q_buffer_one_stride, dtype, device);
-                    impl::cuda::diopiLmdeployCopyD2D(ctx, q_buffer_back_one, q_buffer_one, true);
-                }
-            }
-        }
 
         shape[0] = batch_size;
         newshape.len = 1;
@@ -1356,6 +1327,8 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t ki_cal_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cal_ptr)), -1};
                         diopiRequireTensor(ctx, &ki_cal, &newshape, &ki_cal_stride, dtype, device);
                         int64_t kvi_length = tlength - first_step;
+                        // kvi_length = tlength - first_step = tlength - max(0, tlength + 1 - max_seq_len) = tlength + min(0, tlength + 1 - max_seq_len)
+            #           //            = min(tlength, max_seq_len - 1) <= max_seq_len - 1
                         int64_t kvi_beg = first_step % max_seq_len;
                         int64_t kvi_end = tlength % max_seq_len;
                         int64_t n_maxseqlen = kvi_length / max_seq_len;
@@ -1574,26 +1547,6 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t inouti_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(inouti_ptr)), -1};
                         diopiRequireTensor(ctx, &inouti, &newshape, &inouti_stride, dtype, device);
                         impl::cuda::diopiBmm(ctx, inouti, qki_softmax, vi_cal);
-                    } else if (same) {
-                        diopiTensorHandle_t q_buffer_back_one;
-                        shape[0] = local_head_num;
-                        shape[1] = size_per_head;
-                        newshape.len = 2;
-                        void* q_buffer_back_one_ptr;
-                        diopiGetTensorData(q_buffer_back, &q_buffer_back_one_ptr);
-                        diopiSize_t q_buffer_back_one_stride{
-                            static_cast<const int64_t*>(
-                                reinterpret_cast<int64_t*>(reinterpret_cast<char*>(q_buffer_back_one_ptr) + i * itemsize * local_head_num * size_per_head)),
-                            -1};
-                        diopiRequireTensor(ctx, &q_buffer_back_one, &newshape, &q_buffer_back_one_stride, dtype, device);
-                        diopiTensorHandle_t q_buffer_one;
-                        shape[0] = local_head_num;
-                        shape[1] = size_per_head;
-                        newshape.len = 2;
-                        char* q_buffer_one_ptr = q_buffer_ptr + i * itemsize * local_head_num * size_per_head;
-                        diopiSize_t q_buffer_one_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_buffer_one_ptr)), -1};
-                        diopiRequireTensor(ctx, &q_buffer_one, &newshape, &q_buffer_one_stride, dtype, device);
-                        impl::cuda::diopiLmdeployCopyD2D(ctx, q_buffer_one, q_buffer_back_one, true);
                     }
                 } else {
                     return diopiErrorOccurred;
