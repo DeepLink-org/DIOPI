@@ -1,4 +1,5 @@
 #include "common.hpp"
+
 namespace impl {
 namespace camb {
 
@@ -6,7 +7,6 @@ template <typename T1, typename T2, typename T3>
 diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTensor& other, DiopiTensor& out, cnnlOpTensorDesc_t opType, T1 alpha1, T2 alpha2,
                           T3 beta) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-
     std::vector<DiopiTensor*> tensors{&input, &other};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32}));
     std::vector<int64_t> outTmpStride;
@@ -161,7 +161,9 @@ template diopiError_t cnnlTransformAdaptor<double>(diopiContextHandle_t ctx, Dio
 diopiError_t diopiDivInternal(diopiContextHandle_t ctx, DiopiTensor& inputTensor, DiopiTensor& otherTensor, DiopiTensor& outTensor,
                               diopiRoundMode_t roundingMode) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &otherTensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
     std::vector<int64_t> outTmpStride;
     std::vector<int64_t> outTmpShape;
     if (inputTensor.shape() == otherTensor.shape()) {
@@ -217,12 +219,9 @@ diopiError_t diopiDivInternal(diopiContextHandle_t ctx, DiopiTensor& inputTensor
     cnnlComputationPreference_t preferFloor = CNNL_COMPUTATION_ULTRAHIGH_PRECISION;
 
     DiopiTensor outTensorTemp = outTensor;
-    if (outTmpStride != outTensor.stride()) {
+    if (outTensorTemp.dtype() != inputTensor.dtype() || outTmpStride != outTensor.stride()) {
         outTensorTemp = requiresTensor(ctx, outTmpShape, outTmpStride, inputTensor.dtype());
     }
-    std::vector<DiopiTensor*> pTensors{&inputTensor, &otherTensor, &outTensorTemp};
-    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
-    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
     CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc otherDesc(otherTensor, CNNL_LAYOUT_ARRAY);
