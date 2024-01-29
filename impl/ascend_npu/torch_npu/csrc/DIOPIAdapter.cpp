@@ -73,9 +73,7 @@ aclError AclrtMemcpyAsyncParamCheck(void* dst, size_t destMax, const void* src, 
 }
 
 aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_t count, aclrtMemcpyKind kind) {
-    c10_npu::getCurrentNPUStream().synchronize();
     auto ret = aclrtMemcpy(dst, destMax, src, count, kind);
-    c10_npu::getCurrentNPUStream().synchronize();
     return ret;
 }
 
