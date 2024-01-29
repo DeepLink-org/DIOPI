@@ -7,6 +7,7 @@
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
 #include "../../../ascend/common/stream_lock.hpp"
+#include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
@@ -2895,7 +2896,24 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
             if (st != -1) st *= sizes[i - 1];
         }
     }
-    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
+
+    // when shape[0]=-1, fill data
+    std::vector<int64_t> sizeVec(sizes.size(), 1);
+    std::copy(sizes.begin(), sizes.end(), sizeVec.begin());
+    if (!sizes.empty() && sizes[0] == -1) {
+        bool flag = true;
+        for (auto i : sizes) {
+            if (!flag && i < 0) {
+                TORCH_CHECK(false, "more than one -1, sizes=", sizes);
+            }
+            if (i < 0) {
+                flag = false;
+            }
+        }
+        int count = std::accumulate(sizeVec.begin() + 1, sizeVec.end(), 1, std::multiplies<int>());
+        sizeVec[0] = input.numel() / count;
+    }
+    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizeVec, stridesVec, input.options());
 }
 
 c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices) {
@@ -3057,7 +3075,11 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
 }
 
 at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
+at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
 
+at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
+at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
+at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
 }  // namespace
 
 namespace at {
@@ -3092,6 +3114,11 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("repeat", TORCH_FN(wrapper__repeat));
     m.impl("transpose.int", TORCH_FN(wrapper__transpose));
     m.impl("_local_scalar_dense", TORCH_FN(wrapper___local_scalar_dense));
+    m.impl("cat", TORCH_FN(wrapper__cat));
+    m.impl("mm.out", TORCH_FN(wrapper_out_mm_out));
+    m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
+    m.impl("dot", TORCH_FN(wrapper__dot));
+    m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }

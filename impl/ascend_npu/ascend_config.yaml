@@ -200,6 +200,7 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiMatmul
 - diopiCastDtype
 - diopiCopyInp
 - diopiCat

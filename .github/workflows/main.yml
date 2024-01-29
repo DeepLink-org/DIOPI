@@ -221,7 +221,7 @@ jobs:
           ssh ${CLUSTER_1424} """
           set -e
           source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cp -f scripts/ci/diopi_config_A100.py  diopi_test/python/configs/diopi_configs.py && cd diopi_test/python && ls &&
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
           || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
@@ -339,6 +339,7 @@ jobs:
       - name: build
         run: |
           set -e
+          export USE_COVERAGE=ON
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           cd impl && sh scripts/build_impl.sh ascend
       - name: clang-tidy
@@ -367,7 +368,15 @@ jobs:
           source impl/scripts/pick_card.sh ascend
           cd diopi_test/python && python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/ascend/ && ${run_test} main.py --mode run_test \
           && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
-
+          if [ "${ALL_COVERAGE}" = "ON" ]; then
+              bash /mnt/cache/share/platform/dep/sonar/coverage_DIOPI.sh ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} || echo "get coverage fail"
+          fi
+      - name: increment coverage check
+        if: ${{ contains( github.event_name, 'pull_request' ) && contains( github.base_ref, 'main' ) }}
+        run: |
+          set -e
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
   # Rt-Test-Ascend-910b:
   #   name: Rt-Test-Ascend-910b
   #   runs-on: tps-ascend-ci-910b
@@ -467,6 +476,7 @@ jobs:
       - name: Build
         run: |
           set -e
+          export USE_COVERAGE=ON
           cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
           source /mnt/cache/share/deeplinkci/env.sh
@@ -488,3 +498,12 @@ jobs:
           ln -sf /mnt/cache/share/deeplinkci/data/inputs ./cache/diopi && ln -sf /mnt/cache/share/deeplinkci/data/outputs ./cache/diopi && ln -sf /mnt/cache/share/deeplinkci/data/diopi_case_items.cfg ./cache/diopi
           python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/kunlunxin/
           python main.py --mode run_test
+          if [ "${ALL_COVERAGE}" = "ON" ]; then
+             bash /mnt/cache/share/platform/dep/sonar/coverage_DIOPI.sh ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} || echo "get coverage fail"
+          fi
+      - name: increment coverage check
+        if: ${{ contains( github.event_name, 'pull_request' ) && contains( github.base_ref, 'main' ) }}
+        run: |
+          set -e
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}

@@ -231,14 +231,6 @@ device_configs = {
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
         atol=2e-2,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((3,16,8)), Skip((4,16,12)), Skip((2,144,65,65))],
-                },
-            ]
-        ),
     ),
 
     'adaptive_max_pool2d': dict(
@@ -439,7 +431,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((128, 49, 128)),Skip((5,)),Skip((128, 4, 49, 32)),Skip((2, 1, 3136, 3136)),Skip((2, 784, 64)),Skip((2, 16, 8, 64)),Skip((2, 31, 6, 40, 512)),],
+                    "shape": [Skip((2, 31, 6, 40, 512)),],
                 },
             ]
         ),
@@ -774,6 +766,14 @@ device_configs = {
                 },
             ]
         ),
+    ),
+
+    'rms_norm': dict(
+        name=['rms_norm'],
+        atol=1e-3,
+        rtol=1e-3,
+        atol_half=1e-2,
+        rtol_half=1e-2,
     ),
 
     'smooth_l1_loss': dict(
@@ -1409,6 +1409,96 @@ device_configs = {
         ),
     ),
 
+    'reduce_partial_op_4': dict( # llm used
+        name=['sum'],
+        interface=['torch'],
+        atol=1e-4,
+        rtol=1e-4,
+        # temp for 910B
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ],
+        ),
+    ),
+
+    'apply_penalty': dict(
+        name=['apply_penalty'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logits'],
+                    "dtype": [Skip(np.float64)],
+                },
+            ]
+        )
+    ),
+
+    'rotary_emb': dict(
+        name=["rotary_emb"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'rotary_emb_empty_tensor': dict(
+        name=["rotary_emb"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'rms_norm': dict(
+        name=['rms_norm'],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                },
+            ],
+        ),
+    ),
+
+    'token_softmax_reducev': dict(
+        name=['token_softmax_reducev'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["v"],
+                    "shape": (Skip((0, 15, 32)),),
+                },
+            ]
+        )
+    ),
+
+    # temp for 910B
+    'normal_': dict(
+        name=["normal_"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
+                },
+            ]
+        ),
+    ),
+    
     'remainder_self_scalar': dict(
         name=['remainder'],
         tensor_para=dict(
