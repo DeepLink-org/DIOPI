@@ -81,7 +81,6 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
         float val = 0.0f;
         diopiGetStream(ctx, &stream);
         aclrtMemcpyAsync(ptr, sizeof(float), &val, sizeof(float), ACL_MEMCPY_HOST_TO_DEVICE, stream);
-        aclrtSynchronizeStream(stream);
     }
 
     // ascend only support inpu tensor with 2D dimension
