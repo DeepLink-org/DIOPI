@@ -51,6 +51,7 @@ inline bool useAclnn() {
     static bool enable = std::getenv("DIOPI_USE_ACLNN") != nullptr;
     return enable;
 }
+int createAclTensor1(diopiConstTensorHandle_t input, aclTensor** tensor);
 
 inline void* getOpApiFuncAddrInLib(void* handler, const char* libName, const char* apiName) {
     warning(__FILE__, __LINE__, __FUNCTION__, "getOpApiFuncAddrInLib DEBUG DEBG: dlsym call function name %s from %s.", apiName, libName);
