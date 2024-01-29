@@ -159,14 +159,11 @@
         }                                                                                                                                              \
     } while (0)
 
-#define INTERFACE_NOT_IMPL                                                                                           \
-    do {                                                                                                             \
-        static bool warned = false;                                                                                  \
-        if (!warned) {                                                                                               \
-            std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not implemented yet" << std::endl; \
-            warned = true;                                                                                           \
-        }                                                                                                            \
-    } while (0)
+#if defined(NDEBUG)
+#define INTERFACE_NOT_IMPL
+#else
+#define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
+#endif
 
 static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 
