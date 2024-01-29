@@ -76,7 +76,7 @@ jobs:
   Gen-Data:
     name: Gen-Data
     runs-on: tps-diopi-ci
-    needs: [Rsync,Build-Nvidia]
+    needs: [checkout_code,Build-Nvidia]
     steps:
       - name: gen-test-data
         run: |
