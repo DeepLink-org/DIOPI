@@ -37,7 +37,7 @@ int isBroadcast(DiopiTensor& inputTensor, DiopiTensor& otherTensor);
 diopiError_t opBroadcastCast(DiopiTensor& inputTensor, DiopiTensor& otherTensor, std::vector<int64_t>& targetShape, std::vector<int64_t>& targetStride,
                              bool& toPermuteFlag);
 
-std::vector<int64_t> calContiguousStride(std::vector<int64_t> shape) ;
+std::vector<int64_t> calContiguousStride(std::vector<int64_t> shape);
 
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Contiguous);
 
