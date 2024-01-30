@@ -117,7 +117,7 @@ inline aclTensor* convertType(AclTensor& value) {
         std::cout << "aclTensor ptr=" << value.data() << std::endl;
         std::cout << "ptr()=" << value.ptr() << std::endl;
         printType(&value);
-        printContiTensor(*(value.ptr()), value.data());
+        // printContiTensor(*(value.ptr()), value.data());
     }
 
     return static_cast<aclTensor*>(value);

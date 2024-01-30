@@ -7,7 +7,7 @@
 #include <set>
 
 #include "../common/acloprunner.hpp"
-#include "../common/debug.hpp"
+// #include "../common/debug.hpp"
 namespace impl {
 namespace ascend {
 
