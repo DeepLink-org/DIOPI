@@ -13,7 +13,7 @@
 namespace impl {
 namespace ascend {
 
-diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t *value) {
+diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
     if (numel <= 0) {
@@ -42,7 +42,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
     AclOpRunner<1, 1>("Fills", ctx).addInput(inputTemp).setAttr<float>("value", val).addOutput(inputTemp).run();
     diopiCastDtype(ctx, input, inputTemp);
-    
+
     auto zeroValueScalar = diopiScalar_t();
     zeroValueScalar.stype = diopi_dtype_float64;
     zeroValueScalar.fval = 0.0;
