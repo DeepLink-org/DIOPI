@@ -37,7 +37,7 @@ public:
 
     // explicit operator aclTensor() { return *acl_; }
     explicit operator aclTensor*() { 
-        std::cout << "operator aclTensor*() ptr=" << acl_ << std::endl;
+        // std::cout << "operator aclTensor*() ptr=" << acl_ << std::endl;
         return acl_; }
 
     bool defined() const { return acl_; }
@@ -48,7 +48,7 @@ public:
 
     const aclTensor* ptr() { return acl_; }
 
-    void print() const;
+    // void print() const;
 
 private:
     aclTensor* acl_ = nullptr;
