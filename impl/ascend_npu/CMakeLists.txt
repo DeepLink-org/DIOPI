@@ -46,7 +46,7 @@ link_directories(${TORCH_INSTALL_PREFIX}/lib)
 
 # Because many interfaces have not yet been implemented, -Wreturn-type=0 option is temporarily added.
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable -g -O0 "
+    "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable "
 )
 
 set(OP_PLUGIN_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/aclops/)
