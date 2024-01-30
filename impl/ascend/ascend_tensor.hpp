@@ -158,9 +158,7 @@ public:
         return static_cast<int64_t>(this->shape().size());
     }
 
-    int64_t storageOffset() {
-        return storageOffset_;
-    }
+    int64_t storageOffset() { return storageOffset_; }
 
     bool defined() const { return tensor_; }
 
