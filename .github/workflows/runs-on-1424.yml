@@ -10,7 +10,7 @@ on:
 #      - "CODE_OF_CONDUCT**"
 
 concurrency:
-  group: sco-${{ github.head_ref || github.ref }}
+  group: 1424-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 env:
