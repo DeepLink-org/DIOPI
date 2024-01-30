@@ -387,19 +387,26 @@ at::Tensor& NPUNativeFunctions::copy_(at::Tensor& self, const at::Tensor& src, b
         internal_set_names_inplace(self, names);
     }
 
+    // Param `non_blocking`: if True and this copy is between CPU and GPU,
+    // the copy may occur asynchronously with respect to the host.
+    // For other cases, this argument has no effect.
+    // https://pytorch.org/docs/stable/generated/torch.Tensor.copy_.html
     if (at_npu::key::isDeviceTensor(self)) {
         if (at_npu::key::isDeviceTensor(src)) {
             copy_d2d(self, src, non_blocking);
         } else {
             copy_h2d(self, src, non_blocking);
+            if (!non_blocking) {
+                c10_npu::getCurrentNPUStream().synchronize();
+            }
         }
     } else {
         if (at_npu::key::isDeviceTensor(src)) {
             copy_d2h(self, src, non_blocking);
         }
-    }
-    if (!non_blocking) {
-        c10_npu::getCurrentNPUStream().synchronize();
+        if (!non_blocking) {
+            c10_npu::getCurrentNPUStream().synchronize();
+        }
     }
     return self;
 }
