@@ -32,8 +32,7 @@ public:
                                const_cast<void*>(at_.data()));
     }
 
-    explicit operator aclTensor*() { 
-        return acl_; }
+    explicit operator aclTensor*() { return acl_; }
 
     bool defined() const { return acl_; }
 
