@@ -626,7 +626,6 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/common/utils.cpp
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/aclnn/adaptor.cpp
-    # ${OLD_IMPL_DIR}/aclnn/aclnn.cpp
     ${OLD_IMPL_DIR}/aclnn/acl_tensor.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
     ${OLD_IMPL_DIR}/common/stream_lock.cpp

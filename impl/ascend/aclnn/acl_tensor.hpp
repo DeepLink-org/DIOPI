@@ -19,7 +19,6 @@ class AclTensor final {
 public:
     explicit AclTensor(diopiConstTensorHandle_t tensor) /* : at_(tensor) */ {
         at_ = AscendTensor(tensor);
-        std::cout << "before aclCreateTensor ptr=" << acl_ << std::endl;
         auto shape = at_.getAclMemShape();
         auto stride = at_.stride();
         acl_ = aclCreateTensor(shape.data(),
@@ -31,13 +30,9 @@ public:
                                shape.data(),
                                shape.size(),
                                const_cast<void*>(at_.data()));
-        // acl_ = const_cast<void*>(at_.data());
-        std::cout << "after aclCreateTensor ptr=" << acl_ << std::endl;
     }
 
-    // explicit operator aclTensor() { return *acl_; }
     explicit operator aclTensor*() { 
-        // std::cout << "operator aclTensor*() ptr=" << acl_ << std::endl;
         return acl_; }
 
     bool defined() const { return acl_; }
@@ -48,7 +43,7 @@ public:
 
     const aclTensor* ptr() { return acl_; }
 
-    // void print() const;
+    void print() const;
 
 private:
     aclTensor* acl_ = nullptr;

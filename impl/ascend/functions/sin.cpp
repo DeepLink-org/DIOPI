@@ -7,7 +7,6 @@
 #include <set>
 
 #include "../common/acloprunner.hpp"
-// #include "../common/debug.hpp"
 
 namespace impl {
 namespace ascend {
@@ -19,72 +18,15 @@ diopiError_t diopiSinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 
 diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     if (useAclnn()) {
-        std::cout << "\n================begin aclnnSinAdaptor====================" << std::endl;
-        // AscendTensor inAT(input);
-        // printContiguousTensor(ctx, inAT, "sinin1111111");
-        // aclnnSinAdaptor(ctx, input, out);
-        // AscendTensor outAT1(out);
-        // printContiguousTensor(ctx, outAT1, "sinOut11111");
-        // std::cout << "================finish aclnnSinAdaptor====================" << std::endl;
-        
-        // std::cout << "DEBUG DEBUG CASE0000000(aclTensor, aclTensor):" << std::endl;
-        // std::cout << "DEBUG call aclnnSin." << std::endl;
-        // printContiguousTensor(ctx, inAT, "sinin");
-
-
-        aclTensor* self00 = nullptr;
-        aclTensor* out00 = nullptr;
-        createAclTensor1(input, &self00);
-        createAclTensor1(out, &out00);
-        std::cout << "DEBUG try sin" << std::endl;
-        aclnnAdaptor("aclnnSin", ctx, self00, out00);
-        // AscendTensor outAT00(out);
-        // printContiguousTensor(ctx, outAT00, "outAT00###################################################");
-
-        // std::cout << "DEBUG finish sin000000000000000000000000000" << std::endl;
-        
-        // std::cout << "DEBUG DEBUG CASE1(AclTensor, aclTensor):" << std::endl;
-        // std::cout << "DEBUG call aclnnSin." << std::endl;
-        // printContiguousTensor(ctx, inAT, "sinin");
-
-
-        // aclTensor* out11 = nullptr;
-        // AclTensor self11(input);
-        // createAclTensor1(out, &out11);
-        // std::cout << "DEBUG try sin" << std::endl;
-        // aclnnAdaptor("aclnnSin", ctx, self11, out11);
-        // AscendTensor outAT11(out);
-        // printContiguousTensor(ctx, outAT11, "outAT11###################################################");
-
-        // std::cout << "DEBUG finish sin1111111111111111111111111111" << std::endl;
-
-        
-        // std::cout << "DEBUG DEBUG CASE2(aclTensor, AclTensor):" << std::endl;
-        // std::cout << "DEBUG call aclnnSin." << std::endl;
-        // printContiguousTensor(ctx, inAT, "sinin");
-
-
-        // aclTensor* self22 = nullptr;
-        // createAclTensor1(input, &self22);
-        // AclTensor out22(out);
-        // std::cout << "DEBUG try sin" << std::endl;
-        // aclnnAdaptor("aclnnSin", ctx, self22, out22);
-        // AscendTensor outAT22(out);
-        // printContiguousTensor(ctx, outAT22, "outAT22###################################################");
-
-        // std::cout << "DEBUG finish sin222222222222222222222222" << std::endl;
-
-        // TODO 排查为什么自动转换类型会导致结果失败。
-        // AclTensor inAcl(input), outAcl(out);
-        // if (!inAcl.defined() || inAcl.numel() == 0) {
-        //     std::cout << "no value, return sin." << std::endl;
-        //     return diopiSuccess;
-        // }
-        // aclnnAdaptor("aclnnSin", ctx, inAcl, outAcl);
-        // outAcl.print();
-        // AscendTensor outAT33(out);
-        // printContiguousTensor(ctx, outAT33, "outAT33###################################################");
-        // std::cout << std::endl;
+        AclTensor inAcl(input), outAcl(out);
+        if (!inAcl.defined() || inAcl.numel() == 0) {
+            return diopiSuccess;
+        }
+        aclTensor* inPtr = nullptr;
+        aclTensor* outPtr = nullptr;
+        createAclTensor1(input, &inPtr);
+        createAclTensor1(out, &outPtr);
+        aclnnAdaptor("aclnnSin", ctx, inPtr, outPtr);
     } else {
         AscendTensor in(input);
         if (0 == in.numel()) {

@@ -17,7 +17,6 @@
 #include "../ascend_tensor.hpp"
 #include "../common/acloprunner.hpp"
 #include "../common/utils.hpp"
-// #include "acl_tensor.hpp"
 #include <iostream>
 #include <typeinfo>
 
@@ -45,6 +44,7 @@ template <typename T>
 void printType(const T& value) {
     std::cout << "Type of " << value << " is: " << typeid(value).name() << std::endl;
 }
+
 inline const char* getOpApiLibName() { return "libopapi.so"; }
 
 inline bool useAclnn() {
@@ -54,9 +54,7 @@ inline bool useAclnn() {
 int createAclTensor1(diopiConstTensorHandle_t input, aclTensor** tensor);
 
 inline void* getOpApiFuncAddrInLib(void* handler, const char* libName, const char* apiName) {
-    warning(__FILE__, __LINE__, __FUNCTION__, "getOpApiFuncAddrInLib DEBUG DEBG: dlsym call function name %s from %s.", apiName, libName);
-    auto funcAddr = dlsym(handler, apiName);        // TODO: 输出每个结果
-    warning(__FILE__, __LINE__, __FUNCTION__, "JUSTDEBUG inner %s from %s.handler=%ld, ", apiName, libName, funcAddr);
+    auto funcAddr = dlsym(handler, apiName);
     if (funcAddr == nullptr) {
         warning(__FILE__, __LINE__, __FUNCTION__, "dlsym %s from %s failed, error:%s.", apiName, libName, dlerror());
     }
@@ -64,7 +62,6 @@ inline void* getOpApiFuncAddrInLib(void* handler, const char* libName, const cha
 }
 
 inline void* getOpApiLibHandler(const char* libName) {
-    warning(__FILE__, __LINE__, __FUNCTION__, "getOpApiFuncAddr DEBUG DEBG: dlsym call function from %s.", libName);
     auto handler = dlopen(libName, RTLD_LAZY);
     if (handler == nullptr) {
         warning(__FILE__, __LINE__, __FUNCTION__, "dlopen %s failed, error:%s.", libName, dlerror());
@@ -73,7 +70,6 @@ inline void* getOpApiLibHandler(const char* libName) {
 }
 
 inline void* getOpApiFuncAddr(const char* apiName) {
-    warning(__FILE__, __LINE__, __FUNCTION__, "getOpApiFuncAddr DEBUG DEBG: dlsym call function name %s.", apiName);
     static auto opApiHandler = getOpApiLibHandler(getOpApiLibName());
     if (opApiHandler == nullptr) {
         return nullptr;
@@ -114,9 +110,7 @@ void printContiTensor(const aclTensor& tensor, diopiConstTensorHandle_t diopi);
 inline aclTensor* convertType(AclTensor& value) {
     static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
     if (aclDebugFlag) {
-        std::cout << "aclTensor ptr=" << value.data() << std::endl;
-        std::cout << "ptr()=" << value.ptr() << std::endl;
-        printType(&value);
+        // printType(&value);
         // printContiTensor(*(value.ptr()), value.data());
     }
 
@@ -125,7 +119,7 @@ inline aclTensor* convertType(AclTensor& value) {
 
 template <typename T>
 T convertType(T value) {
-    printType(value);
+    // printType(value);
     return value;
 }
 
@@ -141,49 +135,15 @@ void printValue(T value) {
     return;
 }
 
-typedef int (*InitHugeMemThreadLocal)(void *, bool);
-typedef void (*UnInitHugeMemThreadLocal)(void *, bool);
-typedef void (*ReleaseHugeMem)(void *, bool);
-typedef aclOpExecutor *(*PTAGetExecCache)(uint64_t, uint64_t *);
-typedef void (*InitPTACacheThreadLocal)();
-typedef void (*SetPTAHashKey)(uint64_t);
-typedef bool (*CanUsePTACache)(const char *);
-typedef void (*UnInitPTACacheThreadLocal)();
-
-inline void UnInitCacheThreadLocal()
-{
-    static const auto unInitPTACacheThreadLocalAddr = getOpApiFuncAddr("UnInitPTACacheThreadLocal");
-    UnInitPTACacheThreadLocal unInitPTACacheThreadLocalFunc =
-        reinterpret_cast<UnInitPTACacheThreadLocal>(unInitPTACacheThreadLocalAddr);
-    if (unInitPTACacheThreadLocalFunc) {
-        unInitPTACacheThreadLocalFunc();
-    }
-}
-
 template <typename... Args>
 int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args) {
-    static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-    if (aclDebugFlag) {
-        std::cout << "aclnnAdaptor for " << name << std::endl;
-    }
-    // static const auto initMemAddr = getOpApiFuncAddr("InitHugeMemThreadLocal");
-    // static const auto unInitMemAddr = getOpApiFuncAddr("UnInitHugeMemThreadLocal");
-    // static const auto releaseMemAddr = getOpApiFuncAddr("ReleaseHugeMem");
-    // InitHugeMemThreadLocal initMemFunc = reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr);
-    // UnInitHugeMemThreadLocal unInitMemFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr);
-    // if (initMemFunc) {
-    //     initMemFunc(nullptr, false);
-    // }
     // 0. get aclrtStream
     aclrtStream stream;
     diopiGetStream(ctx, &stream);
 
     // 1. call xxxGetWorkspaceSize function.
     std::string workSpaceName = name + kWorkspaceSizeSuffix;
-    std::cout << "BEFORE getWorkspaceSizeFuncAddr########################" << std::endl;
     volatile auto getWorkspaceSizeFuncAddr = getOpApiFuncAddr(workSpaceName.c_str());
-    std::cout << "AFTER getWorkspaceSizeFuncAddr########################" << std::endl;
-    std::cout << "workSpaceName = " << workSpaceName << ", getWorkspaceSizeFuncAddr ptr = " << getWorkspaceSizeFuncAddr << std::endl;
     ASCEND_CHECK_ABORT(getWorkspaceSizeFuncAddr != nullptr, "can't get workSpaceName function.");
 
     uint64_t workspaceSize = 0;
@@ -192,29 +152,18 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
     aclOpExecutor** executorAddr = &executor;
     auto convertedParams = convertTypes(args..., workspaceSizeAddr, executorAddr);
     static auto getWorkspaceSizeFunc = convertToOpApiFunc(convertedParams, getWorkspaceSizeFuncAddr);
-    std::cout << "getWorkspaceSizeFunc ptr = " << getWorkspaceSizeFunc << std::endl;
 
     auto workspaceStatus = call(getWorkspaceSizeFunc, convertedParams);
     ASCEND_CHECK_ABORT(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS.");
 
     void* workspaceAddr = nullptr;
     if (workspaceSize != 0) {
-        std::cout << "DEBUG workspaceSize = " << workspaceSize << std::endl;
         auto ret = aclrtMalloc(&workspaceAddr, workspaceSize, ACL_MEM_MALLOC_HUGE_FIRST);
         CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("allocate workspace failed. ERROR: %d\n", ret); return ret;);
     }
-    // ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);
-    // if (releaseMemFunc) {
-    //     releaseMemFunc(nullptr, false);
-    // }
 
     // 2. call aclnnXXX function
-    std::cout << "BEFORE opApiFuncAddr########################" << std::endl;
     volatile auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());
-    std::cout << "AFTER opApiFuncAddr########################" << std::endl;
-    // auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());
-    // std::cout << "Function name: " << typeid(opApiFuncAddr).name() << std::endl;
-    std::cout << "name="<< name <<  ", call name = " << typeid(opApiFuncAddr).name() << ", getOpApiFuncAddr ptr = " << opApiFuncAddr << std::endl;
     ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function.");
 
     typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, aclrtStream);
@@ -222,8 +171,6 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
     auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("%s failed. ERROR: %d\n", name, ret); return ret);
 
-    // TODO(zmz): 回写数据，没有必要，构造tensor时候传递的是指针，所以数据会写在里面
-    // aclrtMemcpyAsync(dst, buffersize, src, buffersize, ACL_MEMCPY_DEVICE_TO_DEVICE, stream);
     ret = aclrtSynchronizeStream(stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
 
@@ -232,10 +179,6 @@ int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args
         aclrtFree(workspaceAddr);
     }
 
-    // if (unInitMemFunc) {
-    //     unInitMemFunc(nullptr, false);
-    // }
-    // UnInitCacheThreadLocal();
     return ACL_SUCCESS;
 }
 

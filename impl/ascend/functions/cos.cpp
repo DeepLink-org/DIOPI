@@ -7,7 +7,6 @@
 #include <set>
 
 #include "../common/acloprunner.hpp"
-// #include "../common/debug.hpp"
 namespace impl {
 namespace ascend {
 
@@ -18,24 +17,11 @@ diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 
 diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     if (useAclnn()) {
-        // std::cout << "================begin cos====================" << std::endl;
-        // AscendTensor inAT(input);
-        // printContiguousTensor(ctx, inAT, "cosin1111111");
-        // aclnnCosAdaptor(ctx, input, out);
-        // AscendTensor outAT1(out);
-        // printContiguousTensor(ctx, outAT1, "cosOut11111");
-        // std::cout << "================finish cos====================" << std::endl;
         AclTensor inAcl(input), outAcl(out);
         if (!inAcl.defined() || inAcl.numel() == 0) {
-            std::cout << "no value, return cos." << std::endl;
             return diopiSuccess;
         }
-        // std::cout << "DEBUG call aclnnCos." << std::endl;
-        // printContiguousTensor(ctx, inAT, "cosin");
         aclnnAdaptor("aclnnCos", ctx, inAcl, outAcl);
-        // AscendTensor outAT(out);
-        // printContiguousTensor(ctx, outAT, "cosOut");
-        // std::cout << std::endl;
     } else {
         AscendTensor in = AscendTensor(input);
         if (0 == in.numel()) {
