@@ -32,12 +32,18 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         // printContiguousTensor(ctx, inAT, "sinin");
 
 
-        aclTensor* self00 = nullptr;
-        aclTensor* out00 = nullptr;
-        createAclTensor1(input, &self00);
-        createAclTensor1(out, &out00);
-        std::cout << "DEBUG try sin" << std::endl;
-        aclnnAdaptor("aclnnSin", ctx, self00, out00);
+        // aclTensor* self00 = nullptr;
+        // aclTensor* out00 = nullptr;
+        // createAclTensor1(input, &self00);
+        // createAclTensor1(out, &out00);
+        // std::cout << "DEBUG try sin" << std::endl;
+        // aclnnAdaptor("aclnnSin", ctx, self00, out00);
+        AclTensor inAcl(input), outAcl(out);
+        if (!inAcl.defined() || inAcl.numel() == 0) {
+            std::cout << "no value, return cos." << std::endl;
+            return diopiSuccess;
+        }
+        aclnnAdaptor("aclnnCos", ctx, inAcl, outAcl);
         // AscendTensor outAT00(out);
         // printContiguousTensor(ctx, outAT00, "outAT00###################################################");
 

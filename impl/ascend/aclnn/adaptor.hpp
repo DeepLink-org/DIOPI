@@ -85,6 +85,7 @@ template <typename Function, typename Tuple, size_t... I>
 auto call(Function f, Tuple t, std::index_sequence<I...>) {
     // static_assert(std::is_same<decltype(f(std::get<I>(t)...)), void>::value,
     //               "call_impl: f(std::get<I>(t)...)");
+    warning(__FILE__, __LINE__, __FUNCTION__, "call function ptr %ld.", f);
     return f(std::get<I>(t)...);
 }
 
@@ -160,84 +161,55 @@ inline void UnInitCacheThreadLocal()
     }
 }
 
-template <typename... Args>
-int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args) {
-    static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-    if (aclDebugFlag) {
-        std::cout << "aclnnAdaptor for " << name << std::endl;
-    }
-    // static const auto initMemAddr = getOpApiFuncAddr("InitHugeMemThreadLocal");
-    // static const auto unInitMemAddr = getOpApiFuncAddr("UnInitHugeMemThreadLocal");
-    // static const auto releaseMemAddr = getOpApiFuncAddr("ReleaseHugeMem");
-    // InitHugeMemThreadLocal initMemFunc = reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr);
-    // UnInitHugeMemThreadLocal unInitMemFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr);
-    // if (initMemFunc) {
-    //     initMemFunc(nullptr, false);
-    // }
-    // 0. get aclrtStream
-    aclrtStream stream;
-    diopiGetStream(ctx, &stream);
+// template <typename... Args>
+// int aclnnAdaptor(const std::string& name, diopiContextHandle_t ctx, Args... args) {
 
-    // 1. call xxxGetWorkspaceSize function.
-    std::string workSpaceName = name + kWorkspaceSizeSuffix;
-    std::cout << "BEFORE getWorkspaceSizeFuncAddr########################" << std::endl;
-    volatile auto getWorkspaceSizeFuncAddr = getOpApiFuncAddr(workSpaceName.c_str());
-    std::cout << "AFTER getWorkspaceSizeFuncAddr########################" << std::endl;
-    std::cout << "workSpaceName = " << workSpaceName << ", getWorkspaceSizeFuncAddr ptr = " << getWorkspaceSizeFuncAddr << std::endl;
-    ASCEND_CHECK_ABORT(getWorkspaceSizeFuncAddr != nullptr, "can't get workSpaceName function.");
-
-    uint64_t workspaceSize = 0;
-    uint64_t* workspaceSizeAddr = &workspaceSize;
-    aclOpExecutor* executor = nullptr;
-    aclOpExecutor** executorAddr = &executor;
-    auto convertedParams = convertTypes(args..., workspaceSizeAddr, executorAddr);
-    static auto getWorkspaceSizeFunc = convertToOpApiFunc(convertedParams, getWorkspaceSizeFuncAddr);
-    std::cout << "getWorkspaceSizeFunc ptr = " << getWorkspaceSizeFunc << std::endl;
-
-    auto workspaceStatus = call(getWorkspaceSizeFunc, convertedParams);
-    ASCEND_CHECK_ABORT(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS.");
-
-    void* workspaceAddr = nullptr;
-    if (workspaceSize != 0) {
-        std::cout << "DEBUG workspaceSize = " << workspaceSize << std::endl;
-        auto ret = aclrtMalloc(&workspaceAddr, workspaceSize, ACL_MEM_MALLOC_HUGE_FIRST);
-        CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("allocate workspace failed. ERROR: %d\n", ret); return ret;);
-    }
-    // ReleaseHugeMem releaseMemFunc = reinterpret_cast<ReleaseHugeMem>(releaseMemAddr);
-    // if (releaseMemFunc) {
-    //     releaseMemFunc(nullptr, false);
-    // }
-
-    // 2. call aclnnXXX function
-    std::cout << "BEFORE opApiFuncAddr########################" << std::endl;
-    volatile auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());
-    std::cout << "AFTER opApiFuncAddr########################" << std::endl;
-    // auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());
-    // std::cout << "Function name: " << typeid(opApiFuncAddr).name() << std::endl;
-    std::cout << "name="<< name <<  ", call name = " << typeid(opApiFuncAddr).name() << ", getOpApiFuncAddr ptr = " << opApiFuncAddr << std::endl;
-    ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function.");
-
-    typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, aclrtStream);
-    OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);
-    auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);
-    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("%s failed. ERROR: %d\n", name, ret); return ret);
-
-    // TODO(zmz): 回写数据，没有必要，构造tensor时候传递的是指针，所以数据会写在里面
-    // aclrtMemcpyAsync(dst, buffersize, src, buffersize, ACL_MEMCPY_DEVICE_TO_DEVICE, stream);
-    ret = aclrtSynchronizeStream(stream);
-    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
-
-    // 3. clear
-    if (workspaceSize > 0) {
-        aclrtFree(workspaceAddr);
-    }
-
-    // if (unInitMemFunc) {
-    //     unInitMemFunc(nullptr, false);
-    // }
-    // UnInitCacheThreadLocal();
-    return ACL_SUCCESS;
-}
+#define  aclnnAdaptor(n, ctx, ...) \
+    do {                                                                             \
+    std::string name = #n; \
+    static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1; \
+    if (aclDebugFlag) { \
+        std::cout << "aclnnAdaptor for " << name << std::endl; \
+    } \
+    aclrtStream stream; \
+    diopiGetStream(ctx, &stream); \
+    std::string workSpaceName = name + kWorkspaceSizeSuffix; \
+    volatile auto getWorkspaceSizeFuncAddr = getOpApiFuncAddr(workSpaceName.c_str()); \
+    ASCEND_CHECK_ABORT(getWorkspaceSizeFuncAddr != nullptr, "can't get workSpaceName function."); \
+ \
+    uint64_t workspaceSize = 0; \
+    uint64_t* workspaceSizeAddr = &workspaceSize; \
+    aclOpExecutor* executor = nullptr; \
+    aclOpExecutor** executorAddr = &executor; \
+    auto convertedParams = convertTypes(__VA_ARGS__, workspaceSizeAddr, executorAddr); \
+    static auto getWorkspaceSizeFunc = convertToOpApiFunc(convertedParams, getWorkspaceSizeFuncAddr); \
+    std::cout << "getWorkspaceSizeFunc ptr = " << getWorkspaceSizeFunc << std::endl; \
+ \
+    auto workspaceStatus = call(getWorkspaceSizeFunc, convertedParams); \
+    ASCEND_CHECK_ABORT(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS."); \
+ \
+    void* workspaceAddr = nullptr; \
+    if (workspaceSize != 0) { \
+        std::cout << "DEBUG workspaceSize = " << workspaceSize << std::endl; \
+        auto ret = aclrtMalloc(&workspaceAddr, workspaceSize, ACL_MEM_MALLOC_HUGE_FIRST); \
+        ASCEND_CHECK_ABORT(ret == ACL_SUCCESS, "allocate workspace failed. ERROR: %d\n", ret); \
+    } \
+    volatile auto opApiFuncAddr = getOpApiFuncAddr(name.c_str()); \
+    ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function."); \
+ \
+    typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, aclrtStream); \
+    OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr); \
+    auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream); \
+    ASCEND_CHECK_ABORT(ret == ACL_SUCCESS, "%s failed. ERROR: %d\n", name, ret ); \
+ \
+    ret = aclrtSynchronizeStream(stream); \
+    ASCEND_CHECK_ABORT(ret == ACL_SUCCESS, "aclrtSynchronizeStream failed. ERROR: %d\n", ret ); \
+ \
+    if (workspaceSize > 0) { \
+        aclrtFree(workspaceAddr); \
+    } \
+ \
+    } while (false)
 
 }  // namespace ascend
 }  // namespace impl
