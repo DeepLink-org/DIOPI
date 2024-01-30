@@ -34,9 +34,9 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
 
 typedef enum { noBroadcast, inputBroadcast, otherBroadcast, bothBroadcast } OpBroadcastType;
 
-OpBroadcastType checkOpBroadcast(std::vector<int64_t> inputShape, std::vector<int64_t> otherShape);
+OpBroadcastType checkOpBroadcast(const std::vector<int64_t>& inputShape, const std::vector<int64_t>& otherShape);
 
-diopiError_t opBroadcastCast(DiopiTensor& inputTensor, DiopiTensor& otherTensor, std::vector<int64_t>& targetShape, std::vector<int64_t>& targetStride,
+diopiError_t opBroadcastCast(const DiopiTensor& inputTensor, DiopiTensor& otherTensor, std::vector<int64_t>& targetShape, std::vector<int64_t>& targetStride,
                              bool& toPermuteFlag);
 
 std::vector<int64_t> calContiguousStride(std::vector<int64_t> shape);

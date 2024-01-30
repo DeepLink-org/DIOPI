@@ -74,7 +74,7 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
     return false;
 }
 
-OpBroadcastType checkOpBroadcast(std::vector<int64_t> inputShape, std::vector<int64_t> otherShape) {
+OpBroadcastType checkOpBroadcast(const std::vector<int64_t>& inputShape, const std::vector<int64_t>& otherShape) {
     int dimA = inputShape.size();
     int dimB = otherShape.size();
     int minDim;
