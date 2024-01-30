@@ -15,17 +15,18 @@ namespace ascend {
 
 class AclTensor final {
 public:
-    explicit AclTensor(const diopiConstTensorHandle_t& tensor) : at_(tensor) {
-        void* deviceAddr = nullptr;
-
-        acl_ = aclCreateTensor(at_.getAclMemShape().data(),
-                               at_.getAclMemShape().size(),
+    explicit AclTensor(const diopiConstTensorHandle_t& tensor) {
+        at_ = AscendTensor(tensor);
+        auto shape = at_.getAclMemShape();
+        auto stride = at_.stride();
+        acl_ = aclCreateTensor(shape.data(),
+                               shape.size(),
                                at_.getAclDataType(),
-                               at_.stride().data(),
-                               0,
+                               stride.data(),
+                               at_.storageOffset(),
                                at_.getAclDataFormat(),
-                               at_.getAclMemShape().data(),
-                               at_.getAclMemShape().size(),
+                               shape.data(),
+                               shape.size(),
                                const_cast<void*>(at_.data()));
     }
 
