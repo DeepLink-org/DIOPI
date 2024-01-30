@@ -10,6 +10,7 @@
 
 #include <functional>
 #include <numeric>
+#include <vector>
 
 namespace impl {
 namespace ascend {
