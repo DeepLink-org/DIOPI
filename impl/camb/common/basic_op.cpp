@@ -23,15 +23,15 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
         outTmpShape = input.shape();
     } else {
         // in these cases, inputA & inputB should be broadcast operation
-        int broadcastType = isBroadcast(input, other);
-        DIOPI_CHECK(broadcastType > 0, "cannot broadcast input & other tensors");
+        OpBroadcastType broadcastType = checkOpBroadcast(input.shape(), other.shape());
+        DIOPI_CHECK(broadcastType != OpBroadcastType::noBroadcast, "cannot broadcast input & other tensors");
         std::vector<int64_t> targetShape;
         std::vector<int64_t> targetStride;
         bool toPermuteFlag;
         if (input.isContiguous() && other.isContiguous()) {
             outTmpStride = out.stride();
             outTmpShape = out.shape();
-        } else if (broadcastType == 2) {
+        } else if (broadcastType == OpBroadcastType::otherBroadcast) {
             opBroadcastCast(input, other, targetShape, targetStride, toPermuteFlag);
             if (toPermuteFlag) {
                 DiopiTensor otherTmp = requiresTensor(ctx, targetShape, targetStride, other.dtype());
@@ -40,7 +40,7 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
             }
             outTmpStride = input.stride();
             outTmpShape = input.shape();
-        } else if (broadcastType == 1) {
+        } else if (broadcastType == OpBroadcastType::inputBroadcast) {
             opBroadcastCast(other, input, targetShape, targetStride, toPermuteFlag);
             if (toPermuteFlag) {
                 DiopiTensor inputTmp = requiresTensor(ctx, targetShape, targetStride, input.dtype());
@@ -178,15 +178,15 @@ diopiError_t diopiDivInternal(diopiContextHandle_t ctx, DiopiTensor& inputTensor
         outTmpStride = inputTensor.stride();
     } else {
         // in these cases, inputA & inputB should be broadcast operation
-        int broadcastType = isBroadcast(inputTensor, otherTensor);
-        DIOPI_CHECK(broadcastType > 0, "cannot broadcast input & other tensors");
+        OpBroadcastType broadcastType = checkOpBroadcast(inputTensor.shape(), otherTensor.shape());
+        DIOPI_CHECK(broadcastType != OpBroadcastType::noBroadcast, "cannot broadcast input & other tensors");
         std::vector<int64_t> targetShape;
         std::vector<int64_t> targetStride;
         bool toPermuteFlag;
         if (inputTensor.isContiguous() && otherTensor.isContiguous()) {
             outTmpShape = outTensor.shape();
             outTmpStride = outTensor.stride();
-        } else if (broadcastType == 2) {
+        } else if (broadcastType == OpBroadcastType::otherBroadcast) {
             opBroadcastCast(inputTensor, otherTensor, targetShape, targetStride, toPermuteFlag);
             if (toPermuteFlag) {
                 DiopiTensor otherTmp = requiresTensor(ctx, targetShape, targetStride, otherTensor.dtype());
@@ -195,7 +195,7 @@ diopiError_t diopiDivInternal(diopiContextHandle_t ctx, DiopiTensor& inputTensor
             }
             outTmpStride = inputTensor.stride();
             outTmpShape = inputTensor.shape();
-        } else if (broadcastType == 1) {
+        } else if (broadcastType == OpBroadcastType::inputBroadcast) {
             opBroadcastCast(otherTensor, inputTensor, targetShape, targetStride, toPermuteFlag);
             if (toPermuteFlag) {
                 DiopiTensor inputTmp = requiresTensor(ctx, targetShape, targetStride, inputTensor.dtype());

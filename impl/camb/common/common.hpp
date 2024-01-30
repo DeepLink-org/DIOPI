@@ -32,7 +32,9 @@ bool checkBroadCast(const DiopiTensor& src, const std::vector<int64_t>& targetSh
 
 bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape, DiopiTensor* outTensor);
 
-int isBroadcast(DiopiTensor& inputTensor, DiopiTensor& otherTensor);
+typedef enum { noBroadcast, inputBroadcast, otherBroadcast, bothBroadcast } OpBroadcastType;
+
+OpBroadcastType checkOpBroadcast(std::vector<int64_t> inputShape, std::vector<int64_t> otherShape);
 
 diopiError_t opBroadcastCast(DiopiTensor& inputTensor, DiopiTensor& otherTensor, std::vector<int64_t>& targetShape, std::vector<int64_t>& targetStride,
                              bool& toPermuteFlag);

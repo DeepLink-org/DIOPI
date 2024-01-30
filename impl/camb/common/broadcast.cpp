@@ -74,46 +74,53 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
     return false;
 }
 
-int isBroadcast(DiopiTensor& inputTensor, DiopiTensor& otherTensor) {
-    // 0:cannot broadcast,1:inputTensor broadcasts,2:otherTensor broadcasts,3:both broadcast
-    int dimA = inputTensor.dim();
-    int dimB = otherTensor.dim();
+OpBroadcastType checkOpBroadcast(std::vector<int64_t> inputShape, std::vector<int64_t> otherShape) {
+    int dimA = inputShape.size();
+    int dimB = otherShape.size();
     int minDim;
-    int broadCastA = 0;
-    int broadCastB = 0;
+    bool broadCastA = false;
+    bool broadCastB = false;
 
     if (dimA == 0) {
-        broadCastA = 1;
+        broadCastA = true;
     }
 
     if (dimB == 0) {
-        broadCastB = 2;
+        broadCastB = true;
     }
 
     if (dimA > dimB) {
         minDim = dimB;
-        broadCastB = 2;
+        broadCastB = true;
     } else if (dimA < dimB) {
         minDim = dimA;
-        broadCastA = 1;
+        broadCastA = true;
     } else {
         minDim = dimA;
     }
 
     for (int i = 1; i <= minDim; i++) {
-        if (inputTensor.shape()[dimA - i] == otherTensor.shape()[dimB - i]) {
+        if (inputShape[dimA - i] == otherShape[dimB - i]) {
             continue;
-        } else if (inputTensor.shape()[dimA - i] == 1) {
-            broadCastA = 1;
+        } else if (inputShape[dimA - i] == 1) {
+            broadCastA = true;
             continue;
-        } else if (otherTensor.shape()[dimB - i] == 1) {
-            broadCastB = 2;
+        } else if (otherShape[dimB - i] == 1) {
+            broadCastB = true;
             continue;
         } else {
-            return 0;
+            return OpBroadcastType::noBroadcast;
         }
     }
-    return broadCastA + broadCastB;
+    if (broadCastA && broadCastB) {
+        return OpBroadcastType::bothBroadcast;
+    } else if (broadCastA) {
+        return OpBroadcastType::inputBroadcast;
+    } else if (broadCastB) {
+        return OpBroadcastType::otherBroadcast;
+    } else {
+        return OpBroadcastType::noBroadcast;
+    }
 }
 
 diopiError_t opBroadcastCast(DiopiTensor& inputTensor, DiopiTensor& otherTensor, std::vector<int64_t>& targetShape, std::vector<int64_t>& targetStride,
