@@ -39,6 +39,15 @@ namespace ascend {
         }                                                                   \
     } while (0);
 
+#define ASCEND_CHECK(condition, ...)                                  \
+    do {                                                              \
+        if (!(condition)) {                                           \
+            printf("[%s:%s:%d]: ", __FILE__, __FUNCTION__, __LINE__); \
+            printf(__VA_ARGS__);                                      \
+            printf("\n");                                             \
+        }                                                             \
+    } while (0);
+
 #define ASCEND_CHECK_ABORT(condition, ...)                            \
     do {                                                              \
         if (!(condition)) {                                           \
