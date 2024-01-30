@@ -38,13 +38,11 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     diopiSize_t shape;
     diopiGetTensorShape(input, &shape);
 
-    if (diopi_dtype_bool == dtype && 0 != shape.len) {
-        makeTensorLike(ctx, &inputCopy, input, diopi_dtype_int32);
-        AclOpRunner<1, 1>("Fills", ctx).addInput(inputCopy).setAttr<float>("value", val).addOutput(inputCopy).run();
-        diopiCastDtype(ctx, input, inputCopy);
-    } else {
-        AclOpRunner<1, 1>("Fills", ctx).addInput(input).setAttr<float>("value", val).addOutput(input).run();
-    }
+    diopiTensorHandle_t inputTemp;
+    makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
+    AclOpRunner<1, 1>("Fills", ctx).addInput(inputTemp).setAttr<float>("value", val).addOutput(inputTemp).run();
+    diopiCastDtype(ctx, input, inputTemp);
+    
     auto zeroValueScalar = diopiScalar_t();
     zeroValueScalar.stype = diopi_dtype_float64;
     zeroValueScalar.fval = 0.0;

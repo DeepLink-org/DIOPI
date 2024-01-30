@@ -17,11 +17,9 @@ extern diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTenso
 
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     AscendTensor inputAt(input);
-    AscendTensor outAt(out);
     if (inputAt.numel() == 0) {
-        diopiScalar_t scalarOne = constructDiopiScalarT(diopi_dtype_float64, 1);
-        diopiSubInp(ctx, out, out, &scalarOne);
-        return diopiSuccess;
+        diopiScalar_t scalar = constructDiopiScalarT(diopi_dtype_float32, 0);
+        diopiFill(ctx, out, &scalar);
     }
 
     diopiDtype_t dtype;
