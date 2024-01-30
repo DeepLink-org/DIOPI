@@ -8,6 +8,7 @@
 
 #include "acl_tensor.hpp"
 
+#include <functional>
 #include <numeric>
 
 namespace impl {
@@ -30,9 +31,7 @@ void printContiTensor11(const aclTensor& tensor, const void* tensorPtr) {
     }
 }
 
-void AclTensor::print() const {
-    return printContiTensor11(*acl_, at_.data());
-}
+void AclTensor::print() const { return printContiTensor11(*acl_, at_.data()); }
 
 }  // namespace ascend
 }  // namespace impl

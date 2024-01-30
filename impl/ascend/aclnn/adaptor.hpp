@@ -13,13 +13,11 @@
 #include <iostream>
 #include <numeric>
 #include <string>
+#include <typeinfo>
 
 #include "../ascend_tensor.hpp"
 #include "../common/acloprunner.hpp"
 #include "../common/utils.hpp"
-#include <iostream>
-#include <typeinfo>
-
 #include "acl/acl.h"
 #include "aclnn/acl_meta.h"
 
@@ -127,7 +125,6 @@ template <typename... Ts>
 constexpr auto convertTypes(Ts&... args) {
     return std::make_tuple(convertType(args)...);
 }
-
 
 template <typename T>
 void printValue(T value) {
