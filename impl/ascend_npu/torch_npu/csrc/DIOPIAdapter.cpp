@@ -2732,7 +2732,6 @@ NPUStream getCurrentSecondaryStream(c10::DeviceIndex device_index) { return getC
 
 void NPUStream::synchronize() const {
     NPU_CHECK_ERROR(aclrtSynchronizeStream(aclStream_));
-    NPU_CHECK_ERROR(aclrtSynchronizeDevice());
 }
 
 aclError queue::LaunchAsyncCopyTask(void* dst, size_t dstLen, void* src, size_t srcLen, aclrtMemcpyKind kind) {
