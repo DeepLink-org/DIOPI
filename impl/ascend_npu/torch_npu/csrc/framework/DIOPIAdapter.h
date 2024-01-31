@@ -159,23 +159,13 @@
         }                                                                                                                                              \
     } while (0)
 
-<<<<<<< HEAD
-#if defined(DEBUG)
-#define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
-#else
-#define INTERFACE_NOT_IMPL
-    == == ==
-    =
 #if defined(NDEBUG)
 #define INTERFACE_NOT_IMPL
 #else
 #define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
-    >>>>>>> origin/main
 #endif
 
-        static void warn_(const ::c10::Warning& warning) {
-    INTERFACE_NOT_IMPL;
-}
+static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 
 #define TORCH_NPU_WARN(...) warn_(::c10::Warning(::c10::UserWarning(), {__func__, __FILE__, static_cast<uint32_t>(__LINE__)}, ::c10::str(__VA_ARGS__), false));
 
@@ -870,7 +860,10 @@ inline bool CheckBmmV2Enable() {
     INTERFACE_NOT_IMPL;
     return false;
 }
-inline bool CheckJitDisable() { return true; }
+inline bool CheckJitDisable() {
+    INTERFACE_NOT_IMPL;
+    return true;
+}
 inline bool CheckProfilingEnable() {
     INTERFACE_NOT_IMPL;
     return false;
