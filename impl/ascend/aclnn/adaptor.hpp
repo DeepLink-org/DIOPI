@@ -145,7 +145,7 @@ constexpr auto convertTypes(Ts&... args) {
         typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, aclrtStream);                           \
         OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                 \
         auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);                             \
-        ASCEND_CHECK(ret == ACL_SUCCESS, "%s failed. ERROR: %d\n", name, ret);                            \
+        ASCEND_CHECK(ret == ACL_SUCCESS, "%s failed. ERROR: %d\n", name.c_str(), ret);                    \
                                                                                                           \
         ret = aclrtSynchronizeStream(stream);                                                             \
         ASCEND_CHECK(ret == ACL_SUCCESS, "aclrtSynchronizeStream failed. ERROR: %d\n", ret);              \
