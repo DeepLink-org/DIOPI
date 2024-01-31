@@ -13,8 +13,6 @@
 namespace impl {
 namespace ascend {
 
-extern diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
-
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
