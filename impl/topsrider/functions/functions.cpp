@@ -817,7 +817,6 @@ DIOPI_API diopiError_t diopiTrilInp(diopiContextHandle_t ctx, diopiTensorHandle_
 //   return impl::tops::topsMultinomial(ctx, out, input, num_samples,
 //   replacement);
 // }
-//
 
 DIOPI_API diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat2) {
     TOPSOP_LOG();
