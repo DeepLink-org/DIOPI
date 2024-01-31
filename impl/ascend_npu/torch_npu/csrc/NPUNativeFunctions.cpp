@@ -442,8 +442,7 @@ at::Tensor& npu_stride_copy_out(const at::Tensor& self, at::IntArrayRef shape, a
     auto result = acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
 
     if (outPtr != result.storage().data()) {
-        // TODO(zhaoguochun):‘tensor = tensor_other;’ tensor’s memory has not been updated. This type of bug is a common problem and needs to be solved and
-        // optimized uniformly.
+        // the copy result may be stored in a new storage and need to be copied into the storage pre-allocated here.
         aclrtMemcpyAsync(outPtr, out.nbytes(), result.storage().data(), result.nbytes(), ACL_MEMCPY_DEVICE_TO_DEVICE, c10_npu::getCurrentNPUStream());
     }
     return out;
