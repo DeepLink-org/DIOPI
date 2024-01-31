@@ -238,11 +238,11 @@ def _expand_tensor_para(args_list, tensor_paras_list):
                 elif tmp_args_list[i]["stride"][j] is None:
                     del args_ins_expand_list[i]["stride"]
                     continue
-                args_ins_expand_list[0][stride_name] = copy.deepcopy(
+                args_ins_expand_list[i][stride_name] = copy.deepcopy(
                     tmp_args_list[i]["stride"][j]
                 )
                 # 判断stride和shape是否符合标准，不符合报错
-                tmp_stride = args_ins_expand_list[0][stride_name]
+                tmp_stride = args_ins_expand_list[i][stride_name]
                 tmp_shape = args_ins_expand_list[i]["shape"]
                 assert len(tmp_stride) == len(
                     tmp_shape
