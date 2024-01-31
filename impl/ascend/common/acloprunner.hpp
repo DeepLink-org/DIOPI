@@ -683,7 +683,6 @@ public:
             }
             *syncTensorPtr = syncTensorReal;
         }
-        CALL_ACLRT(aclrtSynchronizeStream(stream));
         // Get environment variables once when run is called for the first time
         if (isDebugAclOpRunnerOn()) {
             info(__FILE__, __LINE__, __FUNCTION__, "%s", dumpRunnerInfo().c_str());

@@ -399,7 +399,6 @@ at::Tensor& NPUNativeFunctions::copy_(at::Tensor& self, const at::Tensor& src, b
     if (!non_blocking) {
         c10_npu::getCurrentNPUStream().synchronize();
     }
-    c10_npu::getCurrentNPUStream().synchronize();
     return self;
 }
 

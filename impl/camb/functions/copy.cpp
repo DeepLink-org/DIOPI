@@ -37,6 +37,7 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
         return diopiSuccess;
     }
     DiopiTensor srcTr(src);
+    DiopiTensor srcTmpTr(src);
     DiopiTensor destTr(dest);
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     if (!srcTr.defined()) {
@@ -47,21 +48,27 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
         return diopiSuccess;
     }
 
+    // if src is not dense, change it to preserved-format dense
+    if (!denseCheck(srcTr)) {
+        DiopiTensor denseOut;
+        toDense(ctx, srcTr, denseOut);
+        srcTr = denseOut;
+    }
+
     // memory format convert if memory format is matched.
     // cnnTranspose doesn't support float64 and scalar and contiguousOut only support convertion between the contiguous tensor and the no-contiguous tensor.
-    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(srcTr) && denseCheck(destTr) &&
-        (destTr.isContiguous() || srcTr.isContiguous())) {
+    if (srcTr.shape() == destTr.shape() && srcTr.dim() != 0 && srcTr.dtype() != diopi_dtype_float64 && denseCheck(destTr)) {
         DiopiTensor destTmpTr = destTr;
         if (destTmpTr.dtype() != srcTr.dtype()) {
             destTmpTr = requiresTensor(ctx, destTr.shape(), srcTr.dtype());
         }
-        DIOPI_CALL(contiguousOut(ctx, srcTr, destTmpTr));
+        DIOPI_CALL(permuteCopy(ctx, srcTr, destTmpTr));
+
         if (destTmpTr.dtype() != destTr.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, destTr, destTmpTr));
         }
         return diopiSuccess;
     }
-
     // Ordinary copy
     // broadcast
     if (srcTr.shape() != destTr.shape()) {
