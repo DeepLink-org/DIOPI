@@ -439,14 +439,12 @@ at::Tensor npu_stride_copy(const at::Tensor& self, at::IntArrayRef shape, at::In
 
 at::Tensor& npu_stride_copy_out(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset, at::Tensor& out) {
     auto outPtr = out.storage().data();
-    DEBUG_ARGS(self);
-    DEBUG_ARGS(out);
     auto result = acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
-    DEBUG_ARGS(result);
-    if (outPtr != out.storage().data()) {
+
+    if (outPtr != result.storage().data()) {
         // TODO(zhaoguochun):‘tensor = tensor_other;’ tensor’s memory has not been updated. This type of bug is a common problem and needs to be solved and
         // optimized uniformly.
-        out.copy_(impl::aten::viewStorage(result, out.sizes(), out.strides()));
+        aclrtMemcpyAsync(outPtr, out.nbytes(), result.storage().data(), result.nbytes(), ACL_MEMCPY_DEVICE_TO_DEVICE, c10_npu::getCurrentNPUStream());
     }
     return out;
 }
