@@ -107,18 +107,18 @@ DIOPI_API diopiError_t diopiFusedAddRootMeanSquareNormInp(diopiContextHandle_t c
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
  * @param[inout] key_cache : Key cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
  * @param[inout] value_cache : Value cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
- * @param[in] batch_size :batch_size.type = [int64, int32]
- * @param[in] input_lengths : Input lengths.shape = [batch_size].type = [int64, int32]
- * @param[in] history_lengths : History lengths.shape = [batch_size].type = [int64, int32]
- * @param[in] context_lengths : Contextlengths.shape = [batch_size].type = [int64, int32]
- * @param[in] layer_id : Layer id.type = [int64, int32]
- * @param[in] local_head_num : Local_head_num of q.type = [int64, int32]
- * @param[in] local_kv_head_num : Local_kv_head_num of kv.type = [int64, int32]
- * @param[in] size_per_head : Size per head.type = [int64, int32]
- * @param[in] max_seq_len : Max length of seq.type = [int64, int32]
- * @param[in] max_q_len : Max length of Q.type = [int64, int32]
- * @param[in] max_kv_len : Max length of KV.type = [int64, int32]
- * @param[in] rotary_embedding : Rotary_embedding.type = [int64, int32]
+ * @param[in] batch_size :batch_size.type = [int32]
+ * @param[in] input_lengths : Input lengths.shape = [batch_size].type = [int32]
+ * @param[in] history_lengths : History lengths.shape = [batch_size].type = [int32]
+ * @param[in] context_lengths : Contextlengths.shape = [batch_size].type = [int32]
+ * @param[in] layer_id : Layer id.type = [int32]
+ * @param[in] local_head_num : Local_head_num of q.type = [int32]
+ * @param[in] local_kv_head_num : Local_kv_head_num of kv.type = [int32]
+ * @param[in] size_per_head : Size per head.type = [int32]
+ * @param[in] max_seq_len : Max length of seq.type = [int32]
+ * @param[in] max_q_len : Max length of Q.type = [int32]
+ * @param[in] max_kv_len : Max length of KV.type = [int32]
+ * @param[in] rotary_embedding : Rotary_embedding.type = [int32]
  * @param[in] rope_theta : Rotary_base.type = [float32]
  */
 DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
@@ -144,6 +144,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
  * @param[inout] key_cache : Key cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
  * @param[inout] value_cache : Value cache.shape = [batch], membershape = [num_layer, local_kv_head_num, max_seq_len, size_per_head].type = [float32, float16]
+ * @param[in] batch_size :batch_size.type = [int32]
  * @param[in] finished : Finished batch.shape = [batch_size].type = [bool]
  * @param[in] total_padding_tokens : Total padding tokens.shape = [batch_size].type = [int64, int32]
  * @param[in] sequence_lengths : Sequence lengths.shape = [batch_size].type = [int64, int32]
@@ -318,13 +319,13 @@ DIOPI_API diopiError_t diopiTopPSampling(diopiContextHandle_t ctx, diopiTensorHa
  * src skip padding in [context_len, max_context_len) and src len <= max_gen_step
  * when src in [max_context_len, ...), dst_idx = src_idx - (max_context_len - context_len)
  * @param[in] ctx The diopi context.
- * @param[out] output_ids : Output ids.shape = [batch_size, max_output_len].type = [int64, int32]
- * @param[in] ids : Ids.shape = [session, batch_size].type = [int64, int32]
- * @param[in] context_lengths : Contextlengths.shape = [batch_size].type = [int64, int32]
- * @param[in] max_context_len : Max context len.type = [int64, int32]
- * @param[in] max_gen_step : Max gen step.type = [int64, int32]
- * @param[in] max_output_len : Max output len.type = [int64, int32]
- * @param[in] batch_size : Batch size.type = [int64, int32]
+ * @param[out] output_ids : Output ids.shape = [batch_size, max_output_len].type = [int32]
+ * @param[in] ids : Ids.shape = [session, batch_size].type = [int32]
+ * @param[in] context_lengths : Contextlengths.shape = [batch_size].type = [int32]
+ * @param[in] max_context_len : Max context len.type = [int32]
+ * @param[in] max_gen_step : Max gen step.type = [int32]
+ * @param[in] max_output_len : Max output len.type = [int32]
+ * @param[in] batch_size : Batch size.type = [int32]
  */
 DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHandle_t output_ids, diopiConstTensorHandle_t ids,
                                          diopiConstTensorHandle_t context_length, int64_t max_context_len, int64_t max_gen_step, int64_t max_output_len,
@@ -333,7 +334,7 @@ DIOPI_API diopiError_t diopiGatherOutput(diopiContextHandle_t ctx, diopiTensorHa
 /**
  * @brief PlusScalar. if 0 < index < size, add val.
  * @param[in] ctx The diopi context.
- * @param[inout] inoutput : Output tensor.shape=[len].type = [int64, int32]
+ * @param[inout] inoutput : Output tensor.shape=[len].type = [int32]
  * @param[in] val : Val for add.type = [int64, int32]
  * @param[in] size : Size or maxindex.type = [int64, int32]
  */
@@ -342,8 +343,8 @@ DIOPI_API diopiError_t diopiPlusScalarInp(diopiContextHandle_t ctx, diopiTensorH
 /**
  * @brief Total_padding_count.Padding_count = maxinputlen - inputlen for each batch.
  * @param[in] ctx The diopi context.
- * @param[out] total_padding_count : Total padding_count.shape=[batch_size].type = [int64, int32]
- * @param[in] input_lengths : Input length.shape=[batch_size].type = [int64, int32]
+ * @param[out] total_padding_count : Total padding_count.shape=[batch_size].type = [int32]
+ * @param[in] input_lengths : Input length.shape=[batch_size].type = [int32]
  * @param[in] max_input_length : Max input length.type = [int64, int32]
  * @param[in] batch_size : Batch size.type = [int64, int32]
  */
@@ -367,7 +368,7 @@ DIOPI_API diopiError_t diopiTransposeAxis01(diopiContextHandle_t ctx, diopiTenso
  * @param[in] ctx The diopi context.
  * @param[out] from_tensor : Output ids.shape = [batch_size, hidden].type = [float32, float16]
  * @param[in] embedding_table : Embedding table.shape=[vocab, hidden].type = [float32, float16]
- * @param[in] all_ids : Input ids.shape=[sessionlen, batch_size].type = [int64, int32]
+ * @param[in] all_ids : Input ids.shape=[sessionlen, batch_size].type = [int32]
  * @param[in] batch_size : Batch size.type = [int64, int32]
  * @param[in] hidden_units : Hidden units.type = [int64, int32]
  * @param[in] step : Step.type = [int64, int32]
@@ -380,7 +381,7 @@ DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx,
  * @brief InputIdsEmbeddingLookupPosEncoding. Find id in embedding_table and get [hidden].
  * @param[in] ctx The diopi context.
  * @param[out] from_tensor : Output ids.shape = [input_lengths, hidden].type = [float32, float16]
- * @param[in] input_ids : Input ids.shape=[input_lengths].type = [int64, int32]
+ * @param[in] input_ids : Input ids.shape=[input_lengths].type = [int32]
  * @param[in] embedding_table : Embedding table.shape=[vocab, hidden].type = [float32, float16]
  * @param[in] input_lengths : Input lengths.type = [int64, int32]
  * @param[in] hidden_units : Hidden units.type = [int64, int32]
@@ -399,8 +400,8 @@ DIOPI_API diopiError_t diopiInputIdsEmbeddingLookupPosEncoding(diopiContextHandl
  * base_bad_words[item-end - 1]. if 0 < banid < vocab_size then logits ban id in this batch is set to -INFINITY
  * @param[in] ctx The diopi context.
  * @param[inout] logits : Output logits.shape = [batch_size, vocab_size].type = [float32, float16]
- * @param[in] output_ids : Output ids.shape = [batch_size, step].type = [int64, int32]
- * @param[in] bad_words : Stop words list.shape = [batch_size, 2, stop_words_len] or [2, stop_words_len] for share.type = [int64, int32]
+ * @param[in] output_ids : Output ids.shape = [step, batch_size].type = [int32]
+ * @param[in] bad_words : Stop words list.shape = [batch_size, 2, bad_words_len] or [2, bad_words_len] for share.type = [int32]
  * @param[in] id_offset : Offset of output_ids.type = [int64, int32]
  * @param[in] bad_words_len : Stop words len.type = [int64, int32]
  * @param[in] share_words : Stop words is shared or not.type = [bool]
@@ -421,8 +422,8 @@ DIOPI_API diopiError_t diopiBanBadWordsInp(diopiContextHandle_t ctx, diopiTensor
  * id_offset + batch_idx];if (previous_token != base_stop_words[item_start + token_idx]) {should_stop = false; break;}} if one batch is should_stop, then it is
  * finished.
  * @param[in] ctx The diopi context.
- * @param[in] output_ids : Output ids.shape = [batch_size, step].type = [int64, int32]
- * @param[in] stop_words : Stop words list.shape = [batch_size, 2, stop_words_len].type = [int64, int32]
+ * @param[in] output_ids : Output ids.shape = [step + 1, batch_size].type = [int32]
+ * @param[in] stop_words : Stop words list.shape = [batch_size, 2, stop_words_len].type = [int32]
  * @param[inout] finished : Finished.shape = [batch_size].type = [bool]
  * @param[in] id_offset : Offset of output_ids.type = [int64, int32]
  * @param[in] stop_words_len : Stop words len tensor.type = [int64, int32]
@@ -451,10 +452,10 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
  * @param[in] ctx The diopi context.
  * @param[inout] logits : input tensor logits.shape = [batch_size, vocab_size].type = [float32, float16]
  * @param[in] penalties : Penalties tensor.shape = [batch_size].type = [float32]
- * @param[in] output_ids : The bias tensor.shape = [max_seq_len or step, batch_size].type = [int64, int32].
+ * @param[in] output_ids : The bias tensor.shape = [max_seq_len or step, batch_size].type = [int32].
  * @param[in] batch_size : Batch size.type = [int64, int32]
- * @param[in] vocab_size : Vocab size.shape = [batch_size].type = [int64, int32]
- * @param[in] input_lengths : Input lengths tensor.shape = [batch_size].type = [int64, int32]
+ * @param[in] vocab_size : Vocab size.shape.type = [int64, int32]
+ * @param[in] input_lengths : Input lengths tensor.shape = [batch_size].type = [int32]
  * @param[in] max_input_length : Max input length.type = [int64, int32]
  * @param[in] step : Step.type = [int64, int32]
  * @param[in] penalty_type : Penalty type.0 == None;1 == Additive means logit - penalty;2 == Multiplicative means logit < 0.0f ? logit * penalty : logit /
