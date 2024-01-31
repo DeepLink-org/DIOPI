@@ -289,14 +289,17 @@ int aclnnFlashAttentionAdaptor(diopiContextHandle_t ctx, diopiTensorHandle_t att
 
     diopiTensorHandle_t softmaxMaxTensor;
     diopiTensorHandle_t softmaxSumTensor;
-    diopiTensorHandle_t softmaxOutTensor = nullptr;  // 保留输出，暂未使用
+    diopiTensorHandle_t softmaxOutTensor;  // 保留输出，暂未使用
     // QK^T的shape: （B,N,S,S），暂时不清楚华为底层为了做优化需要保留(B,N,S,8)的用意
     std::vector<int64_t> softmaxMaxShape{B, N, S0, 8};
     std::vector<int64_t> softmaxSumShape{B, N, S0, 8};
+    std::vector<int64_t> softmaxOutShape{0};
     diopiSize_t softmaxMaxSize = vectorToDiopiSize(softmaxMaxShape);
     diopiSize_t softmaxSumSize = vectorToDiopiSize(softmaxSumShape);
+    diopiSize_t softmaxOutSize = vectorToDiopiSize(softmaxOutShape);
     diopiRequireTensor(ctx, &softmaxMaxTensor, &softmaxMaxSize, nullptr, diopi_dtype_float32, diopi_device);
     diopiRequireTensor(ctx, &softmaxSumTensor, &softmaxSumSize, nullptr, diopi_dtype_float32, diopi_device);
+    diopiRequireTensor(ctx, &softmaxOutTensor, &softmaxOutSize, nullptr, diopi_dtype_float32, diopi_device);
 
     aclTensor* qTensor = nullptr;
     aclTensor* kTensor = nullptr;
@@ -338,8 +341,8 @@ int aclnnFlashAttentionAdaptor(diopiContextHandle_t ctx, diopiTensorHandle_t att
     CHECK_RET(ret == ACL_SUCCESS, return ret);
     ret = createAclTensor1(softmaxSumTensor, &softmaxSumAclTensor);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
-    // ret = createAclTensor1(softmaxOutTensor, &softmaxOutAclTensor);
-    // CHECK_RET(ret == ACL_SUCCESS, return ret);
+    ret = createAclTensor1(softmaxOutTensor, &softmaxOutAclTensor);
+    CHECK_RET(ret == ACL_SUCCESS, return ret);
     if (isCausal) {
         ret = createAclTensor1(attentionMask.tensorHandle(), &attentionMaskTensor);
         CHECK_RET(ret == ACL_SUCCESS, return ret);
@@ -350,9 +353,10 @@ int aclnnFlashAttentionAdaptor(diopiContextHandle_t ctx, diopiTensorHandle_t att
     std::cout << "k是否非空: " << (kTensor != nullptr) << std::endl;
     std::cout << "v是否非空: " << (vTensor != nullptr) << std::endl;
     std::cout << "attentionOut是否非空: " << (attentionOutTensor != nullptr) << std::endl;
+    std::cout << "softmaxOut是否非空: " << (softmaxOutAclTensor != nullptr) << std::endl;
 
     uint64_t workspaceSize = 0;
-    aclOpExecutor* executor;
+    aclOpExecutor* executor = nullptr;
     // 调用aclnnFlashAttentionScore第一段接口
     char* inputLayoutPtr = const_cast<char*>(inputLayout.c_str());
     int64_t preTokens = kTensorTmp.shape(1);
