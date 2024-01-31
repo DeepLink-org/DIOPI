@@ -188,15 +188,15 @@ std::vector<diopiMemoryFormat_t> matchMemoryFormatBySize(size_t sizeLen) {
     switch (sizeLen) {
         case 1:
         case 2:
-            return {diopiMemoryFormat_t::Contiguous};
+            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::Preserve};
         case 3:
-            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast1d};
+            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast1d, diopiMemoryFormat_t::Preserve};
         case 4:
-            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast};
+            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast, diopiMemoryFormat_t::Preserve};
         case 5:
-            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast3d};
+            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::ChannelsLast3d, diopiMemoryFormat_t::Preserve};
         default:
-            return {diopiMemoryFormat_t::Contiguous};
+            return {diopiMemoryFormat_t::Contiguous, diopiMemoryFormat_t::Preserve};
     }
 }
 
