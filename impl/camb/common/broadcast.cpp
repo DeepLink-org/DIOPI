@@ -73,5 +73,6 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
     }
     return false;
 }
+
 }  // namespace camb
 }  // namespace impl

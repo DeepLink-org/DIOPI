@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+
 #ifndef IMPL_ASCEND_ERROR_HPP_
 #define IMPL_ASCEND_ERROR_HPP_
 

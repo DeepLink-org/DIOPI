@@ -54,7 +54,7 @@ ${test_diopi_nhwc_import}
     # import
     test_diopi_manual_import = CodeTemplate(
         r"""
-from conformance.diopi_manual_functions import ManualTest
+from conformance.diopi_manual_test import ManualTest
 """
     )
 

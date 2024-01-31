@@ -15,7 +15,7 @@ namespace custom_ops {
 
 int64_t npu_change_data_ptr(const at::Tensor& dst, const at::Tensor& src, int64_t index);
 int64_t get_npu_format(const at::Tensor& self);
-__attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor& self, const at::Tensor& dst);
+at::Tensor npu_format_cast(const at::Tensor& self, const at::Tensor& dst);
 at::Tensor& npu_format_cast_(at::Tensor& self, int64_t acl_format);
 at::Tensor& npu_format_cast_(at::Tensor& self, const at::Tensor& src);
 at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout, c10::optional<at::Device> device,
@@ -29,7 +29,7 @@ at::Tensor format_contiguous(const at::Tensor& self);
 bool check_match(const at::Tensor& self);
 void check_memory_overlaps(at::TensorList inputs, at::TensorList outputs);
 int64_t get_storage_size(const at::Tensor& self);
-__attribute__((__visibility__("default"))) at::Tensor npu_format_cast(const at::Tensor& self, int64_t acl_format);
+at::Tensor npu_format_cast(const at::Tensor& self, int64_t acl_format);
 at::Tensor _npu_format_cast(const at::Tensor& self, int64_t acl_format);
 at::Tensor& npu_view_copy(at::Tensor& self, const at::Tensor& other, bool non_blocking);
 at::Tensor npu_transpose(const at::Tensor& self, at::IntArrayRef perm, bool require_contiguous);
@@ -81,7 +81,7 @@ at::Tensor& npu_conv3d_out(const at::Tensor& input, const at::Tensor& weight, co
                                                                      ::std::array<bool, 3> output_mask);
 at::Tensor npu_stride_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& offset1, const at::Scalar& offset2, const at::Scalar& c1_len);
 at::Tensor npu_slice(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size);
-__attribute__((__visibility__("default"))) at::Tensor& npu_slice_out(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size, at::Tensor& out);
+at::Tensor& npu_slice_out(const at::Tensor& self, at::IntArrayRef offsets, at::IntArrayRef size, at::Tensor& out);
 at::Tensor npu_indexing(const at::Tensor& self, at::IntArrayRef begin, at::IntArrayRef end, at::IntArrayRef strides, int64_t begin_mask, int64_t end_mask,
                         int64_t ellipsis_mask, int64_t new_axis_mask, int64_t shrink_axis_mask);
 at::Tensor& npu_indexing_out(const at::Tensor& self, at::IntArrayRef begin, at::IntArrayRef end, at::IntArrayRef strides, int64_t begin_mask, int64_t end_mask,
@@ -254,7 +254,7 @@ at::Tensor npu_softmax_cross_entropy_with_logits(const at::Tensor& self, const a
 ::std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, int64_t dim, bool keepdim);
 ::std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, at::Dimname dim, bool keepdim);
 at::Tensor npu_bmmV2(const at::Tensor& self, const at::Tensor& mat2, at::IntArrayRef output_sizes);
-__attribute__((__visibility__("default"))) at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype);
+at::Tensor npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype);
 at::Tensor npu_silu(const at::Tensor& self);
 at::Tensor& npu_silu_(at::Tensor& self);
 ::std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_gru(const at::Tensor& input, const at::Tensor& hx,

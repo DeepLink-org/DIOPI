@@ -108,6 +108,7 @@ namespace camb {
 class DiopiDataType final {
 public:
     static bool isInteger(diopiDtype_t dtype);
+    static bool isIntegerWithBool(diopiDtype_t dtype);
     static bool isFloatPoint(diopiDtype_t dtype);
     static diopiDtype_t complexDtype2Real(diopiDtype_t complexDtype);
     static diopiDtype_t realDtype2Complex(diopiDtype_t realDtype);

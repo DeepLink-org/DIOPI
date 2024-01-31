@@ -74,8 +74,7 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
         # 只测试 relu
         python main.py --mode gen_data --fname relu
         python main.py --mode gen_case --fname relu
-        python main.py --mode run_test --test_cases_path /path/to/relu/case
-
+        python main.py --mode run_test
         # 测试所有算子
         python main.py --mode gen_data
         python main.py --mode gen_case
@@ -94,9 +93,9 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     比如不支持 float64, 那么可以通过设置 filter_dtype 为 float64 来过滤掉对于 float64 的测试。
 
     ```
-        python main.py --mode run_test --test_cases_path /path/to/case --filter_dtype float64
+        python main.py --mode run_test --filter_dtype float64
         # 可叠加不支持的数据类型
-        python main.py --mode run_test --test_cases_path /path/to/case --filter_dtype float64 int64
+        python main.py --mode run_test --filter_dtype float64 int64
     ```
 
 * nhwc : 使用 channel_last 格式的张量测试
@@ -104,7 +103,7 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     目前，模型中使用到的数据格式主要为 nchw/nhwc 和 ncdhw/ndhwc。当前测试默认支持的是 nchw/ncdhw 数据格式。
     如果需要测试 nhwc/ndhwc 格式，可以通过设置 nhwc 来生效。
 
-    channel_last 测试只对部分算子有效, 请参考 python/conformance/utils.py 中 nhwc_op 字典。
+    channel_last 测试只对部分算子有效, 请参考 python/conformance/global_op_list.py 中 nhwc_op 字典。
     其中, key 为需要使用 channel last 数据格式的算子名称, value 的第一个参数表示 2d/3d 数据。
     如果没有显式指明，如 interpolate 算子, 则对 4 维以下的张量按照 2d 数据处理, 5 维张量按照
     3d 数据处理, 目前不支持 5 维以上输入。value 后续元素代表算子需要转换为 channel last 数据格式的
@@ -116,7 +115,7 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     ```
         # --nhwc 仅对在 nhwc_op 字典中的算子有效
         python main.py --mode gen_case --fname relu --nhwc
-        python main.py --mode run_test --test_cases_path /path/to/relu/case
+        python main.py --mode run_test
     ```
 
 
@@ -126,7 +125,7 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     而很多国产 AI 芯片并不支持该数据类型运算, 在底层核函数中使用 int32 数据类型代替 int64 计算。
     为了支持国产 AI 芯片这一特性, 一致性测试框架允许使用 int32 数据类型进行测试。
 
-    该设置只对部分算子有效, 请参考 python/conformance/utils.py 中 dtype_op 字典。
+    该设置只对部分算子有效, 请参考 python/conformance/global_op_list.py 中 dtype_op 字典。
     其中, key 为使用 int32 代替 int64 的算子名称, value 中为使用 int32
     数据类型的输入变量或输出变量。
 
@@ -136,7 +135,7 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     ```
         # --four_bytes 仅对在 dtype_op/dtype_out_op 字典中的算子有效
         python main.py --mode gen_case --fname relu --four_bytes
-        python main.py --mode run_test --test_cases_path /path/to/relu/case
+        python main.py --mode run_test
     ```
 
 * model_name: 指定模型相关算子测试
@@ -146,11 +145,11 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     ```
         python main.py --mode gen_data --model_name resnet50
         python main.py --mode gen_case --model_name resnet50
-        python main.py --mode run_test --test_cases_path /path/to/resnet50/case
+        python main.py --mode run_test --model_name resnet50
     ```
 ### 测例配置说明
 
-DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子测试为例，所有算子测例配置文件位于 python/conformance/diopi_configs.py 中。
+DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子测试为例，所有算子测例配置文件位于 python/configs/diopi_configs.py 中。
 我们以 group_norm 算子测例配置为例来阐释说明测例生成。
 
 ```
@@ -170,14 +169,14 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
                     "requires_grad": [True],
                     "shape": ((2, 256, 100, 152), (2, 256, 7, 10),
                               (2, 256, 24, 24), (2, 256, 12, 12)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "dtype": [np.float32, np.float64],
                 },
                 {
                     "ins": ["weight", "bias"],
                     "requires_grad": [True],
                     "shape": ((256,), (256,),
                               (256,), (256,)),
-                    "dtype": [Dtype.float32, Dtype.float64],
+                    "dtype": [np.float32, np.float64],
                 },
             ]
         ),
@@ -252,13 +251,13 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
         指定输出结果作为反向计算的输入参数。
 
 ### 厂商自定义测例配置
-我们提供了厂商自定义测例配置的能力，可以对python/conformance/diopi_configs.py里的测例按条件进行跳过，以及修改误差参数。
+我们提供了厂商自定义测例配置的能力，可以对python/configs/diopi_configs.py里的测例按条件进行跳过，以及修改误差参数。
 
 如果要进行自定义配置，需要创建名为device_configs.py的配置文件，在文件里添加
 
 ```
-    from .device_config_helper import Skip
-    from .diopi_runtime import Dtype
+    import numpy as np
+    from skip import Skip
     device_configs = {}
 ```
 
@@ -282,11 +281,11 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
 ```
     'cdist': dict(
         name=['cdist'],
-        dtype = [Skip(Dtype.float64)],
+        dtype = [Skip(np.float64)],
     ),
 ```
 
-原本的python/conformance/diopi_configs.py中，对应的配置有x1, x2两个tensor_para。以上配置会跳过所有x1为float64或x2为float64的测例。
+原本的python/configs/diopi_configs.py中，对应的配置有x1, x2两个tensor_para。以上配置会跳过所有x1为float64或x2为float64的测例。
 
 3. 跳过特定参数条件的测例
 
@@ -300,7 +299,7 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
             args=[
                 {
                     "ins": ['x1'],
-                    "dtype": [Skip(Dtype.float64)],
+                    "dtype": [Skip(np.float64)],
                 },
             ],
         ),
@@ -312,8 +311,8 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
 
 一个完整的device_configs.py的示例如下:
 ```
-    from .device_config_helper import Skip
-    from .diopi_runtime import Dtype
+    import numpy as np
+    from skip import Skip
     device_configs = {
         'cdist': dict(
             name=['cdist'],
@@ -324,7 +323,7 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
                 args=[
                     {
                         "ins": ['x1'],
-                        "dtype": [Skip(Dtype.float64)],
+                        "dtype": [Skip(np.float64)],
                     },
                 ],
             ),
@@ -338,6 +337,6 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
 
 ```
     python main.py --mode gen_case --impl_folder /path/to/folder --fname cdist
-    python main.py --mode run_test --test_cases_path /path/to/cdist/case
+    python main.py --mode run_test
 ```
 

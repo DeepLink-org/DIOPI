@@ -27,7 +27,7 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
     AclOpRunner<3, 1>("SplitV", ctx)
         .addInput(input)
         .addConstInput(splitSizes)
-        .addConstInput(dim, diopi_dtype_int64)
+        .addConstInput(dim, diopi_dtype_int32)
         .setAttr("num_split", numOuts)
         .addDynamicOutput(dynamicOutput, inputTensor.dtype())
         .run();

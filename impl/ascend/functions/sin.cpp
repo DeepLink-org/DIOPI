@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "../aclnn/aclnn.hpp"
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -17,6 +18,7 @@ diopiError_t diopiSinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 }
 
 diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+#if 0
     AscendTensor in(input);
     if (0 == in.numel()) {
         return diopiSuccess;
@@ -35,7 +37,9 @@ diopiError_t diopiSin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     } else {
         AclOpRunner<1, 1>("Sin", ctx).addInput(input).addOutput(out).run();
     }
-
+#else
+    aclnnSinAdaptor(ctx, input, out);
+#endif
     return diopiSuccess;
 }
 
