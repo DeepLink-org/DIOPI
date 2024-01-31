@@ -438,7 +438,13 @@ at::Tensor npu_softmax_cross_entropy_with_logits_backward(const at::Tensor& grad
 at::Tensor npu_stride_copy(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset) { CUSTOM_OP_NOT_IMPL; }
 
 at::Tensor& npu_stride_copy_out(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset, at::Tensor& out) {
-    return acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
+    auto result = acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
+    if (out.data_ptr() != result.data_ptr()) {
+        // TODO(zhaoguochun):‘tensor = tensor_other;’ tensor’s memory has not been updated. This type of bug is a common problem and needs to be solved and
+        // optimized uniformly.
+        out.copy_(result);
+    }
+    return out;
 }
 
 at::Tensor npu_roi_align(const at::Tensor& self, const at::Tensor& rois, double spatial_scale, int64_t pooled_height, int64_t pooled_width, int64_t sample_num,
