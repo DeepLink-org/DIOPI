@@ -25,7 +25,6 @@ diopiError_t diopiRsqrtInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) 
 
 diopiError_t diopiSqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     AclOpRunner<1, 1>("Sqrt", ctx).addInput(input).addOutput(out).run();
-    negativeInputRtnFillNan(ctx, out, input);
     return diopiSuccess;
 }
 
