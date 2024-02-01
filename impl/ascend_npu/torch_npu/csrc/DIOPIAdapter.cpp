@@ -7,6 +7,7 @@
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
 #include "../../../ascend/common/stream_lock.hpp"
+#include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
@@ -68,14 +69,11 @@ static std::map<const string, const aclDataType> STRING_SCALAR_TYPE_TO_ACL_TYPE_
 
 aclError AclrtMemcpyAsyncParamCheck(void* dst, size_t destMax, const void* src, size_t count, aclrtMemcpyKind kind, aclrtStream stream) {
     auto ret = aclrtMemcpyAsync(dst, destMax, src, count, kind, stream);
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     return ret;
 }
 
 aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_t count, aclrtMemcpyKind kind) {
-    c10_npu::getCurrentNPUStream().synchronize();
     auto ret = aclrtMemcpy(dst, destMax, src, count, kind);
-    c10_npu::getCurrentNPUStream().synchronize();
     return ret;
 }
 
@@ -888,7 +886,6 @@ void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSi
     }
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), ACL_MEMCPY_DEVICE_TO_DEVICE, stream));
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
 }
 
 float CalcuOpUtil::GetScalarFloatValue(const c10::Scalar& scalar) {
@@ -1026,7 +1023,6 @@ NPUStatus CalcuOpUtil::AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t>& ds
     void* src_ptr = reinterpret_cast<uint8_t*>(src.first.data_ptr()) + src.second * src.first.itemsize();
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst_ptr, dst_size, src_ptr, src_size, kind, stream));
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     return "SUCCESS";
 }
 
@@ -1050,7 +1046,6 @@ aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(void* dst, size_t dstMax, const 
 aclError CalcuOpUtil::LaunchAsyncCopyTaskWithModeSwitch(const at::Tensor& dst, size_t dstMax, const at::Tensor& src, size_t count, aclrtMemcpyKind kind) {
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), kind, stream));
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
 }
 
 void ContiguousTensorDesc::refresh_contiguous_using_size_and_stride() {
@@ -2669,7 +2664,7 @@ void npu_fast_reshape_(at::Tensor& tensor) {
   auto base_format = InferFormat::GuessBaseFormat(tensor.sizes());
   NPUNativeFunctions::npu_format_cast_(tensor, base_format);
 #else
-    INTERFACE_NOT_IMPL
+    INTERFACE_NOT_IMPL;
 #endif
 }
 
@@ -2690,7 +2685,7 @@ std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t in
 
 namespace detail {
 
-const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL }
+const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL; }
 
 }  // namespace detail
 
@@ -2742,9 +2737,7 @@ void NPUStream::synchronize() const {
 
 aclError queue::LaunchAsyncCopyTask(void* dst, size_t dstLen, void* src, size_t srcLen, aclrtMemcpyKind kind) {
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     auto ret = aclrtMemcpyAsync(dst, dstLen, src, srcLen, kind, stream);
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     return ret;
 }
 
