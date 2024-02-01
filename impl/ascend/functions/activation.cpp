@@ -155,34 +155,13 @@ diopiError_t diopiHardtanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t inpu
 
 diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
                                    const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
-    diopiDtype_t inDtype;
-    diopiGetTensorDtype(input, &inDtype);
-    std::set<diopiDtype_t> supportDtypes{diopi_dtype_float16, diopi_dtype_float32};
-    if (!supportDtypes.count(inDtype)) {
-        diopiTensorHandle_t tmpInput;
-        makeTensorLike(ctx, &tmpInput, input, diopi_dtype_float32);
-        diopiCastDtype(ctx, tmpInput, input);
-
-        diopiTensorHandle_t tmpGradOutput;
-        makeTensorLike(ctx, &tmpGradOutput, gradOutput, diopi_dtype_float32);
-        diopiCastDtype(ctx, tmpGradOutput, gradOutput);
-
-        AclOpRunner<2, 1>("HardtanhGrad", ctx)
-            .addInput(tmpInput)
-            .addInput(tmpGradOutput)
-            .addOutput(gradInput)
-            .setAttr("max_val", getValue<float>(maxVal))
-            .setAttr("min_val", getValue<float>(minVal))
-            .run();
-    } else {
-        AclOpRunner<2, 1>("HardtanhGrad", ctx)
-            .addInput(input)
-            .addInput(gradOutput)
-            .addOutput(gradInput)
-            .setAttr("max_val", getValue<float>(maxVal))
-            .setAttr("min_val", getValue<float>(minVal))
-            .run();
-    }
+    AclOpRunner<2, 1>("HardtanhGrad", ctx)
+        .addInput(input)
+        .addInput(gradOutput)
+        .addOutput(gradInput)
+        .setAttr("max_val", getValue<float>(maxVal))
+        .setAttr("min_val", getValue<float>(minVal))
+        .run();
     return diopiSuccess;
 }
 

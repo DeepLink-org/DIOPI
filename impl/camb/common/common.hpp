@@ -32,6 +32,11 @@ bool checkBroadCast(const DiopiTensor& src, const std::vector<int64_t>& targetSh
 
 bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape, DiopiTensor* outTensor);
 
+diopiError_t opBroadcastCast(const DiopiTensor& inputTensor, DiopiTensor& otherTensor, std::vector<int64_t>& targetShape, std::vector<int64_t>& targetStride,
+                             bool& toPermuteFlag);
+
+std::vector<int64_t> calContiguousStride(std::vector<int64_t> shape);
+
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Contiguous);
 
 diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest);
@@ -40,11 +45,13 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryF
                         cnnlTensorLayout_t layoutOut);
 
 template <typename T1 = double, typename T2 = double, typename T3 = double>
-diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor other, DiopiTensor out, cnnlOpTensorDesc_t opType, T1 alpha1 = 1.0,
+diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTensor& other, DiopiTensor& out, cnnlOpTensorDesc_t opType, T1 alpha1 = 1.0,
                           T2 alpha2 = 1.0, T3 beta = 0.0);
 
 template <typename T = double>
-diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor out, DiopiTensor input, T other, T alpha, T beta);
+diopiError_t cnnlTransformAdaptor(diopiContextHandle_t ctx, DiopiTensor& out, DiopiTensor& input, T other, T alpha, T beta);
+
+diopiError_t diopiDivInternal(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTensor& other, DiopiTensor& out, diopiRoundMode_t roundingMode);
 
 diopiError_t clone(diopiContextHandle_t ctx, const DiopiTensor& inTensor, DiopiTensor& outTensor,
                    diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Preserve);

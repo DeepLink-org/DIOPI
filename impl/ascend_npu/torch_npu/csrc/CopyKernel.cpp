@@ -25,7 +25,6 @@ namespace native {
 namespace {
 // NOTE: helper function of copy, the input parameter is not checked, The caller
 // needs to ensure that the parameters are correct.
-
 // the caller should ensure the tensor.is_npu == true
 bool is_same_format(const at::Tensor& a, const at::Tensor& b) {
     bool isSameFormat = FormatHelper::GetFormat(a) == FormatHelper::GetFormat(b);
@@ -350,7 +349,6 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
                 if (self.sizes() != src.sizes()) {
                     source = viewToSameDim(source, self.sizes());
                 }
-
                 // custom_ops::npu_stride_copy_out(src, src.sizes(), src.strides(), src.storage_offset(), self);
                 auto shape = inferOriginShape(source.sizes(), source.strides());
                 custom_ops::npu_stride_copy_out(impl::aten::viewStorage(source, shape), source.sizes(), source.strides(), source.storage_offset(), self);
