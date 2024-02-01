@@ -26,7 +26,7 @@ diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         aclTensor* outAclPtr = nullptr;
         createAclTensor(input, &selfAclPtr);
         createAclTensor(out, &outAclPtr);
-        ACLNN_ADAPTOR("aclnnCos", ctx, selfAclPtr, outAclPtr);
+        ACLNN_ADAPTOR(aclnnCos, ctx, selfAclPtr, outAclPtr);
     } else {
         AscendTensor in = AscendTensor(input);
         if (0 == in.numel()) {
