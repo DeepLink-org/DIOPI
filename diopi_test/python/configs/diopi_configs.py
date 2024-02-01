@@ -3860,7 +3860,9 @@ diopi_configs = {
         rtol_half=0.05,
         para=dict(
             padding_idx=[None, None, 92, -20, 0, -15, 19, 2, 0],
-            max_norm=[None, 1.0, None, None, -2, 2, None, 9, -0.5],
+            # Do not set max_norm to negative number,
+            # meaningless and causing undefined precision error
+            max_norm=[None, 1.0, None, None, 2, 2, None, 9, 0.5],
             norm_type=[2.0, 0, 1, 2, 0.5, 1.2, float('inf'), -2, -0.5],
             scale_grad_by_freq=[False, True, False, True, False, True, False, True, True],
             # sparse=[True, False, True, False, True, False, True, False, False],
@@ -7441,6 +7443,29 @@ diopi_configs = {
             ]
         )
     ),
+
+    'copy_other_no_contiguous_1': dict(
+        name=["copy_"],
+        interface=['torch.Tensor'],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 16, 2),),
+                    "stride": ((512, 32, 2, 1),),
+                    "dtype": [np.float16, np.float32, np.float32, np.float16, np.int32],
+                },
+                {
+                    "ins": ["other"],
+                    "shape": ((2, 16, 16, 2),),
+                    "stride": ((512, 16, 1, 256),),
+                    "dtype": [np.float16, np.float32, np.float16, np.float32, np.int64],
+                },
+            ]
+        )
+    ),
+
 
     'copy_all_no_contiguous': dict(
         name=["copy_"],

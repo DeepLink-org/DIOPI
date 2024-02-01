@@ -159,8 +159,11 @@
         }                                                                                                                                              \
     } while (0)
 
+#if defined(NDEBUG)
 #define INTERFACE_NOT_IMPL
+#else
 #define INTERFACE_NOT_IMPL std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << ": not impled yet" << std::endl;
+#endif
 
 static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 
@@ -296,7 +299,7 @@ public:
     /// is guaranteed to be a NPU device.
     c10::Device device() const { INTERFACE_NOT_IMPL; }
 
-    c10::StreamId id() const { INTERFACE_NOT_IMPL }
+    c10::StreamId id() const { INTERFACE_NOT_IMPL; }
 
     bool query() const { INTERFACE_NOT_IMPL; }
 
@@ -547,13 +550,13 @@ public:
     static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
     // check output tensor
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size) {
-        INTERFACE_NOT_IMPL
+        INTERFACE_NOT_IMPL;
     }
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor) { INTERFACE_NOT_IMPL; }
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) { INTERFACE_NOT_IMPL; }
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor,
                              c10::IntArrayRef expect_size) {
-        INTERFACE_NOT_IMPL
+        INTERFACE_NOT_IMPL;
     }
     // check memory overlaps
     static void check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) { INTERFACE_NOT_IMPL; }
