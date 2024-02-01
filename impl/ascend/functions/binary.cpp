@@ -149,7 +149,7 @@ diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 
 diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
     diopiTensorHandle_t trOther = nullptr;
-    makeTensorFromScalar(ctx, other, &trOther, diopi_dtype_float32, diopiDevice_t::diopi_device);
+    makeTensorFromScalar(ctx, other, &trOther, other->stype, diopiDevice_t::diopi_device);
     return diopiMul(ctx, out, input, trOther);
 }
 
