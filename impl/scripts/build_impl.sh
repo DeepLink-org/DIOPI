@@ -51,6 +51,11 @@ case $1 in
     cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DCMAKE_BUILD_TYPE=Release -DTEST=ON -DENABLE_COVERAGE=${USE_COVERAGE}
     make -j16
     ;;
+  ascend_nn)
+    mkdir -p build && cd build
+    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DCMAKE_BUILD_TYPE=Release -DTEST=ON -DENABLE_COVERAGE=${USE_COVERAGE}
+    make -j16
+    ;;
   hip_pytorch)
     mkdir build && cd build
     cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=TORCH -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DHIP=ON

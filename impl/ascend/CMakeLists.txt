@@ -42,9 +42,13 @@ if(USE_ADAPTOR)
     add_definitions(-DTEST_USE_ADAPTOR)
 endif()
 
+# third_party include
+set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/include)
+
 add_library(${DEVICEIMPL} SHARED ${IMPL_SRC})
 set_target_properties(${DEVICEIMPL} PROPERTIES SUFFIX ".so")
 target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler nnopbase opapi)
+# target_include_directories(${DEVICEIMPL} PRIVATE ${ASCEND_DIR}/ascend-toolkit/latest/include/aclnn)
 
 if(USE_ADAPTOR)
     add_dependencies(${DEVICEIMPL} adaptor_code_gen)
