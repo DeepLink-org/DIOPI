@@ -274,6 +274,9 @@ void copy_h2d(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
         return;
     }
     copy_h2d_baseformat(self, src, non_blocking);
+    if (!non_blocking) {
+        c10_npu::getCurrentNPUStream().synchronize();
+    }
 }
 
 void copy_d2h(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
@@ -283,6 +286,9 @@ void copy_d2h(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
         return;
     }
     copy_d2h_baseformat(self, src, non_blocking);
+    if (!non_blocking) {
+        c10_npu::getCurrentNPUStream().synchronize();
+    }
 }
 }  // namespace
 
@@ -396,16 +402,10 @@ at::Tensor& NPUNativeFunctions::copy_(at::Tensor& self, const at::Tensor& src, b
             copy_d2d(self, src, non_blocking);
         } else {
             copy_h2d(self, src, non_blocking);
-            if (!non_blocking) {
-                c10_npu::getCurrentNPUStream().synchronize();
-            }
         }
     } else {
         if (at_npu::key::isDeviceTensor(src)) {
             copy_d2h(self, src, non_blocking);
-        }
-        if (!non_blocking) {
-            c10_npu::getCurrentNPUStream().synchronize();
         }
     }
     return self;
