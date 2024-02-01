@@ -9,7 +9,7 @@
 namespace impl {
 namespace ascend {
 
-void updateInputAscendTensorDim(AscendTensor &inputAt, bool training) {
+void updateInputAscendTensorDim(AscendTensor& inputAt, bool training) {
     int64_t dim = inputAt.dim();
     if (2 == dim) {
         inputAt.unsqueeze(2);
