@@ -19,7 +19,7 @@ diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     } else {
         dimValue = *dim;
     }
-    AclOpRunner<2, 1>("ArgMaxV2", ctx).addInput(inputAt).addConstInput(dimValue, diopi_dtype_int64).setAttr("keep_dims", keepdim).addOutput(out).run();
+    AclOpRunner<2, 1>("ArgMaxV2", ctx).addInput(inputAt).addConstInput(dimValue, diopi_dtype_int32).setAttr("keep_dims", keepdim).addOutput(out).run();
     return diopiSuccess;
 }
 
