@@ -62,7 +62,7 @@
 
 #---Matrix operation below---#
 - diopiBmm:
-    layout: UD
+    layout: ND
 #---Matrix operation above---#
 
 - diopiUpsampleNearest:
