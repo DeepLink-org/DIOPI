@@ -8252,26 +8252,27 @@ diopi_configs = {
         atol=1e-3,
         rtol=1e-4,
         para=dict(
-            p_dropout=[0,],
-            is_causal=[False,],
-            softmax_scale=[None,]
+            p_dropout=[0,0,0,0,0],
+            is_causal=[False,False,False,False,False],
+            softmax_scale=[None,None,None,None,None]
         ),
+        # B S N D
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['q'],
-                    "shape": ((1, 16, 8, 64), ),
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
                     "dtype": [np.float32],
                 },
                 {
                     "ins": ['k'],
-                    "shape": ((1, 16, 8, 64), ),
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
                     "dtype": [np.float32],
                 },
                 {
                     "ins": ['v'],
-                    "shape": ((1, 16, 8, 64), ),
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
                     "dtype": [np.float32],
                 },
             ],
