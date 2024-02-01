@@ -283,14 +283,15 @@ int aclnnFlashAttentionAdaptor(diopiContextHandle_t ctx, diopiTensorHandle_t att
     int64_t S1 = kTensorTmp.shape(1);  // S for key & value
     int64_t N = qTensorTmp.shape(2);
     int64_t D = qTensorTmp.shape(3);
-    ASCEND_CHECK_ABORT(S0 % 16 == 0, "S must be a multiple of 16");
-    ASCEND_CHECK_ABORT(S1 % 16 == 0, "S must be a multiple of 16");
-    ASCEND_CHECK_ABORT(D == 64 || D == 96 || D == 128 || D == 256, "D must be 64, 96, 128, 256");
+    // ASCEND_CHECK_ABORT(S0 % 16 == 0, "S must be a multiple of 16");
+    // ASCEND_CHECK_ABORT(S1 % 16 == 0, "S must be a multiple of 16");
+    // ASCEND_CHECK_ABORT(D == 64 || D == 96 || D == 128 || D == 256, "D must be 64, 96, 128, 256");
 
     diopiTensorHandle_t softmaxMaxTensor;
     diopiTensorHandle_t softmaxSumTensor;
     diopiTensorHandle_t softmaxOutTensor;  // 保留输出，暂未使用
     // QK^T的shape: （B,N,S,S），暂时不清楚华为底层为了做优化需要保留(B,N,S,8)的用意
+    // 32字节对齐
     std::vector<int64_t> softmaxMaxShape{B, N, S0, 8};
     std::vector<int64_t> softmaxSumShape{B, N, S0, 8};
     std::vector<int64_t> softmaxOutShape{0};
@@ -349,11 +350,6 @@ int aclnnFlashAttentionAdaptor(diopiContextHandle_t ctx, diopiTensorHandle_t att
     }
     ret = createAclTensor1(dropMask, &dropMaskTensor);
     CHECK_RET(ret == ACL_SUCCESS, return ret);
-    std::cout << "q是否非空: " << (qTensor != nullptr) << std::endl;
-    std::cout << "k是否非空: " << (kTensor != nullptr) << std::endl;
-    std::cout << "v是否非空: " << (vTensor != nullptr) << std::endl;
-    std::cout << "attentionOut是否非空: " << (attentionOutTensor != nullptr) << std::endl;
-    std::cout << "softmaxOut是否非空: " << (softmaxOutAclTensor != nullptr) << std::endl;
 
     uint64_t workspaceSize = 0;
     aclOpExecutor* executor = nullptr;
