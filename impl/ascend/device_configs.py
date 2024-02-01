@@ -5,6 +5,18 @@ from skip import Skip
 # topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow llm used
 
 device_configs = {
+    'batch_norm_no_contiguous': dict(
+        name=['batch_norm'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                }
+            ]
+        )
+    ),
+
     # temp for 910B
     'uniform': dict(
         name=['uniform'],
