@@ -274,9 +274,6 @@ void copy_h2d(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
         return;
     }
     copy_h2d_baseformat(self, src, non_blocking);
-    if (!non_blocking) {
-        c10_npu::getCurrentNPUStream().synchronize();
-    }
 }
 
 void copy_d2h(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
@@ -286,9 +283,6 @@ void copy_d2h(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
         return;
     }
     copy_d2h_baseformat(self, src, non_blocking);
-    if (!non_blocking) {
-        c10_npu::getCurrentNPUStream().synchronize();
-    }
 }
 }  // namespace
 
