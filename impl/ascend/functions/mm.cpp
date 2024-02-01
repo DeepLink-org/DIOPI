@@ -18,9 +18,12 @@ diopiError_t diopiMm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCon
         diopiFill(ctx, out, &zero);
         return diopiSuccess;
     }
+    std::cout << "inputTr.dtype:" << diopiDtypeToStr(inputTr.dtype()) << std::endl;
+    std::cout << "mat2.dtype:" << diopiDtypeToStr(mat2Tr.dtype()) << std::endl;
+    std::cout << "outputTr.dtype:" << diopiDtypeToStr(outputTr.dtype()) << std::endl;
     AclOpRunner<2, 1>("MatMul", ctx)
         .addInput(input, inputTr.dtype())
-        .addInput(mat2, mat2.dtype())
+        .addInput(mat2, mat2Tr.dtype())
         .setAttr("adj_x1", false)
         .setAttr("adj_x1", false)
         .addOutput(out)
