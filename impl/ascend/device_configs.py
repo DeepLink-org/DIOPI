@@ -18,36 +18,6 @@ device_configs = {
         ),
     ),
 
-    'baddbmm': dict(
-        name=['baddbmm'],
-        atol=1e-2,
-        rtol=1e-2,
-        # temp for 910B
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'baddbmm_without_inplace': dict(
-        name=['baddbmm'],
-        atol=1e-2,
-        rtol=1e-2,
-        # temp for 910B
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'conv_2d': dict(
         name=['conv2d'],
         atol=1e-1,
