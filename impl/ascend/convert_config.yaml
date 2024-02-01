@@ -8,10 +8,10 @@
     dtype: (float64)->float16
 
 - diopiAdaptiveAvgPool2d:
-    dtype: (float64)->float32 , (float16)->float32
+    dtype: (float64)->float32
 
 - diopiAdaptiveAvgPool2dBackward:
-    dtype: (float64)->float32 , (float16)->float32
+    dtype: (float64)->float32
 
 - diopiLtScalar:
     dtype: (bool)->float32
@@ -86,16 +86,10 @@
     dtype: (float64)->float32
 
 - diopiLinear:
-    dtype: (float16, float64)->float32
+    dtype: (float64)->float32
 
 - diopiLinearBackward:
-    dtype: (float16, float64)->float32
-
-- diopiLinear:
-    dtype: (float16, float64)->float32
-
-- diopiLinearBackward:
-    dtype: (float16, float64)->float32
+    dtype: (float64)->float32
 
 - diopiAny:
     dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
@@ -122,13 +116,13 @@
     dtype: (uint8, bool, int16)->int32, (float64)->float32
 
 - diopiHardtanh:
-    dtype: (float16)->float32
+    dtype: (float64)->float32
 
 - diopiHardtanhInp:
-    dtype: (float16)->float32
+    dtype: (float64)->float32
 
 - diopiHardtanhBackward:
-    dtype: (float16)->float32
+    dtype: (float64)->float32
 
 - diopiAddcmul:
     dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
@@ -207,7 +201,7 @@
     dtype: (bool, uint8, int8, int16, int32, int64)->float32
 
 - diopiNorm:
-    dtype: (bool, uint8, int8, int16, int32, int64, float16, float64)->float32
+    dtype: (bool, uint8, int8, int16, int32, int64, float64)->float32
 
 - diopiRsqrt:
     dtype: (int8, uint8, int16, int32, int64, bool)->float32

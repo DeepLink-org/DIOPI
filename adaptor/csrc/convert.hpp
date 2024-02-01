@@ -111,8 +111,7 @@ ConvertType castImpl(diopiContextHandle_t ctx, T src, T* dst, std::vector<diopiM
     diopiSize_t dstStride = srcStride;
     diopiSize_t dstSize = srcSize;
     if (!targetMemoryFormats.empty()) {
-        if (!denseCheck(srcSize, srcStride) && supportMemoryFormats[0] == diopiMemoryFormat_t::Preserve) {
-            targetMemoryFormats.push_back(diopiMemoryFormat_t::Preserve);
+        if (!denseCheck(srcSize, srcStride) && targetMemoryFormats[0] == diopiMemoryFormat_t::Preserve) {
             needConvertMemoryFormat = true;
         }
     }

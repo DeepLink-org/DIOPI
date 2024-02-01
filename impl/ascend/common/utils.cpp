@@ -388,34 +388,6 @@ diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     return makeOnesLike(ctx, out, src, dtype);
 }
 
-diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    // get nan value tensor
-    diopiTensorHandle_t nanValue;
-    auto nanValueScalar = diopiScalar_t();
-    nanValueScalar.stype = diopi_dtype_float64;
-    nanValueScalar.fval = 0.0;
-    makeTensorFromScalar(ctx, &nanValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
-    auto zeroValueScalar = diopiScalar_t();
-    zeroValueScalar.stype = diopi_dtype_float64;
-    zeroValueScalar.fval = 0.0;
-    diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
-
-    diopiDtype_t inputDtype;
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiTensorHandle_t inputTemp;
-    inputTemp = const_cast<diopiTensorHandle_t>(input);
-
-    // get negative mask
-    diopiTensorHandle_t mask;
-    makeTensorLike(ctx, &mask, inputTemp, diopi_dtype_bool);
-    diopiLtScalar(ctx, mask, inputTemp, &zeroValueScalar);
-
-    // masked_fill nan
-    diopiMaskedFillInp(ctx, out, mask, nanValue);
-
-    return diopiSuccess;
-}
-
 aclDataType getAclDataType(diopiDtype_t type) {
     switch (type) {
         case diopi_dtype_float16:
