@@ -97,24 +97,6 @@
 - diopiAll:
     dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
 
-- diopiLog:
-    dtype: (float16, float32, int16, int32, int64, uint8, int8)->float64
-
-- diopiLogInp:
-    dtype: (float16, float32, int16, int32, int64, uint8, int8)->float64
-
-- diopiLog2:
-    dtype: (float64, int16, int32, int64, uint8, int8)->float32
-
-- diopiLog2Inp:
-    dtype: (float64, int16, int32, int64, uint8, int8)->float32
-
-- diopiLog10:
-    dtype: (float64, int16, int32, int64, uint8, int8)->float32
-
-- diopiLog10Inp:
-    dtype: (float64, int16, int32, int64, uint8, int8)->float32
-
 - diopiNeg:
     dtype: (int8, int16, uint8, uint16, uint32, uint64)->int64, (float64)->float32, (complex32)->complex64
 
