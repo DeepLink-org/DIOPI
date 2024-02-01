@@ -154,6 +154,9 @@
 - diopiMm:
     dtype: (float64)->float32
 
+- diopiAddmm:
+    dtype: (float64)->float32
+
 - diopiAddcmul:
     dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
 
