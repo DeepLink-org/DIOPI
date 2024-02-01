@@ -2291,7 +2291,7 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
                 outputTensor[sync_index[i]].resize_(real_shape);
             }
         } else {
-            if (0) {
+            if (1) {
                 ret = aclopCompileAndExecute(name.c_str(),
                                              inputSize,
                                              params.inDesc.data(),
