@@ -5,12 +5,15 @@
  */
 
 #include "common.hpp"
-
 namespace impl {
 namespace camb {
 
 bool denseCheck(const DiopiTensor& src) {
     int dim = src.dim();
+    if (dim == 0) {
+        return false;
+    }
+
     std::vector<std::pair<int, int>> stridesSizes(dim, std::pair<int, int>(1, 1));
 
     for (int i = 0; i < dim; i++) {
@@ -113,8 +116,6 @@ diopiError_t sliceToDense(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTenso
     // real target shape and stride
     std::vector<int64_t> targetShape = src.shape();
     std::vector<int64_t> targetStride = dst.stride();
-    // std::vector<int64_t> targetStride(dim,0);
-    // getDenseStride(src, targetStride);
 
     std::vector<std::pair<int64_t, int64_t>> stridesSizes(dim, std::pair<int64_t, int64_t>(1, 1));
     for (int i = 0; i < dim; i++) {

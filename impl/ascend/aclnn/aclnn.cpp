@@ -106,9 +106,6 @@ int aclnnAddAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
     // 调用aclnnAdd第二段接口
     ret = aclnnAdd(workspaceAddr, workspaceSize, executor, stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnAdd failed. ERROR: %d\n", ret); return ret);
-    // 3.(固定写法)同步等待任务执行结束
-    ret = aclrtSynchronizeStream(stream);
-    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
 
     if (workspaceSize > 0) {
         aclrtFree(workspaceAddr);
@@ -149,9 +146,6 @@ int aclnnSinAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
     // 调用aclnnSin第二段接口
     ret = aclnnSin(workspaceAddr, workspaceSize, executor, stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnSin failed. ERROR: %d\n", ret); return ret);
-    // 3.(固定写法)同步等待任务执行结束
-    ret = aclrtSynchronizeStream(stream);
-    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
 
     if (workspaceSize > 0) {
         aclrtFree(workspaceAddr);
@@ -192,9 +186,6 @@ int aclnnCosAdaptor(diopiContextHandle_t ctx, diopiConstTensorHandle_t self1, di
     // 调用aclnnCos第二段接口
     ret = aclnnCos(workspaceAddr, workspaceSize, executor, stream);
     CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnCos failed. ERROR: %d\n", ret); return ret);
-    // 3.(固定写法)同步等待任务执行结束
-    ret = aclrtSynchronizeStream(stream);
-    CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclrtSynchronizeStream failed. ERROR: %d\n", ret); return ret);
 
     if (workspaceSize > 0) {
         aclrtFree(workspaceAddr);

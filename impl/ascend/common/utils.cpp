@@ -148,7 +148,6 @@ diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTe
     diopiStreamHandle_t stream;
     diopiGetStream(ctx, &stream);
     aclrtMemcpyAsync(destPtr, dst.getAclMemBufferSize(), sourcePtr, src.getAclMemBufferSize(), ACL_MEMCPY_DEVICE_TO_DEVICE, stream);
-    aclrtSynchronizeStream(stream);
 
     return diopiSuccess;
 }
@@ -317,7 +316,6 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, diopi_device);
         diopiGetTensorData(outCopyDev, &dst);
         CALL_ACLRT(aclrtMemcpyAsync(dst, elemsize, src, elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
-        CALL_ACLRT(aclrtSynchronizeStream(stream));
         diopiCastDtype(ctx, *out, outCopyDev);
     } else {
         error(__FILE__, __LINE__, __FUNCTION__, "device(%s) not supported", deviceType2Str(device));
@@ -732,7 +730,6 @@ diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandl
         diopiGetStream(ctx, &stream);
         int64_t elemsize = getBaseBufferSize(src);
         CALL_ACLRT(aclrtMemcpyAsync(dstPtr, elemsize, const_cast<void*>(srcPtr), elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
-        CALL_ACLRT(aclrtSynchronizeStream(stream));
         return dst;
     } else {
         return const_cast<diopiTensorHandle_t>(src);
