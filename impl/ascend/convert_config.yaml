@@ -278,3 +278,6 @@
 
 - diopiGatherBackward:
     dtype: (float64)->float32
+
+- diopiBmm:
+    dtype: (float64)->float32
