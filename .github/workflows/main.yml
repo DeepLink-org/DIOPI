@@ -399,6 +399,7 @@ jobs:
         run: |
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+          export USE_COVERAGE=ON
           export DIOPI_BUILD_TESTRT=ON
           cd impl && mkdir lib
           cp -R /home/deeplink/*.so lib/
@@ -419,6 +420,15 @@ jobs:
           ln -sf /mnt/cache/share/deeplinkci/data/inputs ./cache/diopi && ln -sf /mnt/cache/share/deeplinkci/data/outputs ./cache/diopi && ln -sf /mnt/cache/share/deeplinkci/data/diopi_case_items.cfg ./cache/diopi
           python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/topsrider/
           python main.py --mode run_test
+          if [ "${ALL_COVERAGE}" = "ON" ]; then
+              bash /mnt/cache/share/platform/dep/sonar/coverage_DIOPI.sh ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} || echo "get coverage fail"
+          fi
+      - name: increment coverage check
+        if: ${{ contains( github.event_name, 'pull_request' ) && contains( github.base_ref, 'main' ) }}
+        run: |
+          set -e
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
+          bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
 
   # Rt-Test-Topsrider:
   #   name: Rt-Test-Topsrider

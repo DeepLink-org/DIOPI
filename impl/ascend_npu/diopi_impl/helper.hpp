@@ -149,6 +149,12 @@ void set_last_error_string(const char* szFmt, Types&&... args) {
         return diopiErrorOccurred;                                                               \
     }
 
+#define DIOPI_CHECK_THROW(cond, fmt, args...)                  \
+    if (!(cond)) {                                             \
+        printf(#fmt " at %s:%d ", ##args, __FILE__, __LINE__); \
+        throw std::runtime_error("error occurs");              \
+    }
+
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 extern thread_local diopiContextHandle_t context;
 

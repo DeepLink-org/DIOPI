@@ -12,7 +12,7 @@ case $1 in
     mkdir -p build && cd build
     # do not use && between cmake and make -j, because the cmake error will not incur error exit (return code is 0) in switch case statementts.
     cmake -DPYTHON_EXECUTABLE=$(python3 -c "import sys; print(sys.executable)") .. -DIMPL_OPT=tops -DTEST=ON -DCMAKE_BUILD_TYPE=Debug \
-      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DTOPS_HOME=/home/cse/src/install/usr
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DTOPS_HOME=/home/cse/src/install/usr -DENABLE_COVERAGE=${USE_COVERAGE}
     make -j8
     ;;
   clean)
