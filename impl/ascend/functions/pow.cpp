@@ -10,7 +10,7 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiPowTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t exponent) {
-    AscendTensor inputAt(input), expAt(exponent), outAt(out);
+    AscendTensor inputAt(input), expAt(exponent);
     auto dtype = promoteTypes(inputAt.dtype(), expAt.dtype());
     castTensor(ctx, inputAt, dtype);
     castTensor(ctx, expAt, dtype);
@@ -24,9 +24,7 @@ diopiError_t diopiPowInpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 
 diopiError_t diopiPow(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* exponent) {
     diopiTensorHandle_t exponentTensor;
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    makeTensorFromScalar(ctx, exponent, &exponentTensor, dtype, diopi_device);
+    makeTensorFromScalar(ctx, exponent, &exponentTensor, diopi_device);
     return diopiPowTensor(ctx, out, input, exponentTensor);
 }
 
