@@ -7,6 +7,7 @@
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
 #include "../../../ascend/common/stream_lock.hpp"
+#include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
@@ -68,14 +69,11 @@ static std::map<const string, const aclDataType> STRING_SCALAR_TYPE_TO_ACL_TYPE_
 
 aclError AclrtMemcpyAsyncParamCheck(void* dst, size_t destMax, const void* src, size_t count, aclrtMemcpyKind kind, aclrtStream stream) {
     auto ret = aclrtMemcpyAsync(dst, destMax, src, count, kind, stream);
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     return ret;
 }
 
 aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_t count, aclrtMemcpyKind kind) {
-    c10_npu::getCurrentNPUStream().synchronize();
     auto ret = aclrtMemcpy(dst, destMax, src, count, kind);
-    c10_npu::getCurrentNPUStream().synchronize();
     return ret;
 }
 
@@ -888,7 +886,6 @@ void copy_d2d_by_memcpy(at::Tensor& dst, const at::Tensor& src, int64_t exceptSi
     }
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), ACL_MEMCPY_DEVICE_TO_DEVICE, stream));
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
 }
 
 float CalcuOpUtil::GetScalarFloatValue(const c10::Scalar& scalar) {
@@ -1026,7 +1023,6 @@ NPUStatus CalcuOpUtil::AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t>& ds
     void* src_ptr = reinterpret_cast<uint8_t*>(src.first.data_ptr()) + src.second * src.first.itemsize();
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst_ptr, dst_size, src_ptr, src_size, kind, stream));
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     return "SUCCESS";
 }
 
@@ -1050,7 +1046,6 @@ aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(void* dst, size_t dstMax, const 
 aclError CalcuOpUtil::LaunchAsyncCopyTaskWithModeSwitch(const at::Tensor& dst, size_t dstMax, const at::Tensor& src, size_t count, aclrtMemcpyKind kind) {
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
     NPU_CHECK_ERROR(aclrtMemcpyAsync(dst.data_ptr(), dst.nbytes(), src.data_ptr(), src.nbytes(), kind, stream));
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
 }
 
 void ContiguousTensorDesc::refresh_contiguous_using_size_and_stride() {
@@ -2400,7 +2395,10 @@ std::tuple<aclTensorDesc*, aclDataBuffer*> CovertToAclOutput(const at::Tensor& t
     aclDataType aclDataType = CalcuOpUtil::ConvertToAclDataType(tensor.scalar_type(), forceDataType);
     const auto& npuDesc = torch_npu::NPUBridge::GetNpuStorageImplDesc(tensor);
     const auto& dims = tensor.sizes();
-    auto& storageDims = npuDesc.storage_sizes_;
+    auto storageDims = npuDesc.storage_sizes_;
+    if (storageDims.size() == 0 && tensor.numel() > 0) {
+        storageDims.push_back(1);
+    }
     AclTensorDescMaker desc;
     auto aclDesc = desc.Create(aclDataType, dims, npuDesc.origin_format_).SetFormat(npuDesc.npu_format_).SetShape(storageDims).Get();
     auto numel = c10::multiply_integers(storageDims);
@@ -2666,7 +2664,7 @@ void npu_fast_reshape_(at::Tensor& tensor) {
   auto base_format = InferFormat::GuessBaseFormat(tensor.sizes());
   NPUNativeFunctions::npu_format_cast_(tensor, base_format);
 #else
-    INTERFACE_NOT_IMPL
+    INTERFACE_NOT_IMPL;
 #endif
 }
 
@@ -2687,7 +2685,7 @@ std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t in
 
 namespace detail {
 
-const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL }
+const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL; }
 
 }  // namespace detail
 
@@ -2739,9 +2737,7 @@ void NPUStream::synchronize() const {
 
 aclError queue::LaunchAsyncCopyTask(void* dst, size_t dstLen, void* src, size_t srcLen, aclrtMemcpyKind kind) {
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     auto ret = aclrtMemcpyAsync(dst, dstLen, src, srcLen, kind, stream);
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(stream));
     return ret;
 }
 
@@ -2892,7 +2888,24 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
             if (st != -1) st *= sizes[i - 1];
         }
     }
-    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizes, stridesVec, input.options());
+
+    // when shape[0]=-1, fill data
+    std::vector<int64_t> sizeVec(sizes.size(), 1);
+    std::copy(sizes.begin(), sizes.end(), sizeVec.begin());
+    if (!sizes.empty() && sizes[0] == -1) {
+        bool flag = true;
+        for (auto i : sizes) {
+            if (!flag && i < 0) {
+                TORCH_CHECK(false, "more than one -1, sizes=", sizes);
+            }
+            if (i < 0) {
+                flag = false;
+            }
+        }
+        int count = std::accumulate(sizeVec.begin() + 1, sizeVec.end(), 1, std::multiplies<int>());
+        sizeVec[0] = input.numel() / count;
+    }
+    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizeVec, stridesVec, input.options());
 }
 
 c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices) {
@@ -3054,7 +3067,11 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
 }
 
 at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
+at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
 
+at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
+at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
+at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
 }  // namespace
 
 namespace at {
@@ -3089,6 +3106,11 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("repeat", TORCH_FN(wrapper__repeat));
     m.impl("transpose.int", TORCH_FN(wrapper__transpose));
     m.impl("_local_scalar_dense", TORCH_FN(wrapper___local_scalar_dense));
+    m.impl("cat", TORCH_FN(wrapper__cat));
+    m.impl("mm.out", TORCH_FN(wrapper_out_mm_out));
+    m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
+    m.impl("dot", TORCH_FN(wrapper__dot));
+    m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
