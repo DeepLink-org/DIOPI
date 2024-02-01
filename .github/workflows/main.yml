@@ -256,7 +256,7 @@ jobs:
           set -e
           srun --job-name=${GITHUB_JOB} bash -c "export CI=true && export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib \
           && source ${ENV_PATH}/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
-          && cd diopi_test/python && python main.py --mode gen_case --impl_folder=${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/torch/ && python main.py --mode run_test"
+          && cd diopi_test/python && python main.py --mode gen_case --impl_folder ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/torch/ && python main.py --mode run_test"
       - name: increment coverage check
         if: ${{ contains( github.event_name, 'pull_request' ) && contains( github.base_ref, 'main' ) }}
         run: |
