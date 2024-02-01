@@ -9,7 +9,7 @@
 namespace impl {
 namespace ascend {
 
-void updateInputAscendTensorDim(AscendTensor &inputAt, bool training) {
+void updateInputAscendTensorDim(AscendTensor& inputAt, bool training) {
     int64_t dim = inputAt.dim();
     if (2 == dim) {
         inputAt.unsqueeze(2);
@@ -85,7 +85,6 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         runningVarAt.unsqueeze(2);
         runningVarAt.unsqueeze(3);
         AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(runningVarAt).addConstInput(inputAt.shape()).addOutput(runningVarBroadcasted).run();
-        negativeInputRtnFillNan(ctx, out, runningVarBroadcasted);
     } else {
         diopiTensorHandle_t sum = nullptr, squareSum = nullptr;
         diopiSize_t shape, stride;
@@ -125,7 +124,6 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     if (!training) {
         batchNormBackwardTrainingUpdate(ctx, gradWeight, gradBias, gradOutputAt, inputAt, runninMean, runningVar, eps);
-        negativeInputRtnFillNan(ctx, gradWeight, runningVar);
 
         AclOpRunner<3, 1>("BNInferGrad", ctx)
             .addInput(gradOutputAt)
@@ -142,7 +140,6 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         runningVarAt.unsqueeze(2);
         runningVarAt.unsqueeze(3);
         AclOpRunner<2, 1>("BroadcastTo", ctx).addInput(runningVarAt).addConstInput(inputAt.shape()).addOutput(runningVarBroadcasted).run();
-        negativeInputRtnFillNan(ctx, gradInput, runningVarBroadcasted);
     } else {
         batchNormBackwardTrainingUpdate(ctx, gradWeight, gradBias, gradOutputAt, inputAt, saveMean, saveInvstd, eps);
         batchNormBackwardTrainingReduceNocheck(ctx, gradInputAt, gradWeight, gradBias, gradOutputAt, inputAt, weight, saveMean, saveInvstd, eps);
