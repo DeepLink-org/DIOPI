@@ -1,6 +1,18 @@
 - common_config:
     layout: NCHW
 
+- diopiAbs:
+    dtype: (bool, uint8)->int16
+
+- diopiAbsInp:
+    dtype: (bool, uint8)->int16
+
+- diopiReciprocal:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiReciprocalInp:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
 - diopiConvolution2d:
     dtype: (float64)->float16
 
@@ -122,6 +134,21 @@
     dtype: (float64)->float32
 
 - diopiHardtanhBackward:
+    dtype: (float64)->float32
+
+- diopiAdd:
+    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+
+- diopiAddInp:
+    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+
+- diopiAddInpScalar:
+    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+
+- diopiMm:
+    dtype: (float64)->float32
+
+- diopiAddmm:
     dtype: (float64)->float32
 
 - diopiAddcmul:

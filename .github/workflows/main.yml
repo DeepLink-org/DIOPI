@@ -239,6 +239,7 @@ jobs:
     name: Op-Test-Nvidia
     runs-on: tps-sco-ci
     needs: Gen-Data
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     env:
       run_test: "coverage run -p"
     steps:
