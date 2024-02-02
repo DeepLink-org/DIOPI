@@ -73,6 +73,18 @@ device_configs = {
         rtol=1e-3,
     ),
 
+    'nll_loss': dict(
+        name=['nll_loss'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['target'],
+                    "shape": [Skip(()),],
+                },
+            ]
+        ),
+    ),
+
     'avg_pool2d': dict(
         name=['avg_pool2d'],
         tensor_para=dict(
