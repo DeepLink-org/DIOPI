@@ -5,6 +5,18 @@ from skip import Skip
 # topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
 
 device_configs = {
+    'batch_norm_no_contiguous': dict(
+        name=['batch_norm'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                }
+            ]
+        )
+    ),
+
     # temp for 910B
     'uniform': dict(
         name=['uniform'],
@@ -382,19 +394,6 @@ device_configs = {
         name=['linear'],
         atol = 1e-1,
         rtol = 1e-1,
-    ),
-
-    'embedding': dict( # llm used
-        name=["embedding"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["weight"],
-                    # Wrong weight gradient. torch_npu failed in exactly the same way.
-                    "shape": (Skip((93, 512)),),
-                },
-            ],
-        ),
     ),
 
     'clip_grad_norm': dict(

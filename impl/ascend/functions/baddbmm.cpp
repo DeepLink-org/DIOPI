@@ -48,12 +48,8 @@ diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     makeTensorLike(ctx, alphaMulTensor, batchMatMulTensorAt, outDtype);
     makeTensorLike(ctx, betaMulTensor, inputAt, outDtype);
 
-    diopiScalar_t alphaScalar;
-    alphaScalar.stype = outDtype;
-    alphaScalar.fval = alpha;
-    diopiScalar_t betaScalar;
-    betaScalar.stype = outDtype;
-    betaScalar.fval = beta;
+    diopiScalar_t alphaScalar = constructDiopiScalarT(outDtype, alpha);
+    diopiScalar_t betaScalar = constructDiopiScalarT(outDtype, beta);
 
     // transform ascendTensor to diopiTensorHandle_t
     diopiTensorHandle_t diopiAlphaMulTensor = const_cast<diopiTensorHandle_t>(alphaMulTensor.tensorHandle());
@@ -65,11 +61,9 @@ diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     diopiMulScalar(ctx, diopiAlphaMulTensor, diopiAsBatchMatMulTensor, &alphaScalar);
     diopiMulScalar(ctx, diopiBateMulTensor, diopiInput, &betaScalar);
 
-    diopiScalar_t other;
-    other.fval = 1;
-    other.stype = outDtype;
+    diopiScalar_t otherScalar = constructDiopiScalarT(outDtype, 1);
     diopiTensorHandle_t diopiOutput = const_cast<diopiTensorHandle_t>(outputAt.tensorHandle());
-    diopiAdd(ctx, diopiOutput, diopiAlphaMulTensor, diopiBateMulTensor, &other);
+    diopiAdd(ctx, diopiOutput, diopiAlphaMulTensor, diopiBateMulTensor, &otherScalar);
     return diopiSuccess;
 }
 

@@ -1,6 +1,36 @@
 - common_config:
     layout: NCHW
 
+- diopiSoftmax:
+    dtype: (float64)->float32
+
+- diopiSoftmaxBackward:
+    dtype: (float64)->float32
+
+- diopiLogSoftmax:
+    dtype: (float64)->float32
+
+- diopiLogSoftmaxBackward:
+    dtype: (float64)->float32
+
+- diopiGelu:
+    dtype: (float64)->float32
+
+- diopiGeluBackward:
+    dtype: (float64)->float32
+
+- diopiAbs:
+    dtype: (bool, uint8)->int16
+
+- diopiAbsInp:
+    dtype: (bool, uint8)->int16
+
+- diopiReciprocal:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiReciprocalInp:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
 - diopiConvolution2d:
     dtype: (float64)->float16
 
@@ -124,11 +154,26 @@
 - diopiHardtanhBackward:
     dtype: (float64)->float32
 
+- diopiAdd:
+    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+
+- diopiAddInp:
+    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+
+- diopiAddInpScalar:
+    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+
+- diopiMm:
+    dtype: (float64)->float32
+
+- diopiAddmm:
+    dtype: (float64)->float32
+
 - diopiAddcmul:
-    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    dtype: (int16, uint16)->int32, (uint32, uint64)->int64, (float64)->float32
 
 - diopiAddcmulInp:
-    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    dtype: (int16, uint16)->int32, (uint32, uint64)->int64, (float64)->float32
 
 - diopiAddcdiv:
     dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
@@ -278,3 +323,9 @@
 
 - diopiGatherBackward:
     dtype: (float64)->float32
+
+- diopiBmm:
+    dtype: (float64)->float32
+
+- diopiIsNan:
+    dtype: (uint8, int8, int32, int16, int64, bool)->float32
