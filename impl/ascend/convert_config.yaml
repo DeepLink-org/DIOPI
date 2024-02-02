@@ -1,6 +1,24 @@
 - common_config:
     layout: NCHW
 
+- diopiSoftmax:
+    dtype: (float64)->float32
+
+- diopiSoftmaxBackward:
+    dtype: (float64)->float32
+
+- diopiLogSoftmax:
+    dtype: (float64)->float32
+
+- diopiLogSoftmaxBackward:
+    dtype: (float64)->float32
+
+- diopiGelu:
+    dtype: (float64)->float32
+
+- diopiGeluBackward:
+    dtype: (float64)->float32
+
 - diopiAbs:
     dtype: (bool, uint8)->int16
 
