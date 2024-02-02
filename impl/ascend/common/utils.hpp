@@ -6,11 +6,23 @@
 
 #ifndef IMPL_ASCEND_COMMON_UTILS_HPP_
 #define IMPL_ASCEND_COMMON_UTILS_HPP_
+#include <set>
 #include <vector>
 
 #include "../ascend_tensor.hpp"
 #include "../env_vars.hpp"
+#include "../error.hpp"
 #include "float16.hpp"
+
+#define DIOPI_CALL(Expr)                                                                                                  \
+    do {                                                                                                                  \
+        diopiError_t ret = Expr;                                                                                          \
+        if (diopiSuccess != ret) {                                                                                        \
+            setLastErrorString("%s: %s at %s:%d\n", ::impl::ascend::getDiopiErrorStr(ret), __func__, __FILE__, __LINE__); \
+            printf("%s", ascendGetLastErrorString(false));                                                                \
+            return ret;                                                                                                   \
+        }                                                                                                                 \
+    } while (false);
 
 namespace impl {
 namespace ascend {
@@ -94,6 +106,8 @@ diopiError_t broadcast(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 std::vector<int64_t> inferSize(const std::vector<int64_t>& shape1, const std::vector<int64_t>& shape2);
 
 diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src);
+
+diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<AscendTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype);
 
 }  // namespace ascend
 }  // namespace impl
