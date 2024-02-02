@@ -2,7 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow llm used
+# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
 
 device_configs = {
     'batch_norm_no_contiguous': dict(
@@ -292,18 +292,6 @@ device_configs = {
                 },
             ]
         ),
-    ),
-
-    'reduce_op': dict( # llm used
-        name=['sum'],
-        atol=1e-3,
-        rtol=1e-3,
-    ),
-
-    'reduce_partial_op': dict( # llm used
-        atol=1e-3,
-        rtol=1e-3,
-        name=['sum'],
     ),
 
     'reduce_partial_op_1': dict(
