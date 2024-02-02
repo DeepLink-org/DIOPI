@@ -40,6 +40,5 @@ def gen_data(model_name: str = "", cache_path=".", fname="", diopi_case_item_fil
     GenOutputData.run(diopi_case_item_path, inputs_dir, outputs_dir, fname,
                       model_name)
     if GenInputData.err_case_counter > 0 or GenOutputData.err_case_counter > 0:
-        raise GenDataFailedException(f"Data generation failed, with {GenInputData.err_case_counter}"\
-            f"input case failures and {GenOutputData.err_case_counter} output case failures.")
+        raise GenDataFailedException(f"Data generation failed, with {GenInputData.err_case_counter} input case failures and {GenOutputData.err_case_counter} output case failures.")
     return GenInputData.db_case_items, GenOutputData.db_case_items
