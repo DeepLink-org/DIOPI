@@ -6,6 +6,7 @@
 
 #ifndef IMPL_ASCEND_COMMON_UTILS_HPP_
 #define IMPL_ASCEND_COMMON_UTILS_HPP_
+#include <set>
 #include <vector>
 
 #include "../ascend_tensor.hpp"
