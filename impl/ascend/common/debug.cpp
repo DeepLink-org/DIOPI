@@ -80,10 +80,7 @@ void printTensorHelper1(const AscendTensor& at, void* ptrHost) {
             return;
     }
 }
-void myfree(void* p) {
-    std::cout << "free:" << p << std::endl;
-    free(p);
-}
+
 void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, const char* name) {
     printf("==========[Tensor name %s]==========\n", name);
     if (!at.defined()) {
@@ -101,11 +98,11 @@ void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, con
         printf("tensor %s has %ld element, element size %ld.\n", name, at.numel(), at.elemsize());
         return;
     }
-    std::unique_ptr<void, void (*)(void*)> hostMemUptr(nullptr, myfree);
+    std::unique_ptr<void, void (*)(void*)> hostMemUptr(nullptr, free);
     if (at.device() == diopiDevice_t::diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
-        std::unique_ptr<void, void (*)(void*)> temp(malloc(at.numel() * at.elemsize()), myfree);
+        std::unique_ptr<void, void (*)(void*)> temp(malloc(at.numel() * at.elemsize()), free);
         std::cout << "tmp ptr:" << temp.get() << std::endl;
         hostMemUptr.swap(temp);
         std::cout << "tmp ptr after swap:" << temp.get() << std::endl;

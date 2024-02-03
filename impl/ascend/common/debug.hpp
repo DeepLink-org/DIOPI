@@ -20,11 +20,6 @@
 namespace impl {
 namespace ascend {
 
-static std::ostream& operator<<(std::ostream& out, half_float::half val) {
-    out << static_cast<float>(val);
-    return out;
-}
-
 template <typename T>
 void printVectorWithShape(const std::vector<T>& data, const std::vector<int64_t>& shape, size_t depth, size_t& index) {
     if (depth >= shape.size()) {
