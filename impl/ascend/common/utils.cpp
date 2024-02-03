@@ -254,102 +254,75 @@ diopiTensorHandle_t createTensorIfNullptrOrConstCast(diopiContextHandle_t ctx, d
 }
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
-    // get scalar
-    bool tempBool = false;
-    int8_t tempI8 = 0;
-    uint8_t tempU8 = 0;
-    int16_t tempI16 = 0;
-    uint16_t tempU16 = 0;
-    int32_t tempI32 = 0;
-    uint32_t tempU32 = 0;
-    int64_t tempI64 = 0;
-    uint64_t tempU64 = 0;
-    half_float::half tempF16 = static_cast<half_float::half>(0);
-    float tempF32 = 0;
-    double tempF64 = 0;
-    void* valuePtr = nullptr;
-    switch (dtype) {
-        case diopi_dtype_bool: {
-            tempBool = getValue<bool>(scalar);
-            valuePtr = &tempBool;
-            break;
-        }
-        case diopi_dtype_int8: {
-            tempI8 = getValue<int8_t>(scalar);
-            valuePtr = &tempI8;
-            break;
-        }
-        case diopi_dtype_uint8: {
-            tempU8 = getValue<uint8_t>(scalar);
-            valuePtr = &tempU8;
-            break;
-        }
-        case diopi_dtype_int16: {
-            tempI16 = getValue<int16_t>(scalar);
-            valuePtr = &tempI16;
-            break;
-        }
-        case diopi_dtype_uint16: {
-            tempU16 = getValue<uint16_t>(scalar);
-            valuePtr = &tempU16;
-            break;
-        }
-        case diopi_dtype_int32: {
-            tempI32 = getValue<int32_t>(scalar);
-            valuePtr = &tempI32;
-            break;
-        }
-        case diopi_dtype_uint32: {
-            tempU32 = getValue<uint32_t>(scalar);
-            valuePtr = &tempU32;
-            break;
-        }
-        case diopi_dtype_int64: {
-            tempI64 = getValue<int64_t>(scalar);
-            valuePtr = &tempI64;
-            break;
-        }
-        case diopi_dtype_uint64: {
-            tempU64 = getValue<uint64_t>(scalar);
-            valuePtr = &tempU64;
-            break;
-        }
-        case diopi_dtype_float16: {
-            tempF16 = getValue<half_float::half>(scalar);
-            valuePtr = &tempF16;
-            break;
-        }
-        case diopi_dtype_float32: {
-            tempF32 = getValue<float>(scalar);
-            valuePtr = &tempF32;
-            break;
-        }
-        case diopi_dtype_float64: {
-            tempF64 = getValue<double>(scalar);
-            valuePtr = &tempF64;
-            break;
-        }
-        default: {
-            error(__FILE__, __LINE__, __FUNCTION__, "the input tensor dtype %s is not allown", diopiDtypeToStr(dtype));
-        }
-    }
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
-    void* outDataPtr = nullptr;
-    diopiTensorHandle_t outTmp = nullptr;
-    diopiRequireTensor(ctx, &outTmp, &sSize, nullptr, dtype, device);
-    diopiGetTensorData(outTmp, &outDataPtr);
+    diopiTensorHandle_t outCopy;
     if (device == diopi_host) {
-        memcpy(outDataPtr, valuePtr, sizeof(dtype));
+        diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, dtype, diopi_host);
+        void* ptr;
+        diopiGetTensorData(outCopy, &ptr);
+        switch (dtype) {
+            case diopiDtype_t::diopi_dtype_float32:
+                *reinterpret_cast<float*>(ptr) = getValue<float>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_float64:
+                *reinterpret_cast<double*>(ptr) = getValue<double>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_int32:
+                *reinterpret_cast<int*>(ptr) = getValue<int>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_int64:
+                *reinterpret_cast<int64_t*>(ptr) = getValue<int64_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_uint8:
+                *reinterpret_cast<uint8_t*>(ptr) = getValue<uint8_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_int8:
+                *reinterpret_cast<int8_t*>(ptr) = getValue<int8_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_bool:
+                *reinterpret_cast<bool*>(ptr) = getValue<bool>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_int16:
+                *reinterpret_cast<int16_t*>(ptr) = getValue<int16_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_uint16:
+                *reinterpret_cast<uint16_t*>(ptr) = getValue<uint16_t>(scalar);
+                break;
+            case diopiDtype_t::diopi_dtype_float16:
+                *reinterpret_cast<half_float::half*>(ptr) = getValue<half_float::half>(scalar);
+                break;
+            default:
+                error(__FILE__, __LINE__, __FUNCTION__, "dtype %s not supported on host", diopiDtypeToStr(dtype));
+        }
+        *out = outCopy;
     } else if (device == diopi_device) {
+        diopiTensorHandle_t outCopyDev = nullptr;
+        void *src, *dst;
+        if (isFloatingType(dtype)) {
+            diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, diopi_dtype_float64, diopi_host);
+            diopiRequireTensor(ctx, &outCopyDev, &sSize, nullptr, diopi_dtype_float64, diopi_device);
+            diopiGetTensorData(outCopy, &src);
+            reinterpret_cast<double*>(src)[0] = getValue<double>(scalar);
+        } else if (isIntegralTypeWithBool(dtype)) {
+            diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, diopi_dtype_int64, diopi_host);
+            diopiRequireTensor(ctx, &outCopyDev, &sSize, nullptr, diopi_dtype_int64, diopi_device);
+            diopiGetTensorData(outCopy, &src);
+            reinterpret_cast<int64_t*>(src)[0] = getValue<int64_t>(scalar);
+        } else {
+            error(__FILE__, __LINE__, __FUNCTION__, "dtype %s not supported on device", diopiDtypeToStr(dtype));
+        }
+        int64_t elemsize;
         diopiStreamHandle_t stream;
+        diopiGetTensorElemSize(outCopy, &elemsize);
         diopiGetStream(ctx, &stream);
-        CALL_ACLRT(aclrtMemcpyAsync(outDataPtr, sizeof(dtype), valuePtr, sizeof(dtype), ACL_MEMCPY_HOST_TO_DEVICE, stream));
-        aclrtSynchronizeStream(stream);
+        diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, diopi_device);
+        diopiGetTensorData(outCopyDev, &dst);
+        CALL_ACLRT(aclrtMemcpyAsync(dst, elemsize, src, elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
+        diopiCastDtype(ctx, *out, outCopyDev);
     } else {
         error(__FILE__, __LINE__, __FUNCTION__, "device(%s) not supported", deviceType2Str(device));
     }
-    *out = outTmp;
     return diopiSuccess;
 }
 
