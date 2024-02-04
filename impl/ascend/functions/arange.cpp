@@ -15,9 +15,6 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     diopiScalar_t* stepTmp = const_cast<diopiScalar_t*>(step);
     diopiDtype_t outDtype;
     diopiGetTensorDtype(out, &outDtype);
-    std::cout << "start:" << diopiDtypeToStr(start->stype) << " " << getValue<double>(start) << std::endl;
-    std::cout << "end:" << diopiDtypeToStr(end->stype) << " " << getValue<double>(end) << std::endl;
-    std::cout << "step:" << diopiDtypeToStr(step->stype) << " " << getValue<double>(step) << std::endl;
     // convert to integer
     if (isIntegralTypeWithBool(outDtype)) {
         if (!isIntegralTypeWithBool(start->stype)) {
@@ -52,10 +49,6 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
             stepTmp->stype = outDtype;
         }
     }
-    std::cout << "startTmp:" << diopiDtypeToStr(startTmp->stype) << " " << getValue<double>(startTmp) << std::endl;
-    std::cout << "endTmp:" << diopiDtypeToStr(endTmp->stype) << " " << getValue<double>(endTmp) << std::endl;
-    std::cout << "stepTmp:" << diopiDtypeToStr(stepTmp->stype) << " " << getValue<double>(stepTmp) << std::endl;
-
     AclOpRunner<3, 1>("Range", ctx).addConstInput(*startTmp).addConstInput(*endTmp).addConstInput(*stepTmp).addOutput(out).run();
 
     return diopiSuccess;
