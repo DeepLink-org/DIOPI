@@ -329,3 +329,9 @@
 
 - diopiIsNan:
     dtype: (uint8, int8, int32, int16, int64, bool)->float32
+
+- diopiClamp:
+    dtype: (uint8, int8, uint16, int16, uint32, int32, uint64, int64, bool)->float32
+
+- diopiClampScalar:
+    dtype: (uint8, int8, uint16, int16, uint32, int32, uint64, int64, bool)->float32
