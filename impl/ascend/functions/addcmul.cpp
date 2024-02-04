@@ -14,10 +14,7 @@ diopiError_t diopiAddcmul(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     diopiTensorHandle_t valueTensor = nullptr;
     diopiDtype_t dtype;
     diopiGetTensorDtype(input, &dtype);
-    // std::cout << "dtype:" << diopiDtypeToStr(dtype) << std::endl;
-    // std::cout << "scalar:" << getValue<double>(value) << std::endl;
     makeTensorFromScalar(ctx, value, &valueTensor, dtype, diopiDevice_t::diopi_device);
-    // printContiguousTensor(ctx, AscendTensor(valueTensor), "value");
     AclOpRunner<4, 1>("Addcmul", ctx).addInput(input).addInput(tensor1).addInput(tensor2).addInput(valueTensor).addOutput(out).run();
     return diopiSuccess;
 }
