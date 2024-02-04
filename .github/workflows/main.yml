@@ -101,7 +101,7 @@ jobs:
     needs: [Rsync]
     uses: ./.github/workflows/_runs-on-nv-step1.yml
     with:
-      runner: ${{ needs.Rsync.outputs.GETRUNNER }}
+      runner: ${{ needs.Rsync.outputs.getrunner }}
       run_result: ${{ needs.Rsync.outputs.output }}
 
   Op-Test-Nvidia:
@@ -110,7 +110,7 @@ jobs:
     if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     uses: ./.github/workflows/_runs-on-nv-step2.yml
     with:
-      runner: ${{ needs.Rsync.outputs.GETRUNNER }}
+      runner: ${{ needs.Rsync.outputs.getrunner }}
       all_coverage: ${ALL_COVERAGE}
       require_coverage: ${REQUIRE_COVERAGE}
 
@@ -211,7 +211,8 @@ jobs:
           source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
           export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
           echo \$LD_LIBRARY_PATH
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test'
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test' \
+          && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
   # Rt-Test-Nvidia:

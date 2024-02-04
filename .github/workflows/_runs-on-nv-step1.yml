@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       runner:
-        description: Set up the build environment
+        description: Set up the runner
         type: string
         required: false
         default: "tps-sco-ci"
@@ -104,7 +104,6 @@ jobs:
       - name: gen-test-data
         run: |
           set -e
-          echo "${RUN_RESULT}"
           if [[ "${RUN_RESULT}" == *GENDATA* && "${GETRUNNER}" == *sco* ]];then
             srun --job-name=${GITHUB_JOB} bash -c "cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python \
             && source ${ENV_PATH}/pt2.0_diopi \

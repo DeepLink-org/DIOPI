@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       runner:
-        description: Set up the build environment
+        description: Set up the runner
         type: string
         required: false
         default: "tps-sco-ci"
