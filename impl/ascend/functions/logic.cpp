@@ -16,7 +16,7 @@ diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConst
     diopiGetTensorDtype(other, &otherDtype);
     diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
 
-    if (!strncmp(logicOp, "Logical", 7)) {
+    if (strlen(logicOp) > 7 && !strncmp(logicOp, "Logical", 7)) {
         // LogicalAnd & LogicalOr & LogicalNot only support dtype is bool.
         highType = diopi_dtype_bool;
     } else if (highType == diopi_dtype_bool) {
