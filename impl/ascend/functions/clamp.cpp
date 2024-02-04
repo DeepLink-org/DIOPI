@@ -65,15 +65,15 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     if (min != nullptr) {
         broadcast(ctx, minTmp, min, sizes);
     } else {
-        auto min_val = getMinMaxFromDtype(dtype).first;
-        fillTensor(ctx, minTmp, min_val);
+        auto minVal = getMinMaxFromDtype(dtype).first;
+        fillTensor(ctx, minTmp, minVal);
     }
 
     if (max != nullptr) {
         broadcast(ctx, maxTmp, max, sizes);
     } else {
-        auto max_val = getMinMaxFromDtype(dtype).second;
-        fillTensor(ctx, maxTmp, max_val);
+        auto maxVal = getMinMaxFromDtype(dtype).second;
+        fillTensor(ctx, maxTmp, maxVal);
     }
 
     // Perform a clamp operation according PyTorch's special handling of the case when max is less than min.
@@ -105,17 +105,17 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     if (min != nullptr) {
         runner.addConstInput(*min, dtype);
     } else {
-        auto min_val = getMinMaxFromDtype(dtype).first;
-        diopiScalar_t min_val_scalar = constructDiopiScalarT(diopi_dtype_float64, min_val);
-        runner.addConstInput(min_val_scalar, dtype);
+        auto minVal = getMinMaxFromDtype(dtype).first;
+        diopiScalar_t minValScalar = constructDiopiScalarT(diopi_dtype_float64, minVal);
+        runner.addConstInput(minValScalar, dtype);
     }
 
     if (max != nullptr) {
         runner.addConstInput(*max, dtype);
     } else {
-        auto max_val = getMinMaxFromDtype(dtype).second;
-        diopiScalar_t max_val_scalar = constructDiopiScalarT(diopi_dtype_float64, max_val);
-        runner.addConstInput(max_val_scalar, dtype);
+        auto maxVal = getMinMaxFromDtype(dtype).second;
+        diopiScalar_t maxValScalar = constructDiopiScalarT(diopi_dtype_float64, maxVal);
+        runner.addConstInput(maxValScalar, dtype);
     }
 
     runner.addOutput(out).run();
