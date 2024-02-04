@@ -99,6 +99,7 @@ jobs:
       RUN_RESULT: ${{ inputs.run_result }}
       BUILD_TEST1: "build_test"
       GEN_DATA: "diopi_test/python/cache"
+      GEN_DATA_PATH: "/mnt/cache/share/deeplinkci/gen-data/source"
     steps:
       - name: gen-test-data
         run: |
@@ -118,5 +119,5 @@ jobs:
             || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
             """
           else
-            ln -s ${GEN_DATA_PATH}/${GEN_DATA}/diopi ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
+            ln -s ${GEN_DATA_PATH}/${GEN_DATA}/diopi ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
           fi
