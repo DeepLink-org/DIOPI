@@ -5,6 +5,7 @@
  */
 
 #include "../common/acloprunner.hpp"
+#include "string"
 
 namespace impl {
 namespace ascend {
@@ -14,6 +15,13 @@ diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConst
     diopiGetTensorDtype(input, &inputDtype);
     diopiGetTensorDtype(other, &otherDtype);
     diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+
+    if (!strncmp(logicOp, "Logical", 7)) {
+        // LogicalAnd & LogicalOr & LogicalNot only support dtype is bool 
+        highType = diopi_dtype_bool;
+    } else if (highType == diopi_dtype_bool) {
+        highType = diopi_dtype_float32;
+    }
     AclOpRunner<2, 1>(logicOp, ctx).addInput(input, highType).addInput(other, highType).addOutput(out).run();
     return diopiSuccess;
 }
@@ -24,15 +32,8 @@ diopiError_t logicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
 
 diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, const char* logicOp) {
     AscendTensor inputTr(input);
-    diopiDtype_t inputDtype = inputTr.dtype();
-    diopiDtype_t otherDtype = other->stype;
     diopiTensorHandle_t otherCopy;
-    if (inputDtype != otherDtype && (!isIntegralType(otherDtype) && isIntegralType(inputDtype))) {
-        castTensor(ctx, inputTr, diopi_dtype_float32);
-        makeTensorFromScalar(ctx, other, &otherCopy, diopi_dtype_float32);
-    } else {
-        makeTensorFromScalar(ctx, other, &otherCopy, inputDtype);
-    }
+    makeTensorFromScalar(ctx, other, &otherCopy, inputTr.dtype());
 
     AclOpRunner<2, 1>(logicOp, ctx).addInput(inputTr).addConstInput(otherCopy).addOutput(out).run();
     return diopiSuccess;
@@ -156,7 +157,8 @@ diopiError_t diopiLogicalOrInp(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 
 // logical_not
 diopiError_t diopiLogicalNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("LogicalNot", ctx).addInput(input).addOutput(out).run();
+    // LogicalNot only support dtype of input is bool.
+    AclOpRunner<1, 1>("LogicalNot", ctx).addInput(input, diopi_dtype_bool).addOutput(out).run();
     return diopiSuccess;
 }
 
