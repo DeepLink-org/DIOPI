@@ -255,101 +255,73 @@ diopiTensorHandle_t createTensorIfNullptrOrConstCast(diopiContextHandle_t ctx, d
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
     // get scalar
-    bool tempBool = false;
-    int8_t tempI8 = 0;
-    uint8_t tempU8 = 0;
-    int16_t tempI16 = 0;
-    uint16_t tempU16 = 0;
-    int32_t tempI32 = 0;
-    uint32_t tempU32 = 0;
-    int64_t tempI64 = 0;
-    uint64_t tempU64 = 0;
-    half_float::half tempF16 = static_cast<half_float::half>(0);
-    float tempF32 = 0;
-    double tempF64 = 0;
-    void* valuePtr = nullptr;
     int64_t nbytes = 0;
+    uint64_t buff = 0;  // just for store the value with the different type.
     switch (dtype) {
         case diopi_dtype_bool: {
             nbytes = 1;
-            tempBool = getValue<bool>(scalar);
-            valuePtr = &tempBool;
+            *(bool*)(&buff) = getValue<bool>(scalar);
             break;
         }
         case diopi_dtype_int8: {
             nbytes = 1;
-            tempI8 = getValue<int8_t>(scalar);
-            valuePtr = &tempI8;
+            *(int8_t*)(&buff) = getValue<int8_t>(scalar);
             break;
         }
         case diopi_dtype_uint8: {
             nbytes = 1;
-            tempU8 = getValue<uint8_t>(scalar);
-            valuePtr = &tempU8;
+            *(uint8_t*)(&buff) = getValue<uint8_t>(scalar);
             break;
         }
         case diopi_dtype_int16: {
             nbytes = 2;
-            tempI16 = getValue<int16_t>(scalar);
-            valuePtr = &tempI16;
+            *(int16_t*)(&buff) = getValue<int16_t>(scalar);
             break;
         }
         case diopi_dtype_uint16: {
             nbytes = 2;
-            tempU16 = getValue<uint16_t>(scalar);
-            valuePtr = &tempU16;
+            *(uint16_t*)(&buff) = getValue<uint16_t>(scalar);
             break;
         }
         case diopi_dtype_int32: {
             nbytes = 4;
-            tempI32 = getValue<int32_t>(scalar);
-            valuePtr = &tempI32;
+            *(int32_t*)(&buff) = getValue<int32_t>(scalar);
             break;
         }
         case diopi_dtype_uint32: {
             nbytes = 4;
-            tempU32 = getValue<uint32_t>(scalar);
-            valuePtr = &tempU32;
+            *(uint32_t*)(&buff) = getValue<uint32_t>(scalar);
             break;
         }
         case diopi_dtype_int64: {
             nbytes = 8;
-            tempI64 = getValue<int64_t>(scalar);
-            valuePtr = &tempI64;
+            *(int64_t*)(&buff) = getValue<int64_t>(scalar);
             break;
         }
         case diopi_dtype_uint64: {
             nbytes = 8;
-            tempU64 = getValue<uint64_t>(scalar);
-            valuePtr = &tempU64;
+            *(uint64_t*)(&buff) = getValue<uint64_t>(scalar);
             break;
         }
         case diopi_dtype_float16: {
             nbytes = 2;
-            tempF16 = getValue<half_float::half>(scalar);
-            valuePtr = &tempF16;
+            *(half_float::half*)(&buff) = getValue<half_float::half>(scalar);
             break;
         }
         case diopi_dtype_float32: {
             nbytes = 4;
-            tempF32 = getValue<float>(scalar);
-            valuePtr = &tempF32;
+            *(float*)(&buff) = getValue<float>(scalar);
             break;
         }
         case diopi_dtype_float64: {
             nbytes = 8;
-            tempF64 = getValue<double>(scalar);
-            valuePtr = &tempF64;
+            *(double*)(&buff) = getValue<double>(scalar);
             break;
         }
         default: {
             error(__FILE__, __LINE__, __FUNCTION__, "the input tensor dtype %s is not allown", diopiDtypeToStr(dtype));
         }
     }
-    // std::cout << "==================in make tensorfromScalar start===================" << std::endl;
-    // std::cout << "dtype:" << diopiDtypeToStr(dtype) << std::endl;
-    // std::cout << "tempI64:"  << tempI64 << std::endl;
-    // std::cout << "*valuePtr" << *(int64_t*)valuePtr << std::endl;
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
     void* outDataPtr = nullptr;
@@ -357,7 +329,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
     diopiRequireTensor(
         ctx, &outTmp, &sSize, nullptr, dtype, diopi_host);  // manage the storage lifecycle by ctx, avoid calling aclrtSynchronizeStream after aclrtMemcpyAsync
     diopiGetTensorData(outTmp, &outDataPtr);
-    memcpy(outDataPtr, valuePtr, nbytes);
+    memcpy(outDataPtr, &buff, nbytes);
     if (device == diopi_host) {  // do nothing
         *out = outTmp;
     } else if (device == diopi_device) {
