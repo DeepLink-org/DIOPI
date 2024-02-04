@@ -260,62 +260,62 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
     switch (dtype) {
         case diopi_dtype_bool: {
             nbytes = 1;
-            *(bool*)(&buff) = getValue<bool>(scalar);
+            *reinterpret_cast<bool*>(&buff) = getValue<bool>(scalar);
             break;
         }
         case diopi_dtype_int8: {
             nbytes = 1;
-            *(int8_t*)(&buff) = getValue<int8_t>(scalar);
+            *reinterpret_cast<int8_t*>(&buff) = getValue<int8_t>(scalar);
             break;
         }
         case diopi_dtype_uint8: {
             nbytes = 1;
-            *(uint8_t*)(&buff) = getValue<uint8_t>(scalar);
+            *reinterpret_cast<uint8_t*>(&buff) = getValue<uint8_t>(scalar);
             break;
         }
         case diopi_dtype_int16: {
             nbytes = 2;
-            *(int16_t*)(&buff) = getValue<int16_t>(scalar);
+            *reinterpret_cast<int16_t*>(&buff) = getValue<int16_t>(scalar);
             break;
         }
         case diopi_dtype_uint16: {
             nbytes = 2;
-            *(uint16_t*)(&buff) = getValue<uint16_t>(scalar);
+            *reinterpret_cast<uint16_t*>(&buff) = getValue<uint16_t>(scalar);
             break;
         }
         case diopi_dtype_int32: {
             nbytes = 4;
-            *(int32_t*)(&buff) = getValue<int32_t>(scalar);
+            *reinterpret_cast<int32_t*>(&buff) = getValue<int32_t>(scalar);
             break;
         }
         case diopi_dtype_uint32: {
             nbytes = 4;
-            *(uint32_t*)(&buff) = getValue<uint32_t>(scalar);
+            *reinterpret_cast<uint32_t*>(&buff) = getValue<uint32_t>(scalar);
             break;
         }
         case diopi_dtype_int64: {
             nbytes = 8;
-            *(int64_t*)(&buff) = getValue<int64_t>(scalar);
+            *reinterpret_cast<int64_t*>(&buff) = getValue<int64_t>(scalar);
             break;
         }
         case diopi_dtype_uint64: {
             nbytes = 8;
-            *(uint64_t*)(&buff) = getValue<uint64_t>(scalar);
+            *reinterpret_cast<uint64_t*>(&buff) = getValue<uint64_t>(scalar);
             break;
         }
         case diopi_dtype_float16: {
             nbytes = 2;
-            *(half_float::half*)(&buff) = getValue<half_float::half>(scalar);
+            *reinterpret_cast<half_float::half*>(&buff) = getValue<half_float::half>(scalar);
             break;
         }
         case diopi_dtype_float32: {
             nbytes = 4;
-            *(float*)(&buff) = getValue<float>(scalar);
+            *reinterpret_cast<float*>(&buff) = getValue<float>(scalar);
             break;
         }
         case diopi_dtype_float64: {
             nbytes = 8;
-            *(double*)(&buff) = getValue<double>(scalar);
+            *reinterpret_cast<double*>(&buff) = getValue<double>(scalar);
             break;
         }
         default: {
