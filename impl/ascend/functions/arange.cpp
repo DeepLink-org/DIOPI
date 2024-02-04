@@ -39,17 +39,20 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
         if (isIntegralTypeWithBool(start->stype)) {
             *startTmp = constructDiopiScalarT(outDtype, start->ival);
         } else {
-            startTmp.ival = start->ival startTmp->stype = outDtype;
+            startTmp.ival = start->ival;
+            startTmp->stype = outDtype;
         }
         if (isIntegralTypeWithBool(end->stype)) {
             *endTmp = constructDiopiScalarT(outDtype, end->ival);
         } else {
-            endTmp.ival = end->ival endTmp->stype = outDtype;
+            endTmp.ival = end->ival;
+            endTmp->stype = outDtype;
         }
         if (isIntegralTypeWithBool(step->stype)) {
             *stepTmp = constructDiopiScalarT(outDtype, step->ival);
         } else {
-            stepTmp.ival = step->ival stepTmp->stype = outDtype;
+            stepTmp.ival = step->ival;
+            stepTmp->stype = outDtype;
         }
     }
     AclOpRunner<3, 1>("Range", ctx).addConstInput(*startTmp).addConstInput(*endTmp).addConstInput(*stepTmp).addOutput(out).run();
