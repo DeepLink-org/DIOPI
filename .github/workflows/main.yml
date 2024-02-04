@@ -126,8 +126,8 @@ jobs:
           set -ex
           export USE_COVERAGE=ON
           source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1}_A100 && cp -R source ${BUILD_TEST1}_A100 && cd ${BUILD_TEST1}_A100
+          srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1}_A100 && exit 1 )
           """
 
   Build-Camb:
@@ -200,19 +200,19 @@ jobs:
           ssh ${CLUSTER_1424} """
           set -e
           source /mnt/cache/share/platform/env/${ENV_NAME}
-          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python && ls &&
+          cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}_A100 && cd diopi_test/python && ls &&
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=10 --gres=gpu:${GPU_REQUESTS} bash -c 'python main.py --mode gen_data' \
-          || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}_A100 && git clean -xdf ${GEN_DATA} && exit 1 )
           """
       - name: test-op
         run: |
           ssh ${CLUSTER_1424} """
           set -e
-          source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
-          export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
+          source /mnt/cache/share/platform/env/${ENV_NAME} && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}_A100
+          export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}_A100/impl/lib
           echo \$LD_LIBRARY_PATH
           srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_SH1424} --time=20 --gres=gpu:${GPU_REQUESTS} bash -c 'cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test' \
-          && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          && git clean -xdf ${GEN_DATA} || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}_A100 && git clean -xdf ${GEN_DATA} && exit 1 )
           """
 
   # Rt-Test-Nvidia:
