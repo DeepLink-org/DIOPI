@@ -13,7 +13,7 @@
 namespace impl {
 namespace ascend {
 
-diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t *value) {
+diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
     if (numel <= 0) {
@@ -32,23 +32,9 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
         divByZero = false;
     }
 
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    diopiTensorHandle_t inputCopy;
-    diopiSize_t shape;
-    diopiGetTensorShape(input, &shape);
-
-    if (diopi_dtype_bool == dtype && 0 != shape.len) {
-        makeTensorLike(ctx, &inputCopy, input, diopi_dtype_int32);
-        AclOpRunner<1, 1>("Fills", ctx).addInput(inputCopy).setAttr<float>("value", val).addOutput(inputCopy).run();
-        diopiCastDtype(ctx, input, inputCopy);
-    } else {
-        AclOpRunner<1, 1>("Fills", ctx).addInput(input).setAttr<float>("value", val).addOutput(input).run();
-    }
-    auto zeroValueScalar = diopiScalar_t();
-    zeroValueScalar.stype = diopi_dtype_float64;
-    zeroValueScalar.fval = 0.0;
-
+    AscendTensor inputAt(input);
+    AclOpRunner<1, 1>("Fills", ctx).addInput(input).setAttr<float>("value", val).addOutput(input).run();
+    diopiScalar_t zeroValueScalar = constructDiopiScalarT(inputAt.dtype(), 0.0);
     if (divByZero) diopiDivInpScalar(ctx, input, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
 
     return diopiSuccess;

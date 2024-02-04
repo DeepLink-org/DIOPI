@@ -6,6 +6,7 @@ from functools import partial
 from generator import Genfunc
 from conformance.utils import logger
 from conformance.db_operation import db_conn
+from conformance.exception import GenDataFailedException
 
 
 class GenPolicy:
@@ -22,6 +23,7 @@ class GenInputData(object):
     Generate input data for all functions by using numpy
     """
     db_case_items = []
+    err_case_counter = 0
 
     @staticmethod
     def run(
@@ -77,6 +79,7 @@ class GenInputData(object):
                     f"Generate input data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}"
                 )
                 item.update({"result": "failed", "err_msg": err_msg})
+                GenInputData.err_case_counter += 1
             finally:
                 GenInputData.db_case_items.append(item)
 

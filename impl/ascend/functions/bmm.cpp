@@ -18,9 +18,8 @@ diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         diopiFill(ctx, out, &zero);
         return diopiSuccess;
     }
-    diopiDtype_t dtype = inputCopy.dtype();
-    if (dtype == diopi_dtype_float64) dtype = diopi_dtype_float32;
-    AclOpRunner<2, 1>("BatchMatMul", ctx).addInput(input, dtype).addInput(mat2, dtype).setAttr("adj_x1", false).setAttr("adj_x1", false).addOutput(out).run();
+
+    AclOpRunner<2, 1>("BatchMatMul", ctx).addInput(input).addInput(mat2).setAttr("adj_x1", false).setAttr("adj_x1", false).addOutput(out).run();
     return diopiSuccess;
 }
 

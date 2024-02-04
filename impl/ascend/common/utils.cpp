@@ -148,7 +148,6 @@ diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTe
     diopiStreamHandle_t stream;
     diopiGetStream(ctx, &stream);
     aclrtMemcpyAsync(destPtr, dst.getAclMemBufferSize(), sourcePtr, src.getAclMemBufferSize(), ACL_MEMCPY_DEVICE_TO_DEVICE, stream);
-    aclrtSynchronizeStream(stream);
 
     return diopiSuccess;
 }
@@ -199,6 +198,9 @@ diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor
 }
 
 diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_t dtype) {
+    if (dtype == src.dtype()) {
+        return diopiSuccess;
+    }
     AscendTensor temp;
     makeTensorLike(ctx, temp, src, dtype);
     castTensor(ctx, src, temp);
@@ -317,7 +319,6 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, diopi_device);
         diopiGetTensorData(outCopyDev, &dst);
         CALL_ACLRT(aclrtMemcpyAsync(dst, elemsize, src, elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
-        CALL_ACLRT(aclrtSynchronizeStream(stream));
         diopiCastDtype(ctx, *out, outCopyDev);
     } else {
         error(__FILE__, __LINE__, __FUNCTION__, "device(%s) not supported", deviceType2Str(device));
@@ -388,54 +389,6 @@ diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     diopiDtype_t dtype;
     diopiGetTensorDtype(src, &dtype);
     return makeOnesLike(ctx, out, src, dtype);
-}
-
-diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    // get nan value tensor
-    diopiTensorHandle_t nanValue;
-    auto nanValueScalar = diopiScalar_t();
-    nanValueScalar.stype = diopi_dtype_float64;
-    nanValueScalar.fval = 0.0;
-    makeTensorFromScalar(ctx, &nanValueScalar, &nanValue, diopi_dtype_float32, diopi_device);
-    auto zeroValueScalar = diopiScalar_t();
-    zeroValueScalar.stype = diopi_dtype_float64;
-    zeroValueScalar.fval = 0.0;
-    diopiDivInpScalar(ctx, nanValue, &zeroValueScalar, diopiRoundMode_t::RoundModeNone);
-
-    diopiDtype_t inputDtype;
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiTensorHandle_t inputTemp;
-    if (diopi_dtype_float16 == inputDtype) {
-        makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
-        diopiCastDtype(ctx, inputTemp, input);
-    } else {
-        inputTemp = const_cast<diopiTensorHandle_t>(input);
-    }
-
-    // get negative mask
-    diopiTensorHandle_t mask;
-    makeTensorLike(ctx, &mask, inputTemp, diopi_dtype_bool);
-    diopiLtScalar(ctx, mask, inputTemp, &zeroValueScalar);
-
-    // NaN of float16 can only be cast from NaN of float64
-    diopiDtype_t outputDtype;
-    diopiGetTensorDtype(out, &outputDtype);
-    diopiTensorHandle_t outputTemp;
-    if (diopi_dtype_float16 == outputDtype) {
-        makeTensorLike(ctx, &outputTemp, out, diopi_dtype_float64);
-        diopiCastDtype(ctx, outputTemp, out);
-    } else {
-        outputTemp = out;
-    }
-
-    // masked_fill nan
-    diopiMaskedFillInp(ctx, outputTemp, mask, nanValue);
-
-    if (diopi_dtype_float16 == outputDtype) {
-        diopiCastDtype(ctx, out, outputTemp);
-    }
-
-    return diopiSuccess;
 }
 
 aclDataType getAclDataType(diopiDtype_t type) {
@@ -732,11 +685,97 @@ diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandl
         diopiGetStream(ctx, &stream);
         int64_t elemsize = getBaseBufferSize(src);
         CALL_ACLRT(aclrtMemcpyAsync(dstPtr, elemsize, const_cast<void*>(srcPtr), elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
-        CALL_ACLRT(aclrtSynchronizeStream(stream));
         return dst;
     } else {
         return const_cast<diopiTensorHandle_t>(src);
     }
 }
+
+static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes, diopiDtype_t* dtype) {
+    if (opSupportedDtypes.find(diopi_dtype_float32) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_float32;
+    } else if (opSupportedDtypes.find(diopi_dtype_float16) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_float16;
+    } else if (opSupportedDtypes.find(diopi_dtype_int32) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_int32;
+    } else if (opSupportedDtypes.find(diopi_dtype_int16) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_int16;
+    } else if (opSupportedDtypes.find(diopi_dtype_int8) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_int8;
+    } else if (opSupportedDtypes.find(diopi_dtype_bool) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_bool;
+    } else if (opSupportedDtypes.find(diopi_dtype_complex64) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_complex64;
+    } else {
+        setLastErrorString("%s", "this operator does not support bool, int8, int16, int32, float16, float32");
+        return diopiDtypeNotSupported;
+    }
+    return diopiSuccess;
+}
+
+diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<AscendTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype) {
+    std::set<diopiDtype_t> dtypeAndTensorPtrs;
+    diopiDtype_t targetType = diopi_dtype_float32;
+    for (const auto& pTensor : pTensors) {
+        dtypeAndTensorPtrs.insert(pTensor->dtype());
+    }
+    if (dtypeAndTensorPtrs.find(diopi_dtype_float64) != dtypeAndTensorPtrs.end() || dtypeAndTensorPtrs.find(diopi_dtype_float32) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_float32) == opSupportedDtype.end()) {  // not support float32
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into float32
+            targetType = diopi_dtype_float32;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_float16) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_float16) == opSupportedDtype.end()) {  // not support float16
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into float16
+            targetType = diopi_dtype_float16;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_int64) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_int32) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_uint64) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_uint32) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_int32) == opSupportedDtype.end()) {  // not support int32
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into int32
+            targetType = diopi_dtype_int32;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_int16) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_uint16) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_int16) == opSupportedDtype.end()) {  // not support int16
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into int16
+            targetType = diopi_dtype_int16;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_int8) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_uint8) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_int8) == opSupportedDtype.end()) {  // not support int8
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into int8
+            targetType = diopi_dtype_int8;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_bool) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_bool) == opSupportedDtype.end()) {  // not support bool
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into bool
+            targetType = diopi_dtype_bool;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_complex64) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_complex128) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_complex64) == opSupportedDtype.end()) {  // not support bool
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into bool
+            targetType = diopi_dtype_bool;
+        }
+    } else {
+        setLastErrorString("%s", "tensor's dtype error, can't be cast");
+        return diopiDtypeNotSupported;
+    }
+    for (const auto& pTensor : pTensors) {
+        castTensor(ctx, *pTensor, targetType);
+    }
+    return diopiSuccess;
+}
+
 }  // namespace ascend
 }  // namespace impl

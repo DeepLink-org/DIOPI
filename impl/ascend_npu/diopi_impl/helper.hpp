@@ -149,6 +149,12 @@ void set_last_error_string(const char* szFmt, Types&&... args) {
         return diopiErrorOccurred;                                                               \
     }
 
+#define DIOPI_CHECK_THROW(cond, fmt, args...)                  \
+    if (!(cond)) {                                             \
+        printf(#fmt " at %s:%d ", ##args, __FILE__, __LINE__); \
+        throw std::runtime_error("error occurs");              \
+    }
+
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 extern thread_local diopiContextHandle_t context;
 
@@ -249,6 +255,13 @@ inline diopiDtype_t getDIOPITensorType(at::ScalarType scalarType) {
             return diopi_dtype_float32;
         case at::ScalarType::Double:
             return diopi_dtype_float64;
+        case at::ScalarType::ComplexHalf:
+            return diopi_dtype_complex32;
+        case at::ScalarType::ComplexFloat:
+            return diopi_dtype_complex64;
+        case at::ScalarType::ComplexDouble:
+            return diopi_dtype_complex128;
+
         default:
             NOT_SUPPORTED("aten dtype");
             return diopi_dtype_unsupported;
@@ -300,6 +313,7 @@ at::Tensor buildATen(diopiTensorHandle_t tensor);
 template <typename T>
 inline std::string dumpArgs(const T& t) {
     std::stringstream stream;
+    stream << t;
     return stream.str();
 }
 
@@ -331,6 +345,24 @@ inline std::string dumpArgs(const at::IntArrayRef& t) {
     }
     stream << "]";
     return stream.str();
+}
+
+template <>
+inline std::string dumpArgs(const c10::OptionalArrayRef<long int>& t) {
+    std::stringstream stream;
+    stream << "[";
+    if (t.has_value()) {
+        for (const auto& i : t.value()) {
+            stream << i << ",";
+        }
+    }
+    stream << "]";
+    return stream.str();
+}
+
+template <>
+inline std::string dumpArgs(const at::Generator& t) {
+    return std::string();
 }
 
 inline at::IntArrayRef buildATen(const diopiSize_t* size) { return at::IntArrayRef(size->data, size->len); }
