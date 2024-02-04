@@ -106,7 +106,7 @@ jobs:
 
   Op-Test-Nvidia:
     name: Op-Test-Nvidia
-    needs: [Runs-On-Nv]
+    needs: [Rsync, Runs-On-Nv]
     if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     uses: ./.github/workflows/_runs-on-nv-step2.yml
     with:
