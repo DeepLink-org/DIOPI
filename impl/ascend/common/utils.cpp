@@ -268,63 +268,76 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
     float tempF32 = 0;
     double tempF64 = 0;
     void* valuePtr = nullptr;
+    int64_t nbytes = 0;
     switch (dtype) {
         case diopi_dtype_bool: {
+            nbytes = 1;
             tempBool = getValue<bool>(scalar);
             valuePtr = &tempBool;
             break;
         }
         case diopi_dtype_int8: {
+            nbytes = 1;
             tempI8 = getValue<int8_t>(scalar);
             valuePtr = &tempI8;
             break;
         }
         case diopi_dtype_uint8: {
+            nbytes = 1;
             tempU8 = getValue<uint8_t>(scalar);
             valuePtr = &tempU8;
             break;
         }
         case diopi_dtype_int16: {
+            nbytes = 2;
             tempI16 = getValue<int16_t>(scalar);
             valuePtr = &tempI16;
             break;
         }
         case diopi_dtype_uint16: {
+            nbytes = 2;
             tempU16 = getValue<uint16_t>(scalar);
             valuePtr = &tempU16;
             break;
         }
         case diopi_dtype_int32: {
+            nbytes = 4;
             tempI32 = getValue<int32_t>(scalar);
             valuePtr = &tempI32;
             break;
         }
         case diopi_dtype_uint32: {
+            nbytes = 4;
             tempU32 = getValue<uint32_t>(scalar);
             valuePtr = &tempU32;
             break;
         }
         case diopi_dtype_int64: {
+            nbytes = 8;
             tempI64 = getValue<int64_t>(scalar);
             valuePtr = &tempI64;
             break;
         }
         case diopi_dtype_uint64: {
+            nbytes = 8;
             tempU64 = getValue<uint64_t>(scalar);
             valuePtr = &tempU64;
             break;
         }
         case diopi_dtype_float16: {
+            nbytes = 2;
             tempF16 = getValue<half_float::half>(scalar);
             valuePtr = &tempF16;
             break;
         }
         case diopi_dtype_float32: {
+            nbytes = 4;
             tempF32 = getValue<float>(scalar);
             valuePtr = &tempF32;
             break;
         }
         case diopi_dtype_float64: {
+            nbytes = 8;
             tempF64 = getValue<double>(scalar);
             valuePtr = &tempF64;
             break;
@@ -333,23 +346,40 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
             error(__FILE__, __LINE__, __FUNCTION__, "the input tensor dtype %s is not allown", diopiDtypeToStr(dtype));
         }
     }
+    // std::cout << "==================in make tensorfromScalar start===================" << std::endl;
+    // std::cout << "dtype:" << diopiDtypeToStr(dtype) << std::endl;
+    // std::cout << "tempI64:"  << tempI64 << std::endl;
+    // std::cout << "*valuePtr" << *(int64_t*)valuePtr << std::endl;
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
     void* outDataPtr = nullptr;
     diopiTensorHandle_t outTmp = nullptr;
-    diopiRequireTensor(ctx, &outTmp, &sSize, nullptr, dtype, device);
+    diopiRequireTensor(
+        ctx, &outTmp, &sSize, nullptr, dtype, diopi_host);  // manage the storage lifecycle by ctx, avoid calling aclrtSynchronizeStream after aclrtMemcpyAsync
     diopiGetTensorData(outTmp, &outDataPtr);
-    if (device == diopi_host) {
-        memcpy(outDataPtr, valuePtr, sizeof(dtype));
+    memcpy(outDataPtr, valuePtr, nbytes);
+    if (device == diopi_host) {  // do nothing
+        *out = outTmp;
     } else if (device == diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
-        CALL_ACLRT(aclrtMemcpyAsync(outDataPtr, sizeof(dtype), valuePtr, sizeof(dtype), ACL_MEMCPY_HOST_TO_DEVICE, stream));
-        aclrtSynchronizeStream(stream);
+        diopiTensorHandle_t outDevTmp;
+        void* outDevDataPtr = nullptr;
+        diopiRequireTensor(ctx,
+                           &outDevTmp,
+                           &sSize,
+                           nullptr,
+                           dtype,
+                           diopi_device);  // manage the storage lifecycle by ctx, avoid calling aclrtSynchronizeStream after aclrtMemcpyAsync
+        diopiGetTensorData(outDevTmp, &outDevDataPtr);
+        CALL_ACLRT(aclrtMemcpyAsync(outDevDataPtr, nbytes, outDataPtr, nbytes, ACL_MEMCPY_HOST_TO_DEVICE, stream));
+        *out = outDevTmp;
+        // aclrtSynchronizeStream(stream);
     } else {
         error(__FILE__, __LINE__, __FUNCTION__, "device(%s) not supported", deviceType2Str(device));
     }
-    *out = outTmp;
+    // printContiguousTensor(ctx, AscendTensor( *out), "*out");
+    // std::cout << "==================in make tensorfromScalar end===================" << std::endl;
     return diopiSuccess;
 }
 

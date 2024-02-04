@@ -333,6 +333,7 @@ public:
     AclOpRunner& addConstInput(const diopiScalar_t& scalar, diopiDtype_t dtype) {
         diopiTensorHandle_t scalarTensor;
         makeTensorFromScalar(context_, &scalar, &scalarTensor, dtype);
+        // printContiguousTensor(context_, AscendTensor(scalarTensor), "scalar");
         return addConstInput(scalarTensor, ACL_FORMAT_ND, true);
     }
 
