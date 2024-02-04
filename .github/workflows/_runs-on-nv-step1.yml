@@ -110,7 +110,7 @@ jobs:
             && python main.py --mode gen_data" \
             || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
           elif [[ "${GETRUNNER}" == *diopi* ]];then
-            ssh Sh1424 """
+            ssh SH1424 """
             set -e
             source ${ENV_PATH}/pt2.0_diopi
             cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python &&
