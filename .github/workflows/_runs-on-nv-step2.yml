@@ -10,18 +10,21 @@ on:
         default: "tps-sco-ci"
       deeplink_path:
         description: ci work home
+        type: string
         required: false
         default: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}/'
       env_path:
         description: env file path
+        type: string
         required: false
         default: '/mnt/cache/share/platform/env'
       all_coverage:
-        description: env file path
+        description: all coverage
+        type: string
         required: true
         default: 'false'
       require_coverage:
-        description: env file path
+        description: input coverage rate
         required: false
         default: '0'
 jobs:
