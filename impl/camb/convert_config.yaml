@@ -61,7 +61,8 @@
 #---Pooling operation above---#
 
 #---Matrix operation below---#
-
+- diopiBmm:
+    layout: ND
 #---Matrix operation above---#
 
 - diopiUpsampleNearest:

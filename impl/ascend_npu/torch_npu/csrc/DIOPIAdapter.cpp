@@ -2291,7 +2291,7 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
                 outputTensor[sync_index[i]].resize_(real_shape);
             }
         } else {
-            if (0) {
+            if (1) {
                 ret = aclopCompileAndExecute(name.c_str(),
                                              inputSize,
                                              params.inDesc.data(),
@@ -2730,10 +2730,7 @@ NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
 
 NPUStream getCurrentSecondaryStream(c10::DeviceIndex device_index) { return getCurrentNPUStream(device_index); }
 
-void NPUStream::synchronize() const {
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(aclStream_));
-    NPU_CHECK_ERROR(aclrtSynchronizeDevice());
-}
+void NPUStream::synchronize() const { NPU_CHECK_ERROR(aclrtSynchronizeStream(aclStream_)); }
 
 aclError queue::LaunchAsyncCopyTask(void* dst, size_t dstLen, void* src, size_t srcLen, aclrtMemcpyKind kind) {
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();

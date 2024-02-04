@@ -23,19 +23,18 @@ diopiError_t logicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
 }
 
 diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, const char* logicOp) {
-    diopiDtype_t inputDtype, otherDtype;
-    diopiGetTensorDtype(input, &inputDtype);
-    otherDtype = other->stype;
-    diopiTensorHandle_t inputCopy, otherCopy;
-
+    AscendTensor inputTr(input);
+    diopiDtype_t inputDtype = inputTr.dtype();
+    diopiDtype_t otherDtype = other->stype;
+    diopiTensorHandle_t otherCopy;
     if (inputDtype != otherDtype && (!isIntegralType(otherDtype) && isIntegralType(inputDtype))) {
-        inputCopy = contiguous(ctx, input, diopi_dtype_float32);
+        castTensor(ctx, inputTr, diopi_dtype_float32);
         makeTensorFromScalar(ctx, other, &otherCopy, diopi_dtype_float32);
     } else {
-        inputCopy = contiguous(ctx, input);
         makeTensorFromScalar(ctx, other, &otherCopy, inputDtype);
     }
-    AclOpRunner<2, 1>(logicOp, ctx).addInput(inputCopy).addConstInput(otherCopy).addOutput(out).run();
+
+    AclOpRunner<2, 1>(logicOp, ctx).addInput(inputTr).addConstInput(otherCopy).addOutput(out).run();
     return diopiSuccess;
 }
 
