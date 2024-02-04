@@ -39,20 +39,20 @@ void dropoutTrainCore(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTe
     float prob = 1. - p;
     AclOpRunner<5, 1, dtypeConvertor>("StatelessDropOutGenMask", ctx)
         .addConstInput(inputSize)
-        .addConstInput(prob, diopi_dtype_float32)
+        .addConstInput(prob, inputAt.dtype())
         .addConstInput(pair.first, diopi_dtype_int32)
         .addConstInput(0, diopi_dtype_int32)
         .addConstInput(offset)
         .addOutput(maskTempTensor)
         .run();
 
-    diopiScalar_t oneScalar = constructDiopiScalarT(diopi_dtype_float64, 1);
+    diopiScalar_t oneScalar = constructDiopiScalarT(inputAt.dtype(), 1);
     diopiTensorHandle_t oneTh;
     makeTensorFromScalar(ctx, &oneScalar, &oneTh, inputAt.dtype(), diopi_device);
     AclOpRunner<3, 1, dtypeConvertor>("DropOutDoMask", ctx).addInput(input).addInput(maskTempTensor).addInput(oneTh).addOutput(out).run();
 
     diopiEq(ctx, mask, input, out);
-    diopiScalar_t probReciprocalScalar = constructDiopiScalarT(diopi_dtype_float64, 1. / prob);
+    diopiScalar_t probReciprocalScalar = constructDiopiScalarT(inputAt.dtype(), 1. / prob);
     diopiMulInpScalar(ctx, out, &probReciprocalScalar);
 }
 
