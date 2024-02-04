@@ -20,7 +20,7 @@ env:
   ENV_NAME: 'pt2.0_diopi'
   ENV_NAME_MMCV: 'pt1.11v1'
   GPU_REQUESTS: 1
-  SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_rd' }}
+  SLURM_PAR_SH1988: ${{ vars.SLURM_PAR_SH1984 != '' && vars.SLURM_PAR_SH1984 || 'pat_dev' }}
   SLURM_PAR_SH1424: ${{ vars.SLURM_PAR_SH1424 != '' && vars.SLURM_PAR_SH1424 || 'pat_rd' }}
   SLURM_PAR_CAMB: ${{ vars.SLURM_PAR_CAMB != '' && vars.SLURM_PAR_CAMB || 'camb_mlu370_m8 --exclude HOST-10-142-11-120,HOST-10-142-11-126' }}
   CLUSTER_V100: SCO
@@ -72,7 +72,10 @@ jobs:
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
           cd ${GITHUB_WORKSPACE}/source && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
-          echo "RUN_RESULT=$RUN_RESULT" >> "$GITHUB_OUTPUT"
+          if [ $CLUSTER_1988 == "SH1424" ]; then
+          RUN_RESULT_TMP="${RUN_RESULT}_GENDATA"
+          fi
+          echo "RUN_RESULT=$RUN_RESULT_TMP" >> "$GITHUB_OUTPUT"
       - name: Rsync to Server
         run: |
           ssh ${CLUSTER_V100} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
