@@ -24,38 +24,38 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
             startTmp->stype = outDtype;
         }
         if (!isIntegralTypeWithBool(end->stype)) {
-            *endTmp = constructDiopiScalarT(outDtype, end->fval);
+            endTmp = constructDiopiScalarT(outDtype, end->fval);
         } else {
             endTmp.ival = end->ival;
             endTmp->stype = outDtype;
         }
         if (!isIntegralTypeWithBool(step->stype)) {
-            *stepTmp = constructDiopiScalarT(outDtype, step->fval);
+            stepTmp = constructDiopiScalarT(outDtype, step->fval);
         } else {
             stepTmp.ival = step->ival;
             stepTmp->stype = outDtype;
         }
     } else {
         if (isIntegralTypeWithBool(start->stype)) {
-            *startTmp = constructDiopiScalarT(outDtype, start->ival);
+            startTmp = constructDiopiScalarT(outDtype, start->ival);
         } else {
             startTmp.ival = start->ival;
             startTmp->stype = outDtype;
         }
         if (isIntegralTypeWithBool(end->stype)) {
-            *endTmp = constructDiopiScalarT(outDtype, end->ival);
+            endTmp = constructDiopiScalarT(outDtype, end->ival);
         } else {
             endTmp.ival = end->ival;
             endTmp->stype = outDtype;
         }
         if (isIntegralTypeWithBool(step->stype)) {
-            *stepTmp = constructDiopiScalarT(outDtype, step->ival);
+            stepTmp = constructDiopiScalarT(outDtype, step->ival);
         } else {
             stepTmp.ival = step->ival;
             stepTmp->stype = outDtype;
         }
     }
-    AclOpRunner<3, 1>("Range", ctx).addConstInput(*startTmp).addConstInput(*endTmp).addConstInput(*stepTmp).addOutput(out).run();
+    AclOpRunner<3, 1>("Range", ctx).addConstInput(startTmp).addConstInput(endTmp).addConstInput(stepTmp).addOutput(out).run();
 
     return diopiSuccess;
 }
