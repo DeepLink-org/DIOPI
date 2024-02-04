@@ -25,6 +25,7 @@ on:
         default: 'false'
       require_coverage:
         description: input coverage rate
+        type: string
         required: false
         default: '0'
 jobs:
