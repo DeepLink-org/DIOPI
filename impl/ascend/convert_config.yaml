@@ -233,16 +233,16 @@
     dtype: (bool, uint8, int8, int16, int32, int64)->float32
 
 - diopiPow:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+    dtype: (uint8)->int16
 
 - diopiPowInp:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+    dtype: (uint8)->int16
 
 - diopiPowTensor:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+    dtype: (uint8)->int16
 
 - diopiPowInpTensor:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+    dtype: (uint8)->int16
 
 - diopiNorm:
     dtype: (bool, uint8, int8, int16, int32, int64, float64)->float32
