@@ -9,7 +9,6 @@ class CheckResult(object):
 
     @staticmethod
     def compare_input_list(input: list, input_reference: list, **kwargs):
-        input = [t.numpy() if isinstance(t, Tensor) else t for t in input]
         if len(input) != len(input_reference):
             raise InputChangedException(f"expect input list len {len(input_reference)} but {input}")
 
@@ -29,7 +28,7 @@ class CheckResult(object):
 
     @staticmethod
     def compare_input_dict(input: dict, input_reference: dict, ignore_paras_for_input_check: list, **kwargs):
-        input = {key: value.numpy() for key, value in input.items() if key not in ignore_paras_for_input_check and isinstance(value, Tensor)}
+        input = {key: value for key, value in input.items() if key not in ignore_paras_for_input_check and isinstance(value, np.ndarray)}
         input_reference = {key: value for key, value in input_reference.items() if key not in ignore_paras_for_input_check and isinstance(value, np.ndarray)}
         if input.keys() != input_reference.keys():
             raise InputChangedException(f"input's keys {list(input.keys())} is not equal to input_reference's keys {list(input_reference.keys())}.")
@@ -50,7 +49,7 @@ class CheckResult(object):
 
     @staticmethod
     def compare_output(output, output_reference, **kwargs):
-        if isinstance(output, Tensor):
+        if isinstance(output, np.ndarray):
             compare_fn = CheckResult.compare_tensor
         elif isinstance(output, (list, tuple)):
             compare_fn = CheckResult.compare_list
@@ -64,7 +63,7 @@ class CheckResult(object):
 
     @staticmethod
     def compare_tensor(output, output_reference, **kwargs):
-        CheckResult.allclose(output.numpy(), output_reference, **kwargs)
+        CheckResult.allclose(output, output_reference, **kwargs)
 
     @staticmethod
     def compare_list(output, output_reference, **kwargs):
@@ -73,7 +72,7 @@ class CheckResult(object):
         for i in range(len(output)):
             if isinstance(output[i], Tensor):
                 kwargs['name'] = "out" + str(i)
-                CheckResult.allclose(output[i].numpy(), output_reference[i], **kwargs)
+                CheckResult.allclose(output[i], output_reference[i], **kwargs)
 
     @staticmethod
     def compare_dict(output, output_reference, **kwargs):
@@ -82,15 +81,33 @@ class CheckResult(object):
         for k, v in output.items():
             if isinstance(v, Tensor):
                 kwargs['name'] = k
-                CheckResult.allclose(v.numpy(), output_reference[k], **kwargs)
+                CheckResult.allclose(v, output_reference[k], **kwargs)
 
     @staticmethod
     def compare_num(output, output_reference, **kwargs):
         assert isinstance(output_reference, np.ndarray), "output_reference should be type numpy.array"
-        output = np.array(output)
         assert output.shape == output_reference.shape, "output and output_reference should be same shape"
         kwargs['name'] = "scalar"
         CheckResult.allclose(output, output_reference, **kwargs)
+
+    @staticmethod
+    def to_numpy(input):
+        r"""Switch to numpy. When the input is an iterable object, only tensors within it will be transformed.
+        E.g: {"input": Tensor, "other": Tensor, "input_size": 5} -> {"input": np.ndarray, "other": np.ndarray, "input_size": 5}
+        """
+        if isinstance(input, Tensor):
+            input_np = input.numpy()
+        elif isinstance(input, list):
+            input_np = [i.numpy() if isinstance(i, Tensor) else i for i in input]
+        elif isinstance(input, tuple):
+            input_np = (i.numpy() if isinstance(i, Tensor) else i for i in input)
+        elif isinstance(input, dict):
+            input_np = {k: v.numpy() if isinstance(v, Tensor) else v for k, v in input.items()}
+        elif isinstance(input, (int, float)):
+            input_np= np.array(input)
+        else:
+            raise TypeError(f'Not support output type {type(input)}')
+        return input_np
 
     @staticmethod
     def allclose(tensor_dev: np.ndarray, tensor_ref: np.ndarray, **kwargs) -> bool:
