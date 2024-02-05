@@ -76,7 +76,7 @@ jobs:
           cd ${GITHUB_WORKSPACE}/source && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
           cd ~/rsync && GETRUNNER=$(cat cuda_runner)
           GETCLUSTER="SCO"
-          if [ ${GETRUNNER} == "diopi" ]; then
+          if [[ ${GETRUNNER} == *diopi* ]]; then
               RUN_RESULT_TMP="${RUN_RESULT}_GENDATA"
               GETCLUSTER="SH1424"
           fi
