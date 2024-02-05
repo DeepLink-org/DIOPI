@@ -72,7 +72,7 @@ jobs:
             && source ${ENV_PATH}/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
             && cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test"
           else
-            ssh Sh1424 """
+            ssh SH1424 """
             set -e
             source ${ENV_PATH}/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
             export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
@@ -89,7 +89,7 @@ jobs:
             source ${ENV_PATH}/pt2.0_diopi  && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
             bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
           else
-            ssh Sh1424 """
+            ssh SH1424 """
             set -e
             source ${ENV_PATH}/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
             bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
