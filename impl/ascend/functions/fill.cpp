@@ -23,9 +23,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     float val = getValue<float>(value);
 
     AscendTensor inputAt(input);
-    AclOpRunner<1, 1>("Fills", ctx).addInput(input).setAttr<float>("value", val).addOutput(input).run();
-    diopiScalar_t zeroValueScalar = constructDiopiScalarT(inputAt.dtype(), 0.0);
-
+    AclOpRunner<1, 1>("Fill", ctx).addInput(input).setAttr<float>("value", val).addOutput(input).run();
     return diopiSuccess;
 }
 
