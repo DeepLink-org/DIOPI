@@ -83,7 +83,7 @@ jobs:
             export USE_COVERAGE=ON
             source ${ENV_PATH}/pt2.0_diopi
             cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
-            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=10 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=20 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
             """
           fi
 
@@ -114,7 +114,7 @@ jobs:
             set -e
             source ${ENV_PATH}/pt2.0_diopi
             cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python &&
-            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=10 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=20 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
             || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
             """
           else
