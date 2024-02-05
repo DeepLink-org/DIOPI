@@ -19,29 +19,67 @@ namespace ascend {
 std::pair<double, double> getMinMaxFromDtype(diopiDtype_t tensorDtype) {
     switch (tensorDtype) {
         case diopi_dtype_int8:
-            return std::make_pair(std::numeric_limits<int8_t>::min(), std::numeric_limits<int8_t>::max());
+            return std::make_pair(std::numeric_limits<int8_t>::lowest(), std::numeric_limits<int8_t>::max());
         case diopi_dtype_uint8:
-            return std::make_pair(std::numeric_limits<uint8_t>::min(), std::numeric_limits<uint8_t>::max());
+            return std::make_pair(std::numeric_limits<uint8_t>::lowest(), std::numeric_limits<uint8_t>::max());
         case diopi_dtype_int16:
-            return std::make_pair(std::numeric_limits<int16_t>::min(), std::numeric_limits<int16_t>::max());
+            return std::make_pair(std::numeric_limits<int16_t>::lowest(), std::numeric_limits<int16_t>::max());
         case diopi_dtype_uint16:
-            return std::make_pair(std::numeric_limits<uint16_t>::min(), std::numeric_limits<uint16_t>::max());
+            return std::make_pair(std::numeric_limits<uint16_t>::lowest(), std::numeric_limits<uint16_t>::max());
         case diopi_dtype_int32:
-            return std::make_pair(std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max());
+            return std::make_pair(std::numeric_limits<int32_t>::lowest(), std::numeric_limits<int32_t>::max());
         case diopi_dtype_uint32:
-            return std::make_pair(std::numeric_limits<uint32_t>::min(), std::numeric_limits<uint32_t>::max());
+            return std::make_pair(std::numeric_limits<uint32_t>::lowest(), std::numeric_limits<uint32_t>::max());
         case diopi_dtype_int64:
-            return std::make_pair(std::numeric_limits<int64_t>::min(), std::numeric_limits<int64_t>::max());
+            return std::make_pair(std::numeric_limits<int64_t>::lowest(), std::numeric_limits<int64_t>::max());
         case diopi_dtype_uint64:
-            return std::make_pair(std::numeric_limits<uint64_t>::min(), std::numeric_limits<uint64_t>::max());
+            return std::make_pair(std::numeric_limits<uint64_t>::lowest(), std::numeric_limits<uint64_t>::max());
         case diopi_dtype_float16:
-            return std::make_pair(-std::numeric_limits<half_float::half>::max(), std::numeric_limits<half_float::half>::max());
+            return std::make_pair(std::numeric_limits<half_float::half>::lowest(), std::numeric_limits<half_float::half>::max());
         case diopi_dtype_float32:
-            return std::make_pair(-std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+            return std::make_pair(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
         case diopi_dtype_float64:
-            return std::make_pair(-std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
+            return std::make_pair(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max());
         case diopi_dtype_bool:
-            return std::make_pair(std::numeric_limits<bool>::min(), std::numeric_limits<bool>::max());
+            return std::make_pair(std::numeric_limits<bool>::lowest(), std::numeric_limits<bool>::max());
+        default:
+            break;
+    }
+}
+
+std::pair<double, double> getFloatMinMaxFromDtype(diopiDtype_t tensorDtype) {
+    switch (tensorDtype) {
+        case diopi_dtype_float16:
+            return std::make_pair(std::numeric_limits<half_float::half>::lowest(), std::numeric_limits<half_float::half>::max());
+        case diopi_dtype_float32:
+            return std::make_pair(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max());
+        case diopi_dtype_float64:
+            return std::make_pair(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max());
+        default:
+            break;
+    }
+}
+
+std::pair<int64_t, int64_t> getIntMinMaxFromDtype(diopiDtype_t tensorDtype) {
+    switch (tensorDtype) {
+        case diopi_dtype_int8:
+            return std::make_pair(std::numeric_limits<int8_t>::lowest(), std::numeric_limits<int8_t>::max());
+        case diopi_dtype_uint8:
+            return std::make_pair(std::numeric_limits<uint8_t>::lowest(), std::numeric_limits<uint8_t>::max());
+        case diopi_dtype_int16:
+            return std::make_pair(std::numeric_limits<int16_t>::lowest(), std::numeric_limits<int16_t>::max());
+        case diopi_dtype_uint16:
+            return std::make_pair(std::numeric_limits<uint16_t>::lowest(), std::numeric_limits<uint16_t>::max());
+        case diopi_dtype_int32:
+            return std::make_pair(std::numeric_limits<int32_t>::lowest(), std::numeric_limits<int32_t>::max());
+        case diopi_dtype_uint32:
+            return std::make_pair(std::numeric_limits<uint32_t>::lowest(), std::numeric_limits<uint32_t>::max());
+        case diopi_dtype_int64:
+            return std::make_pair(std::numeric_limits<int64_t>::lowest(), std::numeric_limits<int64_t>::max());
+        case diopi_dtype_uint64:
+            return std::make_pair(std::numeric_limits<uint64_t>::lowest(), std::numeric_limits<uint64_t>::max());
+        case diopi_dtype_bool:
+            return std::make_pair(std::numeric_limits<bool>::lowest(), std::numeric_limits<bool>::max());
         default:
             break;
     }
@@ -62,7 +100,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         broadcast(ctx, minTmp, min, sizes);
     } else {
         makeTensorLike(ctx, &minTmp, input, inputDtype);
-        auto minVal = getMinMaxFromDtype(inputDtype).first;
+        double minVal = getMinMaxFromDtype(inputDtype).first;
         fillTensor(ctx, minTmp, minVal);
         minDtype = inputDtype;
     }
@@ -73,7 +111,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         broadcast(ctx, maxTmp, max, sizes);
     } else {
         makeTensorLike(ctx, &maxTmp, input, inputDtype);
-        auto maxVal = getMinMaxFromDtype(inputDtype).second;
+        double maxVal = getMinMaxFromDtype(inputDtype).second;
         fillTensor(ctx, maxTmp, maxVal);
         maxDtype = inputDtype;
     }
@@ -108,13 +146,17 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         } else {
             minVal = min.ival;
         }
-
     } else {
-        double minLimitVal = getMinMaxFromDtype(inputDtype).first;
-        min = constructDiopiScalarT(diopi_dtype_float64, minLimitVal);
-        minPtr = &min;
-        minDtype = diopi_dtype_float64;
-        minVal = minLimitVal;
+        minDtype = inputDtype;
+        if (isFloatingType(inputDtype)) {
+            double minLimitVal = getFloatMinMaxFromDtype(inputDtype).first;
+            min = constructDiopiScalarT(inputDtype, minLimitVal);
+            minVal = minLimitVal;
+        } else {
+            int64_t minLimitVal = getIntMinMaxFromDtype(inputDtype).first;
+            min = constructDiopiScalarT(inputDtype, minLimitVal);
+            minVal = minLimitVal;
+        }
     }
 
     if (maxPtr != nullptr) {
@@ -126,11 +168,16 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
             maxVal = max.ival;
         }
     } else {
-        double maxLimitVal = getMinMaxFromDtype(inputDtype).second;
-        max = constructDiopiScalarT(diopi_dtype_float64, maxLimitVal);
-        maxPtr = &max;
-        maxDtype = diopi_dtype_float64;
-        maxVal = maxLimitVal;
+        maxDtype = inputDtype;
+        if (isFloatingType(inputDtype)) {
+            double maxLimitVal = getFloatMinMaxFromDtype(inputDtype).second;
+            max = constructDiopiScalarT(inputDtype, maxLimitVal);
+            maxVal = maxLimitVal;
+        } else {
+            int64_t maxLimitVal = getIntMinMaxFromDtype(inputDtype).second;
+            max = constructDiopiScalarT(inputDtype, maxLimitVal);
+            maxVal = maxLimitVal;
+        }
     }
 
     highDtype = promoteTypes(minDtype, maxDtype);
