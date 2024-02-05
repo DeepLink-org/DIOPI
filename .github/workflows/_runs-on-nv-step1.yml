@@ -1,0 +1,122 @@
+name: runs on nv step 1
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: Set up the runner
+        type: string
+        required: false
+        default: "tps-sco-ci"
+      deeplink_path:
+        description: ci work home
+        type: string
+        required: false
+        default: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}/'
+      run_result:
+        description: select which job to run
+        type: string
+        required: true
+        default: ''
+      env_path:
+        description: env file path
+        type: string
+        required: false
+        default: '/mnt/cache/share/platform/env'
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ${{ inputs.runner }}
+    env:
+      GETRUNNER: ${{ inputs.runner }}
+      DEEPLINK_PATH: ${{ inputs.deeplink_path }}
+      ENV_PATH: ${{ inputs.env_path }}
+      SLURM_PAR_V100: "pat_dev"
+    steps:
+      - name: lint
+        run: |
+          set -e
+          if [[ "${GETRUNNER}" == *sco* ]];then
+            set -e
+            cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
+            cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
+            srun --job-name=${GITHUB_JOB} bash -c "source ${ENV_PATH}/pt2.0_diopi \
+            && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${GITHUB_JOB}/diopi_test && bash scripts/ci_script.sh py-lint \
+            && bash scripts/ci_script.sh cpp-lint && cd ../impl && bash scripts/ci_script.sh cpp-lint" \
+            && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} \
+            || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
+          else
+            ssh SH1424 """
+            set -e
+            cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
+            source ${ENV_PATH}/pt2.0_diopi
+            cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=10 bash -c 'cd diopi_test && bash scripts/ci_script.sh py-lint \
+            && bash scripts/ci_script.sh cpp-lint && cd ../impl \ && bash scripts/ci_script.sh cpp-lint' \
+            && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} \
+            || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
+            """
+          fi
+
+  Build-Nvidia:
+    name: Build-Nvidia
+    runs-on: ${{ inputs.runner }}
+    env:
+      GETRUNNER: ${{ inputs.runner }}
+      DEEPLINK_PATH: ${{ inputs.deeplink_path }}
+      ENV_PATH: ${{ inputs.env_path }}
+      SLURM_PAR_V100: "pat_dev"
+      BUILD_TEST1: "build_test"
+    steps:
+      - name: build
+        run: |
+          if [[ "${GETRUNNER}" == *sco* ]];then
+            set -e
+            cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+            srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+            && source ${ENV_PATH}/pt2.0_diopi \
+            && cd impl && bash scripts/build_impl.sh torch" || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+          else
+            ssh SH1424 """
+            set -e
+            export USE_COVERAGE=ON
+            source ${ENV_PATH}/pt2.0_diopi
+            cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST1} && cp -R source ${BUILD_TEST1} && cd ${BUILD_TEST1}
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=20 bash -c 'cd impl && bash scripts/build_impl.sh torch' || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST1} && exit 1 )
+            """
+          fi
+
+  Gen-Data:
+    name: Gen-Data
+    needs: [Build-Nvidia]
+    runs-on: ${{ inputs.runner }}
+    env:
+      GETRUNNER: ${{ inputs.runner }}
+      DEEPLINK_PATH: ${{ inputs.deeplink_path }}
+      ENV_PATH: ${{ inputs.env_path }}
+      SLURM_PAR_V100: "pat_dev"
+      RUN_RESULT: ${{ inputs.run_result }}
+      BUILD_TEST1: "build_test"
+      GEN_DATA: "diopi_test/python/cache"
+      GEN_DATA_PATH: "/mnt/cache/share/deeplinkci/gen-data/source"
+    steps:
+      - name: gen-test-data
+        run: |
+          set -e
+          if [[ "${RUN_RESULT}" == *GENDATA* && "${GETRUNNER}" == *sco* ]];then
+            srun --job-name=${GITHUB_JOB} bash -c "cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python \
+            && source ${ENV_PATH}/pt2.0_diopi \
+            && python main.py --mode gen_data" \
+            || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+          elif [[ "${GETRUNNER}" == *diopi* ]];then
+            ssh SH1424 """
+            set -e
+            source ${ENV_PATH}/pt2.0_diopi
+            cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python &&
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=20 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
+            || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
+            """
+          else
+            ln -s ${GEN_DATA_PATH}/${GEN_DATA}/diopi ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
+          fi
