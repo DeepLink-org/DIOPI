@@ -15,8 +15,9 @@
 namespace impl {
 namespace ascend {
 
-std::pair<double, double> getMinMaxFromDtype(diopiDtype_t inputDtype) {
-    switch (inputDtype) {
+// to get the limit value according to diopiDtype
+std::pair<double, double> getMinMaxFromDtype(diopiDtype_t tensorDtype) {
+    switch (tensorDtype) {
         case diopi_dtype_int8:
             return std::make_pair(std::numeric_limits<int8_t>::min(), std::numeric_limits<int8_t>::max());
         case diopi_dtype_uint8:
@@ -48,77 +49,103 @@ std::pair<double, double> getMinMaxFromDtype(diopiDtype_t inputDtype) {
 
 diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min,
                         diopiConstTensorHandle_t max) {
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-
-    AclOpRunner<3, 1> runner("ClipByValue", ctx);
-    runner.addInput(input, dtype);
-
+    diopiDtype_t highDtype, inputDtype, minDtype, maxDtype;
     diopiTensorHandle_t minTmp, maxTmp, boolOut;
-    makeTensorLike(ctx, &minTmp, input, dtype);
-    makeTensorLike(ctx, &maxTmp, input, dtype);
-    makeTensorLike(ctx, &boolOut, input, diopi_dtype_bool);
 
-    AscendTensor temp(input);
-    const std::vector<int64_t>& sizes = temp.shape();
+    AscendTensor inputAt(input);
+    const std::vector<int64_t>& sizes = inputAt.shape();
+    inputDtype = inputAt.dtype();
 
     if (min != nullptr) {
+        diopiGetTensorDtype(min, &minDtype);
+        makeTensorLike(ctx, &minTmp, input, minDtype);
         broadcast(ctx, minTmp, min, sizes);
     } else {
-        auto minVal = getMinMaxFromDtype(dtype).first;
+        makeTensorLike(ctx, &minTmp, input, inputDtype);
+        auto minVal = getMinMaxFromDtype(inputDtype).first;
         fillTensor(ctx, minTmp, minVal);
+        minDtype = inputDtype;
     }
 
     if (max != nullptr) {
+        diopiGetTensorDtype(max, &maxDtype);
+        makeTensorLike(ctx, &maxTmp, input, maxDtype);
         broadcast(ctx, maxTmp, max, sizes);
     } else {
-        auto maxVal = getMinMaxFromDtype(dtype).second;
+        makeTensorLike(ctx, &maxTmp, input, inputDtype);
+        auto maxVal = getMinMaxFromDtype(inputDtype).second;
         fillTensor(ctx, maxTmp, maxVal);
+        maxDtype = inputDtype;
     }
+
+    highDtype = promoteTypes(minDtype, maxDtype);
+    highDtype = promoteTypes(inputDtype, highDtype);
 
     // Perform a clamp operation according PyTorch's special handling of the case when max is less than min.
     // In this case, update the value of min to be equal to max to ensure correct behavior.
+    makeTensorLike(ctx, &boolOut, input, diopi_dtype_bool);
     diopiLt(ctx, boolOut, maxTmp, minTmp);
     diopiMaskedFill(ctx, minTmp, minTmp, boolOut, maxTmp);
 
-    runner.addInput(minTmp, dtype).addInput(maxTmp, dtype).addOutput(out).run();
-
+    AclOpRunner<3, 1> runner("ClipByValue", ctx);
+    runner.addInput(input, highDtype).addInput(minTmp, highDtype).addInput(maxTmp, highDtype).addOutput(out).run();
     return diopiSuccess;
 }
 
-diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min,
-                              const diopiScalar_t* max) {
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    AclOpRunner<3, 1> runner("ClipByValue", ctx);
-    runner.addInput(input);
+diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* minPtr,
+                              const diopiScalar_t* maxPtr) {
+    std::cout << std::endl;
+    std::cout << "calling diopiClampScalar" << std::endl;
+    diopiDtype_t inputDtype, minDtype, maxDtype, highDtype;
+    diopiGetTensorDtype(input, &inputDtype);
+    diopiScalar_t min, max;
+    double minVal, maxVal;
 
-    if (min != nullptr && max != nullptr) {
-        double minn = getValue<double>(min);
-        double maxn = getValue<double>(max);
-        if (maxn < minn) {
-            runner.addConstInput(*max, dtype).addConstInput(*max, dtype).addOutput(out).run();
-            return diopiSuccess;
+    if (minPtr != nullptr) {
+        minDtype = minPtr->stype;
+        min = *minPtr;
+        if (isFloatingType(min.stype)) {
+            minVal = min.fval;
+        } else {
+            minVal = min.ival;
         }
-    }
 
-    if (min != nullptr) {
-        runner.addConstInput(*min, dtype);
     } else {
-        auto minVal = getMinMaxFromDtype(dtype).first;
-        diopiScalar_t minValScalar = constructDiopiScalarT(diopi_dtype_float64, minVal);
-        runner.addConstInput(minValScalar, dtype);
+        double minLimitVal = getMinMaxFromDtype(inputDtype).first;
+        min = constructDiopiScalarT(inputDtype, minLimitVal);
+        minPtr = &min;
+        minDtype = minPtr->stype;
+        minVal = minLimitVal;
     }
 
-    if (max != nullptr) {
-        runner.addConstInput(*max, dtype);
+    if (maxPtr != nullptr) {
+        maxDtype = maxPtr->stype;
+        max = *maxPtr;
+        if (isFloatingType(max.stype)) {
+            maxVal = max.fval;
+        } else {
+            maxVal = max.ival;
+        }
     } else {
-        auto maxVal = getMinMaxFromDtype(dtype).second;
-        diopiScalar_t maxValScalar = constructDiopiScalarT(diopi_dtype_float64, maxVal);
-        runner.addConstInput(maxValScalar, dtype);
+        double maxLimitVal = getMinMaxFromDtype(inputDtype).second;
+        max = constructDiopiScalarT(inputDtype, maxLimitVal);
+        maxPtr = &max;
+        maxDtype = maxPtr->stype;
+        maxVal = maxLimitVal;
     }
 
-    runner.addOutput(out).run();
+    highDtype = promoteTypes(minDtype, maxDtype);
+    highDtype = promoteTypes(inputDtype, highDtype);
+
+    // Perform a clamp operation according PyTorch's special handling of the case when max is less than min.
+    // In this case, update the value of min to be equal to max to ensure correct behavior.
+
+    if (maxVal < minVal) {
+        min = constructDiopiScalarT(highDtype, maxVal);
+    }
+
+    AclOpRunner<3, 1> runner("ClipByValue", ctx);
+    runner.addInput(input, highDtype).addConstInput(min, highDtype).addConstInput(max, highDtype).addOutput(out).run();
     return diopiSuccess;
 }
 
