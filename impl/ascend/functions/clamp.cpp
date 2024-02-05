@@ -94,8 +94,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
 
 diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* minPtr,
                               const diopiScalar_t* maxPtr) {
-    std::cout << std::endl;
-    std::cout << "calling diopiClampScalar" << std::endl;
+    AscendTensor inputAt(input);
     diopiDtype_t inputDtype, minDtype, maxDtype, highDtype;
     diopiGetTensorDtype(input, &inputDtype);
     diopiScalar_t min, max;
@@ -112,9 +111,9 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
     } else {
         double minLimitVal = getMinMaxFromDtype(inputDtype).first;
-        min = constructDiopiScalarT(inputDtype, minLimitVal);
+        min = constructDiopiScalarT(diopi_dtype_float64, minLimitVal);
         minPtr = &min;
-        minDtype = minPtr->stype;
+        minDtype = diopi_dtype_float64;
         minVal = minLimitVal;
     }
 
@@ -128,9 +127,9 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         }
     } else {
         double maxLimitVal = getMinMaxFromDtype(inputDtype).second;
-        max = constructDiopiScalarT(inputDtype, maxLimitVal);
+        max = constructDiopiScalarT(diopi_dtype_float64, maxLimitVal);
         maxPtr = &max;
-        maxDtype = maxPtr->stype;
+        maxDtype = diopi_dtype_float64;
         maxVal = maxLimitVal;
     }
 
@@ -139,7 +138,6 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
     // Perform a clamp operation according PyTorch's special handling of the case when max is less than min.
     // In this case, update the value of min to be equal to max to ensure correct behavior.
-
     if (maxVal < minVal) {
         min = constructDiopiScalarT(highDtype, maxVal);
     }
