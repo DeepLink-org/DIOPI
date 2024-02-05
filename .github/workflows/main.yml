@@ -77,7 +77,7 @@ jobs:
           cd ~/rsync && GETRUNNER=$(cat cuda_runner)
           GETCLUSTER="SCO"
           if [[ ${GETRUNNER} == *diopi* ]]; then
-              RUN_RESULT_TMP="${RUN_RESULT}_GENDATA"
+              RUN_RESULT="${RUN_RESULT}_GENDATA"
               GETCLUSTER="SH1424"
           fi
           echo "RUN_RESULT=$RUN_RESULT" >> "$GITHUB_OUTPUT"
