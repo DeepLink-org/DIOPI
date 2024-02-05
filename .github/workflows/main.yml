@@ -50,6 +50,7 @@ jobs:
     outputs:
       output: ${{ steps.set-run-vars.outputs.RUN_RESULT }}
       getrunner: ${{ steps.set-run-vars.outputs.GETRUNNER }}
+      getcluster: ${{ steps.set-run-vars.outputs.GETCLUSTER }}
     steps:
       - name: clone repo
         run: |
@@ -74,11 +75,14 @@ jobs:
           PR_NUMBER="${{ github.event.pull_request.number || 0 }}"
           cd ${GITHUB_WORKSPACE}/source && RUN_RESULT=$(python3 scripts/filter_ci.py ${PR_NUMBER})
           cd ~/rsync && GETRUNNER=$(cat cuda_runner)
-          if [ ${GETRUNNER} == "SH1424" ]; then
+          GETCLUSTER="SCO"
+          if [ ${GETRUNNER} == "diopi" ]; then
               RUN_RESULT_TMP="${RUN_RESULT}_GENDATA"
+              GETCLUSTER="SH1424"
           fi
           echo "RUN_RESULT=$RUN_RESULT" >> "$GITHUB_OUTPUT"
           echo "GETRUNNER=$GETRUNNER" >> "$GITHUB_OUTPUT"
+          echo "GETCLUSTER=$GETCLUSTER" >> "$GITHUB_OUTPUT"
       - name: Rsync to Server
         run: |
           ssh ${CLUSTER_V100} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
@@ -238,6 +242,7 @@ jobs:
     if: ${{ contains( needs.Rsync.outputs.output, 'CAMB' ) }}
     env:
       run_test: "coverage run -p"
+      CLUSTER_V100: ${{ needs.Rsync.outputs.getcluster }}
     steps:
       - name: test
         run: |
@@ -306,6 +311,7 @@ jobs:
     if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
     env:
       run_test: "python"
+      CLUSTER_V100: ${{ needs.Rsync.outputs.getcluster }}
     steps:
       - name: test
         run: |
