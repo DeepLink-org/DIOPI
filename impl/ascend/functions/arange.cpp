@@ -14,45 +14,44 @@ diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, cons
     diopiScalar_t endTmp;
     diopiScalar_t stepTmp;
     diopiDtype_t outDtype;
+
     diopiGetTensorDtype(out, &outDtype);
+    startTmp.stype = outDtype;
+    endTmp.stype = outDtype;
+    stepTmp.stype = outDtype;
+
     // convert to integer
     if (isIntegralTypeWithBool(outDtype)) {
         if (!isIntegralTypeWithBool(start->stype)) {
-            startTmp = constructDiopiScalarT(outDtype, start->fval);
+            startTmp.ival = static_cast<int64_t>(start->fval);
         } else {
             startTmp.ival = start->ival;
-            startTmp->stype = outDtype;
         }
         if (!isIntegralTypeWithBool(end->stype)) {
-            endTmp = constructDiopiScalarT(outDtype, end->fval);
+            endTmp.ival = static_cast<int64_t>(end->fval);
         } else {
             endTmp.ival = end->ival;
-            endTmp->stype = outDtype;
         }
         if (!isIntegralTypeWithBool(step->stype)) {
-            stepTmp = constructDiopiScalarT(outDtype, step->fval);
+            stepTmp.ival = static_cast<int64_t>(step->fval);
         } else {
             stepTmp.ival = step->ival;
-            stepTmp->stype = outDtype;
         }
     } else {
         if (isIntegralTypeWithBool(start->stype)) {
-            startTmp = constructDiopiScalarT(outDtype, start->ival);
+            startTmp.fval = static_cast<double>(start->ival);
         } else {
             startTmp.ival = start->ival;
-            startTmp->stype = outDtype;
         }
         if (isIntegralTypeWithBool(end->stype)) {
-            endTmp = constructDiopiScalarT(outDtype, end->ival);
+            endTmp.fval = static_cast<double>(end->ival);
         } else {
             endTmp.ival = end->ival;
-            endTmp->stype = outDtype;
         }
         if (isIntegralTypeWithBool(step->stype)) {
-            stepTmp = constructDiopiScalarT(outDtype, step->ival);
+            stepTmp.fval = static_cast<double>(step->ival);
         } else {
             stepTmp.ival = step->ival;
-            stepTmp->stype = outDtype;
         }
     }
     AclOpRunner<3, 1>("Range", ctx).addConstInput(startTmp).addConstInput(endTmp).addConstInput(stepTmp).addOutput(out).run();
