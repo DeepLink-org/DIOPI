@@ -38,7 +38,6 @@ diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
         AclOpRunner<3, 1>("MaskedFill", ctx).addInput(input).addInput(mask).addInput(value, inputDtype).addOutput(out).run();
     }
 
-
     return diopiSuccess;
 }
 
