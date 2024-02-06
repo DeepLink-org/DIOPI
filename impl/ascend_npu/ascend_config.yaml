@@ -49,7 +49,6 @@ ascend:
 - diopiErfInp
 - diopiExp
 - diopiExpInp
-- diopiFill
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
@@ -234,3 +233,4 @@ ascend_npu:
 - diopiAtanInp
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
+- diopiFill
