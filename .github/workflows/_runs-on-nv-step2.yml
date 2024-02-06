@@ -1,0 +1,97 @@
+name: runs on nv step 2
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: Set up the runner
+        type: string
+        required: false
+        default: "tps-sco-ci"
+      deeplink_path:
+        description: ci work home
+        type: string
+        required: false
+        default: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}/'
+      env_path:
+        description: env file path
+        type: string
+        required: false
+        default: '/mnt/cache/share/platform/env'
+      all_coverage:
+        description: all coverage
+        type: string
+        required: true
+        default: 'false'
+      require_coverage:
+        description: input coverage rate
+        type: string
+        required: false
+        default: '0'
+jobs:
+  Op-Test-Nvidia:
+    name: Op-Test-Nvidia
+    runs-on: ${{ inputs.runner }}
+    env:
+      GETRUNNER: ${{ inputs.runner }}
+      DEEPLINK_PATH: ${{ inputs.deeplink_path }}
+      ENV_PATH: ${{ inputs.env_path }}
+      SLURM_PAR_V100: "pat_dev"
+      run_test: "coverage run -p"
+      BUILD_TEST1: "build_test"
+      ALL_COVERAGE: ${{ inputs.all_coverage }}
+      REQUIRE_COVERAGE: ${{ inputs.require_coverage }}
+    steps:
+      - name: NHWC-32bit-test
+        run: |
+          if [[ "${GETRUNNER}" == *sco* ]];then
+            set -e
+            srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+            && source ${ENV_PATH}/pt2.0_diopi && cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
+            python main.py --mode gen_case --fname index_select --four_bytes && python main.py --mode gen_case --fname arange --four_bytes && ${run_test} main.py --mode run_test"
+            if [ "${ALL_COVERAGE}" = "ON" ]; then
+            bash /mnt/cache/share/platform/dep/sonar/coverage_DIOPI_nv.sh ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} ${GITHUB_RUN_NUMBER} || echo "get coverage fail"
+            fi
+          else
+            ssh SH1424 """
+            set -e
+            export USE_COVERAGE=ON
+            source ${ENV_PATH}/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=20 --gres=gpu:1 bash -c 'cd diopi_test/python && python main.py --mode gen_case --fname batch_norm --nhwc &&
+            python main.py --mode gen_case --fname index_select --four_bytes && python main.py --mode gen_case --fname arange --four_bytes && ${run_test} main.py --mode run_test'
+            if [ "${ALL_COVERAGE}" = "ON" ]; then
+            bash /mnt/cache/share/platform/dep/sonar/coverage_DIOPI_nv.sh ${NFS_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} ${GITHUB_RUN_NUMBER} || echo "get coverage fail"
+            fi
+            """
+          fi
+      - name: test
+        run: |
+          if [[ "${GETRUNNER}" == *sco* ]];then
+            set -e
+            srun --job-name=${GITHUB_JOB} bash -c "export CI=true && export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib \
+            && source ${ENV_PATH}/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} \
+            && cd diopi_test/python && python main.py --mode gen_case && python main.py --mode run_test"
+          else
+            ssh SH1424 """
+            set -e
+            source ${ENV_PATH}/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+            export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/impl/lib
+            echo \$LD_LIBRARY_PATH
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=20 --gres=gpu:1 bash -c 'cd diopi_test/python && python main.py --mode gen_case &&
+            python main.py --mode run_test'
+            """
+          fi
+      - name: increment coverage check
+        if: ${{ contains( github.event_name, 'pull_request' ) && contains( github.base_ref, 'main' ) }}
+        run: |
+          if [[ "${GETRUNNER}" == *sco* ]];then
+            set -e
+            source ${ENV_PATH}/pt2.0_diopi  && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+            bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
+          else
+            ssh SH1424 """
+            set -e
+            source ${ENV_PATH}/pt2.0_diopi && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1}
+            bash scripts/increment_coverage.sh ${REQUIRE_COVERAGE}
+            """
+          fi
