@@ -23,7 +23,7 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
 bool isScalarOne(const diopiScalar_t* alphaPtr) {
     if (alphaPtr == nullptr) return true;
     double val = getValue<double>(alphaPtr);
-    return val == 1.0;
+    return fabs(val - 1.0) < 1e-6;
 }
 
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
