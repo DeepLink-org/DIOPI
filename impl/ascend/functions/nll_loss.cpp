@@ -15,6 +15,8 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
                           diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     AclTensor inputAcl(input), targetAcl(target);
     if (inputAcl.numel() == 0) {
+        diopiScalar_t scalar = constructDiopiScalarT(inputAcl.getAclTensor().dtype(), reduction == 1 ? std::numeric_limits<float>::quiet_NaN() : 0);
+        DIOPI_CALL(diopiFill(ctx, out, &scalar));
         return diopiSuccess;
     }
     auto inputSize = inputAcl.getAclTensor().shape();
