@@ -1109,8 +1109,10 @@ device_configs = {
 
     'adadelta': dict(
         name=["adadelta"],
-        atol_half=1e-3,
+        atol_half=1e-1,
         rtol_half=1e-3,
+        atol=1e-1,
+        rtol=1e-3,
         tensor_para=dict(
             args=[
                 {

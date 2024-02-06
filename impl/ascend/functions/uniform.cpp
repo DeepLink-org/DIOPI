@@ -26,12 +26,12 @@ diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout
         .setAttr("dtype", getAclDataType(inout))
         .addOutput(inout)
         .run();
-
+    AscendTensor inoutTensor(inout);
     // StatelessRandomUniformV2 output: U(0~1) --> U(from~to)
-    diopiScalar_t diffScalar = constructDiopiScalarT(diopi_dtype_float64, to - from);
+    diopiScalar_t diffScalar = constructDiopiScalarT(inoutTensor.dtype(), to - from);
     diopiMulInpScalar(ctx, inout, &diffScalar);
-    diopiScalar_t fromScalar = constructDiopiScalarT(diopi_dtype_float64, from);
-    diopiScalar_t alphaScalar = constructDiopiScalarT(diopi_dtype_float64, 1);
+    diopiScalar_t fromScalar = constructDiopiScalarT(inoutTensor.dtype(), from);
+    diopiScalar_t alphaScalar = constructDiopiScalarT(inoutTensor.dtype(), 1);
     diopiAddInpScalar(ctx, inout, &fromScalar, &alphaScalar);
     return diopiSuccess;
 }

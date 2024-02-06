@@ -39,7 +39,7 @@ runs:
           git submodule update --init --recursive
         }
         if [ ${MACHINE} != "local" ];then
-          ssh ${MACHINE} " $(typeset -f checkout_code); checkout_code "
+          ssh ${MACHINE} " $(typeset -f checkout_code); "
         else
-          $(typeset -f checkout_code); checkout_code
+          $(typeset -f checkout_code);
         fi
