@@ -100,11 +100,11 @@ class CheckResult(object):
         elif isinstance(input, list):
             input_np = [i.numpy() if isinstance(i, Tensor) else i for i in input]
         elif isinstance(input, tuple):
-            input_np = (i.numpy() if isinstance(i, Tensor) else i for i in input)
+            input_np = tuple(i.numpy() if isinstance(i, Tensor) else i for i in input)
         elif isinstance(input, dict):
             input_np = {k: v.numpy() if isinstance(v, Tensor) else v for k, v in input.items()}
         elif isinstance(input, (int, float)):
-            input_np= np.array(input)
+            input_np = np.array(input)
         else:
             raise TypeError(f'Not support output type {type(input)}')
         return input_np
