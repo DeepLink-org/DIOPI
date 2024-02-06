@@ -331,8 +331,6 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
         diopiGetTensorData(outTmp, &outDataPtr);
         memcpy(outDataPtr, &buff, nbytes);
     } else if (device == diopi_device) {
-        diopiStreamHandle_t stream;
-        diopiGetStream(ctx, &stream);
         diopiFill(ctx, outTmp, scalar);
     } else {
         error(__FILE__, __LINE__, __FUNCTION__, "device(%s) not supported", deviceType2Str(device));
