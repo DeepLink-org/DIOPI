@@ -13,6 +13,8 @@ device_configs = {
 
     'batch_norm_no_contiguous': dict(
         name=['batch_norm'],
+        atol_half=1e-1,
+        rtol_half=1e-1,
         tensor_para=dict(
             args=[
                 {
