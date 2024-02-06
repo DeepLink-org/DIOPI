@@ -5,6 +5,12 @@ from skip import Skip
 # topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
 
 device_configs = {
+     'batch_norm': dict(
+        name=["batch_norm"],
+        atol_half=1e-1,
+        rtol_half=1e-1,
+     ),
+
     'batch_norm_no_contiguous': dict(
         name=['batch_norm'],
         tensor_para=dict(
@@ -1318,7 +1324,7 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'remainder_self_scalar': dict(
         name=['remainder'],
         tensor_para=dict(
