@@ -135,7 +135,7 @@ std::string getReductionStr(const diopiReduction_t reduction) {
     return reductionStr;
 }
 
-diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+diopiError_t diopiNLLLoss123(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                           diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightSizeVec = std::vector<int64_t>({1});
     std::cout << "come into diopiNLLLoss" << std::endl;

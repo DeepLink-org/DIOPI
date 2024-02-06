@@ -4,10 +4,41 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <numeric>
+
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
+
+diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                          diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
+    AclTensor inputAcl(input), targetAcl(target);
+    if (inputAcl.numel() == 0) {
+        return diopiSuccess;
+    }
+    auto inputSize = inputAcl.getAclTensor().shape();
+    int64_t c = inputAcl.getAclTensor().dim() == 1 ? inputSize[0] : inputSize[1];
+    int64_t n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
+    diopiTensorHandle_t weightCopy, totalWeight;
+    if (weight) {
+        weightCopy = const_cast<diopiTensorHandle_t>(weight);
+    } else {
+        diopiSize_t weightShape = arrayToDiopiSize(&c, 1);
+        diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, inputAcl.getAclTensor().dtype(), diopi_device);
+        fillTensor(ctx, weightCopy, static_cast<float>(1.0));
+    }
+    auto totalWeightSizeVec = std::vector<int64_t>({});
+    auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
+    diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, inputAcl.getAclTensor().dtype(), diopi_device);
+    AclTensor weightAcl(weightCopy), outAcl(out), totalWeightAcl(totalWeight);
+
+    int64_t reductionVal = static_cast<int64_t>(reduction);
+    ACLNN_ADAPTOR(aclnnNLLLossBackward, ctx, inputAcl, targetAcl, weightAcl, reductionVal, ignoreIndex, outAcl, totalWeightAcl);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
                                   diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     // test;
@@ -41,8 +72,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, inputAcl.getAclTensor().dtype(), diopi_device);
         fillTensor(ctx, weightCopy, static_cast<float>(1.0));
     }
-    AclTensor gradInputAcl(gradInput), gradOutputAcl(gradOutput), weightAcl(weightCopy), outAcl(out),
-        totalWeightAcl(totalWeight);
+    AclTensor gradInputAcl(gradInput), gradOutputAcl(gradOutput), weightAcl(weightCopy), outAcl(out), totalWeightAcl(totalWeight);
     auto inputSize = inputAcl.getAclTensor().shape();
     int c = inputAcl.getAclTensor().dim() == 1 ? inputSize[0] : inputSize[1];
     int n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
@@ -82,7 +112,6 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     //     printContiguousTensor(ctx, totalWeightAcl.getAclTensor(), "totalWeightAcl");
     // }
     std::cout << "aclnnNLLLossBackward begin." << std::endl;
-
 
     ACLNN_ADAPTOR(aclnnNLLLossBackward, ctx, gradOutputAcl, inputAcl, targetAcl, weightAcl, reductionVal, ignoreIndex, totalWeightAcl, gradInputAcl);
     std::cout << "aclnnNLLLossBackward finished." << std::endl;
