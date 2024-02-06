@@ -67,14 +67,10 @@ diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
         makeTensorLike(ctx, &outTemp, out, diopi_dtype_float32);
         diopiCastDtype(ctx, outTemp, out);
 
-        diopiTensorHandle_t valueTensor;
-        makeTensorFromScalar(ctx, value, &valueTensor, diopi_dtype_float32, diopi_host);
-        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(inputTemp).addInput(mask).addConstInput(valueTensor, ACL_FORMAT_ND, true).addOutput(outTemp).run();
+        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(inputTemp).addInput(mask).addConstInput(*value, diopi_dtype_float32).addOutput(outTemp).run();
         diopiCastDtype(ctx, out, outTemp);
     } else {
-        diopiTensorHandle_t valueTensor;
-        makeTensorFromScalar(ctx, value, &valueTensor, inputDtype, diopi_host);
-        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(input).addInput(mask).addConstInput(valueTensor, ACL_FORMAT_ND, true).addOutput(out).run();
+        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(input).addInput(mask).addConstInput(*value, inputDtype).addOutput(out).run();
     }
 
     return diopiSuccess;
