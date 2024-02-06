@@ -329,3 +329,4 @@
 
 - diopiIsNan:
     dtype: (uint8, int8, int32, int16, int64, bool)->float32
+

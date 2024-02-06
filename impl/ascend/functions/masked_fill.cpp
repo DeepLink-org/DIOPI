@@ -66,8 +66,7 @@ diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
         AclOpRunner<3, 1>("MaskedFill", ctx).addInput(inputTemp).addInput(mask).addConstInput(*value, diopi_dtype_float32).addOutput(outTemp).run();
         diopiCastDtype(ctx, out, outTemp);
     } else {
-        AscendTensor inputAt(input);
-        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(input).addInput(mask).addConstInput(*value, inputAt.dtype()).addOutput(out).run();
+        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(input).addInput(mask).addConstInput(*value, inputDtype).addOutput(out).run();
     }
 
     return diopiSuccess;
