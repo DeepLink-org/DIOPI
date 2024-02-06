@@ -130,25 +130,25 @@ constexpr auto convertTypes(Ts&... args) {
         static auto getWorkspaceSizeFunc = convertToOpApiFunc(convertedParams, getWorkspaceSizeFuncAddr); \
                                                                                                           \
         auto workspaceStatus = call(getWorkspaceSizeFunc, convertedParams);                               \
-        ASCEND_CHECK(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS.");           \
+        ASCEND_CHECK_ABORT(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS, %ld, error msg: %s\n", workspaceStatus, aclGetRecentErrMsg());           \
                                                                                                           \
         void* workspaceAddr = nullptr;                                                                    \
         if (workspaceSize != 0) {                                                                         \
             auto ret = aclrtMalloc(&workspaceAddr, workspaceSize, ACL_MEM_MALLOC_HUGE_FIRST);             \
-            ASCEND_CHECK(ret == ACL_SUCCESS, "allocate workspace failed. ERROR: %d\n", ret);              \
+            ASCEND_CHECK_ABORT(ret == ACL_SUCCESS, "allocate workspace failed. ERROR: %d, error msg: %s \n", ret, aclGetRecentErrMsg());              \
         }                                                                                                 \
                                                                                                           \
         /* 2. call aclnnXXX function */                                                                   \
         volatile auto opApiFuncAddr = getOpApiFuncAddr(name.c_str());                                     \
-        ASCEND_CHECK(opApiFuncAddr != nullptr, "can't get op function.");                                 \
+        ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function.");                                 \
                                                                                                           \
         typedef int (*OpApiFunc)(void*, uint64_t, aclOpExecutor*, aclrtStream);                           \
         OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                 \
         auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);                             \
-        ASCEND_CHECK(ret == ACL_SUCCESS, "%s failed. ERROR: %d\n", name.c_str(), ret);                    \
+        ASCEND_CHECK_ABORT(ret == ACL_SUCCESS, "%s failed. ERROR: %d, error msg: %s \n", name.c_str(), ret, aclGetRecentErrMsg());                    \
                                                                                                           \
         ret = aclrtSynchronizeStream(stream);                                                             \
-        ASCEND_CHECK(ret == ACL_SUCCESS, "aclrtSynchronizeStream failed. ERROR: %d\n", ret);              \
+        ASCEND_CHECK_ABORT(ret == ACL_SUCCESS, "aclrtSynchronizeStream failed. ERROR: %d, error msg: %s \n", ret, aclGetRecentErrMsg());              \
                                                                                                           \
         if (workspaceSize > 0) {                                                                          \
             aclrtFree(workspaceAddr);                                                                     \

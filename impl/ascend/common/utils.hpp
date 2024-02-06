@@ -8,6 +8,7 @@
 #define IMPL_ASCEND_COMMON_UTILS_HPP_
 #include <vector>
 
+#include "../aclnn/acl_tensor.hpp"
 #include "../ascend_tensor.hpp"
 #include "../env_vars.hpp"
 #include "float16.hpp"
@@ -65,6 +66,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, AscendTensor& dst, c
 diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, const std::vector<int64_t>& shape);
+diopiError_t reshape(diopiContextHandle_t ctx, const AclTensor& src, AclTensor& dst, const std::vector<int64_t>& shape);
 
 diopiError_t contiguous(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous);
 

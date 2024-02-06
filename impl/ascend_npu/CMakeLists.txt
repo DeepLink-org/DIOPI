@@ -20,6 +20,8 @@ add_custom_target(op_plugin_gen
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
 
+set(CMAKE_BUILD_TYPE "DEBUG")
+
 # find python3
 find_package(Python COMPONENTS Interpreter Development)
 MESSAGE(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
@@ -46,7 +48,7 @@ link_directories(${TORCH_INSTALL_PREFIX}/lib)
 
 # Because many interfaces have not yet been implemented, -Wreturn-type=0 option is temporarily added.
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable "
+    "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable -g -ggdb -O0"
 )
 
 set(OP_PLUGIN_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/aclops/)
@@ -573,6 +575,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/isnan.cpp
     ${OLD_IMPL_DIR}/functions/activation.cpp
     ${OLD_IMPL_DIR}/functions/loss.cpp
+    ${OLD_IMPL_DIR}/functions/nll_loss.cpp
     ${OLD_IMPL_DIR}/functions/contiguous.cpp
     ${OLD_IMPL_DIR}/functions/bitwise.cpp
     ${OLD_IMPL_DIR}/functions/upsample.cpp
@@ -624,6 +627,7 @@ set(OLD_IMPL_SRC
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/aclnn/adaptor.cpp
+    ${OLD_IMPL_DIR}/aclnn/acl_tensor.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
