@@ -56,7 +56,7 @@ std::pair<int64_t, int64_t> getIntMinMaxFromDtype(diopiDtype_t tensorDtype) {
 
 diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min,
                         diopiConstTensorHandle_t max) {
-    diopiDtype_t outDtype, inputDtype, minDtype, maxDtype;
+    diopiDtype_t outDtype, inputDtype;
     diopiTensorHandle_t minTmp, maxTmp, boolOut;
     diopiScalar_t minScalar, maxScalar;
 
@@ -67,8 +67,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     outDtype = outAt.dtype();
 
     if (min != nullptr) {
-        diopiGetTensorDtype(min, &minDtype);
-        makeTensorLike(ctx, &minTmp, input, minDtype);
+        makeTensorLike(ctx, &minTmp, input, outDtype);
         broadcast(ctx, minTmp, min, sizes);
     } else {
         makeTensorLike(ctx, &minTmp, input, outDtype);
@@ -80,12 +79,10 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
             minScalar = constructDiopiScalarT(outDtype, minVal);
         }
         diopiFill(ctx, minTmp, &minScalar);
-        minDtype = outDtype;
     }
 
     if (max != nullptr) {
-        diopiGetTensorDtype(max, &maxDtype);
-        makeTensorLike(ctx, &maxTmp, input, maxDtype);
+        makeTensorLike(ctx, &maxTmp, input, outDtype);
         broadcast(ctx, maxTmp, max, sizes);
     } else {
         makeTensorLike(ctx, &maxTmp, input, outDtype);
@@ -97,7 +94,6 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
             maxScalar = constructDiopiScalarT(outDtype, maxVal);
         }
         diopiFill(ctx, maxTmp, &maxScalar);
-        maxDtype = outDtype;
     }
 
     // Perform a clamp operation according PyTorch's special handling of the case when max is less than min.
@@ -115,14 +111,13 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
                               const diopiScalar_t* maxPtr) {
     AscendTensor inputAt(input);
     AscendTensor outAt(out);
-    diopiDtype_t inputDtype, minDtype, maxDtype, outDtype;
+    diopiDtype_t inputDtype, outDtype;
     diopiGetTensorDtype(input, &inputDtype);
     diopiGetTensorDtype(out, &outDtype);
     diopiScalar_t min, max;
     double minVal, maxVal;
 
     if (minPtr != nullptr) {
-        minDtype = minPtr->stype;
         min = *minPtr;
         if (isFloatingType(min.stype)) {
             minVal = min.fval;
@@ -130,7 +125,6 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
             minVal = min.ival;
         }
     } else {
-        minDtype = outDtype;
         if (isFloatingType(outDtype)) {
             double minLimitVal = getFloatMinMaxFromDtype(outDtype).first;
             min = constructDiopiScalarT(outDtype, minLimitVal);
@@ -143,7 +137,6 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     }
 
     if (maxPtr != nullptr) {
-        maxDtype = maxPtr->stype;
         max = *maxPtr;
         if (isFloatingType(max.stype)) {
             maxVal = max.fval;
@@ -151,7 +144,6 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
             maxVal = max.ival;
         }
     } else {
-        maxDtype = outDtype;
         if (isFloatingType(outDtype)) {
             double maxLimitVal = getFloatMinMaxFromDtype(outDtype).second;
             max = constructDiopiScalarT(outDtype, maxLimitVal);
