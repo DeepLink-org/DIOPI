@@ -1401,4 +1401,9 @@ device_configs = {
             other=[Skip(False),],
         ),
     ),
+    'nll_loss': dict(
+        name=["nll_loss"],
+        atol=1e-4,
+        rtol=1e-3,
+    )
 }
