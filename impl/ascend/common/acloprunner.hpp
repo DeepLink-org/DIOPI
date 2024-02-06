@@ -397,6 +397,16 @@ public:
         return *this;
     }
 
+    AclOpRunner& addInput(const std::vector<int64_t>& vec) {
+        std::vector<int64_t> dims(1, vec.size());
+        aclTensorDesc* desc = aclCreateTensorDesc(ACL_INT64, 1, dims.data(), ACL_FORMAT_ND);
+        aclDataBuffer* buffer = aclCreateDataBuffer(const_cast<void*>(reinterpret_cast<const void*>(vec.data())), sizeof(int64_t) * vec.size());
+        inputDescs_[inputIndex_] = desc;
+        inputBuffers_[inputIndex_] = buffer;
+        inputIndex_++;
+        return *this;
+    }
+
     AclOpRunner& addInput(const AscendTensor& at) {
         if (at.isContiguous()) {
             return addInput(at, at.getAclDataFormat());
