@@ -10,28 +10,36 @@
 
 namespace impl {
 namespace ascend {
-
 diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                          diopiConstTensorHandle_t bias) {
     // convert inputs to AscendTensor
-    AscendTensor inputAt(input);
-    AscendTensor outputAt(out);
-    AscendTensor weightAt(weight);
+    AscendTensor inputCopy(input);
+    AscendTensor outputCopy(out);
+    AscendTensor weightCopy(weight);
+    const std::vector<int64_t> outputPrimaryShape = outputCopy.shape();
 
-    if (inputAt.numel() == 0 || weightAt.numel() == 0) {
-        diopiScalar_t zero = constructDiopiScalarT(outputAt.dtype(), 0.0);
+    if (inputCopy.numel() == 0 || weightCopy.numel() == 0) {
+        diopiScalar_t zero = constructDiopiScalarT(outputCopy.dtype(), 0.0);
         diopiFill(ctx, out, &zero);
         return diopiSuccess;
     }
 
-    AclOpRunner<3, 1> runner("MatMulV2", ctx);
-    runner.addInput(inputAt).addInput(weightAt).setAttr<uint8_t>("transpose_x1", false).setAttr<uint8_t>("transpose_x2", true).addOutput(outputAt).run();
-
-    // if bias is not nullptr, add bias to input
-    if (bias) {
-        diopiScalar_t oneScalar = constructDiopiScalarT(outputAt.dtype(), 1.0);
-        diopiAddInp(ctx, out, bias, &oneScalar);
+    // mm's input matrix must be 2D, it needs to be converted if it isn't
+    if (inputCopy.shape().size() > 2) {
+        transTensorTo2D(ctx, inputCopy);
     }
+    if (outputCopy.shape().size() > 2) {
+        transTensorTo2D(ctx, outputCopy);
+    }
+
+    AclOpRunner<3, 1> runner("MatMulV2", ctx);
+    runner.addInput(inputCopy).addInput(weightCopy).setAttr<uint8_t>("transpose_x1", false).setAttr<uint8_t>("transpose_x2", true).addOutput(outputCopy);
+
+    // if bias is not nullptr, also add bias to input
+    if (bias) {
+        runner.addInput(bias);
+    }
+    runner.run();
 
     return diopiSuccess;
 }
