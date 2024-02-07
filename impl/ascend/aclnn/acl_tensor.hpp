@@ -41,7 +41,7 @@ public:
 
     int64_t numel() const { return at_.numel(); }
 
-    AscendTensor& getAclTensor() { return at_; }
+    AscendTensor& getAscendTensor() { return at_; }
 
     void reshape(const std::vector<int64_t>& shape);
 

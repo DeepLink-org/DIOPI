@@ -25,6 +25,8 @@ namespace ascend {
 
 constexpr const char kWorkspaceSizeSuffix[] = "GetWorkspaceSize";
 
+#define PRINT_VAR_NAME(x) std::cout << "var name is: " << #x << std::endl;
+
 #define CHECK_RET(cond, return_expr) \
     do {                             \
         if (!(cond)) {               \
@@ -94,7 +96,16 @@ auto convertToOpApiFunc(const Tuple& params, void* opApiAddr) {
     return convertToOpApiFunc(params, opApiAddr, std::make_index_sequence<size>{});
 }
 
-inline aclTensor* convertType(AclTensor& value) { return static_cast<aclTensor*>(value); }
+inline aclTensor* convertType(AclTensor& value) {
+    PRINT_VAR_NAME(value);
+    std::cout << "dtype=" << value.getAscendTensor().dtype() << std::endl;
+    std::cout << "shape=" << std::endl;
+    std::vector<int64_t> shape = value.getAscendTensor().shape();
+    for (int i = 0; i < shape.size(); ++i) {
+        std::cout << "\t" << shape[i] << std::endl;
+    }
+    std::cout << std::endl;
+    return static_cast<aclTensor*>(value); }
 
 template <typename T>
 T convertType(T value) {
