@@ -221,11 +221,6 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     AscendTensor inputAt(inputCopy), yGradAt(gradOutput);
 
-    if (inputAt.dtype() != diopi_dtype_float32 || yGradAt.dtype() != diopi_dtype_float32) {
-        castTensor(ctx, inputAt, diopi_dtype_float32);
-        castTensor(ctx, yGradAt, diopi_dtype_float32);
-    }
-
     AclOpRunner<5, 1> runner("NLLLossGrad", ctx);
 
     runner.addInput(inputAt.data(), inputAt.getAclMemBufferSize(), calShapeVec, ACL_FORMAT_ND, inputAt.dtype());
