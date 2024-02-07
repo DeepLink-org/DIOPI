@@ -53,9 +53,6 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 
     if (nullptr != gradInput) {
         AscendTensor gradInputAt(gradInput);
-        if (inputAt.shape().size() > 2) {
-        }
-
         AclOpRunner<2, 1>("MatMul", ctx)
             .addInput(gradOutputAt)
             .addInput(weightAt)
