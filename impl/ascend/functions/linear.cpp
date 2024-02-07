@@ -1,7 +1,7 @@
 /**
  * @file
  * @author DeepLink
- * @Atright  (c) 2023, DeepLink.
+ * @copyright  (c) 2023, DeepLink.
  */
 
 #include <numeric>
