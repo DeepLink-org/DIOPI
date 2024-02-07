@@ -539,12 +539,11 @@ device_configs = {
 
     'addmm': dict(
         name=["addmm"],
-        # FIXME 目前无法处理shape有一个维度为0，这种tensor理论上没有意义
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip(())),
+                    "shape": (Skip(()),),
                 }
             ],
         ),

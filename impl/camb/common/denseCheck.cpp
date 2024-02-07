@@ -93,8 +93,8 @@ bool isSparse(const DiopiTensor& src) {
 }
 
 bool shapeHasZero(std::vector<int64_t> shape) {
-    for (int i = 0; i < shape.size(); i++) {
-        if (shape[i] == 0) {
+    for (int64_t i : shape) {
+        if (i == 0) {
             return true;
         }
     }

@@ -15,9 +15,7 @@
 namespace impl {
 namespace camb {
 diopiError_t fixStrideIfZeroStride(DiopiTensor& src) {
-    if (src.shape()[1] == 0 && src.shape()[0] == 0) {
-        src.asStrided(src.shape(), std::vector<int64_t>{0, 1});
-    } else if (src.shape()[1] == 0) {
+    if (src.shape()[1] == 0) {
         src.asStrided(src.shape(), std::vector<int64_t>{0, 1});
     } else {
         src.asStrided(src.shape(), std::vector<int64_t>{src.shape()[1], 1});
