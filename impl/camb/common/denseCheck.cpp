@@ -92,6 +92,15 @@ bool isSparse(const DiopiTensor& src) {
     return true;
 }
 
+bool shapeHasZero(std::vector<int64_t> shape) {
+    for (int64_t i : shape) {
+        if (i == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 diopiError_t getDenseStride(const DiopiTensor& src, std::vector<int64_t>& dstStride) {
     int64_t dim = src.dim();
     std::vector<std::pair<int64_t, int64_t>> stridesSizes(dim, std::pair<int64_t, int64_t>(1, 1));
