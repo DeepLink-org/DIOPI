@@ -171,8 +171,6 @@ diopiError_t toDense(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& ds
         getDenseStride(src, targetStride);
         dst = requiresTensor(ctx, src.shape(), targetStride, src.dtype());
         sliceToDense(ctx, src, dst);
-    } else if (shapeHasZero(src.shape())) {
-        return diopiSuccess;
     } else {
         // for some special cases(broadcast), we set it as contiguous copy, but can be modified in the future
         dst = requiresTensor(ctx, src.shape(), src.dtype(), diopiMemoryFormat_t::Contiguous);
