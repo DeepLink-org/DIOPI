@@ -200,10 +200,10 @@
     dtype: (float64)->float32
 
 - diopiNLLLoss:
-    dtype: (float16)->float64
+    dtype: (float64)->float32
 
 - diopiNLLLossBackward:
-    dtype: (float16)->float64
+    dtype: (float64)->float32
 
 - diopiMax:
     dtype: (float64)->float32, (int16, int32, uint8, int8, bool)->int64

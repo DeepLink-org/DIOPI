@@ -135,10 +135,10 @@ std::string getReductionStr(const diopiReduction_t reduction) {
     return reductionStr;
 }
 
-diopiError_t diopiNLLLoss123(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                             diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
+diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                          diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightSizeVec = std::vector<int64_t>({1});
-    std::cout << "come into diopiNLLLoss" << std::endl;
+    // std::cout << "come into diopiNLLLoss" << std::endl;
     auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
     diopiTensorHandle_t totalWeight, weightCopy;
     diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, diopi_dtype_float32, diopi_device);
@@ -162,14 +162,14 @@ diopiError_t diopiNLLLoss123(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
 
     nllLossOutWithTotalWeight(ctx, out, totalWeight, input, target, weightCopy, reduction, ignoreIndex);
 
-    std::cout << "finish diopiNLLLoss" << std::endl;
+    // std::cout << "finish diopiNLLLoss" << std::endl;
     return diopiSuccess;
 }
 
-diopiError_t diopiNLLLossBackward123(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                     diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
-                                     diopiReduction_t reduction, int64_t ignoreIndex) {
+diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                  diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightSizeVec = std::vector<int64_t>({1});
+    // std::cout << "diopiNLLLossBackward" << std::endl;
     auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
     diopiTensorHandle_t weightCopy, totalWeight, out, inputCopy, targetCopy, gradInputCopy;
     diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, diopi_dtype_float32, diopi_device);
@@ -241,10 +241,10 @@ diopiError_t diopiNLLLossBackward123(diopiContextHandle_t ctx, diopiTensorHandle
 
     AscendTensor inputAt(inputCopy), yGradAt(gradOutput);
 
-    if (inputAt.dtype() != diopi_dtype_float32 || yGradAt.dtype() != diopi_dtype_float32) {
-        castTensor(ctx, inputAt, diopi_dtype_float32);
-        castTensor(ctx, yGradAt, diopi_dtype_float32);
-    }
+    // if (inputAt.dtype() != diopi_dtype_float32 || yGradAt.dtype() != diopi_dtype_float32) {
+    //     castTensor(ctx, inputAt, diopi_dtype_float32);
+    //     castTensor(ctx, yGradAt, diopi_dtype_float32);
+    // }
 
     AclOpRunner<5, 1> runner("NLLLossGrad", ctx);
 
@@ -268,61 +268,67 @@ diopiError_t diopiNLLLossBackward123(diopiContextHandle_t ctx, diopiTensorHandle
         diopiGetTensorData(gradInputCopy, &gradInputPtr);
         runner.addOutput(gradInputPtr, getBaseBufferSize(gradInputCopy), calShapeVec, ACL_FORMAT_ND, gradDtype);
     } else {
-        runner.addOutput(gradInput);
+        void* gradInputPtr;
+        diopiGetTensorData(gradInput, &gradInputPtr);
+        runner.addOutput(gradInputPtr, getBaseBufferSize(gradInput), calShapeVec, ACL_FORMAT_ND, gradDtype);
+        // runner.addOutput(gradInput, gradDtype);
     }
     runner.addInput(weightCopy).addInput(totalWeight);
-    // runner.run();
+    runner.run();
 
-    std::cout << "gen ACLNN_ADAPTOR input." << std::endl;
-    int64_t reductionVal = static_cast<int64_t>(reduction);
-    AclTensor gradOutputAcl(gradOutput);
-    std::cout << "gen gradOutputAcl" << std::endl;
-    AclTensor inputAcl(inputCopy);
-    std::cout << "gen inputAcl" << std::endl;
-    AclTensor targetAcl(targetCopy);
-    std::cout << "gen targetAcl" << std::endl;
-    AclTensor weightAcl(weightCopy);
-    std::cout << "gen weightAcl" << std::endl;
-    AclTensor totalWeightAcl(totalWeight);
-    std::cout << "gen totalWeightAcl" << std::endl;
-    AclTensor gradInputAcl(gradInput);
-    if (inputShape.len > 2) {
-        gradInputAcl = AclTensor(gradInputCopy);
-    }
-    if (!inputAcl.defined()) {
-        std::cout << "!inputAcl.defined()" << std::endl;
-    } else {
-        printContiguousTensor(ctx, inputAcl.getAscendTensor(), "inputAcl");
-    }
-    if (!targetAcl.defined()) {
-        std::cout << "!targetAcl.defined()" << std::endl;
-    } else {
-        printContiguousTensor(ctx, targetAcl.getAscendTensor(), "targetAcl");
-    }
-    if (!weightAcl.defined()) {
-        std::cout << "!weightAcl.defined()" << std::endl;
-    } else {
-        printContiguousTensor(ctx, weightAcl.getAscendTensor(), "weightAcl");
-    }
-    if (!gradOutputAcl.defined()) {
-        std::cout << "!gradOutputAcl.defined()" << std::endl;
-    } else {
-        printContiguousTensor(ctx, gradOutputAcl.getAscendTensor(), "gradOutputAcl");
-    }
-    if (!totalWeightAcl.defined()) {
-        std::cout << "!totalWeightAcl.defined()" << std::endl;
-    } else {
-        printContiguousTensor(ctx, totalWeightAcl.getAscendTensor(), "totalWeightAcl");
-    }
-    if (!gradInputAcl.defined()) {
-        std::cout << "!gradInputAcl.defined()" << std::endl;
-    } else {
-        printContiguousTensor(ctx, gradInputAcl.getAscendTensor(), "gradInputAcl");
-    }
-    std::cout << "call aclnnNLLLossBackward " << std::endl;
-    ACLNN_ADAPTOR(aclnnNLLLossBackward, ctx, gradOutputAcl, inputAcl, targetAcl, weightAcl, reductionVal, ignoreIndex, totalWeightAcl, gradInputAcl);
-    std::cout << "finish aclnnNLLLossBackward " << std::endl;
-
+    // AscendTensor gradInputAt(gradInput);
+    // printContiguousTensor(ctx, gradInputAt, "gradInputgradInputgradInputgradInputgradInputgradInput");
+    /*
+        std::cout << "gen ACLNN_ADAPTOR input." << std::endl;
+        int64_t reductionVal = static_cast<int64_t>(reduction);
+        AclTensor gradOutputAcl(gradOutput);
+        std::cout << "gen gradOutputAcl" << std::endl;
+        AclTensor inputAcl(inputCopy);
+        std::cout << "gen inputAcl" << std::endl;
+        AclTensor targetAcl(targetCopy);
+        std::cout << "gen targetAcl" << std::endl;
+        AclTensor weightAcl(weightCopy);
+        std::cout << "gen weightAcl" << std::endl;
+        AclTensor totalWeightAcl(totalWeight);
+        std::cout << "gen totalWeightAcl" << std::endl;
+        AclTensor gradInputAcl(gradInput);
+        if (inputShape.len > 2) {
+            gradInputAcl = AclTensor(gradInputCopy);
+        }
+        if (!inputAcl.defined()) {
+            std::cout << "!inputAcl.defined()" << std::endl;
+        } else {
+            printContiguousTensor(ctx, inputAcl.getAscendTensor(), "inputAcl");
+        }
+        if (!targetAcl.defined()) {
+            std::cout << "!targetAcl.defined()" << std::endl;
+        } else {
+            printContiguousTensor(ctx, targetAcl.getAscendTensor(), "targetAcl");
+        }
+        if (!weightAcl.defined()) {
+            std::cout << "!weightAcl.defined()" << std::endl;
+        } else {
+            printContiguousTensor(ctx, weightAcl.getAscendTensor(), "weightAcl");
+        }
+        if (!gradOutputAcl.defined()) {
+            std::cout << "!gradOutputAcl.defined()" << std::endl;
+        } else {
+            printContiguousTensor(ctx, gradOutputAcl.getAscendTensor(), "gradOutputAcl");
+        }
+        if (!totalWeightAcl.defined()) {
+            std::cout << "!totalWeightAcl.defined()" << std::endl;
+        } else {
+            printContiguousTensor(ctx, totalWeightAcl.getAscendTensor(), "totalWeightAcl");
+        }
+        if (!gradInputAcl.defined()) {
+            std::cout << "!gradInputAcl.defined()" << std::endl;
+        } else {
+            printContiguousTensor(ctx, gradInputAcl.getAscendTensor(), "gradInputAcl");
+        }
+        std::cout << "call aclnnNLLLossBackward " << std::endl;
+        ACLNN_ADAPTOR(aclnnNLLLossBackward, ctx, gradOutputAcl, inputAcl, targetAcl, weightAcl, reductionVal, ignoreIndex, totalWeightAcl, gradInputAcl);
+        std::cout << "finish aclnnNLLLossBackward " << std::endl;
+    */
     if (inputShape.len > 2) {
         std::vector<int64_t> permuteDimVec;
         permuteDimVec.push_back(0);

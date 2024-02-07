@@ -24,7 +24,7 @@ int64_t getReductionVal(diopiReduction_t reduction) {
     }
 }
 
-diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+diopiError_t diopiNLLLoss0(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                           diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     AclTensor inputAcl(input), targetAcl(target);
     if (inputAcl.numel() == 0) {
@@ -62,40 +62,41 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     }
     // }
 
-    // if (!inputAcl.defined()) {
-    //     std::cout << "!inputAcl.defined()" << std::endl;
-    // } else {
-    //     printContiguousTensor(ctx, inputAcl.getAscendTensor(), "inputAcl");
-    // }
-    // if (!targetAcl.defined()) {
-    //     std::cout << "!targetAcl.defined()" << std::endl;
-    // } else {
-    //     printContiguousTensor(ctx, targetAcl.getAscendTensor(), "targetAcl");
-    // }
-    // if (!weightAcl.defined()) {
-    //     std::cout << "!weightAcl.defined()" << std::endl;
-    // } else {
-    //     printContiguousTensor(ctx, weightAcl.getAscendTensor(), "weightAcl");
-    // }
-    // if (!outAcl.defined()) {
-    //     std::cout << "!outAcl.defined()" << std::endl;
-    // } else {
-    //     printContiguousTensor(ctx, outAcl.getAscendTensor(), "outAcl");
-    // }
-    // if (!totalWeightAcl.defined()) {
-    //     std::cout << "!totalWeightAcl.defined()" << std::endl;
-    // } else {
-    //     printContiguousTensor(ctx, totalWeightAcl.getAscendTensor(), "totalWeightAcl");
-    // }
+    if (!inputAcl.defined()) {
+        std::cout << "!inputAcl.defined()" << std::endl;
+    } else {
+        printContiguousTensor(ctx, inputAcl.getAscendTensor(), "inputAcl");
+    }
+    if (!targetAcl.defined()) {
+        std::cout << "!targetAcl.defined()" << std::endl;
+    } else {
+        printContiguousTensor(ctx, targetAcl.getAscendTensor(), "targetAcl");
+    }
+    if (!weightAcl.defined()) {
+        std::cout << "!weightAcl.defined()" << std::endl;
+    } else {
+        printContiguousTensor(ctx, weightAcl.getAscendTensor(), "weightAcl");
+    }
+    if (!outAcl.defined()) {
+        std::cout << "!outAcl.defined()" << std::endl;
+    } else {
+        printContiguousTensor(ctx, outAcl.getAscendTensor(), "outAcl");
+    }
+    if (!totalWeightAcl.defined()) {
+        std::cout << "!totalWeightAcl.defined()" << std::endl;
+    } else {
+        printContiguousTensor(ctx, totalWeightAcl.getAscendTensor(), "totalWeightAcl");
+    }
     int64_t reductionVal = static_cast<int64_t>(reduction);
     reductionVal = getReductionVal(reduction);
     // reductionVal = 0;
     ACLNN_ADAPTOR(aclnnNLLLoss, ctx, inputAcl, targetAcl, weightAcl, reductionVal, ignoreIndex, outAcl, totalWeightAcl);
 
+    std::cout << "~~~aclnnNLLLoss finished." << std::endl;
     return diopiSuccess;
 }
 
-diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+diopiError_t diopiNLLLossBackward0(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
                                   diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     // test;
     std::cout << "come into diopiNLLLossBackward" << std::endl;
@@ -174,7 +175,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     std::cout << "aclnnNLLLossBackward begin." << std::endl;
 
     ACLNN_ADAPTOR(aclnnNLLLossBackward, ctx, gradOutputAcl, inputAcl, targetAcl, weightAcl, reductionVal, ignoreIndex, totalWeightAcl, gradInputAcl);
-    std::cout << "aclnnNLLLossBackward finished." << std::endl;
+    std::cout << "~~~aclnnNLLLossBackward finished." << std::endl;
     return diopiSuccess;
 }
 
