@@ -14,6 +14,17 @@
 
 namespace impl {
 namespace camb {
+diopiError_t fixStrideIfZeroStride(DiopiTensor& src) {
+    if (src.shape()[1] == 0 && src.shape()[0] == 0) {
+        src.asStrided(src.shape(), std::vector<int64_t>{0, 1});
+    } else if (src.shape()[1] == 0) {
+        src.asStrided(src.shape(), std::vector<int64_t>{0, 1});
+    } else {
+        src.asStrided(src.shape(), std::vector<int64_t>{src.shape()[1], 1});
+    }
+
+    return diopiSuccess;
+}
 
 diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat1,
                         diopiConstTensorHandle_t mat2, const diopiScalar_t* beta, const diopiScalar_t* alpha) {
@@ -23,6 +34,14 @@ diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     DiopiTensor mat2Tensor(mat2);
     DiopiTensor inputTensor(input);
     DiopiTensor outTensor(out);
+
+    if (shapeHasZero(mat1Tensor.shape())) {
+        fixStrideIfZeroStride(mat1Tensor);
+    }
+
+    if (shapeHasZero(mat2Tensor.shape())) {
+        fixStrideIfZeroStride(mat2Tensor);
+    }
 
     std::vector<DiopiTensor*> pTensors{&inputTensor, &mat1Tensor, &mat2Tensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
@@ -38,6 +57,9 @@ diopiError_t diopiAddmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     CnnlTensorDesc mat2Desc(mat2TensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outDesc(outTensorTmp, CNNL_LAYOUT_ARRAY);
     DiopiTensor mmResultTensor = requiresTensor(ctx, vec2diopiSizeT(outTensor.shape()), inputTensorTmp.dtype());
+    if (shapeHasZero(mat2Tensor.shape())) {
+        fixStrideIfZeroStride(mat2Tensor);
+    }
     CnnlTensorDesc mmResultDesc(mmResultTensor, CNNL_LAYOUT_ARRAY);
 
     CnnlResourceGuard<cnnlMatMulDescriptor_t, cnnlMatMulDescCreate, cnnlMatMulDescDestroy> cnnlMatMulDesc;

@@ -92,6 +92,15 @@ bool isSparse(const DiopiTensor& src) {
     return true;
 }
 
+bool shapeHasZero(std::vector<int64_t> shape) {
+    for (int i = 0; i < shape.size(); i++) {
+        if (shape[i] == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 diopiError_t getDenseStride(const DiopiTensor& src, std::vector<int64_t>& dstStride) {
     int64_t dim = src.dim();
     std::vector<std::pair<int64_t, int64_t>> stridesSizes(dim, std::pair<int64_t, int64_t>(1, 1));
@@ -162,6 +171,8 @@ diopiError_t toDense(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& ds
         getDenseStride(src, targetStride);
         dst = requiresTensor(ctx, src.shape(), targetStride, src.dtype());
         sliceToDense(ctx, src, dst);
+    } else if (shapeHasZero(src.shape())) {
+        return diopiSuccess;
     } else {
         // for some special cases(broadcast), we set it as contiguous copy, but can be modified in the future
         dst = requiresTensor(ctx, src.shape(), src.dtype(), diopiMemoryFormat_t::Contiguous);

@@ -544,7 +544,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": (Skip(()),Skip((0,))),
+                    "shape": (Skip(())),
                 }
             ],
         ),
