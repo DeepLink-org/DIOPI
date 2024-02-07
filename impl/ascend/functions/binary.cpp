@@ -67,20 +67,30 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 
 diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
-    diopiDtype_t inputDtype;
+    diopiDtype_t outDtype, inputDtype, otherDtype;
+    diopiGetTensorDtype(out, &outDtype);
     diopiGetTensorDtype(input, &inputDtype);
-
-    if (isScalarOne(alpha)) {
-        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input).addInput(other).addOutput(out).run();
+    diopiGetTensorDtype(other, &otherDtype);
+    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+    diopiTensorHandle_t outCopy;
+    if (outDtype != highType) {
+        makeTensorLike(ctx, &outCopy, out, highType);
     } else {
-        double val = -1.0;
-        if (isIntegralTypeWithBool(alpha->stype)) {
-            val = -1.0 * getValue<int>(alpha);
-        } else {
-            val = -1.0 * getValue<float>(alpha);
-        }
-        AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input).addInput(other).addConstInput(val, inputDtype).addOutput(out).run();
+        outCopy = out;
     }
+    const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
+    if (value == 1.0) {
+        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+    } else if (value == -1.0) {
+        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+    } else {
+        if (diopi_dtype_float64 == highType) {
+            highType = diopi_dtype_float32;
+        }
+        AclOpRunner<2, 1>("Axpy", ctx).addInput(input, highType).addInput(other, highType).setAttr<float>("alpha", -value).addOutput(outCopy).run();
+    }
+    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
+    return diopiSuccess;
 }
 
 diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
