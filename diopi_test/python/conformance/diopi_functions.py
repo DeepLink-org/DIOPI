@@ -1382,7 +1382,7 @@ def linear(input, weight, bias=None) -> Tensor:
 
 def linear_backward(input, grad_outputs, weight, bias=None, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    
+
     input_shape = input.size().data
     if len(input_shape) == 1:
         input_shape.insert(0, 1)
@@ -1399,7 +1399,7 @@ def linear_backward(input, grad_outputs, weight, bias=None, **kwargs):
 
     grad_input = raw_like(input)
     grad_weight = raw_like(weight)
-    
+
     if bias is not None:
         assert isinstance(bias, Tensor), "bias must be a Tensor"
         grad_bias = raw_like(bias)
