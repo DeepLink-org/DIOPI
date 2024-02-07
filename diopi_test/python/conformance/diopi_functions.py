@@ -1358,37 +1358,38 @@ def linear(input, weight, bias=None) -> Tensor:
         input_np = input.numpy()
         input_np = np.resize(input_np, input_shape)
         input = Tensor.from_numpy(input_np)
-        
+
     weight_shape = weight.size().data
     if len(weight_shape) == 1:
         weight_shape.insert(0, 1)
         weight_np = weight.numpy()
         weight_np = np.resize(weight_np, weight_shape)
         weight = Tensor.from_numpy(weight_np)
-    
+
     in_features = weight_shape[1]
     out_features = weight_shape[0]
-    
+
     assert input_shape[-1] == in_features, "the last dim of input must equal to in_features"
     out_shape = input_shape
-    out_shape[-1] = out_features 
+    out_shape[-1] = out_features
     output = Tensor(out_shape, input.get_dtype())
-    
+
     func = check_function("diopiLinear")
     ret = func(input.context(), output, input, weight, bias)
     check_returncode(ret)
     return output
 
+
 def linear_backward(input, grad_outputs, weight, bias=None, **kwargs):
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
-    
+
     input_shape = input.size().data
     if len(input_shape) == 1:
         input_shape.insert(0, 1)
         input_np = input.numpy()
         input_np = np.resize(input_np, input_shape)
         input = Tensor.from_numpy(input_np)
-        
+
     weight_shape = weight.size().data
     if len(weight_shape) == 1:
         weight_shape.insert(0, 1)
@@ -1403,7 +1404,6 @@ def linear_backward(input, grad_outputs, weight, bias=None, **kwargs):
         grad_bias = raw_like(bias)
     else:
         grad_bias = None
-
 
     func = check_function("diopiLinearBackward")
 
@@ -1420,6 +1420,7 @@ def linear_backward(input, grad_outputs, weight, bias=None, **kwargs):
     if bias is None:
         return {"input": grad_input, "weight": grad_weight}
     return {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+
 
 def embedding(
     input: Tensor,
@@ -4682,6 +4683,7 @@ def prod(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     )
     check_returncode(ret)
     return out
+
 
 def cross_entropy_backward(
     input,
