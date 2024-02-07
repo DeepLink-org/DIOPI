@@ -38,8 +38,7 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
         acl_op::fill_(outAt, 0);
         return diopiSuccess;
     }
-    TORCH_CHECK(inputAt.scalar_type() == at::ScalarType::Float);
-    TORCH_CHECK(outAt.scalar_type() == at::ScalarType::Float);
+
     bool keepdim = outAt.dim() == inputAt.dim();
     auto pvalue = calculateP(pAt);
     at_npu::native::OpCommand cmd1;

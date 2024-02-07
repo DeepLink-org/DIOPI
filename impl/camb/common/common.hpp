@@ -66,6 +66,8 @@ bool isSlice(const DiopiTensor& src);
 
 bool isSparse(const DiopiTensor& src);
 
+bool shapeHasZero(std::vector<int64_t> shape);
+
 diopiError_t permuteTensor(DiopiTensor& t, const std::vector<int32_t>& order);
 
 diopiError_t getPermuteOrder(const DiopiTensor& src, std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder);

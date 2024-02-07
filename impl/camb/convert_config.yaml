@@ -52,6 +52,19 @@
     layout: ND
 #---base operation above---#
 
+#---Pooling operation below---#
+- diopiAdaptiveAvgPool2d:
+    layout: NHWC, NDHWC
+
+- diopiAdaptiveAvgPool2dBackward:
+    layout: NHWC, NDHWC
+#---Pooling operation above---#
+
+#---Matrix operation below---#
+- diopiBmm:
+    layout: ND
+#---Matrix operation above---#
+
 - diopiUpsampleNearest:
     layout: NHWC, NDHWC
 
