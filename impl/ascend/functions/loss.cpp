@@ -151,7 +151,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightSizeVec = std::vector<int64_t>({1});
     auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
-    diopiTensorHandle_t weightCopy, totalWeight, out, inputCopy, targetCopy, gradInputCopy, gradInputCopy1;
+    diopiTensorHandle_t weightCopy, totalWeight, out, inputCopy, targetCopy, gradInputCopy;
     diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, diopi_dtype_float32, diopi_device);
     makeTensorLike(ctx, &out, gradOutput);
 
@@ -248,8 +248,9 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         diopiGetTensorData(gradInputCopy, &gradInputPtr);
         runner.addOutput(gradInputPtr, getBaseBufferSize(gradInputCopy), calShapeVec, ACL_FORMAT_ND, gradDtype);
     } else {
-        makeTensorLike(ctx, &gradInputCopy1, gradInput, diopi_dtype_float32);
-        runner.addOutput(gradInputCopy1);
+        void* gradInputPtr;
+        diopiGetTensorData(gradInput, &gradInputPtr);
+        runner.addOutput(gradInputPtr, getBaseBufferSize(gradInput), calShapeVec, ACL_FORMAT_ND, gradDtype);
     }
     runner.addInput(weightCopy).addInput(totalWeight);
     runner.run();
@@ -263,8 +264,6 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         }
         diopiSize_t permuteDim = vectorToDiopiSize(permuteDimVec);
         diopiPermute(ctx, gradInput, gradInputCopy, permuteDim);
-    } else {
-        diopiCastDtype(ctx, gradInput, gradInputCopy1);
     }
     return diopiSuccess;
 }
