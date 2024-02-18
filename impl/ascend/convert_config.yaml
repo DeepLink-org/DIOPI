@@ -142,6 +142,9 @@
 - diopiThresholdBackward:
     dtype: (float64)->float32, (int16, int64)->int32
 
+- diopiMaximum:
+    dtype: (uint8, bool, int16)->int32, (float64)->float32
+
 - diopiMinimum:
     dtype: (uint8, bool, int16)->int32, (float64)->float32
 
