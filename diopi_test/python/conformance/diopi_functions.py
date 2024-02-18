@@ -1358,7 +1358,6 @@ def linear(input, weight, bias=None) -> Tensor:
         input_np = input.numpy()
         input_np = np.resize(input_np, input_shape)
         input = Tensor.from_numpy(input_np)
-
     weight_shape = weight.size().data
     if len(weight_shape) == 1:
         weight_shape.insert(0, 1)
@@ -1366,11 +1365,13 @@ def linear(input, weight, bias=None) -> Tensor:
         weight_np = np.resize(weight_np, weight_shape)
         weight = Tensor.from_numpy(weight_np)
 
-    in_features = weight_shape[1]
+    input_features = weight_shape[1]
     out_features = weight_shape[0]
 
-    assert input_shape[-1] == in_features, "the last dim of input must equal to in_features"
-    out_shape = input_shape
+    assert input_shape[-1] == input_features, "the last dim of input must equal to in_features"
+    out_shape = input.size().data
+    if len(out_shape) == 1:
+        out_shape.insert(0, 1)
     out_shape[-1] = out_features
     output = Tensor(out_shape, input.get_dtype())
 
