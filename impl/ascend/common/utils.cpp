@@ -198,6 +198,9 @@ diopiError_t castTensor(diopiContextHandle_t ctx, const std::vector<AscendTensor
 }
 
 diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_t dtype) {
+    if (dtype == src.dtype()) {
+        return diopiSuccess;
+    }
     AscendTensor temp;
     makeTensorLike(ctx, temp, src, dtype);
     castTensor(ctx, src, temp);
@@ -251,75 +254,88 @@ diopiTensorHandle_t createTensorIfNullptrOrConstCast(diopiContextHandle_t ctx, d
 }
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
+    // get scalar
+    int64_t nbytes = 0;
+    uint64_t buff = 0;  // just for store the value with the different type.
+    switch (dtype) {
+        case diopi_dtype_bool: {
+            nbytes = 1;
+            *reinterpret_cast<bool*>(&buff) = getValue<bool>(scalar);
+            break;
+        }
+        case diopi_dtype_int8: {
+            nbytes = 1;
+            *reinterpret_cast<int8_t*>(&buff) = getValue<int8_t>(scalar);
+            break;
+        }
+        case diopi_dtype_uint8: {
+            nbytes = 1;
+            *reinterpret_cast<uint8_t*>(&buff) = getValue<uint8_t>(scalar);
+            break;
+        }
+        case diopi_dtype_int16: {
+            nbytes = 2;
+            *reinterpret_cast<int16_t*>(&buff) = getValue<int16_t>(scalar);
+            break;
+        }
+        case diopi_dtype_uint16: {
+            nbytes = 2;
+            *reinterpret_cast<uint16_t*>(&buff) = getValue<uint16_t>(scalar);
+            break;
+        }
+        case diopi_dtype_int32: {
+            nbytes = 4;
+            *reinterpret_cast<int32_t*>(&buff) = getValue<int32_t>(scalar);
+            break;
+        }
+        case diopi_dtype_uint32: {
+            nbytes = 4;
+            *reinterpret_cast<uint32_t*>(&buff) = getValue<uint32_t>(scalar);
+            break;
+        }
+        case diopi_dtype_int64: {
+            nbytes = 8;
+            *reinterpret_cast<int64_t*>(&buff) = getValue<int64_t>(scalar);
+            break;
+        }
+        case diopi_dtype_uint64: {
+            nbytes = 8;
+            *reinterpret_cast<uint64_t*>(&buff) = getValue<uint64_t>(scalar);
+            break;
+        }
+        case diopi_dtype_float16: {
+            nbytes = 2;
+            *reinterpret_cast<half_float::half*>(&buff) = getValue<half_float::half>(scalar);
+            break;
+        }
+        case diopi_dtype_float32: {
+            nbytes = 4;
+            *reinterpret_cast<float*>(&buff) = getValue<float>(scalar);
+            break;
+        }
+        case diopi_dtype_float64: {
+            nbytes = 8;
+            *reinterpret_cast<double*>(&buff) = getValue<double>(scalar);
+            break;
+        }
+        default: {
+            error(__FILE__, __LINE__, __FUNCTION__, "the input tensor dtype %s is not allown", diopiDtypeToStr(dtype));
+        }
+    }
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
-    diopiTensorHandle_t outCopy;
+    void* outDataPtr = nullptr;
+    diopiTensorHandle_t outTmp = nullptr;
+    diopiRequireTensor(ctx, &outTmp, &sSize, nullptr, dtype, device);
     if (device == diopi_host) {
-        diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, dtype, diopi_host);
-        void* ptr;
-        diopiGetTensorData(outCopy, &ptr);
-        switch (dtype) {
-            case diopiDtype_t::diopi_dtype_float32:
-                *reinterpret_cast<float*>(ptr) = getValue<float>(scalar);
-                break;
-            case diopiDtype_t::diopi_dtype_float64:
-                *reinterpret_cast<double*>(ptr) = getValue<double>(scalar);
-                break;
-            case diopiDtype_t::diopi_dtype_int32:
-                *reinterpret_cast<int*>(ptr) = getValue<int>(scalar);
-                break;
-            case diopiDtype_t::diopi_dtype_int64:
-                *reinterpret_cast<int64_t*>(ptr) = getValue<int64_t>(scalar);
-                break;
-            case diopiDtype_t::diopi_dtype_uint8:
-                *reinterpret_cast<uint8_t*>(ptr) = getValue<uint8_t>(scalar);
-                break;
-            case diopiDtype_t::diopi_dtype_int8:
-                *reinterpret_cast<int8_t*>(ptr) = getValue<int8_t>(scalar);
-                break;
-            case diopiDtype_t::diopi_dtype_bool:
-                *reinterpret_cast<bool*>(ptr) = getValue<bool>(scalar);
-                break;
-            case diopiDtype_t::diopi_dtype_int16:
-                *reinterpret_cast<int16_t*>(ptr) = getValue<int16_t>(scalar);
-                break;
-            case diopiDtype_t::diopi_dtype_uint16:
-                *reinterpret_cast<uint16_t*>(ptr) = getValue<uint16_t>(scalar);
-                break;
-            case diopiDtype_t::diopi_dtype_float16:
-                *reinterpret_cast<half_float::half*>(ptr) = getValue<half_float::half>(scalar);
-                break;
-            default:
-                error(__FILE__, __LINE__, __FUNCTION__, "dtype %s not supported on host", diopiDtypeToStr(dtype));
-        }
-        *out = outCopy;
+        diopiGetTensorData(outTmp, &outDataPtr);
+        memcpy(outDataPtr, &buff, nbytes);
     } else if (device == diopi_device) {
-        diopiTensorHandle_t outCopyDev = nullptr;
-        void *src, *dst;
-        if (isFloatingType(dtype)) {
-            diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, diopi_dtype_float64, diopi_host);
-            diopiRequireTensor(ctx, &outCopyDev, &sSize, nullptr, diopi_dtype_float64, diopi_device);
-            diopiGetTensorData(outCopy, &src);
-            reinterpret_cast<double*>(src)[0] = getValue<double>(scalar);
-        } else if (isIntegralTypeWithBool(dtype)) {
-            diopiRequireTensor(ctx, &outCopy, &sSize, nullptr, diopi_dtype_int64, diopi_host);
-            diopiRequireTensor(ctx, &outCopyDev, &sSize, nullptr, diopi_dtype_int64, diopi_device);
-            diopiGetTensorData(outCopy, &src);
-            reinterpret_cast<int64_t*>(src)[0] = getValue<int64_t>(scalar);
-        } else {
-            error(__FILE__, __LINE__, __FUNCTION__, "dtype %s not supported on device", diopiDtypeToStr(dtype));
-        }
-        int64_t elemsize;
-        diopiStreamHandle_t stream;
-        diopiGetTensorElemSize(outCopy, &elemsize);
-        diopiGetStream(ctx, &stream);
-        diopiRequireTensor(ctx, out, &sSize, nullptr, dtype, diopi_device);
-        diopiGetTensorData(outCopyDev, &dst);
-        CALL_ACLRT(aclrtMemcpyAsync(dst, elemsize, src, elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
-        diopiCastDtype(ctx, *out, outCopyDev);
+        diopiFill(ctx, outTmp, scalar);
     } else {
         error(__FILE__, __LINE__, __FUNCTION__, "device(%s) not supported", deviceType2Str(device));
     }
+    *out = outTmp;
     return diopiSuccess;
 }
 
@@ -687,5 +703,92 @@ diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandl
         return const_cast<diopiTensorHandle_t>(src);
     }
 }
+
+static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes, diopiDtype_t* dtype) {
+    if (opSupportedDtypes.find(diopi_dtype_float32) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_float32;
+    } else if (opSupportedDtypes.find(diopi_dtype_float16) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_float16;
+    } else if (opSupportedDtypes.find(diopi_dtype_int32) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_int32;
+    } else if (opSupportedDtypes.find(diopi_dtype_int16) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_int16;
+    } else if (opSupportedDtypes.find(diopi_dtype_int8) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_int8;
+    } else if (opSupportedDtypes.find(diopi_dtype_bool) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_bool;
+    } else if (opSupportedDtypes.find(diopi_dtype_complex64) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_complex64;
+    } else {
+        setLastErrorString("%s", "this operator does not support bool, int8, int16, int32, float16, float32");
+        return diopiDtypeNotSupported;
+    }
+    return diopiSuccess;
+}
+
+diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<AscendTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype) {
+    std::set<diopiDtype_t> dtypeAndTensorPtrs;
+    diopiDtype_t targetType = diopi_dtype_float32;
+    for (const auto& pTensor : pTensors) {
+        dtypeAndTensorPtrs.insert(pTensor->dtype());
+    }
+    if (dtypeAndTensorPtrs.find(diopi_dtype_float64) != dtypeAndTensorPtrs.end() || dtypeAndTensorPtrs.find(diopi_dtype_float32) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_float32) == opSupportedDtype.end()) {  // not support float32
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into float32
+            targetType = diopi_dtype_float32;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_float16) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_float16) == opSupportedDtype.end()) {  // not support float16
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into float16
+            targetType = diopi_dtype_float16;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_int64) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_int32) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_uint64) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_uint32) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_int32) == opSupportedDtype.end()) {  // not support int32
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into int32
+            targetType = diopi_dtype_int32;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_int16) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_uint16) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_int16) == opSupportedDtype.end()) {  // not support int16
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into int16
+            targetType = diopi_dtype_int16;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_int8) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_uint8) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_int8) == opSupportedDtype.end()) {  // not support int8
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into int8
+            targetType = diopi_dtype_int8;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_bool) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_bool) == opSupportedDtype.end()) {  // not support bool
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into bool
+            targetType = diopi_dtype_bool;
+        }
+    } else if (dtypeAndTensorPtrs.find(diopi_dtype_complex64) != dtypeAndTensorPtrs.end() ||
+               dtypeAndTensorPtrs.find(diopi_dtype_complex128) != dtypeAndTensorPtrs.end()) {
+        if (opSupportedDtype.find(diopi_dtype_complex64) == opSupportedDtype.end()) {  // not support bool
+            DIOPI_CALL(choiceDtype(opSupportedDtype, &targetType));
+        } else {  // all tensors cast into bool
+            targetType = diopi_dtype_bool;
+        }
+    } else {
+        setLastErrorString("%s", "tensor's dtype error, can't be cast");
+        return diopiDtypeNotSupported;
+    }
+    for (const auto& pTensor : pTensors) {
+        castTensor(ctx, *pTensor, targetType);
+    }
+    return diopiSuccess;
+}
+
 }  // namespace ascend
 }  // namespace impl

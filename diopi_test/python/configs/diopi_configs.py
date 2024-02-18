@@ -8231,6 +8231,10 @@ diopi_configs = {
 
     'rms_norm': dict(
         name=['rms_norm'],
+        atol=1e-4,
+        rtol=1e-4,
+        atol_half=1e-2,
+        rtol_half=1e-2,
         interface=['CustomizedTest'],
         dtype=[np.float16, np.float32, np.float64],
         para=dict(

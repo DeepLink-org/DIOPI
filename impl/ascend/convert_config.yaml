@@ -1,6 +1,36 @@
 - common_config:
     layout: NCHW
 
+- diopiSoftmax:
+    dtype: (float64)->float32
+
+- diopiSoftmaxBackward:
+    dtype: (float64)->float32
+
+- diopiLogSoftmax:
+    dtype: (float64)->float32
+
+- diopiLogSoftmaxBackward:
+    dtype: (float64)->float32
+
+- diopiGelu:
+    dtype: (float64)->float32
+
+- diopiGeluBackward:
+    dtype: (float64)->float32
+
+- diopiAbs:
+    dtype: (bool, uint8)->int16
+
+- diopiAbsInp:
+    dtype: (bool, uint8)->int16
+
+- diopiReciprocal:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
+- diopiReciprocalInp:
+    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+
 - diopiConvolution2d:
     dtype: (float64)->float16
 
@@ -13,71 +43,71 @@
 - diopiAdaptiveAvgPool2dBackward:
     dtype: (float64)->float32
 
-- diopiLtScalar:
-    dtype: (bool)->float32
+# - diopiLtScalar:
+#     dtype: (bool)->float32
 
-- diopiLtInpScalar:
-    dtype: (bool)->float32
+# - diopiLtInpScalar:
+#     dtype: (bool)->float32
 
-- diopiLt:
-    dtype: (bool)->float32
+# - diopiLt:
+#     dtype: (bool)->float32
 
-- diopiLtInp:
-    dtype: (bool)->float32
+# - diopiLtInp:
+#     dtype: (bool)->float32
 
-- diopiGtScalar:
-    dtype: (bool)->float32
+# - diopiGtScalar:
+#     dtype: (bool)->float32
 
-- diopiGtInpScalar:
-    dtype: (bool)->float32
+# - diopiGtInpScalar:
+#     dtype: (bool)->float32
 
-- diopiGt:
-    dtype: (bool)->float32
+# - diopiGt:
+#     dtype: (bool)->float32
 
-- diopiGtInp:
-    dtype: (bool)->float32
+# - diopiGtInp:
+#     dtype: (bool)->float32
 
-- diopiLeScalar:
-    dtype: (bool)->float32
+# - diopiLeScalar:
+#     dtype: (bool)->float32
 
-- diopiLeInpScalar:
-    dtype: (bool)->float32
+# - diopiLeInpScalar:
+#     dtype: (bool)->float32
 
-- diopiLe:
-    dtype: (bool)->float32
+# - diopiLe:
+#     dtype: (bool)->float32
 
-- diopiLeInp:
-    dtype: (bool)->float32
+# - diopiLeInp:
+#     dtype: (bool)->float32
 
-- diopiGeScalar:
-    dtype: (bool)->float32
+# - diopiGeScalar:
+#     dtype: (bool)->float32
 
-- diopiGeInpScalar:
-    dtype: (bool)->float32
+# - diopiGeInpScalar:
+#     dtype: (bool)->float32
 
-- diopiGe:
-    dtype: (bool)->float32
+# - diopiGe:
+#     dtype: (bool)->float32
 
-- diopiGeInp:
-    dtype: (bool)->float32
+# - diopiGeInp:
+#     dtype: (bool)->float32
 
-- diopiLogicalAnd:
-    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+# - diopiLogicalAnd:
+#     dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
 
-- diopiLogicalAndInp:
-    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+# - diopiLogicalAndInp:
+#     dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
 
-- diopiLogicalOr:
-    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+# - diopiLogicalOr:
+#     dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
 
-- diopiLogicalOrInp:
-    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+# - diopiLogicalOrInp:
+#     dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
 
-- diopiLogicalNot:
-    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+# - diopiLogicalNot:
+#     dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
 
-- diopiLogicalNotInp:
-    dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
+# - diopiLogicalNotInp:
+#     dtype: (float64, float32, float16, int64, int32, int16, int8, uint8)->bool
 
 - diopiBatchNorm:
     dtype: (float64)->float32
@@ -96,24 +126,6 @@
 
 - diopiAll:
     dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
-
-- diopiLog:
-    dtype: (float16, float32, int16, int32, int64, uint8, int8)->float64
-
-- diopiLogInp:
-    dtype: (float16, float32, int16, int32, int64, uint8, int8)->float64
-
-- diopiLog2:
-    dtype: (float64, int16, int32, int64, uint8, int8)->float32
-
-- diopiLog2Inp:
-    dtype: (float64, int16, int32, int64, uint8, int8)->float32
-
-- diopiLog10:
-    dtype: (float64, int16, int32, int64, uint8, int8)->float32
-
-- diopiLog10Inp:
-    dtype: (float64, int16, int32, int64, uint8, int8)->float32
 
 - diopiNeg:
     dtype: (int8, int16, uint8, uint16, uint32, uint64)->int64, (float64)->float32, (complex32)->complex64
@@ -142,11 +154,26 @@
 - diopiHardtanhBackward:
     dtype: (float64)->float32
 
+- diopiAdd:
+    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+
+- diopiAddInp:
+    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+
+- diopiAddInpScalar:
+    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+
+- diopiMm:
+    dtype: (float64)->float32
+
+- diopiAddmm:
+    dtype: (float64)->float32
+
 - diopiAddcmul:
-    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    dtype: (int16, uint16)->int32, (uint32, uint64)->int64, (float64)->float32
 
 - diopiAddcmulInp:
-    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    dtype: (int16, uint16)->int32, (uint32, uint64)->int64, (float64)->float32
 
 - diopiAddcdiv:
     dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
@@ -206,16 +233,16 @@
     dtype: (bool, uint8, int8, int16, int32, int64)->float32
 
 - diopiPow:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+    dtype: (uint8)->int16
 
 - diopiPowInp:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+    dtype: (uint8)->int16
 
 - diopiPowTensor:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+    dtype: (uint8)->int16
 
 - diopiPowInpTensor:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+    dtype: (uint8)->int16
 
 - diopiNorm:
     dtype: (bool, uint8, int8, int16, int32, int64, float64)->float32
@@ -298,7 +325,14 @@
     dtype: (float64)->float32
 
 - diopiRMSNorm:
-    dtype: (float64)->float32
+    dtype: (float64, float16)->float32
 
 - diopiRMSNormBackward:
+    dtype: (float64, float16)->float32
+
+- diopiBmm:
     dtype: (float64)->float32
+
+- diopiIsNan:
+    dtype: (uint8, int8, int32, int16, int64, bool)->float32
+

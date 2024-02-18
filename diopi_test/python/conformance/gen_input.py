@@ -23,6 +23,7 @@ class GenInputData(object):
     Generate input data for all functions by using numpy
     """
     db_case_items = []
+    err_case_counter = 0
 
     @staticmethod
     def run(
@@ -74,9 +75,13 @@ class GenInputData(object):
                 )
                 item["result"] = "passed"
             except Exception as err_msg:
-                raise GenDataFailedException(f"Generate input data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}")
-
-            GenInputData.db_case_items.append(item)
+                logger.error(
+                    f"Generate input data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}"
+                )
+                item.update({"result": "failed", "err_msg": err_msg})
+                GenInputData.err_case_counter += 1
+            finally:
+                GenInputData.db_case_items.append(item)
 
         logger.info(f"Generate test cases number for input data: {case_counter}")
         if case_counter == 0:
