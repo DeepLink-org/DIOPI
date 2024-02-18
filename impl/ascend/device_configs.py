@@ -626,14 +626,6 @@ device_configs = {
         rtol=1e-3,
         atol_half=1e-2,
         rtol_half=1e-2,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((16, 64, 64)), Skip((2, 3136, 128)), Skip((2, 64)), Skip((2, 5, 3, 5))],
-                },
-            ]
-        ),
     ),
 
     'smooth_l1_loss': dict(
