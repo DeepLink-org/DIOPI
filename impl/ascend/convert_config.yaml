@@ -155,13 +155,10 @@
     dtype: (float64)->float32
 
 - diopiAdd:
-    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+    dtype: (bool)->int32
 
 - diopiAddInp:
-    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
-
-- diopiAddInpScalar:
-    dtype: (float64)->float32, (bool, uint8, int8, uint16, int16, uint32, int32, uint64, int64)->int32
+    dtype: (bool)->int32
 
 - diopiMm:
     dtype: (float64)->float32
