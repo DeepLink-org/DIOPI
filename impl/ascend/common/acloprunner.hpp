@@ -268,6 +268,11 @@ public:
         } else {
             if (at.numel() > 0) CALL_ACLRT(aclSetTensorConst(desc, const_cast<void*>(at.data()), at.numel() * at.elemsize()));
         }
+        if (at.device() == diopiDevice_t::diopi_device) {
+            aclSetTensorPlaceMent(desc, ACL_MEMTYPE_DEVICE);
+        } else {
+            aclSetTensorPlaceMent(desc, ACL_MEMTYPE_HOST_COMPILE_INDEPENDENT);
+        }
         buffer = aclCreateDataBuffer(nullptr, 0);
         inputIndex_++;
         return *this;
