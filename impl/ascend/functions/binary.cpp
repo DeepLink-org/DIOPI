@@ -176,7 +176,6 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         return diopiSuccess;
     } else {
         // default
-        // 软件栈未说明input与other类型必须一致，但运行报数据类型不一致错
         AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, outAt.dtype()).addInput(other, outAt.dtype()).addOutput(outCopy).run();
         if (RoundModeTrunc == roundingMode) {
             // trunc
@@ -198,9 +197,9 @@ diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 
 diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             diopiRoundMode_t roundingMode) {
-    AscendTensor inputTensor(input);
+    AscendTensor inputAt(input);
     diopiTensorHandle_t otherTensor = nullptr;
-    makeTensorFromScalar(ctx, other, &otherTensor, inputTensor.dtype(), diopiDevice_t::diopi_device);
+    makeTensorFromScalar(ctx, other, &otherTensor, inputAt.dtype(), diopiDevice_t::diopi_device);
     return diopiDiv(ctx, out, input, otherTensor, roundingMode);
 }
 
