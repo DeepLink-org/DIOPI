@@ -198,11 +198,10 @@ diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 
 diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             diopiRoundMode_t roundingMode) {
-    diopiTensorHandle_t trOther = nullptr;
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
-    return diopiDiv(ctx, out, input, trOther, roundingMode);
+    AscendTensor inputTensor(input);
+    diopiTensorHandle_t otherTensor = nullptr;
+    makeTensorFromScalar(ctx, other, &otherTensor, inputTensor.dtype(), diopiDevice_t::diopi_device);
+    return diopiDiv(ctx, out, input, otherTensor, roundingMode);
 }
 
 diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t roundingMode) {
