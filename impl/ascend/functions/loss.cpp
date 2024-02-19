@@ -60,10 +60,6 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
     AscendTensor inputAt(inputCopy), outAt(out), targetAt(targetCopy);
 
     AclOpRunner<3, 2> runner("NLLLoss", ctx);
-    if (inputAt.dtype() != diopi_dtype_float32) {
-        castTensor(ctx, inputAt, diopi_dtype_float32);
-    }
-
     AscendTensor weightAt(weight);
     castTensor(ctx, weightAt, diopi_dtype_float32);
     if (0 <= ignoreIndex && ignoreIndex < inputAt.shape(-1)) {
@@ -101,8 +97,6 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
     }
     runner.addOutput(totalWeight);
     runner.run();
-    AscendTensor outOri(out);
-    castTensor(ctx, outAt, outOri);
 
     return diopiSuccess;
 }
