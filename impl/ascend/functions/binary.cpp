@@ -21,14 +21,11 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
 }
 
 bool isScalarOne(const diopiScalar_t* alpha) {
-    if (alpha == nullptr) return true;
-    if (isIntegralTypeWithBool(alpha->stype)) {
-        int val = getValue<int>(alpha);
-        return val == 1;
-    } else {
-        float val = getValue<float>(alpha);
-        return fabs(val - 1.0) < 1e-6;
+    if (alpha == nullptr) {
+        return true;
     }
+    float val = getValue<float>(alpha);
+    return fabs(val - 1.0) < 1e-6;
 }
 
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
