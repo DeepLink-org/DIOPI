@@ -70,7 +70,7 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
         aclrtMemcpyAsync(ptr, sizeof(float), &val, sizeof(float), ACL_MEMCPY_HOST_TO_DEVICE, stream);
     }
 
-    // ascend only support inpu tensor with 2D dimension
+    // ascend only support input tensor with 2D dimension
     if (inputShape.len == 1) {
         reshape(ctx, inputAt, inputAt, {1, inputShape.data[0]});
         reshape(ctx, targetAt, targetAt, {targetAt.numel()});
@@ -97,6 +97,8 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
     }
     runner.addOutput(totalWeight);
     runner.run();
+    AscendTensor outOri(out);
+    castTensor(ctx, outAt, outOri);
 
     return diopiSuccess;
 }
