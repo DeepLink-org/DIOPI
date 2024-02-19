@@ -22,7 +22,7 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
 
 bool isScalarOne(const diopiScalar_t* alpha) {
     if (alpha == nullptr) return true;
-    if (alpha->stype == diopi_dtype_int64) {
+    if (isIntegralTypeWithBool(alpha->stype)) {
         int val = getValue<int>(alpha);
         return val == 1;
     } else {
@@ -34,23 +34,11 @@ bool isScalarOne(const diopiScalar_t* alpha) {
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
 #if 1
-    diopiDtype_t outDtype, inputDtype, otherDtype;
-    diopiGetTensorDtype(out, &outDtype);
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiGetTensorDtype(other, &otherDtype);
-    diopiTensorHandle_t outTemp;
-
+    AscendTensor outTensor(out);
     if (isScalarOne(alpha)) {
-        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input, inputDtype).addInput(other, otherDtype).addOutput(out).run();
+        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, outTensor.dtype()).addInput(other, outTensor.dtype()).addOutput(out).run();
     } else {
-        diopiDtype_t scalarT = alpha->stype;
-        if (isIntegralTypeWithBool(scalarT)) {
-            scalarT = diopi_dtype_int32;
-        } else if (scalarT == diopi_dtype_float64) {
-            scalarT = diopi_dtype_float32;
-        }
-
-        AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input, inputDtype).addInput(other, otherDtype).addConstInput(*alpha, scalarT).addOutput(out).run();
+        AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input).addInput(other).addConstInput(*alpha, outTensor.dtype()).addOutput(out).run();
     }
 
 #else
