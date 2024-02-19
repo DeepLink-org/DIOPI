@@ -53,11 +53,15 @@ diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 
 diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             const diopiScalar_t* alpha) {
-    diopiTensorHandle_t trOther = nullptr;
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(out, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
-    return diopiAdd(ctx, out, input, trOther, alpha);
+    AscendTensor outTensor(out);
+    float otherValue = getValue<float>(other);
+    float alphaValue = getValue<float>(alpha);
+    float value = otherValue * alphaValue;
+    diopiScalar_t valueScalar = constructDiopiScalarT(outTensor.dtype(), value);
+    diopiTensorHandle_t valueTensor = nullptr;
+    makeTensorFromScalar(ctx, &valueScalar, &valueTensor, outTensor.dtype(), diopiDevice_t::diopi_device);
+    AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input).addInput(valueTensor).addOutput(out).run();
+    return diopiSuccess;
 }
 
 diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
