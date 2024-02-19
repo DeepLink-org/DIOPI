@@ -154,11 +154,8 @@ diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 
 diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       diopiRoundMode_t roundingMode) {
-    diopiDtype_t outDtype, inputDtype, otherDtype;
-    diopiGetTensorDtype(out, &outDtype);
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiGetTensorDtype(other, &otherDtype);
-    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+    AscendTensor inputAt(input), otherAt(other), outAt(out);
+    diopiDtype_t highType = promoteTypes(inputAt.dtype(), otherAt.dtype());
     diopiTensorHandle_t outCopy;
 
     // only in float data can we get nan or inf
@@ -167,7 +164,7 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         highType = diopi_dtype_float32;
     }
 
-    if (outDtype != highType) {
+    if (outAt.dtype() != highType) {
         makeTensorLike(ctx, &outCopy, out, highType);
     } else {
         outCopy = out;
@@ -175,12 +172,12 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     if (RoundModeFloor == roundingMode) {
         // floor
-        AclOpRunner<2, 1, dtypeConvertor>("FloorDiv", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
-        if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
+        AclOpRunner<2, 1, dtypeConvertor>("FloorDiv", ctx).addInput(input, outAt.dtype()).addInput(other, outAt.dtype()).addOutput(out).run();
         return diopiSuccess;
     } else {
         // default
-        AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
+        // 软件栈未说明input与other类型必须一致，但运行报数据类型不一致错
+        AclOpRunner<2, 1, dtypeConvertor>("RealDiv", ctx).addInput(input, outAt.dtype()).addInput(other, outAt.dtype()).addOutput(outCopy).run();
         if (RoundModeTrunc == roundingMode) {
             // trunc
             // trunc only support float16, float32, int8, uint8, int32.
@@ -190,7 +187,7 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
                 AclOpRunner<1, 1, dtypeConvertor>("Trunc", ctx).addInput(out, highType).addOutput(out).run();
             }
         }
-        if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
+        if (outAt.dtype() != highType) diopiCastDtype(ctx, out, outCopy);
         return diopiSuccess;
     }
 }
