@@ -72,6 +72,45 @@ diopiError_t getPermuteOrder(const DiopiTensor& src, std::vector<int32_t>& order
     return diopiSuccess;
 }
 
+diopiError_t getPermuteOrder(std::vector<int64_t>& shape, std::vector<int64_t>& stride, std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder) {
+    int dim = shape.size();
+    std::vector<int> inputStrides(dim, 1);
+    std::vector<int> inputSizes(dim, 1);
+
+    for (int i = 0; i < dim; i++) {
+        inputStrides[i] = stride[i];
+        inputSizes[i] = shape[i];
+    }
+    std::vector<std::pair<int, int>> stridesSizes(dim, std::pair<int, int>(1, 1));
+    for (int i = 0; i < dim; ++i) {
+        stridesSizes[i] = std::pair<int, int>(inputStrides[i], inputSizes[i]);
+    }
+
+    // shape:2,3,4,5 stride:60,1,15,3 -> orderOut: 0,3,1,2, reverseOrder: 0,2,3,1
+    sort(stridesSizes.begin(), stridesSizes.end(), [](std::pair<int, int> a, std::pair<int, int> b) { return a.first > b.first; });
+    for (int i = 0; i < dim; ++i) {
+        auto pair = stridesSizes[i];
+        for (int j = 0; j < dim; ++j) {
+            if ((pair.first == inputStrides[j]) && (pair.second == inputSizes[j])) {
+                reverseOrder[i] = j;
+                inputStrides[j] = -1;
+                inputSizes[j] = -1;
+                break;
+            }
+        }
+    }
+
+    // 反推orderOut
+    for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < dim; j++) {
+            if (reverseOrder[j] == i) {
+                orderOut[i] = j;
+            }
+        }
+    }
+    return diopiSuccess;
+}
+
 diopiError_t calCnnlLayout(diopiMemoryFormat_t memoryFormat, int64_t dim, cnnlTensorLayout_t& cnnlLayout) {
     switch (memoryFormat) {
         case diopiMemoryFormat_t::ChannelsLast1d:
@@ -99,14 +138,9 @@ diopiError_t calCnnlLayout(diopiMemoryFormat_t memoryFormat, int64_t dim, cnnlTe
     return diopiSuccess;
 }
 
-// static bool hasZero(std::vector<int64_t> vec) {
-//     return std::any_of(vec.begin(), vec.end(), [](auto i) { return i == 0; });
-// }
-
-template <typename T>
-static std::vector<T> changeVecAccordingToOrder(std::vector<T> vec, std::vector<int32_t> order) {
+std::vector<int64_t> changeVecAccordingToOrder(const std::vector<int64_t> vec, std::vector<int32_t> order) {
     DIOPI_CHECK_ABORT(order.size() == vec.size(), "order's len %ld is not equal vec's len %ld", order.size(), vec.size());
-    std::vector<T> newVec(vec.size(), 0);
+    std::vector<int64_t> newVec(vec.size(), 0);
     int j = 0;
     for (auto i : order) {
         newVec[j++] = vec[i];
@@ -165,6 +199,36 @@ diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryF
 diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dest) {
     // using input permute + output permute + cnnltranspose to copy
     DIOPI_CHECK(src.shape() == dest.shape(), "src's shape should be the same as dest's");
+
+    std::vector<int64_t> olderDestStride = dest.stride();
+    std::vector<int64_t> olderDestShape = dest.shape();
+    std::vector<int64_t> olderSrcStride = src.stride();
+    std::vector<int64_t> olderSrcShape = src.shape();
+
+    // reduce one first, for reducing ambiguity
+    bool reduceOnes = false;
+    for (int i = 0; i < src.dim(); i++) {
+        if (src.shape()[i] == 1) {
+            reduceOnes = true;
+            break;
+        }
+    }
+
+    if (reduceOnes) {
+        std::vector<int64_t> shape;
+        std::vector<int64_t> srcStride;
+        std::vector<int64_t> destStride;
+        for (int i = 0; i < src.dim(); i++) {
+            if (src.shape()[i] != 1) {
+                shape.push_back(olderSrcShape[i]);
+                srcStride.push_back(olderSrcStride[i]);
+                destStride.push_back(olderDestStride[i]);
+            }
+        }
+        src.asStrided(shape, srcStride);
+        dest.asStrided(shape, destStride);
+    }
+
     int64_t dim = src.dim();
     DIOPI_CHECK(dim <= 8, "only support less than 8d tensor currently");
     bool srcIsContiguous = src.isContiguous();
@@ -185,11 +249,6 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     cnnlTensorLayout_t srcLayout = CNNL_LAYOUT_ARRAY;
     cnnlTensorLayout_t destLayout = CNNL_LAYOUT_ARRAY;
 
-    std::vector<int64_t> olderDestStride = dest.stride();
-    std::vector<int64_t> olderDestShape = dest.shape();
-    std::vector<int64_t> olderSrcStride = src.stride();
-    std::vector<int64_t> olderSrcShape = src.shape();
-
     // permute to get contiguous tensor
     if (!destIsContiguous) {
         DIOPI_CALL(permuteTensor(dest, outputBackOrder));
@@ -206,14 +265,26 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, inputToOutputOrder));
 
     // recovery the shape and strides
-    if (!destIsContiguous) {
+    if (!destIsContiguous || reduceOnes) {
         dest.asStrided(olderDestShape, olderDestStride);
     }
 
-    if (!srcIsContiguous) {
+    if (!srcIsContiguous || reduceOnes) {
         src.asStrided(olderSrcShape, olderSrcStride);
     }
     return diopiSuccess;
+}
+
+bool isContiguousAccordingToOrder(std::vector<int64_t> shape, std::vector<int64_t> stride, std::vector<int> order) {
+    int64_t curStride = 1;
+    for (auto i : order) {
+        if (curStride != stride[i]) {
+            return false;
+        } else {
+            curStride *= shape[i];
+        }
+    }
+    return true;
 }
 
 }  // namespace camb

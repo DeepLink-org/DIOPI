@@ -35,6 +35,10 @@ bool broadcast(DiopiTensor inputTensor, const std::vector<int64_t>& targetShape,
 diopiError_t opBroadcastCast(const DiopiTensor& inputTensor, DiopiTensor& otherTensor, std::vector<int64_t>& targetShape, std::vector<int64_t>& targetStride,
                              bool& toPermuteFlag);
 
+std::vector<int64_t> changeVecAccordingToOrder(const std::vector<int64_t> vec, std::vector<int32_t> order);
+
+bool isContiguousAccordingToOrder(std::vector<int64_t> shape, std::vector<int64_t> stride, std::vector<int> order);
+
 std::vector<int64_t> calContiguousStride(std::vector<int64_t> shape);
 
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Contiguous);
@@ -66,11 +70,11 @@ bool isSlice(const DiopiTensor& src);
 
 bool isSparse(const DiopiTensor& src);
 
-bool shapeHasZero(std::vector<int64_t> shape);
-
 diopiError_t permuteTensor(DiopiTensor& t, const std::vector<int32_t>& order);
 
 diopiError_t getPermuteOrder(const DiopiTensor& src, std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder);
+
+diopiError_t getPermuteOrder(std::vector<int64_t>& shape, std::vector<int64_t>& stride, std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder);
 
 diopiError_t getDenseStride(const DiopiTensor& src, std::vector<int64_t>& dstStride);
 
