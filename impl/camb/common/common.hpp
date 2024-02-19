@@ -68,6 +68,8 @@ bool denseCheck(const DiopiTensor& src);
 
 bool isSlice(const DiopiTensor& src);
 
+bool shapeHasZero(std::vector<int64_t> shape);
+
 bool isSparse(const DiopiTensor& src);
 
 diopiError_t permuteTensor(DiopiTensor& t, const std::vector<int32_t>& order);
