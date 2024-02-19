@@ -133,8 +133,9 @@ diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 
 diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
     AscendTensor outTensor(out);
-    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input).addConstInput(*other, outTensor.dtype()).addOutput(out).run();
-    return diopiSuccess;
+    diopiTensorHandle_t otherTensor = nullptr;
+    makeTensorFromScalar(ctx, other, &otherTensor, outTensor.dtype(), diopiDevice_t::diopi_device);
+    return diopiMul(ctx, out, input, otherTensor);
 }
 
 diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
