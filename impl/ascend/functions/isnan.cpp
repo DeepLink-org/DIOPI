@@ -9,7 +9,7 @@ namespace impl {
 namespace ascend {
 
 DIOPI_API diopiError_t diopiIsNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("IsNan", ctx).addInput(input, diopi_dtype_float64).addOutput(out).run();
+    AclOpRunner<1, 1>("IsNan", ctx).addInput(input).addOutput(out).run();
     return diopiSuccess;
 }
 

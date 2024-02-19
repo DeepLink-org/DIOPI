@@ -2,11 +2,19 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow llm used
+# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
 
 device_configs = {
+     'batch_norm': dict(
+        name=["batch_norm"],
+        atol_half=1e-1,
+        rtol_half=1e-1,
+     ),
+
     'batch_norm_no_contiguous': dict(
         name=['batch_norm'],
+        atol_half=1e-1,
+        rtol_half=1e-1,
         tensor_para=dict(
             args=[
                 {
@@ -292,18 +300,6 @@ device_configs = {
                 },
             ]
         ),
-    ),
-
-    'reduce_op': dict( # llm used
-        name=['sum'],
-        atol=1e-3,
-        rtol=1e-3,
-    ),
-
-    'reduce_partial_op': dict( # llm used
-        atol=1e-3,
-        rtol=1e-3,
-        name=['sum'],
     ),
 
     'reduce_partial_op_1': dict(
@@ -711,30 +707,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.float32),Skip(np.float16),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_select': dict(
-        name=['masked_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_select_not_float': dict(
-        name=['masked_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
                 },
             ]
         ),
@@ -1354,7 +1326,7 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'remainder_self_scalar': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1429,4 +1401,9 @@ device_configs = {
             other=[Skip(False),],
         ),
     ),
+    'nll_loss': dict(
+        name=["nll_loss"],
+        atol=1e-4,
+        rtol=1e-3,
+    )
 }

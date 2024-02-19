@@ -61,10 +61,20 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
 
     AclOpRunner<3, 2> runner("NLLLoss", ctx);
     AscendTensor weightAt(weight);
-    castTensor(ctx, weightAt, inputAt.dtype());
+
+    // castTensor(ctx, weightAt, inputAt.dtype());
+    diopiTensorHandle_t weightTmp;
+    AscendTensor weightAtTmp(weightAt);
+    if (weightAt.dtype() == diopi_dtype_float32) {
+        weightTmp = clone(ctx, weight);
+        weightAtTmp = AscendTensor(weightTmp);
+    } else {
+        castTensor(ctx, weightAt, diopi_dtype_float32);
+        weightAtTmp = weightAt;
+    }
     if (0 <= ignoreIndex && ignoreIndex < inputAt.shape(-1)) {
         diopiStreamHandle_t stream;
-        void* ptr = reinterpret_cast<uint8_t*>(const_cast<void*>(weightAt.data())) + ignoreIndex * weightAt.elemsize();
+        void* ptr = reinterpret_cast<uint8_t*>(const_cast<void*>(weightAtTmp.data())) + ignoreIndex * weightAtTmp.elemsize();
         if (inputAt.dtype() == diopi_dtype_float16) {
             half_float::half val = static_cast<half_float::half>(0);
             diopiGetStream(ctx, &stream);
@@ -84,8 +94,7 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
         reshape(ctx, inputAt, inputAt, {batch, inputShape.data[1]});
         reshape(ctx, targetAt, targetAt, {targetAt.numel()});
     }
-
-    runner.addInput(inputAt).addInput(targetAt).addInput(weightAt).setAttr("ignore_index", ignoreIndex);
+    runner.addInput(inputAt).addInput(targetAt).addInput(weightAtTmp).setAttr("ignore_index", ignoreIndex);
 
     diopiDtype_t outOriginDtype = outAt.dtype();
     if (outOriginDtype != diopi_dtype_float32) {

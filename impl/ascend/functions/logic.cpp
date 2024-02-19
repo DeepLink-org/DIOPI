@@ -5,15 +5,19 @@
  */
 
 #include "../common/acloprunner.hpp"
+#include "string"
 
 namespace impl {
 namespace ascend {
 
 diopiError_t logic(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other, const char* logicOp) {
-    diopiDtype_t inputDtype, otherDtype;
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiGetTensorDtype(other, &otherDtype);
-    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
+    AscendTensor inputTr(input);
+    AscendTensor otherTr(other);
+    diopiDtype_t highType = promoteTypes(inputTr.dtype(), otherTr.dtype());
+    // The dtype of input does not support bool
+    if (highType == diopi_dtype_bool) {
+        highType = diopi_dtype_uint8;
+    }
     AclOpRunner<2, 1>(logicOp, ctx).addInput(input, highType).addInput(other, highType).addOutput(out).run();
     return diopiSuccess;
 }
@@ -23,19 +27,8 @@ diopiError_t logicInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
 }
 
 diopiError_t logicScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other, const char* logicOp) {
-    diopiDtype_t inputDtype, otherDtype;
-    diopiGetTensorDtype(input, &inputDtype);
-    otherDtype = other->stype;
-    diopiTensorHandle_t inputCopy, otherCopy;
-
-    if (inputDtype != otherDtype && (!isIntegralType(otherDtype) && isIntegralType(inputDtype))) {
-        inputCopy = contiguous(ctx, input, diopi_dtype_float32);
-        makeTensorFromScalar(ctx, other, &otherCopy, diopi_dtype_float32);
-    } else {
-        inputCopy = contiguous(ctx, input);
-        makeTensorFromScalar(ctx, other, &otherCopy, inputDtype);
-    }
-    AclOpRunner<2, 1>(logicOp, ctx).addInput(inputCopy).addConstInput(otherCopy).addOutput(out).run();
+    AscendTensor inputTr(input);
+    AclOpRunner<2, 1>(logicOp, ctx).addInput(input).addConstInput(*other, inputTr.dtype()).addOutput(out).run();
     return diopiSuccess;
 }
 
@@ -139,25 +132,30 @@ diopiError_t diopiEqInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
 
 //  logical_and
 diopiError_t diopiLogicalAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    return logic(ctx, out, input, other, "LogicalAnd");
+    // LogicalAnd only support dtype of input is bool.
+    AclOpRunner<2, 1>("LogicalAnd", ctx).addInput(input, diopi_dtype_bool).addInput(other, diopi_dtype_bool).addOutput(out).run();
+    return diopiSuccess;
 }
 
 diopiError_t diopiLogicalAndInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    return logicInp(ctx, input, other, "LogicalAnd");
+    return diopiLogicalAnd(ctx, input, input, other);
 }
 
 // logical_or
 diopiError_t diopiLogicalOr(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    return logic(ctx, out, input, other, "LogicalOr");
+    // LogicalOr only support dtype of input is bool.
+    AclOpRunner<2, 1>("LogicalOr", ctx).addInput(input, diopi_dtype_bool).addInput(other, diopi_dtype_bool).addOutput(out).run();
+    return diopiSuccess;
 }
 
 diopiError_t diopiLogicalOrInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    return logicInp(ctx, input, other, "LogicalOr");
+    return diopiLogicalOr(ctx, input, input, other);
 }
 
 // logical_not
 diopiError_t diopiLogicalNot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("LogicalNot", ctx).addInput(input).addOutput(out).run();
+    // LogicalNot only support dtype of input is bool.
+    AclOpRunner<1, 1>("LogicalNot", ctx).addInput(input, diopi_dtype_bool).addOutput(out).run();
     return diopiSuccess;
 }
 

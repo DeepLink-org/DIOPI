@@ -10,40 +10,51 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiArange(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* start, const diopiScalar_t* end, const diopiScalar_t* step) {
-    diopiScalar_t startTemp;
-    diopiScalar_t endTemp;
-    diopiScalar_t stepTemp;
+    diopiScalar_t startTmp;
+    diopiScalar_t endTmp;
+    diopiScalar_t stepTmp;
+    diopiDtype_t outDtype;
 
-    // The pre-processing ensures that the data types of start, end, and step are consistent.
-    if (!((isIntegralTypeWithBool(start->stype) == isIntegralTypeWithBool(end->stype)) &&
-          (isIntegralTypeWithBool(start->stype) == isIntegralTypeWithBool(step->stype)))) {
-        if (isIntegralTypeWithBool(start->stype)) {
-            startTemp.stype = diopi_dtype_float64;
-            startTemp.fval = static_cast<double>(start->ival);
+    diopiGetTensorDtype(out, &outDtype);
+    startTmp.stype = outDtype;
+    endTmp.stype = outDtype;
+    stepTmp.stype = outDtype;
+
+    // convert to integer
+    if (isIntegralTypeWithBool(outDtype)) {
+        if (!isIntegralTypeWithBool(start->stype)) {
+            startTmp.ival = static_cast<int64_t>(start->fval);
         } else {
-            startTemp = *start;
+            startTmp.ival = start->ival;
         }
-
-        if (isIntegralTypeWithBool(end->stype)) {
-            endTemp.stype = diopi_dtype_float64;
-            endTemp.fval = static_cast<double>(end->ival);
+        if (!isIntegralTypeWithBool(end->stype)) {
+            endTmp.ival = static_cast<int64_t>(end->fval);
         } else {
-            endTemp = *end;
+            endTmp.ival = end->ival;
         }
-
-        if (isIntegralTypeWithBool(step->stype)) {
-            stepTemp.stype = diopi_dtype_float64;
-            stepTemp.fval = static_cast<double>(step->ival);
+        if (!isIntegralTypeWithBool(step->stype)) {
+            stepTmp.ival = static_cast<int64_t>(step->fval);
         } else {
-            stepTemp = *step;
+            stepTmp.ival = step->ival;
         }
-
     } else {
-        startTemp = *start;
-        endTemp = *end;
-        stepTemp = *step;
+        if (isIntegralTypeWithBool(start->stype)) {
+            startTmp.fval = static_cast<double>(start->ival);
+        } else {
+            startTmp.ival = start->ival;
+        }
+        if (isIntegralTypeWithBool(end->stype)) {
+            endTmp.fval = static_cast<double>(end->ival);
+        } else {
+            endTmp.ival = end->ival;
+        }
+        if (isIntegralTypeWithBool(step->stype)) {
+            stepTmp.fval = static_cast<double>(step->ival);
+        } else {
+            stepTmp.ival = step->ival;
+        }
     }
-    AclOpRunner<3, 1>("Range", ctx).addConstInput(startTemp).addConstInput(endTemp).addConstInput(stepTemp).addOutput(out).run();
+    AclOpRunner<3, 1>("Range", ctx).addConstInput(startTmp).addConstInput(endTmp).addConstInput(stepTmp).addOutput(out).run();
 
     return diopiSuccess;
 }
