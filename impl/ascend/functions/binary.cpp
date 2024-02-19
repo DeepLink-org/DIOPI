@@ -38,7 +38,7 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     if (isScalarOne(alpha)) {
         AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input).addInput(other).addOutput(out).run();
     } else {
-        AclOpRunner<3, 1, dtypeConvertor>("AxpyV2", ctx).addInput(input).addInput(other).addConstInput(*alpha, outTensor.dtype()).addOutput(out).run();
+        AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input).addInput(other).addConstInput(*alpha, outTensor.dtype()).addOutput(out).run();
     }
 
 #else
