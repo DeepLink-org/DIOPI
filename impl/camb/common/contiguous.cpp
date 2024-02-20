@@ -184,6 +184,11 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     cnnlTensorLayout_t srcLayout = CNNL_LAYOUT_ARRAY;
     cnnlTensorLayout_t destLayout = CNNL_LAYOUT_ARRAY;
 
+    std::vector<int64_t> olderDestStride = dest.stride();
+    std::vector<int64_t> olderDestShape = dest.shape();
+    std::vector<int64_t> olderSrcStride = src.stride();
+    std::vector<int64_t> olderSrcShape = src.shape();
+
     // permute to get contiguous tensor
     if (!destIsContiguous) {
         DIOPI_CALL(permuteTensor(dest, outputBackOrder));
@@ -200,11 +205,11 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     DIOPI_CALL(transpose(ctx, src, dest, srcLayout, destLayout, inputToOutputOrder));
 
     // recovery the shape and strides
-    if (!destIsContiguous || reduceOnes) {
+    if (!destIsContiguous) {
         dest.asStrided(olderDestShape, olderDestStride);
     }
 
-    if (!srcIsContiguous || reduceOnes) {
+    if (!srcIsContiguous) {
         src.asStrided(olderSrcShape, olderSrcStride);
     }
     return diopiSuccess;
