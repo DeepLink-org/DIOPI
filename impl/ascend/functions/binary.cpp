@@ -35,7 +35,7 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 #if 1
     AscendTensor outTensor(out);
     if (isScalarOne(alpha)) {
-        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input).addInput(other).addOutput(out).run();
+        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(other).addOutput(out).run();
     } else {
         AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input).addInput(other).addConstInput(*alpha, outTensor.dtype()).addOutput(out).run();
     }
@@ -59,7 +59,7 @@ diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     diopiScalar_t valueScalar = constructDiopiScalarT(outTensor.dtype(), value);
     diopiTensorHandle_t valueTensor = nullptr;
     makeTensorFromScalar(ctx, &valueScalar, &valueTensor, outTensor.dtype(), diopiDevice_t::diopi_device);
-    AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input).addInput(valueTensor).addOutput(out).run();
+    AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(valueTensor).addOutput(out).run();
     return diopiSuccess;
 }
 
