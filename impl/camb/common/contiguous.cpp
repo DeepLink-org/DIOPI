@@ -215,17 +215,5 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     return diopiSuccess;
 }
 
-bool isContiguousAccordingToOrder(std::vector<int64_t> shape, std::vector<int64_t> stride, std::vector<int> order) {
-    int64_t curStride = 1;
-    for (auto i : order) {
-        if (curStride != stride[i]) {
-            return false;
-        } else {
-            curStride *= shape[i];
-        }
-    }
-    return true;
-}
-
 }  // namespace camb
 }  // namespace impl

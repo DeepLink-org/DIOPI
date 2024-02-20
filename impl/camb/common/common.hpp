@@ -37,8 +37,6 @@ diopiError_t opBroadcastCast(const DiopiTensor& inputTensor, DiopiTensor& otherT
 
 std::vector<int64_t> changeVecAccordingToOrder(const std::vector<int64_t> vec, std::vector<int32_t> order);
 
-bool isContiguousAccordingToOrder(std::vector<int64_t> shape, std::vector<int64_t> stride, std::vector<int> order);
-
 std::vector<int64_t> calContiguousStride(std::vector<int64_t> shape);
 
 diopiError_t contiguous(diopiContextHandle_t ctx, DiopiTensor& src, diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::Contiguous);
