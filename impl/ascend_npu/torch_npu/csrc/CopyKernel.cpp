@@ -861,7 +861,7 @@ private:
     }
 };  // class combinedContiguousOpt
 
-// REGISTER_COPY_OPT(combined, CombinedContiguousOpt)
+REGISTER_COPY_OPT(combined, CombinedContiguousOpt)
 
 class IndexingContiguousOpt : public ContiguousOpt {
 public:
@@ -1223,7 +1223,7 @@ public:
     bool CanOptimizer(const ContiguousTensorDesc& src_desc) override { return check_reshape_match(src_desc); }
 };  // class ReshapeContiguousOpt
 
-// REGISTER_COPY_OPT(reshape, ReshapeContiguousOpt)
+REGISTER_COPY_OPT(reshape, ReshapeContiguousOpt)
 
 class ReshapeV2ContiguousOpt : public ContiguousOpt {
 public:
@@ -1299,7 +1299,7 @@ private:
     }
 };  // class ReshapeV2ContiguousOpt
 
-// REGISTER_COPY_OPT(reshapeV2, ReshapeV2ContiguousOpt)
+REGISTER_COPY_OPT(reshapeV2, ReshapeV2ContiguousOpt)
 
 class SelectContiguousOpt : public ContiguousOpt {
 public:
