@@ -78,29 +78,15 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 
 diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
-    diopiDtype_t outDtype, inputDtype, otherDtype;
-    diopiGetTensorDtype(out, &outDtype);
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiGetTensorDtype(other, &otherDtype);
-    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
-    diopiTensorHandle_t outCopy;
-    if (outDtype != highType) {
-        makeTensorLike(ctx, &outCopy, out, highType);
+    AscendTensor otherAt(other), outAt(out);
+    if (isScalarOne(alpha)) {
+        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input).addInput(other).addOutput(out).run();
     } else {
-        outCopy = out;
+        AscendTensor otherMulAlpha;
+        makeTensor(ctx, otherMulAlpha, otherAt.shape(), otherAt.dtype());
+        diopiMulScalar(ctx, const_cast<diopiTensorHandle_t>(otherMulAlpha.tensorHandle()), other, alpha);
+        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input).addInput(otherMulAlpha).addOutput(out).run();
     }
-    const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
-    if (value == 1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
-    } else if (value == -1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
-    } else {
-        if (diopi_dtype_float64 == highType) {
-            highType = diopi_dtype_float32;
-        }
-        AclOpRunner<2, 1>("Axpy", ctx).addInput(input, highType).addInput(other, highType).setAttr<float>("alpha", -value).addOutput(outCopy).run();
-    }
-    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
 }
 
@@ -110,11 +96,10 @@ diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 
 diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             const diopiScalar_t* alpha) {
-    diopiTensorHandle_t trOther = nullptr;
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(out, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
-    return diopiSub(ctx, out, input, trOther, alpha);
+    AscendTensor outAt(out);
+    diopiTensorHandle_t otherTensor = nullptr;
+    makeTensorFromScalar(ctx, other, &otherTensor, outAt.dtype(), diopiDevice_t::diopi_device);
+    return diopiSub(ctx, out, input, otherTensor, alpha);
 }
 
 diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
