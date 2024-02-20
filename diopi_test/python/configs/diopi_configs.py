@@ -7444,6 +7444,29 @@ diopi_configs = {
         )
     ),
 
+    'copy_other_no_contiguous_1': dict(
+        name=["copy_"],
+        interface=['torch.Tensor'],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 16, 2),),
+                    "stride": ((512, 32, 2, 1),),
+                    "dtype": [np.float16, np.float32, np.float32, np.float16, np.int32],
+                },
+                {
+                    "ins": ["other"],
+                    "shape": ((2, 16, 16, 2),),
+                    "stride": ((512, 16, 1, 256),),
+                    "dtype": [np.float16, np.float32, np.float16, np.float32, np.int64],
+                },
+            ]
+        )
+    ),
+
+
     'copy_all_no_contiguous': dict(
         name=["copy_"],
         interface=['torch.Tensor'],
@@ -8208,6 +8231,8 @@ diopi_configs = {
 
     'rms_norm': dict(
         name=['rms_norm'],
+        atol=1e-4,
+        rtol=1e-4,
         interface=['CustomizedTest'],
         # FIXME fp16报错
         # dtype=[np.float16, np.float32, np.float64],

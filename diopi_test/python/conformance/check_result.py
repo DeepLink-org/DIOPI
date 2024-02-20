@@ -116,6 +116,9 @@ class CheckResult(object):
                 max_diff = 1
                 error_info = f"The count of elements that do not meet the accuracy requirement is {count}.\n" + \
                     f"Max of diff is {max_diff}.\n"
+            elif tensor_dev.ndim == 0 and tensor_ref.ndim == 0:
+                # result is scalar array
+                error_info = f"The actual val is {tensor_dev} and the expected is {tensor_ref}.\n"
             else:
                 assert tensor_dev.size == tensor_ref.size, "tensor_dev element num does not equal tensor_ref's."
                 error_info = f"The count of elements that do not meet the accuracy requirement is {count}.\n" + \

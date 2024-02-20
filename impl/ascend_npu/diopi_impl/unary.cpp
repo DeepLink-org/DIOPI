@@ -7,10 +7,9 @@
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
-// namespace OP_IMPL_NS {
-extern "C" {
+namespace OP_IMPL_NS {
 
-diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t *value) {
+diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* value) {
     BEGIN_CALL_ACL_OP(input, value);
     if (inputAt.numel() <= 0) {
         return diopiSuccess;

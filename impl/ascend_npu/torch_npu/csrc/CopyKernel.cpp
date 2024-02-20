@@ -25,7 +25,6 @@ namespace native {
 namespace {
 // NOTE: helper function of copy, the input parameter is not checked, The caller
 // needs to ensure that the parameters are correct.
-
 // the caller should ensure the tensor.is_npu == true
 bool is_same_format(const at::Tensor& a, const at::Tensor& b) {
     bool isSameFormat = FormatHelper::GetFormat(a) == FormatHelper::GetFormat(b);
@@ -350,7 +349,6 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
                 if (self.sizes() != src.sizes()) {
                     source = viewToSameDim(source, self.sizes());
                 }
-
                 // custom_ops::npu_stride_copy_out(src, src.sizes(), src.strides(), src.storage_offset(), self);
                 auto shape = inferOriginShape(source.sizes(), source.strides());
                 custom_ops::npu_stride_copy_out(impl::aten::viewStorage(source, shape), source.sizes(), source.strides(), source.storage_offset(), self);
@@ -387,6 +385,10 @@ at::Tensor& NPUNativeFunctions::copy_(at::Tensor& self, const at::Tensor& src, b
         internal_set_names_inplace(self, names);
     }
 
+    // Param `non_blocking`: if True and this copy is between CPU and GPU,
+    // the copy may occur asynchronously with respect to the host.
+    // For other cases, this argument has no effect.
+    // https://pytorch.org/docs/stable/generated/torch.Tensor.copy_.html
     if (at_npu::key::isDeviceTensor(self)) {
         if (at_npu::key::isDeviceTensor(src)) {
             copy_d2d(self, src, non_blocking);
@@ -397,9 +399,6 @@ at::Tensor& NPUNativeFunctions::copy_(at::Tensor& self, const at::Tensor& src, b
         if (at_npu::key::isDeviceTensor(src)) {
             copy_d2h(self, src, non_blocking);
         }
-    }
-    if (!non_blocking) {
-        c10_npu::getCurrentNPUStream().synchronize();
     }
     return self;
 }
