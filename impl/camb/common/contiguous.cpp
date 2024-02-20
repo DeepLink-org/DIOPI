@@ -37,6 +37,7 @@ diopiError_t getPermuteOrder(const DiopiTensor& src, std::vector<int32_t>& order
     std::vector<int64_t> stride = src.stride();
     std::vector<int64_t> shape = src.shape();
     getPermuteOrder(shape, stride, orderOut, reverseOrder);
+    return diopiSuccess;
 }
 
 diopiError_t getPermuteOrder(std::vector<int64_t>& shape, std::vector<int64_t>& stride, std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder) {
