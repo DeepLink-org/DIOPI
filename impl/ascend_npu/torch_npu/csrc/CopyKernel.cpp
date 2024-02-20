@@ -983,7 +983,7 @@ public:
         // pattern permute
         c10::SmallVector<int64_t, MAX_DIM> perm;
         c10::SmallVector<int64_t, 5> sizes;
-        if (can_use_permute(src_desc, perm, sizes)) {
+        if (self.sizes().size() > 0 && src.sizes().size() > 0 && can_use_permute(src_desc, perm, sizes)) {
             RECORD_FUNCTION("contiguous_d_Transpose", std::vector<c10::IValue>({src}));
             // Refresh src Tensor to match output self Tensor
             auto src_desc_stored = torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc();
@@ -1020,7 +1020,7 @@ private:
 
         // After permute or reshape+permute, the total amount of data remains
         // unchanged.
-        if (c10::multiply_integers(view_sizes) != c10::multiply_integers(base_sizes)) {
+        if (base_sizes.size() <= 0 || view_sizes.size() <= 0 || c10::multiply_integers(view_sizes) != c10::multiply_integers(base_sizes)) {
             return false;
         }
 
@@ -1136,7 +1136,7 @@ private:
     }
 };  // class PermuteContiguousOpt
 
-// REGISTER_COPY_OPT(permute, PermuteContiguousOpt)
+REGISTER_COPY_OPT(permute, PermuteContiguousOpt)
 
 bool can_use_memecpy_for_NZ_format(const ContiguousTensorDesc& tensor_desc) {
     int64_t tensor_shape_size = static_cast<int64_t>(tensor_desc.sizes_.size());
