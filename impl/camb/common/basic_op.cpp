@@ -62,8 +62,8 @@ diopiError_t opBroadcastCast(const DiopiTensor& inputTensor, DiopiTensor& otherT
     //  shape3,4,1 stride4,1,1 ->shape1,3,4,1 stride12,4,1,1 ->shape1,3,4,1,stride12,1,3,3 flag = true
     //  shape32,3,224,224 contiguous order0,1,2,3 reverseOrder0,1,2,3
     // shape3,1,1 contiguous ->shape1,3,1,1 stride3,3,1,1 ->shape1,3,1,1 stride3,3,1,1 ->flag = flase
-    std::vector<int32_t> order(inputTensor.dim(), 0);
-    std::vector<int32_t> reverseOrder(inputTensor.dim(), 0);
+    std::vector<int32_t> order;
+    std::vector<int32_t> reverseOrder;
     getPermuteOrder(inputTensor, order, reverseOrder);
     targetShape = otherTensor.shape();
     std::vector<int64_t> curStride = otherTensor.stride();
@@ -140,8 +140,8 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
                 DIOPI_CALL(permuteCopy(ctx, other, otherTmp));
                 other = otherTmp;
             }
-            std::vector<int32_t> order(input.dim(), 0);
-            std::vector<int32_t> reverseOrder(input.dim(), 0);
+            std::vector<int32_t> order;
+            std::vector<int32_t> reverseOrder;
             getPermuteOrder(input, order, reverseOrder);
             std::vector<int64_t> cnnlInShape = changeVecAccordingToOrder(input.shape(), reverseOrder);
             std::vector<int64_t> cnnlInStride = changeVecAccordingToOrder(input.stride(), reverseOrder);
@@ -160,8 +160,8 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
                 DIOPI_CALL(permuteCopy(ctx, input, inputTmp));
                 input = inputTmp;
             }
-            std::vector<int32_t> order(other.dim(), 0);
-            std::vector<int32_t> reverseOrder(other.dim(), 0);
+            std::vector<int32_t> order;
+            std::vector<int32_t> reverseOrder;
             getPermuteOrder(other, order, reverseOrder);
             std::vector<int64_t> cnnlInShape = changeVecAccordingToOrder(targetShape, reverseOrder);
             std::vector<int64_t> cnnlInStride = changeVecAccordingToOrder(targetStride, reverseOrder);

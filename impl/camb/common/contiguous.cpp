@@ -48,7 +48,8 @@ diopiError_t getPermuteOrder(std::vector<int64_t>& shape, std::vector<int64_t>& 
     for (int i = 0; i < dim; ++i) {
         stridesSizes[i] = std::pair<int, int>(inputStrides[i], inputSizes[i]);
     }
-
+    orderOut.resize(dim);
+    reverseOrder.resize(dim);
     // shape:2,3,4,5 stride:60,1,15,3 -> orderOut: 0,3,1,2, reverseOrder: 0,2,3,1
     sort(stridesSizes.begin(), stridesSizes.end(), [](std::pair<int, int> a, std::pair<int, int> b) { return a.first > b.first; });
     for (int i = 0; i < dim; ++i) {
