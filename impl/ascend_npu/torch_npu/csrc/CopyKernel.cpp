@@ -469,11 +469,7 @@ private:
             }
         }
 
-        // create contiguous tensor for npu BroadcastToD
-        at::Tensor temp_src = at::empty({0}, src.options());
-        temp_src.set_(src);
-        temp_src.unsafeGetTensorImpl()->set_sizes_and_strides(src_size, src.strides());
-
+        at::Tensor temp_src = impl::aten::viewStorage(src, src_size, src.strides());
         if (temp_src.is_contiguous()) {
             // NPU op BroadcastTo not supports dtype of bool yet.
             if (self.dtype() == at::kBool) {
@@ -489,7 +485,7 @@ private:
     }
 };  // class BroadcastContiguousOpt
 
-// REGISTER_COPY_OPT(broadcast, BroadcastContiguousOpt)
+REGISTER_COPY_OPT(broadcast, BroadcastContiguousOpt)
 
 constexpr int MaxCombinedCasesNum = 2;
 constexpr int ViewAndBaseInfoStackNum = 2;
