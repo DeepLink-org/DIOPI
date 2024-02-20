@@ -165,34 +165,34 @@ diopiError_t permuteCopy(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor
     // using input permute + output permute + cnnltranspose to copy
     DIOPI_CHECK(src.shape() == dest.shape(), "src's shape should be the same as dest's");
 
-    std::vector<int64_t> olderDestStride = dest.stride();
-    std::vector<int64_t> olderDestShape = dest.shape();
-    std::vector<int64_t> olderSrcStride = src.stride();
-    std::vector<int64_t> olderSrcShape = src.shape();
+    // std::vector<int64_t> olderDestStride = dest.stride();
+    // std::vector<int64_t> olderDestShape = dest.shape();
+    // std::vector<int64_t> olderSrcStride = src.stride();
+    // std::vector<int64_t> olderSrcShape = src.shape();
 
-    // reduce one first, for reducing ambiguity
-    bool reduceOnes = false;
-    for (int i = 0; i < src.dim(); i++) {
-        if (src.shape()[i] == 1) {
-            reduceOnes = true;
-            break;
-        }
-    }
+    // // reduce one first, for reducing ambiguity
+    // bool reduceOnes = false;
+    // for (int i = 0; i < src.dim(); i++) {
+    //     if (src.shape()[i] == 1) {
+    //         reduceOnes = true;
+    //         break;
+    //     }
+    // }
 
-    if (reduceOnes) {
-        std::vector<int64_t> shape;
-        std::vector<int64_t> srcStride;
-        std::vector<int64_t> destStride;
-        for (int i = 0; i < src.dim(); i++) {
-            if (src.shape()[i] != 1) {
-                shape.push_back(olderSrcShape[i]);
-                srcStride.push_back(olderSrcStride[i]);
-                destStride.push_back(olderDestStride[i]);
-            }
-        }
-        src.asStrided(shape, srcStride);
-        dest.asStrided(shape, destStride);
-    }
+    // if (reduceOnes) {
+    //     std::vector<int64_t> shape;
+    //     std::vector<int64_t> srcStride;
+    //     std::vector<int64_t> destStride;
+    //     for (int i = 0; i < src.dim(); i++) {
+    //         if (src.shape()[i] != 1) {
+    //             shape.push_back(olderSrcShape[i]);
+    //             srcStride.push_back(olderSrcStride[i]);
+    //             destStride.push_back(olderDestStride[i]);
+    //         }
+    //     }
+    //     src.asStrided(shape, srcStride);
+    //     dest.asStrided(shape, destStride);
+    // }
 
     int64_t dim = src.dim();
     DIOPI_CHECK(dim <= 8, "only support less than 8d tensor currently");
