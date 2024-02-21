@@ -95,25 +95,65 @@ diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 }
 
 diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    AscendTensor inputTensor(input);
-    AscendTensor otherTensor(other);
-    diopiDtype_t highType = promoteTypes(inputTensor.dtype(), otherTensor.dtype());
-    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input, highType).addInput(other, highType).addOutput(out).run();
-    return diopiSuccess;
+    if (useAclnn()) {
+        AclTensor inputAcl(input), otherAcl(other), outAcl(out);
+        if (!inputAcl.defined() || inputAcl.numel() == 0 || !otherAcl.defined() || otherAcl.numel() == 0) {
+            return diopiSuccess;
+        }
+        ACLNN_ADAPTOR(aclnnMul, ctx, inputAcl, otherAcl, outAcl);
+        return diopiSuccess;
+    } else {
+        AscendTensor inputTensor(input);
+        AscendTensor otherTensor(other);
+        diopiDtype_t highType = promoteTypes(inputTensor.dtype(), otherTensor.dtype());
+        AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input, highType).addInput(other, highType).addOutput(out).run();
+        return diopiSuccess;
+    }
 }
 
-diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) { return diopiMul(ctx, input, input, other); }
+diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
+    if (useAclnn()) {
+        AclTensor inputAcl(input), otherAcl(other);
+        if (!inputAcl.defined() || inputAcl.numel() == 0 || !otherAcl.defined() || otherAcl.numel() == 0) {
+            return diopiSuccess;
+        }
+        ACLNN_ADAPTOR(aclnnInplaceMul, ctx, inputAcl, otherAcl);
+        return diopiSuccess;
+    } else {
+        return diopiMul(ctx, input, input, other);
+    }
+}
 
 diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    AscendTensor outTensor(out);
-    diopiTensorHandle_t otherTensor = nullptr;
-    makeTensorFromScalar(ctx, other, &otherTensor, outTensor.dtype(), diopiDevice_t::diopi_device);
-    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input).addInput(otherTensor).addOutput(out).run();
-    return diopiSuccess;
+    if (useAclnn()) {
+        AclTensor inputAcl(input), outAcl(out);
+        AclScalar otherAcl(other);
+        if (!inputAcl.defined() || inputAcl.numel() == 0) {
+            return diopiSuccess;
+        }
+        ACLNN_ADAPTOR(aclnnMuls, ctx, inputAcl, otherAcl, outAcl);
+        return diopiSuccess;
+    } else {
+        AscendTensor outTensor(out);
+        diopiTensorHandle_t otherTensor = nullptr;
+        makeTensorFromScalar(ctx, other, &otherTensor, outTensor.dtype(), diopiDevice_t::diopi_device);
+        AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input).addInput(otherTensor).addOutput(out).run();
+        return diopiSuccess;
+    }
 }
 
 diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    return diopiMulScalar(ctx, input, input, other);
+    if (useAclnn()) {
+        AclTensor inputAcl(input);
+        AclScalar otherAcl(other);
+        if (!inputAcl.defined() || inputAcl.numel() == 0) {
+            return diopiSuccess;
+        }
+        ACLNN_ADAPTOR(aclnnInplaceMuls, ctx, inputAcl, otherAcl);
+        return diopiSuccess;
+    } else {
+        return diopiMulScalar(ctx, input, input, other);
+    }
 }
 
 diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
