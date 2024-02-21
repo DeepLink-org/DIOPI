@@ -185,29 +185,14 @@ diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 }
 
 diopiError_t diopiMaximum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    // as this op do not support BOOL, UIT8, and Int16, these three data types are converted to Int32
-    if (dtype == diopi_dtype_bool || dtype == diopi_dtype_uint8 || dtype == diopi_dtype_int16) {
-        AscendTensor inputCopy(input);
-        AscendTensor otherCopy(other);
-        castTensor(ctx, inputCopy, diopi_dtype_int32);
-        castTensor(ctx, otherCopy, diopi_dtype_int32);
-        AclOpRunner<2, 1>("Maximum", ctx).addInput(inputCopy).addInput(otherCopy).addOutput(out).run();
-    } else {
-        AclOpRunner<2, 1>("Maximum", ctx).addInput(input, dtype).addInput(other, dtype).addOutput(out).run();
-    }
+    AscendTensor outAt(out);
+    AclOpRunner<2, 1>("Maximum", ctx).addInput(input, outAt.dtype()).addInput(other, outAt.dtype()).addOutput(out).run();
 
     return diopiSuccess;
 }
 
 diopiError_t diopiMinimum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    AscendTensor inputAt(input), otherAt(other), outAt(out);
-    if (0 == inputAt.numel() || 0 == otherAt.numel()) {
-        diopiScalar_t zero = constructDiopiScalarT(inputAt.dtype(), 0);
-        diopiFill(ctx, out, &zero);
-        return diopiSuccess;
-    }
+    AscendTensor outAt(out);
     AclOpRunner<2, 1>("Minimum", ctx).addInput(input, outAt.dtype()).addInput(other, outAt.dtype()).addOutput(out).run();
 
     return diopiSuccess;
