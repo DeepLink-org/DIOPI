@@ -62,8 +62,8 @@ diopiError_t opBroadcastCast(const DiopiTensor& inputTensor, DiopiTensor& otherT
     //  shape3,4,1 stride4,1,1 ->shape1,3,4,1 stride12,4,1,1 ->shape1,3,4,1,stride12,1,3,3 flag = true
     //  shape32,3,224,224 contiguous order0,1,2,3 reverseOrder0,1,2,3
     // shape3,1,1 contiguous ->shape1,3,1,1 stride3,3,1,1 ->shape1,3,1,1 stride3,3,1,1 ->flag = flase
-    std::vector<int32_t> order(inputTensor.dim(), 0);
-    std::vector<int32_t> reverseOrder(inputTensor.dim(), 0);
+    std::vector<int32_t> order;
+    std::vector<int32_t> reverseOrder;
     getPermuteOrder(inputTensor, order, reverseOrder);
     targetShape = otherTensor.shape();
     std::vector<int64_t> curStride = otherTensor.stride();
@@ -100,6 +100,10 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int32}));
     std::vector<int64_t> outTmpStride;
     std::vector<int64_t> outTmpShape;
+
+    CnnlTensorDesc inputDesc;
+    CnnlTensorDesc otherDesc;
+    CnnlTensorDesc outputDesc;
     if (input.shape() == other.shape()) {
         // in these cases, inputA & inputB & output will have the same shape
         DIOPI_CHECK(input.shape() == out.shape(), "input shape should match output shape")
@@ -110,6 +114,11 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
         }
         outTmpStride = input.stride();
         outTmpShape = input.shape();
+
+        inputDesc.set(input, CNNL_LAYOUT_ARRAY);
+        otherDesc.set(other, CNNL_LAYOUT_ARRAY);
+        outputDesc.set(input.dtype(), outTmpShape, outTmpStride, CNNL_LAYOUT_ARRAY);
+
     } else {
         // in these cases, inputA & inputB should be broadcast operation
         OpBroadcastType broadcastType = checkOpBroadcast(input.shape(), other.shape());
@@ -120,6 +129,10 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
         if (input.isContiguous() && other.isContiguous()) {
             outTmpStride = out.stride();
             outTmpShape = out.shape();
+            inputDesc.set(input, CNNL_LAYOUT_ARRAY);
+            otherDesc.set(other, CNNL_LAYOUT_ARRAY);
+            outputDesc.set(input.dtype(), outTmpShape, outTmpStride, CNNL_LAYOUT_ARRAY);
+
         } else if (broadcastType == OpBroadcastType::otherBroadcast) {
             opBroadcastCast(input, other, targetShape, targetStride, toPermuteFlag);
             if (toPermuteFlag) {
@@ -127,6 +140,17 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
                 DIOPI_CALL(permuteCopy(ctx, other, otherTmp));
                 other = otherTmp;
             }
+            std::vector<int32_t> order;
+            std::vector<int32_t> reverseOrder;
+            getPermuteOrder(input, order, reverseOrder);
+            std::vector<int64_t> cnnlInShape = changeVecAccordingToOrder(input.shape(), reverseOrder);
+            std::vector<int64_t> cnnlInStride = changeVecAccordingToOrder(input.stride(), reverseOrder);
+            std::vector<int64_t> cnnlOtherShape = changeVecAccordingToOrder(targetShape, reverseOrder);
+            std::vector<int64_t> cnnlOtherStride = changeVecAccordingToOrder(targetStride, reverseOrder);
+            inputDesc.set(input.dtype(), cnnlInShape, cnnlInStride, CNNL_LAYOUT_ARRAY);
+            otherDesc.set(input.dtype(), cnnlOtherShape, cnnlOtherStride, CNNL_LAYOUT_ARRAY);
+            outputDesc.set(input.dtype(), cnnlInShape, cnnlInStride, CNNL_LAYOUT_ARRAY);
+
             outTmpStride = input.stride();
             outTmpShape = input.shape();
         } else if (broadcastType == OpBroadcastType::inputBroadcast) {
@@ -136,6 +160,17 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
                 DIOPI_CALL(permuteCopy(ctx, input, inputTmp));
                 input = inputTmp;
             }
+            std::vector<int32_t> order;
+            std::vector<int32_t> reverseOrder;
+            getPermuteOrder(other, order, reverseOrder);
+            std::vector<int64_t> cnnlInShape = changeVecAccordingToOrder(targetShape, reverseOrder);
+            std::vector<int64_t> cnnlInStride = changeVecAccordingToOrder(targetStride, reverseOrder);
+            std::vector<int64_t> cnnlOtherShape = changeVecAccordingToOrder(other.shape(), reverseOrder);
+            std::vector<int64_t> cnnlOtherStride = changeVecAccordingToOrder(other.stride(), reverseOrder);
+            inputDesc.set(input.dtype(), cnnlInShape, cnnlInStride, CNNL_LAYOUT_ARRAY);
+            otherDesc.set(input.dtype(), cnnlOtherShape, cnnlOtherStride, CNNL_LAYOUT_ARRAY);
+            outputDesc.set(input.dtype(), cnnlOtherShape, cnnlOtherStride, CNNL_LAYOUT_ARRAY);
+
             outTmpStride = other.stride();
             outTmpShape = other.shape();
         } else {
@@ -145,6 +180,9 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
             DIOPI_CALL(contiguous(ctx, other));
             outTmpShape = out.shape();
             outTmpStride = calContiguousStride(outTmpShape);
+            inputDesc.set(input, CNNL_LAYOUT_ARRAY);
+            otherDesc.set(other, CNNL_LAYOUT_ARRAY);
+            outputDesc.set(input.dtype(), outTmpShape, outTmpStride, CNNL_LAYOUT_ARRAY);
         }
     }
 
@@ -174,10 +212,6 @@ diopiError_t cnnlOpTensor(diopiContextHandle_t ctx, DiopiTensor& input, DiopiTen
         setLastErrorString("%s", "cnnl op tensor only support int or float type.\n");
         return diopiDtypeNotSupported;
     }
-
-    CnnlTensorDesc inputDesc(input, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc otherDesc(other, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc outputDesc(outputTmp, CNNL_LAYOUT_ARRAY);
 
     size_t workspaceSize = 0;
     DIOPI_CALL_CNNL(cnnlGetOpTensorWorkspaceSize(handle, inputDesc.get(), otherDesc.get(), outputDesc.get(), &workspaceSize));
