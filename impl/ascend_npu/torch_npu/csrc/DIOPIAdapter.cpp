@@ -2617,9 +2617,6 @@ void OpCommand::Run() {
     aclCmd->SetEnginePriority();
     const string& op_name = aclCmd->GetName();
     aclCmd->Run(sync, sync_index, outputTensor);
-    if (sync) {
-        Sync();
-    }
     aclCmd->releaseSource();
 }
 
