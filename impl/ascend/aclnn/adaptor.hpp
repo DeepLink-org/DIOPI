@@ -96,6 +96,8 @@ auto convertToOpApiFunc(const Tuple& params, void* opApiAddr) {
 
 inline aclTensor* convertType(AclTensor& value) { return static_cast<aclTensor*>(value); }
 
+inline aclScalar* convertType(AclScalar& value) { return static_cast<aclScalar*>(value); }
+
 template <typename T>
 T convertType(T value) {
     return value;
@@ -146,9 +148,6 @@ constexpr auto convertTypes(Ts&... args) {
         OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                 \
         auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);                             \
         ASCEND_CHECK(ret == ACL_SUCCESS, "%s failed. ERROR: %d\n", name.c_str(), ret);                    \
-                                                                                                          \
-        ret = aclrtSynchronizeStream(stream);                                                             \
-        ASCEND_CHECK(ret == ACL_SUCCESS, "aclrtSynchronizeStream failed. ERROR: %d\n", ret);              \
                                                                                                           \
         if (workspaceSize > 0) {                                                                          \
             aclrtFree(workspaceAddr);                                                                     \
