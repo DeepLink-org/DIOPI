@@ -11,7 +11,8 @@ fi
 cd $ROOT_DIR && rm -rf coverage && mkdir coverage
 echo "entering "$ROOT_DIR
 require_coverage=$1
-
+echo "echo require_coverage"
+echo "$require_coverage"
 remote_count=$(git remote | wc -l)
 if [ "$remote_count" -eq 1 ]; then echo "Not from dev repository" && exit 0 ;fi
 
