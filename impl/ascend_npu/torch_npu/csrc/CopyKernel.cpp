@@ -971,7 +971,7 @@ private:
     }
 };  // class IndexingContiguousOpt
 
-// REGISTER_COPY_OPT(indexing, IndexingContiguousOpt)
+REGISTER_COPY_OPT(indexing, IndexingContiguousOpt)
 
 class PermuteContiguousOpt : public ContiguousOpt {
 public:
@@ -1407,7 +1407,7 @@ private:
     }
 };  // class SelectContiguousOpt
 
-// REGISTER_COPY_OPT(select, SelectContiguousOpt)
+REGISTER_COPY_OPT(select, SelectContiguousOpt)
 
 class SliceContiguousOpt : public ContiguousOpt {
 public:
@@ -1441,6 +1441,10 @@ private:
         const auto& base_strides = src_desc.base_strides_;
         auto view_sizes = src_desc.sizes_;
         auto view_strides = src_desc.strides_;
+
+        if (base_sizes == view_sizes && base_strides == view_strides) {
+            return false;
+        }
 
         // narrow+select(select at last dim) ==> single narrow
         // 限制条件：1. 最后一轴stride非1==>最后一轴select；2.
@@ -1509,13 +1513,14 @@ private:
         const auto& temp_tensor_size = src_desc.base_sizes_;
         at::Tensor temp_src = at::empty(temp_tensor_size, src.options());
         temp_src.set_(src.storage(), temp_src.storage_offset(), temp_src.sizes(), temp_src.strides());
+        // at::Tensor temp_src = impl::aten::viewStorage(src, temp_tensor_size);
 
         custom_ops::npu_slice_out(temp_src, offsets, size, self);
         return;
     }
 };  // class SliceContiguousOpt
 
-// REGISTER_COPY_OPT(slice, SliceContiguousOpt)
+REGISTER_COPY_OPT(slice, SliceContiguousOpt)
 
 }  // namespace native
 }  // namespace at_npu
