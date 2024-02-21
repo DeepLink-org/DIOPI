@@ -9,6 +9,6 @@
 
 bool isDebugAclOpRunnerOn();
 
-bool useAclnn()
+bool useAclnn();
 
 #endif  // IMPL_ASCEND_ENV_VARS_HPP_

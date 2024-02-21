@@ -17,6 +17,7 @@
 #include "../ascend_tensor.hpp"
 #include "../common/acloprunner.hpp"
 #include "../common/utils.hpp"
+#include "../env_vars.hpp"
 #include "acl/acl.h"
 #include "aclnn/acl_meta.h"
 
