@@ -13,9 +13,9 @@
 namespace impl {
 namespace ascend {
 
-class AclScalsr final {
+class AclScalar final {
 public:
-    explicit AclScalsr(const diopiScalar_t* scalar) {
+    explicit AclScalar(const diopiScalar_t* scalar) {
         // create aclScalar
         if (scalar->stype == diopiDtype_t::diopi_dtype_float64) {
             auto v = getValue<double>(scalar);
