@@ -2625,7 +2625,6 @@ OpCommand& OpCommand::Sync(c10::SmallVector<int64_t, N>& index) {
     if (!index.empty()) {
         sync = true;
     }
-    Sync();
     return *this;
 }
 
