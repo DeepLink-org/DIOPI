@@ -7,7 +7,7 @@
 #ifndef IMPL_ASCEND_ACLNN_ACL_SCALAR_HPP_
 #define IMPL_ASCEND_ACLNN_ACL_SCALAR_HPP_
 
-#include "../common/acloprunner.hpp"
+#include "../common/utils.hpp"
 #include "aclnn/acl_meta.h"
 
 namespace impl {

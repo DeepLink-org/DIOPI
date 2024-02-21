@@ -96,6 +96,8 @@ auto convertToOpApiFunc(const Tuple& params, void* opApiAddr) {
 
 inline aclTensor* convertType(AclTensor& value) { return static_cast<aclTensor*>(value); }
 
+inline aclScalar* convertType(AclScalar& value) { return static_cast<aclScalar*>(value); }
+
 template <typename T>
 T convertType(T value) {
     return value;
