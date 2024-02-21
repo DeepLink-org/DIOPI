@@ -86,7 +86,7 @@ public:
         // create aclScalar
         acl_ = aclCreateScalar(&buff, getAclDataType(dtype));
     }
-    explicit AclScalar(const diopiScalar_t* scalar)::AclScalar(scalar, scalar->stype) {}
+    explicit AclScalar(const diopiScalar_t* scalar) : AclScalar(scalar, scalar->stype) {}
 
     explicit operator aclScalar*() { return acl_; }
 
