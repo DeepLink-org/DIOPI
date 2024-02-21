@@ -1095,7 +1095,8 @@ void ContiguousTensorDesc::find_match_optimization_cases() {
 }
 
 OptimizationCases TransContiguous::optCasesDefault = {};
-OptimizationCases TransContiguous::optCasesAnyFormat = {"permute"};
+OptimizationCases TransContiguous::optCasesAnyFormat = {"reshape", "slice"};
+
 ContiguousTensorDesc TransContiguous::GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases) {
     auto src_base_info = torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc();
     c10::SmallVector<int64_t, MAX_DIM> src_size_inferred;
