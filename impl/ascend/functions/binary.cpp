@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "../aclnn/aclnn.hpp"
 #include "../common/acloprunner.hpp"
 
 namespace impl {
@@ -32,7 +31,6 @@ bool isScalarOne(const diopiScalar_t* alpha) {
 
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
-#if 1
     AscendTensor outTensor(out);
     if (isScalarOne(alpha)) {
         AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(other).addOutput(out).run();
@@ -40,9 +38,6 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input).addInput(other).addConstInput(*alpha, outTensor.dtype()).addOutput(out).run();
     }
 
-#else
-    auto ret = aclnnAddAdaptor(ctx, input, other, alpha, out);
-#endif
     return diopiSuccess;
 }
 

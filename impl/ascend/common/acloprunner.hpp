@@ -16,6 +16,8 @@
 #include <utility>
 #include <vector>
 
+#include "../aclnn/acl_tensor.hpp"
+#include "../aclnn/adaptor.hpp"
 #include "../ascend_tensor.hpp"
 #include "acl/acl.h"
 #include "acl/acl_op.h"
