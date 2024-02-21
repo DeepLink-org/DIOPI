@@ -340,15 +340,9 @@ public:
 
     AclOpRunner& addConstInput(const diopiScalar_t& scalar) { return addConstInput(scalar, scalar.stype); }
 
-    AclOpRunner& addConstInput(const double val, diopiDtype_t dtype) {
-        diopiScalar_t scalar = diopiScalar_t();
-        if (isIntegralTypeWithBool(dtype)) {
-            scalar.stype = diopi_dtype_int64;
-            scalar.ival = static_cast<int64_t>(val);
-        } else {
-            scalar.stype = diopi_dtype_float64;
-            scalar.fval = val;
-        }
+    template <typename T>
+    AclOpRunner& addConstInput(T val, diopiDtype_t dtype) {
+        diopiScalar_t scalar = constructDiopiScalarT(dtype, val);
         return addConstInput(scalar, dtype);
     }
 
