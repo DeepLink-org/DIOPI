@@ -31,35 +31,32 @@ bool isScalarOne(const diopiScalar_t* alpha) {
 
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
-    AscendTensor outTensor(out);
-    if (isScalarOne(alpha)) {
-        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(other).addOutput(out).run();
-    } else {
-        AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input).addInput(other).addConstInput(*alpha, outTensor.dtype()).addOutput(out).run();
-    }
-
+    AclTensor inputAcl(input), otherAcl(other), outAcl(out);
+    AclScalar alphaAcl(alpha);
+    ACLNN_ADAPTOR(aclnnAdd, ctx, inputAcl, otherAcl, alphaAcl, outAcl);
     return diopiSuccess;
 }
 
 diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
-    return diopiAdd(ctx, input, input, other, alpha);
+    AclTensor inputAcl(input), otherAcl(other);
+    AclScalar alphaAcl(alpha);
+    ACLNN_ADAPTOR(aclnnInplaceAdd, ctx, inputAcl, otherAcl, alphaAcl);
+    return diopiSuccess;
 }
 
 diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             const diopiScalar_t* alpha) {
-    AscendTensor outTensor(out);
-    float otherValue = getValue<float>(other);
-    float alphaValue = getValue<float>(alpha);
-    float value = otherValue * alphaValue;
-    diopiScalar_t valueScalar = constructDiopiScalarT(outTensor.dtype(), value);
-    diopiTensorHandle_t valueTensor = nullptr;
-    makeTensorFromScalar(ctx, &valueScalar, &valueTensor, outTensor.dtype(), diopiDevice_t::diopi_device);
-    AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(valueTensor).addOutput(out).run();
+    AclTensor inputAcl(input), outAcl(out);
+    AclScalar otherAcl(other), alphaAcl(alpha);
+    ACLNN_ADAPTOR(aclnnAdds, ctx, inputAcl, otherAcl, alphaAcl, outAcl);
     return diopiSuccess;
 }
 
 diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
-    return diopiAddScalar(ctx, input, input, other, alpha);
+    AclTensor inputAcl(input);
+    AclScalar otherAcl(other), alphaAcl(alpha);
+    ACLNN_ADAPTOR(aclnnInplaceAdds, ctx, inputAcl, otherAcl, alphaAcl);
+    return diopiSuccess;
 }
 
 diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,

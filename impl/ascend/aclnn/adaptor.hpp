@@ -149,9 +149,6 @@ constexpr auto convertTypes(Ts&... args) {
         auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);                             \
         ASCEND_CHECK(ret == ACL_SUCCESS, "%s failed. ERROR: %d\n", name.c_str(), ret);                    \
                                                                                                           \
-        ret = aclrtSynchronizeStream(stream);                                                             \
-        ASCEND_CHECK(ret == ACL_SUCCESS, "aclrtSynchronizeStream failed. ERROR: %d\n", ret);              \
-                                                                                                          \
         if (workspaceSize > 0) {                                                                          \
             aclrtFree(workspaceAddr);                                                                     \
         }                                                                                                 \
