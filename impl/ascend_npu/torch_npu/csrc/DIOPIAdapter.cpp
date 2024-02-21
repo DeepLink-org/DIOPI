@@ -2618,9 +2618,6 @@ void OpCommand::Run() {
     aclCmd->SetEnginePriority();
     const string& op_name = aclCmd->GetName();
     aclCmd->Run(sync, sync_index, outputTensor);
-    if (sync) {
-        Sync();
-    }
     aclCmd->releaseSource();
 }
 
@@ -2629,7 +2626,6 @@ OpCommand& OpCommand::Sync(c10::SmallVector<int64_t, N>& index) {
     if (!index.empty()) {
         sync = true;
     }
-    Sync();
     return *this;
 }
 
