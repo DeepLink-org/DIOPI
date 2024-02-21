@@ -108,15 +108,24 @@ jobs:
       runner: ${{ needs.Rsync.outputs.getrunner }}
       run_result: ${{ needs.Rsync.outputs.output }}
 
+  get-env-vars:
+    name: Get Environment vars
+    runs-on: ubuntu-latest
+    outputs:
+      ALL_COVERAGE: ${{ env.ALL_COVERAGE }}
+      REQUIRE_COVERAGE: ${{ env.REQUIRE_COVERAGE }}
+    steps:
+      - run: echo "get env"
+
   Op-Test-Nvidia:
     name: Op-Test-Nvidia
-    needs: [Rsync, Runs-On-Nv]
+    needs: [Rsync, Runs-On-Nv, get-env-vars]
     if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     uses: ./.github/workflows/_runs-on-nv-step2.yml
     with:
       runner: ${{ needs.Rsync.outputs.getrunner }}
-      all_coverage: ${{ ALL_COVERAGE }}
-      require_coverage: ${{ REQUIRE_COVERAGE }}
+      all_coverage: ${{  needs.get-env-vars.outputs.ALL_COVERAGE }}
+      require_coverage: ${{  needs.get-env-vars.outputs.REQUIRE_COVERAGE }}
 
 
   Build-Nvidia-A100:
