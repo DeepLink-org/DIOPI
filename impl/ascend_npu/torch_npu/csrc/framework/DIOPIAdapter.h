@@ -670,19 +670,14 @@ public:
     TransContiguous() {}
     virtual ~TransContiguous() {}
     static bool CheckClone(const at::Tensor& src, at::Tensor& self);
-    static ContiguousTensorDesc GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases = optCasesDefault);
+    static ContiguousTensorDesc GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases = {});
     static bool can_optimize_(ContiguousTensorDesc& tensor_desc);
     static bool CanOptimize(ContiguousTensorDesc& tensor_desc);
     static bool CanOptimize(const at::Tensor& tensor, const OptimizationCases& opt_cases);
     static bool contiguous_optimize_with_anyformat_(at::Tensor& self, const at::Tensor& src, ContiguousTensorDesc& src_desc);
-    static bool ContiguousOptimizeWithAnyFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases = optCasesAnyFormat);
-    static c10::optional<at::Tensor> ContiguousOptimizeWithAnyFormat(const at::Tensor& src, const OptimizationCases& opt_cases = optCasesAnyFormat);
-    static bool ContiguousOptimizeWithBaseFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases = optCasesDefault,
-                                                 bool OpenCombined = true);
-
-private:
-    static OptimizationCases optCasesDefault;
-    static OptimizationCases optCasesAnyFormat;
+    static bool ContiguousOptimizeWithAnyFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases);
+    static c10::optional<at::Tensor> ContiguousOptimizeWithAnyFormat(const at::Tensor& src, const OptimizationCases& opt_cases);
+    static bool ContiguousOptimizeWithBaseFormat(at::Tensor& self, const at::Tensor& src, const OptimizationCases& opt_cases, bool OpenCombined = true);
 };
 
 class ContiguousOpt {

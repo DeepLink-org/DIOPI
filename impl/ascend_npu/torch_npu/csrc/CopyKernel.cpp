@@ -39,7 +39,7 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
     // Some Ops support inputs with 5HD/NZ format, Transdata is redundant
     // Record:
     // Op:Reshape; SliceD || Supportformat: 5HD/NZ
-    return TransContiguous::ContiguousOptimizeWithAnyFormat(self, src);
+    return TransContiguous::ContiguousOptimizeWithAnyFormat(self, src, {});
 }
 
 namespace {
@@ -337,7 +337,7 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
 
     if (!src.is_contiguous()) {
         // Discontiguous source tensor copy to contiguous self tensor
-        if (TransContiguous::ContiguousOptimizeWithBaseFormat(self, src)) {
+        if (TransContiguous::ContiguousOptimizeWithBaseFormat(self, src, {})) {
             // Optimized trans-contiguous method
             return;
         } else {
@@ -372,7 +372,7 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
     // Some Ops support inputs with 5HD/NZ format, Transdata is redundant
     // Record:
     // Op:Reshape; SliceD || Supportformat: 5HD/NZ
-    return TransContiguous::ContiguousOptimizeWithAnyFormat(self, src);
+    return TransContiguous::ContiguousOptimizeWithAnyFormat(self, src, {});
 }
 
 at::Tensor& NPUNativeFunctions::copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
@@ -802,7 +802,7 @@ private:
 
         // If current tensor is sliced and the stack is still not empty:
         // stored infos in the stack should be modified.
-        if (shape_stride_stacks.size() >= 1 && maybe_slice(TransContiguous::GetTensorDescInfo(src))) {
+        if (shape_stride_stacks.size() >= 1 && maybe_slice(TransContiguous::GetTensorDescInfo(src, {}))) {
             auto stack_shape_stride_pre = shape_stride_stacks.pop_back_val();
 
             std::map<int64_t, int64_t> map_stride_shape;
@@ -836,7 +836,7 @@ private:
         }
         // Construct the first tensor and judge whether it can be optimized.
         if (reconstruct_tensor(src, shape_stride_stacks, offset_stacks)) {
-            ContiguousTensorDesc src_desc_ = TransContiguous::GetTensorDescInfo(src);
+            ContiguousTensorDesc src_desc_ = TransContiguous::GetTensorDescInfo(src, {});
             OptimizationCases opt_cases_first{"reshape", "slice", "select"};
             if (reshape_without_copy_match(src)) {
                 // case 1 : The first tensor is reshape-type, refresh its info is enough
@@ -979,6 +979,7 @@ public:
         // pattern permute
         c10::SmallVector<int64_t, MAX_DIM> perm;
         c10::SmallVector<int64_t, 5> sizes;
+        // if (self.sizes().size() > 0 && src.sizes().size() > 0 && can_use_permute(src_desc, perm, sizes)) {
         if (self.sizes().size() > 0 && src.sizes().size() > 0 && can_use_permute(src_desc, perm, sizes)) {
             RECORD_FUNCTION("contiguous_d_Transpose", std::vector<c10::IValue>({src}));
             // Refresh src Tensor to match output self Tensor
@@ -1016,7 +1017,8 @@ private:
 
         // After permute or reshape+permute, the total amount of data remains
         // unchanged.
-        if (base_sizes.size() <= 0 || view_sizes.size() <= 0 || c10::multiply_integers(view_sizes) != c10::multiply_integers(base_sizes)) {
+        // if (base_sizes.size() <= 0 || view_sizes.size() <= 0 || c10::multiply_integers(view_sizes) != c10::multiply_integers(base_sizes)) {
+        if (c10::multiply_integers(view_sizes) != c10::multiply_integers(base_sizes)) {
             return false;
         }
 
@@ -1224,7 +1226,7 @@ REGISTER_COPY_OPT(reshape, ReshapeContiguousOpt)
 class ReshapeV2ContiguousOpt : public ContiguousOpt {
 public:
     bool Optimizer(at::Tensor& result, const at::Tensor& src, const ContiguousTensorDesc& src_desc) override {
-        ContiguousTensorDesc result_desc = TransContiguous::GetTensorDescInfo(result);
+        ContiguousTensorDesc result_desc = TransContiguous::GetTensorDescInfo(result, {});
         if (check_reshape_match(result_desc, src_desc)) {
             if (can_use_memory_repoint(src_desc) && reshape_match_by_memory_repoint(src, result)) {
                 return true;
