@@ -10,14 +10,18 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal) {
-    AclTensor inputAcl(input), outAcl(out);
-    if (!inputAcl.defined() || inputAcl.numel() == 0) {
+    if (useAclnn()) {
+        AclTensor inputAcl(input), outAcl(out);
+        if (!inputAcl.defined() || inputAcl.numel() == 0) {
+            return diopiSuccess;
+        }
+
+        ACLNN_ADAPTOR(aclnnTril, ctx, inputAcl, diagonal, outAcl);
+        return diopiSuccess;
+    } else {
+        AclOpRunner<1, 1>("Tril", ctx).addInput(input).setAttr("diagonal", diagonal).addOutput(out).run();
         return diopiSuccess;
     }
-
-    ACLNN_ADAPTOR(aclnnTril, ctx, inputAcl, diagonal, outAcl);
-    return diopiSuccess;
 }
-
 }  // namespace ascend
 }  // namespace impl
