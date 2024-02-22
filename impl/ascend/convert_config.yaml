@@ -159,9 +159,53 @@
 
 - diopiAdd:
     dtype: (bool)->int32
+    layout: ND
 
 - diopiAddInp:
     dtype: (bool)->int32
+    layout: ND
+
+- diopiAddScalar:
+    layout: ND
+
+- diopiAddInpScalar:
+    layout: ND
+
+- diopiSub:
+    layout: ND
+    
+- diopiSubInp:
+    layout: ND
+
+- diopiSubScalar:
+    layout: ND
+
+- diopiSubInpScalar:
+    layout: ND
+
+- diopiMul:
+    layout: ND
+    
+- diopiMulInp:
+    layout: ND
+
+- diopiMulScalar:
+    layout: ND
+
+- diopiMulInpScalar:
+    layout: ND
+
+- diopiDiv:
+    layout: ND
+    
+- diopiDivInp:
+    layout: ND
+
+- diopiDivScalar:
+    layout: ND
+
+- diopiDivInpScalar:
+    layout: ND
 
 - diopiMm:
     dtype: (float64)->float32
@@ -249,6 +293,7 @@
 
 - diopiRsqrt:
     dtype: (int8, uint8, int16, int32, int64, bool)->float32
+    layoutL: ND
 
 - diopiEmbeddingBackward:
     dtype: (float64)->float32
@@ -326,7 +371,10 @@
 
 - diopiBmm:
     dtype: (float64)->float32
+    layout: ND
 
 - diopiIsNan:
     dtype: (uint8, int8, int32, int16, int64, bool)->float32
 
+- diopiReluInp:
+    layout: ND
