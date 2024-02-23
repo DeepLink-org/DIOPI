@@ -31,7 +31,7 @@ bool isScalarOne(const diopiScalar_t* alpha) {
 
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
-    if (0) {
+    if (false) {
         AclTensor inputAcl(input), otherAcl(other), outAcl(out);
         AclScalar alphaAcl(alpha, inputAcl.dtype());
         if (!inputAcl.defined() || inputAcl.numel() == 0 || !otherAcl.defined() || otherAcl.numel() == 0) {
@@ -52,7 +52,7 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 }
 
 diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
-    if (0) {
+    if (false) {
         AclTensor inputAcl(input), otherAcl(other);
         AclScalar alphaAcl(alpha, inputAcl.dtype());
         if (!inputAcl.defined() || inputAcl.numel() == 0 || !otherAcl.defined() || otherAcl.numel() == 0) {
@@ -67,7 +67,7 @@ diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 
 diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             const diopiScalar_t* alpha) {
-    if (0) {
+    if (false) {
         AclTensor inputAcl(input), outAcl(out);
         AclScalar otherAcl(other), alphaAcl(alpha);
         if (!inputAcl.defined() || inputAcl.numel() == 0) {
@@ -89,7 +89,7 @@ diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 }
 
 diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
-    if (0) {
+    if (false) {
         AclTensor inputAcl(input);
         AclScalar otherAcl(other), alphaAcl(alpha);
         if (!inputAcl.defined() || inputAcl.numel() == 0) {
@@ -138,7 +138,7 @@ diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 }
 
 diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    if (0) {
+    if (false) {
         AclTensor inputAcl(input), otherAcl(other), outAcl(out);
         if (!inputAcl.defined() || inputAcl.numel() == 0 || !otherAcl.defined() || otherAcl.numel() == 0) {
             return diopiSuccess;
@@ -155,7 +155,7 @@ diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 }
 
 diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
-    if (0) {
+    if (false) {
         AclTensor inputAcl(input), otherAcl(other);
         if (!inputAcl.defined() || inputAcl.numel() == 0 || !otherAcl.defined() || otherAcl.numel() == 0) {
             return diopiSuccess;
@@ -168,7 +168,7 @@ diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 }
 
 diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    if (0) {
+    if (false) {
         AclTensor inputAcl(input), outAcl(out);
         AclScalar otherAcl(other);
         if (!inputAcl.defined() || inputAcl.numel() == 0) {
@@ -186,7 +186,7 @@ diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 }
 
 diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    if (0) {
+    if (false) {
         AclTensor inputAcl(input);
         AclScalar otherAcl(other);
         if (!inputAcl.defined() || inputAcl.numel() == 0) {
