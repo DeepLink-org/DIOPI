@@ -21,3 +21,8 @@ bool isDebugAclOpRunnerOn() {
     static bool isDebugAclOpRunner = isEnvStateOn("DIOPI_DEBUG_ACLOPRUNNER");
     return isDebugAclOpRunner;
 }
+
+bool useAclnn() {
+    static bool enable = isEnvStateOn("DIOPI_USE_ACLNN");
+    return enable;
+}
