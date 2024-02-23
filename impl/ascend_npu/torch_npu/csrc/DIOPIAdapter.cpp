@@ -2436,7 +2436,9 @@ OpCommand& OpCommand::Name(const string& name) {
     return *this;
 }
 
-void OpCommand::SetCustomHandler(PROC_FUNC func) { INTERFACE_NOT_IMPL; }
+void OpCommand::SetCustomHandler(PROC_FUNC func) {
+    aclCmd->SetCustomHandler(func);
+}
 
 OpCommand& OpCommand::Expect(UnifiedResult unified_result) {
     commonType = unified_result.common_type;
