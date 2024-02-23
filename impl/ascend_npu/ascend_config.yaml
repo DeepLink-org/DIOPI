@@ -29,8 +29,6 @@ ascend:
 - diopiClampMinScalar
 - diopiClampScalar
 - diopiContiguous
-- diopiCos
-- diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
 - diopiDiv
@@ -147,8 +145,6 @@ ascend:
 - diopiSilu
 - diopiSiluBackward
 - diopiSiluInp
-- diopiSin
-- diopiSinInp
 - diopiSlice
 - diopiSliceBackward
 - diopiSoftmax
@@ -198,6 +194,10 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiSin
+- diopiSinInp
+- diopiCos
+- diopiCosInp
 - diopiBmm
 - diopiMatmul
 - diopiCastDtype

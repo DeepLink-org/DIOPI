@@ -494,6 +494,10 @@ set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/opapi/)
 set(OP_PLUGIN_API_SRC1
     ${OP_PLUGIN_API_DIR}/AddKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/BmmKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/SinKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/CosKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TrilKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/TriuKernelNpuOpApi.cpp
 )
 
 set(OP_PLUGIN_UTILS_SRC
