@@ -20,7 +20,7 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         diopiFill(ctx, out, &scalar);
         return diopiSuccess;
     }
-    if (inputAt.shape().empty()) {
+    if (inputAt.dim() == 0) {
         diopiCopyInp(ctx, input, out);
         return diopiSuccess;
     }
