@@ -18,16 +18,7 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
     if (0 == inputAt0.numel()) {
         // align with pytorch
         if (diopiReduction_t::ReductionMean == reduction) {
-            // nan
-            if (outAt0.dtype() == diopi_dtype_float16) {
-                diopiTensorHandle_t outTemp;
-                makeTensorLike(ctx, &outTemp, out, diopi_dtype_float64);
-                diopiScalar_t nanScalar = {diopi_dtype_float64, NAN};
-                diopiFill(ctx, outTemp, &nanScalar);
-                diopiCastDtype(ctx, out, outTemp);
-            } else {
-                fillNan(ctx, outAt0);
-            }
+            fillNan(ctx, outAt0);
         } else if (diopiReduction_t::ReductionSum == reduction || diopiReduction_t::ReductionNone == reduction) {
             fillTensor(ctx, out, 0.0f);
         }
@@ -69,29 +60,30 @@ diopiError_t nllLossOutWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHand
     AscendTensor inputAt(inputCopy), outAt(out), targetAt(targetCopy);
 
     AclOpRunner<3, 2> runner("NLLLoss", ctx);
-    if (inputAt.dtype() != diopi_dtype_float32) {
-        castTensor(ctx, inputAt, diopi_dtype_float32);
-    }
-
     AscendTensor weightAt(weight);
 
-    diopiTensorHandle_t weightTmp;
-    AscendTensor weightAtTmp(weightAt);
-    if (weightAt.dtype() == diopi_dtype_float32) {
+    AscendTensor weightAtTmp;
+    if (0 <= ignoreIndex && ignoreIndex < inputAt.shape(-1)) {
+        diopiTensorHandle_t weightTmp;
         weightTmp = clone(ctx, weight);
         weightAtTmp = AscendTensor(weightTmp);
-    } else {
-        castTensor(ctx, weightAt, diopi_dtype_float32);
-    }
-    if (0 <= ignoreIndex && ignoreIndex < inputAt.shape(-1)) {
+        castTensor(ctx, weightAtTmp, inputAt.dtype());
         diopiStreamHandle_t stream;
         void* ptr = reinterpret_cast<uint8_t*>(const_cast<void*>(weightAtTmp.data())) + ignoreIndex * weightAtTmp.elemsize();
-        float val = 0.0f;
-        diopiGetStream(ctx, &stream);
-        aclrtMemcpyAsync(ptr, sizeof(float), &val, sizeof(float), ACL_MEMCPY_HOST_TO_DEVICE, stream);
+        if (inputAt.dtype() == diopi_dtype_float16) {
+            half_float::half val = static_cast<half_float::half>(0);
+            diopiGetStream(ctx, &stream);
+            aclrtMemcpyAsync(ptr, sizeof(half_float::half), &val, sizeof(half_float::half), ACL_MEMCPY_HOST_TO_DEVICE, stream);
+        } else {
+            float val = 0.0f;
+            diopiGetStream(ctx, &stream);
+            aclrtMemcpyAsync(ptr, sizeof(float), &val, sizeof(float), ACL_MEMCPY_HOST_TO_DEVICE, stream);
+        }
+    } else {
+        weightAtTmp = weightAt;
     }
 
-    // ascend only support inpu tensor with 2D dimension
+    // ascend only support input tensor with 2D dimension
     if (inputShape.len == 1) {
         reshape(ctx, inputAt, inputAt, {1, inputShape.data[0]});
         reshape(ctx, targetAt, targetAt, {targetAt.numel()});
@@ -140,13 +132,14 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto totalWeightSizeVec = std::vector<int64_t>({1});
     auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
     diopiTensorHandle_t totalWeight, weightCopy;
-    diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, diopi_dtype_float32, diopi_device);
+    AscendTensor inputAt(input);
+    diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, inputAt.dtype(), diopi_device);
 
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
 
     if (weight) {
-        weightCopy = contiguous(ctx, weight, diopi_dtype_float32);
+        weightCopy = contiguous(ctx, weight, inputAt.dtype());
     } else {
         // weight shape is (C). C is number of classes
         int64_t weightDim[1];
@@ -155,7 +148,7 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         else
             weightDim[0] = inputShape.data[1];
         diopiSize_t weightShape = arrayToDiopiSize(weightDim, 1);
-        diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
+        diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, inputAt.dtype(), diopi_device);
         fillTensor(ctx, weightCopy, static_cast<float>(1.0));
     }
 
@@ -168,14 +161,15 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto totalWeightSizeVec = std::vector<int64_t>({1});
     auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
     diopiTensorHandle_t weightCopy, totalWeight, out, inputCopy, targetCopy, gradInputCopy;
-    diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, diopi_dtype_float32, diopi_device);
+    AscendTensor inputAt0(input);
+    diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, inputAt0.dtype(), diopi_device);
     makeTensorLike(ctx, &out, gradOutput);
 
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
 
     if (weight) {
-        weightCopy = contiguous(ctx, weight, diopi_dtype_float32);
+        weightCopy = contiguous(ctx, weight, inputAt0.dtype());
     } else {
         int64_t weightDim[1];
         if (inputShape.len == 1)
@@ -183,7 +177,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         else
             weightDim[0] = inputShape.data[1];
         diopiSize_t weightShape = arrayToDiopiSize(weightDim, 1);
-        diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, diopi_dtype_float32, diopi_device);
+        diopiRequireTensor(ctx, &weightCopy, &weightShape, nullptr, inputAt0.dtype(), diopi_device);
         fillTensor(ctx, weightCopy, static_cast<float>(1.0));
     }
 
@@ -237,11 +231,6 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     AscendTensor inputAt(inputCopy), yGradAt(gradOutput);
 
-    if (inputAt.dtype() != diopi_dtype_float32 || yGradAt.dtype() != diopi_dtype_float32) {
-        castTensor(ctx, inputAt, diopi_dtype_float32);
-        castTensor(ctx, yGradAt, diopi_dtype_float32);
-    }
-
     AclOpRunner<5, 1> runner("NLLLossGrad", ctx);
 
     runner.addInput(inputAt.data(), inputAt.getAclMemBufferSize(), calShapeVec, ACL_FORMAT_ND, inputAt.dtype());
@@ -264,7 +253,9 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         diopiGetTensorData(gradInputCopy, &gradInputPtr);
         runner.addOutput(gradInputPtr, getBaseBufferSize(gradInputCopy), calShapeVec, ACL_FORMAT_ND, gradDtype);
     } else {
-        runner.addOutput(gradInput);
+        void* gradInputPtr;
+        diopiGetTensorData(gradInput, &gradInputPtr);
+        runner.addOutput(gradInputPtr, getBaseBufferSize(gradInput), calShapeVec, ACL_FORMAT_ND, gradDtype);
     }
     runner.addInput(weightCopy).addInput(totalWeight);
     runner.run();

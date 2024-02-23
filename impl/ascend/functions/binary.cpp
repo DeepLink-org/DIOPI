@@ -6,12 +6,12 @@
 
 #include <cmath>
 
-#include "../aclnn/aclnn.hpp"
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
 
+namespace {
 aclDataType dtypeConvertor(diopiDtype_t type) {
     auto dtype = getAclDataType(type);
     if (dtype == ACL_BOOL) {
@@ -21,41 +21,23 @@ aclDataType dtypeConvertor(diopiDtype_t type) {
 }
 
 bool isScalarOne(const diopiScalar_t* alpha) {
-    if (alpha == nullptr) return true;
-    if (alpha->stype == diopi_dtype_int64) {
-        int val = getValue<int>(alpha);
-        return val == 1;
-    } else {
-        float val = getValue<float>(alpha);
-        return fabs(val - 1.0) < 1e-6;
+    if (alpha == nullptr) {
+        return true;
     }
+    float val = getValue<float>(alpha);
+    return fabs(val - 1.0) < 1e-6;
 }
+}  // namespace
 
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
-#if 1
-    diopiDtype_t outDtype, inputDtype, otherDtype;
-    diopiGetTensorDtype(out, &outDtype);
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiGetTensorDtype(other, &otherDtype);
-    diopiTensorHandle_t outTemp;
-
+    AscendTensor outTensor(out);
     if (isScalarOne(alpha)) {
-        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input, inputDtype).addInput(other, otherDtype).addOutput(out).run();
+        AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(other).addOutput(out).run();
     } else {
-        diopiDtype_t scalarT = alpha->stype;
-        if (isIntegralTypeWithBool(scalarT)) {
-            scalarT = diopi_dtype_int32;
-        } else if (scalarT == diopi_dtype_float64) {
-            scalarT = diopi_dtype_float32;
-        }
-
-        AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input, inputDtype).addInput(other, otherDtype).addConstInput(*alpha, scalarT).addOutput(out).run();
+        AclOpRunner<3, 1>("AxpyV2", ctx).addInput(input).addInput(other).addConstInput(*alpha, outTensor.dtype()).addOutput(out).run();
     }
 
-#else
-    auto ret = aclnnAddAdaptor(ctx, input, other, alpha, out);
-#endif
     return diopiSuccess;
 }
 
@@ -65,11 +47,15 @@ diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 
 diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             const diopiScalar_t* alpha) {
-    diopiTensorHandle_t trOther = nullptr;
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(out, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
-    return diopiAdd(ctx, out, input, trOther, alpha);
+    AscendTensor outTensor(out);
+    float otherValue = getValue<float>(other);
+    float alphaValue = getValue<float>(alpha);
+    float value = otherValue * alphaValue;
+    diopiScalar_t valueScalar = constructDiopiScalarT(outTensor.dtype(), value);
+    diopiTensorHandle_t valueTensor = nullptr;
+    makeTensorFromScalar(ctx, &valueScalar, &valueTensor, outTensor.dtype(), diopiDevice_t::diopi_device);
+    AclOpRunner<2, 1, dtypeConvertor>("Add", ctx).addInput(input).addInput(valueTensor).addOutput(out).run();
+    return diopiSuccess;
 }
 
 diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
@@ -78,29 +64,15 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 
 diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {
-    diopiDtype_t outDtype, inputDtype, otherDtype;
-    diopiGetTensorDtype(out, &outDtype);
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiGetTensorDtype(other, &otherDtype);
-    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
-    diopiTensorHandle_t outCopy;
-    if (outDtype != highType) {
-        makeTensorLike(ctx, &outCopy, out, highType);
+    AscendTensor otherAt(other);
+    if (isScalarOne(alpha)) {
+        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input).addInput(other).addOutput(out).run();
     } else {
-        outCopy = out;
+        AscendTensor otherMulAlpha;
+        makeTensor(ctx, otherMulAlpha, otherAt.shape(), otherAt.dtype());
+        diopiMulScalar(ctx, const_cast<diopiTensorHandle_t>(otherMulAlpha.tensorHandle()), other, alpha);
+        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input).addInput(otherMulAlpha).addOutput(out).run();
     }
-    const float value = (alpha != nullptr) ? getValue<float>(alpha) : 1.0;
-    if (value == 1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
-    } else if (value == -1.0) {
-        AclOpRunner<2, 1, dtypeConvertor>("AddV2", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
-    } else {
-        if (diopi_dtype_float64 == highType) {
-            highType = diopi_dtype_float32;
-        }
-        AclOpRunner<2, 1>("Axpy", ctx).addInput(input, highType).addInput(other, highType).setAttr<float>("alpha", -value).addOutput(outCopy).run();
-    }
-    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
     return diopiSuccess;
 }
 
@@ -110,11 +82,15 @@ diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 
 diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             const diopiScalar_t* alpha) {
-    diopiTensorHandle_t trOther = nullptr;
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(out, &dtype);
-    makeTensorFromScalar(ctx, other, &trOther, dtype, diopiDevice_t::diopi_device);
-    return diopiSub(ctx, out, input, trOther, alpha);
+    AscendTensor outAt(out);
+    float otherValue = getValue<float>(other);
+    float alphaValue = getValue<float>(alpha);
+    float value = otherValue * alphaValue;
+    diopiScalar_t valueScalar = constructDiopiScalarT(outAt.dtype(), value);
+    diopiTensorHandle_t valueTensor = nullptr;
+    makeTensorFromScalar(ctx, &valueScalar, &valueTensor, outAt.dtype(), diopiDevice_t::diopi_device);
+    AclOpRunner<2, 1, dtypeConvertor>("Sub", ctx).addInput(input).addInput(valueTensor).addOutput(out).run();
+    return diopiSuccess;
 }
 
 diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
@@ -122,30 +98,21 @@ diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 }
 
 diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    diopiDtype_t outDtype, inputDtype, otherDtype;
-    diopiGetTensorDtype(out, &outDtype);
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiGetTensorDtype(other, &otherDtype);
-    diopiDtype_t highType = promoteTypes(inputDtype, otherDtype);
-    diopiTensorHandle_t outCopy;
-    if (outDtype != highType) {
-        makeTensorLike(ctx, &outCopy, out, highType);
-    } else {
-        outCopy = out;
-    }
-    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input, highType).addInput(other, highType).addOutput(outCopy).run();
-    if (outDtype != highType) diopiCastDtype(ctx, out, outCopy);
+    AscendTensor inputTensor(input);
+    AscendTensor otherTensor(other);
+    diopiDtype_t highType = promoteTypes(inputTensor.dtype(), otherTensor.dtype());
+    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input, highType).addInput(other, highType).addOutput(out).run();
     return diopiSuccess;
 }
 
 diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) { return diopiMul(ctx, input, input, other); }
 
 diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
+    AscendTensor outTensor(out);
     diopiTensorHandle_t otherTensor = nullptr;
-    diopiDtype_t outDtype;
-    diopiGetTensorDtype(out, &outDtype);
-    makeTensorFromScalar(ctx, other, &otherTensor, outDtype, diopiDevice_t::diopi_device);
-    return diopiMul(ctx, out, input, otherTensor);
+    makeTensorFromScalar(ctx, other, &otherTensor, outTensor.dtype(), diopiDevice_t::diopi_device);
+    AclOpRunner<2, 1, dtypeConvertor>("Mul", ctx).addInput(input).addInput(otherTensor).addOutput(out).run();
+    return diopiSuccess;
 }
 
 diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
@@ -213,29 +180,14 @@ diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 }
 
 diopiError_t diopiMaximum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    // as this op do not support BOOL, UIT8, and Int16, these three data types are converted to Int32
-    if (dtype == diopi_dtype_bool || dtype == diopi_dtype_uint8 || dtype == diopi_dtype_int16) {
-        AscendTensor inputCopy(input);
-        AscendTensor otherCopy(other);
-        castTensor(ctx, inputCopy, diopi_dtype_int32);
-        castTensor(ctx, otherCopy, diopi_dtype_int32);
-        AclOpRunner<2, 1>("Maximum", ctx).addInput(inputCopy).addInput(otherCopy).addOutput(out).run();
-    } else {
-        AclOpRunner<2, 1>("Maximum", ctx).addInput(input, dtype).addInput(other, dtype).addOutput(out).run();
-    }
+    AscendTensor outAt(out);
+    AclOpRunner<2, 1>("Maximum", ctx).addInput(input, outAt.dtype()).addInput(other, outAt.dtype()).addOutput(out).run();
 
     return diopiSuccess;
 }
 
 diopiError_t diopiMinimum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    AscendTensor inputAt(input), otherAt(other), outAt(out);
-    if (0 == inputAt.numel() || 0 == otherAt.numel()) {
-        diopiScalar_t zero = constructDiopiScalarT(inputAt.dtype(), 0);
-        diopiFill(ctx, out, &zero);
-        return diopiSuccess;
-    }
+    AscendTensor outAt(out);
     AclOpRunner<2, 1>("Minimum", ctx).addInput(input, outAt.dtype()).addInput(other, outAt.dtype()).addOutput(out).run();
 
     return diopiSuccess;

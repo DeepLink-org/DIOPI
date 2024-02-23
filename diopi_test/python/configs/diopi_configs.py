@@ -3030,7 +3030,7 @@ diopi_configs = {
     ),
 
     'reduce_op': dict(
-        name=['mean', 'sum'],
+        name=['mean'],
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
@@ -3049,7 +3049,7 @@ diopi_configs = {
     ),
 
     'reduce_op_1': dict(
-        name=['any', 'all'],
+        name=['any', 'all', 'sum'],
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
