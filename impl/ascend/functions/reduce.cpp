@@ -15,11 +15,8 @@ namespace ascend {
 
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     AscendTensor inputAt(input);
-    diopiDtype_t dtype = inputAt.dtype();
-    AscendTensor outAt(out);
-    diopiDtype_t outdtype = outAt.dtype();
     if (inputAt.numel() == 0) {
-        diopiScalar_t scalar = constructDiopiScalarT(dtype, 0);
+        diopiScalar_t scalar = constructDiopiScalarT(inputAt.dtype(), 0);
         diopiFill(ctx, out, &scalar);
         return diopiSuccess;
     }
@@ -30,7 +27,7 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     diopiTensorHandle_t inputTemp;
     diopiTensorHandle_t outTemp;
-    if (dtype != outdtype) {
+    if (isIntegralTypeWithBool(inputAt.dtype())) {
         makeTensorLike(ctx, &inputTemp, input, diopi_dtype_int64);
         outTemp = out;
         diopiCastDtype(ctx, inputTemp, input);
