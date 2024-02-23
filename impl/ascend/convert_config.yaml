@@ -378,3 +378,9 @@
 
 - diopiReluInp:
     layout: ND
+
+- diopiMean:
+    layout: ND
+
+- diopiSum:
+    layout: ND
