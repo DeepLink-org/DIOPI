@@ -15,18 +15,21 @@ namespace ascend {
 
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     AscendTensor inputAt(input);
-    diopiDtype_t dtype = inputAt.dtype();
     if (inputAt.numel() == 0) {
-        diopiScalar_t scalar = constructDiopiScalarT(dtype, 0);
+        diopiScalar_t scalar = constructDiopiScalarT(inputAt.dtype(), 0);
         diopiFill(ctx, out, &scalar);
+        return diopiSuccess;
+    }
+    if (inputAt.dim() == 0) {
+        diopiCopyInp(ctx, input, out);
+        return diopiSuccess;
     }
 
-    std::set<diopiDtype_t> typeSet{diopi_dtype_float16, diopi_dtype_float32};
     diopiTensorHandle_t inputTemp;
     diopiTensorHandle_t outTemp;
-    if (typeSet.find(dtype) == typeSet.end()) {
-        makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
-        makeTensorLike(ctx, &outTemp, out, diopi_dtype_float32);
+    if (isIntegralTypeWithBool(inputAt.dtype())) {
+        makeTensorLike(ctx, &inputTemp, input, diopi_dtype_int64);
+        outTemp = out;
         diopiCastDtype(ctx, inputTemp, input);
     } else {
         inputTemp = const_cast<diopiTensorHandle_t>(input);
@@ -52,9 +55,6 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         keepdim = false;
     }
     runner.setAttr<uint8_t>("keep_dims", keepdim).addOutput(outTemp).run();
-    if (typeSet.find(dtype) == typeSet.end()) {
-        diopiCastDtype(ctx, out, outTemp);
-    }
     return diopiSuccess;
 }
 
