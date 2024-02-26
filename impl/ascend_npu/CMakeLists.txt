@@ -498,6 +498,7 @@ set(OP_PLUGIN_API_SRC1
     ${OP_PLUGIN_API_DIR}/CosKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/TrilKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/TriuKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/PowKernelNpuOpApi.cpp
 )
 
 set(OP_PLUGIN_UTILS_SRC
