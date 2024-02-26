@@ -35,7 +35,7 @@ def get_run_result(pr_number):
                     run_result['CAMB'] = True
                 elif "impl/torch" in filenames:
                     run_result['NV'] = True
-                elif "impl/ascend" in filenames:
+                elif "impl/ascend" in filenames or "impl/ascend_npu" in filenames:
                     run_result['ASCEND'] = True
                 elif "impl/topsrider" in filenames:
                     run_result['TOPSRIDER'] = True

@@ -10,7 +10,6 @@ import torchvision
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
 from conformance.db_operation import db_conn
-from conformance.exception import GenDataFailedException
 
 
 def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
@@ -28,6 +27,30 @@ def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
     scores = torch.matmul(xq, keys.transpose(2, 3)) / math.sqrt(head_dim)
     scores = F.softmax(scores.float() + mask, dim=-1).type_as(xq)
     output = torch.matmul(scores, values).transpose(1, 2).contiguous().reshape(-1, num_head, head_dim)
+    return output
+
+
+def multihead_attention_inside(q, k, v, softmax_scale, causal=None, key_padding_mask=None):
+    # using for multiheadattention & varlen multiheadattention test
+    from einops import rearrange
+    import math
+    batch_size, seqlen = q.shape[0], q.shape[1]
+    causal = causal if causal is None else causal
+    softmax_scale = softmax_scale or 1.0 / math.sqrt(q.shape[-1])
+    scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
+    if key_padding_mask is not None:
+        padding_mask = torch.full(
+            (batch_size, seqlen), -10000.0, dtype=scores.dtype, device=scores.device
+        )
+        padding_mask.masked_fill_(key_padding_mask, 0.0)
+        scores = scores + rearrange(padding_mask, "b s -> b 1 1 s")
+    if causal:
+        causal_mask = torch.triu(
+            torch.full((seqlen, seqlen), -10000.0, device=scores.device), 1
+        )
+        scores = scores + causal_mask.to(dtype=scores.dtype)
+    attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
+    output = torch.einsum("bhts,bshd->bthd", attention, v)
     return output
 
 
@@ -207,7 +230,7 @@ class CustomizedTest(object):
         out = torch.batch_norm_elemt(input, weight, bias, mean, invstd, eps)
         return out
 
-    def rotary_emb(input, cos, sin, conj):
+    def rotary_emb(input, cos, sin, conj, interleaved):
         x1, x2 = input.chunk(2, dim=-1)
         data_type = input.dtype
         x1 = x1.to(torch.float32)
@@ -233,21 +256,40 @@ class CustomizedTest(object):
 
         return (out, inv_rms)
 
-    def multihead_attention_forward(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+    def multihead_attention(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
+        # 为了保证精度，因此在test的时候不使用dropout
+        output = multihead_attention_inside(q, k, v, scale, is_causal)
+        return output
+
+    def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
         from einops import rearrange
         import math
+        batch_size = len(cu_seqlens) - 1
+        seq_len = max_seqlen
+        _, num_heads, feature_size = q.size()
+        # Initialize the key_padding_mask as a Boolean mask with False values
+        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device="cuda")
 
-        _, seqlen = q.shape[0], q.shape[1]
-        softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not scale else scale
-        scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
-        if is_causal:
-            causal_mask = torch.triu(
-                torch.full((seqlen, seqlen), -10000.0, device=scores.device), 1
-            )
-            scores = scores + causal_mask.to(dtype=scores.dtype)
-        attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
-        output = torch.einsum("bhts,bshd->bthd", attention, v)
+        # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
+        for i in range(batch_size):
+            seq_len_in = cu_seqlens[i + 1] - cu_seqlens[i]
+            key_padding_mask[i, :seq_len_in] = True
+        padded_q_shape = (batch_size, seq_len, num_heads, feature_size)
+        q_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
+        k_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
+        v_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
+        for i in range(batch_size):
+            seq_len = cu_seqlens[i + 1] - cu_seqlens[i]
+            q_padded[i, :seq_len, :, :] = q[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
+            k_padded[i, :seq_len, :, :] = k[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
+            v_padded[i, :seq_len, :, :] = v[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
+        qkv_result = multihead_attention_inside(q_padded, k_padded, v_padded, scale, is_causal, key_padding_mask)
+        output = torch.zeros(q.shape, dtype=torch.float16).cuda()
+        for i in range(1, len(cu_seqlens)):
+            start_idx = cu_seqlens[i - 1]
+            end_idx = cu_seqlens[i]
+            output[start_idx:end_idx, :, :] = qkv_result[i - 1, :end_idx - start_idx, :, :]
         return output
 
     def flash_attention_forward(q, k, v, p_dropout, softmax_scale, is_causal):
@@ -314,6 +356,7 @@ class GenOutputData(object):
     Generate output data for all functions by using numpy and input data
     '''
     db_case_items = {}
+    err_case_counter = 0
 
     @staticmethod
     def run(diopi_item_config_path='diopi_case_items.cfg',
@@ -353,11 +396,13 @@ class GenOutputData(object):
                 output, saved_grads = gen_tensor_obj.gen_data(input_)
                 item['result'] = 'passed'
             except Exception as err_msg:
-                raise GenDataFailedException(
-                    f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
-            GenOutputData.db_case_items[case_name] = item
+                logger.error(f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
+                item.update({'result': 'failed', 'err_msg': err_msg})
+                GenOutputData.err_case_counter += 1
+                continue
+            finally:
+                GenOutputData.db_case_items[case_name] = item
             if output is not None:
-                # import pdb; pdb.set_trace()
                 with open(os.path.join(output_path, case_name), "wb") as f:
                     pickle.dump(GenOutputData.to_numpy(output), f, protocol=4)
                     logger_str = "output"
@@ -435,12 +480,8 @@ class GenTensor(object):
         if 'dtype' in kwargs.keys():
             kwargs['dtype'] = self.change_np_dtype_to_torch(kwargs['dtype'])
         func_call = f"{self.module}.{self.func_name}(**kwargs)"
-
-        try:
-            self.output = eval(func_call)
-            self.if_forward_success = True
-        except Exception as e:
-            raise GenDataFailedException(f"Failed to execute function {func_call}, caused by {e}")
+        self.output = eval(func_call)
+        self.if_forward_success = True
         return self.output
 
     def gen_backward_data(self, input_data):

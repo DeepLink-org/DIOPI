@@ -46,7 +46,7 @@ link_directories(${TORCH_INSTALL_PREFIX}/lib)
 
 # Because many interfaces have not yet been implemented, -Wreturn-type=0 option is temporarily added.
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable -g -O0 "
+    "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable "
 )
 
 set(OP_PLUGIN_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/aclops/)
@@ -624,11 +624,11 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions_ext/flash_attention.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
+    ${OLD_IMPL_DIR}/aclnn/adaptor.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
     ${OLD_IMPL_DIR}/common/stream_lock.cpp
-    ${OLD_IMPL_DIR}/aclnn/aclnn.cpp
     ${OLD_IMPL_DIR}/env_vars.cpp
     ${OLD_IMPL_DIR}/init.cpp
 )

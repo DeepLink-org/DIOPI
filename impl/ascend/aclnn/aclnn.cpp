@@ -551,3 +551,4 @@ int aclnnFlashAttentionBackwardAdaptor(diopiContextHandle_t ctx, diopiTensorHand
 
 }  // namespace ascend
 }  // namespace impl
+

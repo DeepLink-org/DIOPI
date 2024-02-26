@@ -36,6 +36,10 @@ namespace impl {
 namespace cuda {
 diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
                                   diopiConstTensorHandle_t sin, const bool conj, const bool interleaved) {
+    if (interleaved) {
+        set_last_error_string("interleaved rotary embedding is not supported yet");
+        return diopiNoImplement;
+    }
     impl::aten::setCurStream(ctx);
     auto atX = impl::aten::buildATen(x);
     auto atCos = impl::aten::buildATen(cos);
@@ -54,14 +58,14 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t invRMS, diopiConstTensorHandle_t input,
-                          diopiSize_t normalized_shape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps) {
+                          diopiSize_t normalized_shape, diopiConstTensorHandle_t weight, [[maybe_unused]] diopiConstTensorHandle_t bias, double eps) {
     impl::aten::setCurStream(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atInvRMS = impl::aten::buildATen(invRMS);
     auto atInput = impl::aten::buildATen(input);
     auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
     auto atWeight = impl::aten::buildATen(weight);
-    auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
+    // NOTE: bias在这里实际上没有使用
     ext::ops::rms_norm_forward(atInput, atNormalizedShape, atWeight, eps, atOut, atInvRMS);
 
     return diopiSuccess;
@@ -69,7 +73,7 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
 diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                   diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
-                                  diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRMS, diopiSize_t normalized_shape, double eps) {
+                                  [[maybe_unused]] diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRMS, diopiSize_t normalized_shape, double eps) {
     impl::aten::setCurStream(ctx);
     auto atGradInput = impl::aten::buildATen(gradInput);
     auto atGradWeight = impl::aten::buildATen(gradWeight);
@@ -79,7 +83,7 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto atInput = impl::aten::buildATen(input);
     auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
     auto atWeight = impl::aten::buildATen(weight);
-    auto atBias = impl::aten::buildATen(bias);  // bias在这里实际上没有使用
+    // NOTE: bias在这里实际上没有使用
     ext::ops::rms_norm_backward(atGradOutput, atInvRMS, atInput, atNormalizedShape, atWeight, eps, atGradInput, atGradWeight);
 
     return diopiSuccess;
@@ -90,31 +94,26 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle
                                      diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
     impl::aten::setCurStream(ctx);
 
-    auto atQ = impl::aten::buildATen(q).contiguous();
-    auto atK = impl::aten::buildATen(k).contiguous();
-    auto atV = impl::aten::buildATen(v).contiguous();
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
+    c10::optional<at::Tensor> optOut(impl::aten::buildATen(out));
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
 
-    c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
-    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_fwd, atQ, atK, atV, nullOpt, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
+    auto headSize = atQ.sizes()[3];
+    TORCH_CHECK(headSize % 8 == 0, "DIOPI now only support head sizes which are multiple of 8");
+
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_fwd, atQ, atK, atV, optOut, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
     // const auto& atOutput = result[0];
-    const auto& atQPaded = result[1];
-    const auto& atKPaded = result[2];
-    const auto& atVPaded = result[3];
-    const auto& atOutPaded = result[4];
+    // const auto& atQPaded = result[1];
+    // const auto& atKPaded = result[2];
+    // const auto& atVPaded = result[3];
+    // const auto& atOutPaded = result[4];
     const auto& atLogSumexp = result[5];
     const auto& atDebugAttnMask = result[6];
     // const auto& atRngState = result[7];
 
-    // TODO(lljbash): support auto padding
-    auto headSize = atQ.sizes()[3];
-    TORCH_CHECK(headSize % 8 == 0, "DIOPI now only support head sizes which are multiple of 8");
-
-    // TODO(gqw): check why this is needed
-    impl::aten::updateATen2Tensor(ctx, atQPaded, q);
-    impl::aten::updateATen2Tensor(ctx, atKPaded, k);
-    impl::aten::updateATen2Tensor(ctx, atVPaded, v);
-    impl::aten::updateATen2Tensor(ctx, atOutPaded, out);
+    // PERF: these copy can be eliminated by modifying the flash_attn api
     impl::aten::updateATen2Tensor(ctx, atLogSumexp, softmax_lse);
     if (return_debug_mask) {
         impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
@@ -129,24 +128,20 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
                                              diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v) {
     impl::aten::setCurStream(ctx);
 
-    auto atQ = impl::aten::buildATen(q).contiguous();
-    auto atK = impl::aten::buildATen(k).contiguous();
-    auto atV = impl::aten::buildATen(v).contiguous();
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
-    auto atGradOut = impl::aten::buildATen(grad_out).contiguous();
-    auto atOut = impl::aten::buildATen(out).contiguous();
+    auto atGradOut = impl::aten::buildATen(grad_out);
+    auto atOut = impl::aten::buildATen(out);
     auto atLogsumexp = impl::aten::buildATen(softmax_lse);
-
+    c10::optional<at::Tensor> optGradQ(impl::aten::buildATen(grad_q));
+    c10::optional<at::Tensor> optGradK(impl::aten::buildATen(grad_k));
+    c10::optional<at::Tensor> optGradV(impl::aten::buildATen(grad_v));
     c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
-    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(
-        mha_bwd, atGradOut, atQ, atK, atV, atOut, atLogsumexp, nullOpt, nullOpt, nullOpt, dropout_p, scale, is_causal, -1, -1, atGen, nullOpt);
-    const auto& atGradQ = result[0];
-    const auto& atGradK = result[1];
-    const auto& atGradV = result[2];
 
-    impl::aten::updateATen2Tensor(ctx, atGradQ, grad_q);
-    impl::aten::updateATen2Tensor(ctx, atGradK, grad_k);
-    impl::aten::updateATen2Tensor(ctx, atGradV, grad_v);
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(
+        mha_bwd, atGradOut, atQ, atK, atV, atOut, atLogsumexp, optGradQ, optGradK, optGradV, dropout_p, scale, is_causal, -1, -1, atGen, nullOpt);
 
     return diopiSuccess;
 }
@@ -157,34 +152,29 @@ diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiTensor
                                            diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask) {
     impl::aten::setCurStream(ctx);
 
-    auto atQ = impl::aten::buildATen(q).clone();
-    auto atK = impl::aten::buildATen(k).clone();
-    auto atV = impl::aten::buildATen(v).clone();
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
+    c10::optional<at::Tensor> optOut(impl::aten::buildATen(out));
     auto atCumSeqQ = impl::aten::buildATen(cum_seq_q);
     auto atCumSeqK = impl::aten::buildATen(cum_seq_k);
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
 
-    c10::optional<at::Tensor> outputNull;
+    auto headSize = atQ.sizes()[3];
+    TORCH_CHECK(headSize % 8 == 0, "DIOPI now only support head sizes which are multiple of 8");
+
     std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(
-        mha_varlen_fwd, atQ, atK, atV, outputNull, atCumSeqQ, atCumSeqK, max_q, max_k, dropout_p, scale, false, is_causal, -1, -1, return_debug_mask, atGen);
+        mha_varlen_fwd, atQ, atK, atV, optOut, atCumSeqQ, atCumSeqK, max_q, max_k, dropout_p, scale, false, is_causal, -1, -1, return_debug_mask, atGen);
     // auto atOutput = result[0];
-    auto atQPadded = result[1];
-    auto atKPadded = result[2];
-    auto atVPadded = result[3];
-    auto atOutPadded = result[4];
+    // auto atQPadded = result[1];
+    // auto atKPadded = result[2];
+    // auto atVPadded = result[3];
+    // auto atOutPadded = result[4];
     auto atLogSumexp = result[5];
     auto atDebugAttnMask = result[6];
     // auto atRngState = result[7];
 
-    // TODO(lljbash): support auto padding
-    auto headSize = atQ.sizes()[3];
-    TORCH_CHECK(headSize % 8 == 0, "DIOPI now only support head sizes which are multiple of 8");
-
-    // TODO(gqw): check why this is needed
-    impl::aten::updateATen2Tensor(ctx, atQPadded, q);
-    impl::aten::updateATen2Tensor(ctx, atKPadded, k);
-    impl::aten::updateATen2Tensor(ctx, atVPadded, v);
-    impl::aten::updateATen2Tensor(ctx, atOutPadded, out);
+    // PERF: these copy can be eliminated by modifying the flash_attn api
     impl::aten::updateATen2Tensor(ctx, atLogSumexp, softmax_lse);
     if (return_debug_mask) {
         impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
@@ -200,17 +190,20 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
                                                    diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v) {
     impl::aten::setCurStream(ctx);
 
-    auto atQ = impl::aten::buildATen(q).contiguous();
-    auto atK = impl::aten::buildATen(k).contiguous();
-    auto atV = impl::aten::buildATen(v).contiguous();
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
-    auto atGradOut = impl::aten::buildATen(grad_out).contiguous();
-    auto atOut = impl::aten::buildATen(out).contiguous();
+    auto atGradOut = impl::aten::buildATen(grad_out);
+    auto atOut = impl::aten::buildATen(out);
     auto atLogsumexp = impl::aten::buildATen(softmax_lse);
     auto atCumSeqQ = impl::aten::buildATen(cum_seq_q);
     auto atCumSeqK = impl::aten::buildATen(cum_seq_k);
+    c10::optional<at::Tensor> optGradQ(impl::aten::buildATen(grad_q));
+    c10::optional<at::Tensor> optGradK(impl::aten::buildATen(grad_k));
+    c10::optional<at::Tensor> optGradV(impl::aten::buildATen(grad_v));
+    c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
 
-    auto nullOpt = c10::optional<at::Tensor>();  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
     std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_varlen_bwd,
                                                           atGradOut,
                                                           atQ,
@@ -218,9 +211,9 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
                                                           atV,
                                                           atOut,
                                                           atLogsumexp,
-                                                          nullOpt,
-                                                          nullOpt,
-                                                          nullOpt,
+                                                          optGradQ,
+                                                          optGradK,
+                                                          optGradV,
                                                           atCumSeqQ,
                                                           atCumSeqK,
                                                           max_q,
@@ -233,13 +226,6 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
                                                           -1,
                                                           atGen,
                                                           nullOpt);
-    const auto& atGradQ = result[0];
-    const auto& atGradK = result[1];
-    const auto& atGradV = result[2];
-
-    impl::aten::updateATen2Tensor(ctx, atGradQ, grad_q);
-    impl::aten::updateATen2Tensor(ctx, atGradK, grad_k);
-    impl::aten::updateATen2Tensor(ctx, atGradV, grad_v);
 
     return diopiSuccess;
 }

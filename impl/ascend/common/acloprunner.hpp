@@ -16,6 +16,8 @@
 #include <utility>
 #include <vector>
 
+#include "../aclnn/acl_tensor.hpp"
+#include "../aclnn/adaptor.hpp"
 #include "../ascend_tensor.hpp"
 #include "acl/acl.h"
 #include "acl/acl_op.h"
@@ -338,15 +340,9 @@ public:
 
     AclOpRunner& addConstInput(const diopiScalar_t& scalar) { return addConstInput(scalar, scalar.stype); }
 
-    AclOpRunner& addConstInput(const double val, diopiDtype_t dtype) {
-        diopiScalar_t scalar = diopiScalar_t();
-        if (isIntegralTypeWithBool(dtype)) {
-            scalar.stype = diopi_dtype_int64;
-            scalar.ival = static_cast<int64_t>(val);
-        } else {
-            scalar.stype = diopi_dtype_float64;
-            scalar.fval = val;
-        }
+    template <typename T>
+    AclOpRunner& addConstInput(T val, diopiDtype_t dtype) {
+        diopiScalar_t scalar = constructDiopiScalarT(dtype, val);
         return addConstInput(scalar, dtype);
     }
 
@@ -393,6 +389,16 @@ public:
         desc = aclCreateTensorDesc(dtypeCastStrategy(at.dtype()), dims.size(), dims.data(), format);
         ASCEND_CHECK_ABORT(desc != nullptr, "aclTensorDesc should not be nullptr.");
         buffer = aclCreateDataBuffer(const_cast<void*>(at.data()), at.getAclMemBufferSize());
+        inputIndex_++;
+        return *this;
+    }
+
+    AclOpRunner& addInput(const std::vector<int64_t>& vec) {
+        std::vector<int64_t> dims(1, vec.size());
+        aclTensorDesc* desc = aclCreateTensorDesc(ACL_INT64, 1, dims.data(), ACL_FORMAT_ND);
+        aclDataBuffer* buffer = aclCreateDataBuffer(const_cast<void*>(reinterpret_cast<const void*>(vec.data())), sizeof(int64_t) * vec.size());
+        inputDescs_[inputIndex_] = desc;
+        inputBuffers_[inputIndex_] = buffer;
         inputIndex_++;
         return *this;
     }
@@ -683,7 +689,6 @@ public:
             }
             *syncTensorPtr = syncTensorReal;
         }
-        CALL_ACLRT(aclrtSynchronizeStream(stream));
         // Get environment variables once when run is called for the first time
         if (isDebugAclOpRunnerOn()) {
             info(__FILE__, __LINE__, __FUNCTION__, "%s", dumpRunnerInfo().c_str());

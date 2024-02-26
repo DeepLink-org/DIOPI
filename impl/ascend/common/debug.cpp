@@ -6,6 +6,8 @@
 
 #include "debug.hpp"
 
+#include <memory>
+
 #include "utils.hpp"
 
 namespace impl {
@@ -49,6 +51,12 @@ void printTensorHelper1(const AscendTensor& at, void* ptrHost) {
             printVectorWithShape(input1, at.shape(), 0, index);
             return;
         }
+        case diopi_dtype_float16: {
+            auto ptr1 = reinterpret_cast<half_float::half*>(ptrHost);
+            std::vector<half_float::half> input1(ptr1, ptr1 + at.numel());
+            printVectorWithShape(input1, at.shape(), 0, index);
+            return;
+        }
         case diopi_dtype_int32: {
             auto ptr2 = reinterpret_cast<int32_t*>(ptrHost);
             std::vector<int32_t> input2(ptr2, ptr2 + at.numel());
@@ -73,7 +81,7 @@ void printTensorHelper1(const AscendTensor& at, void* ptrHost) {
     }
 }
 
-void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, char* name) {
+void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, const char* name) {
     printf("==========[Tensor name %s]==========\n", name);
     if (!at.defined()) {
         printf("input tensor is nullptr.");
@@ -90,20 +98,24 @@ void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, cha
         printf("tensor %s has %ld element, element size %ld.\n", name, at.numel(), at.elemsize());
         return;
     }
-
+    std::unique_ptr<void, void (*)(void*)> hostMemUptr(nullptr, free);
     if (at.device() == diopiDevice_t::diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
-        CALL_ACLRT(aclrtMallocHost(&ptrHost, at.numel() * at.elemsize()));
+        std::unique_ptr<void, void (*)(void*)> temp(malloc(at.numel() * at.elemsize()), free);
+        std::cout << "tmp ptr:" << temp.get() << std::endl;
+        hostMemUptr.swap(temp);
+        std::cout << "tmp ptr after swap:" << temp.get() << std::endl;
+        std::cout << "host ptr after swap:" << hostMemUptr.get() << std::endl;
+        ptrHost = hostMemUptr.get();
+        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+        std::cout << "nbytes: " << at.numel() * at.elemsize() << std::endl;
         CALL_ACLRT(aclrtMemcpyAsync(
             ptrHost, at.numel() * at.elemsize(), at.data(), at.numel() * at.elemsize(), ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream)));
         CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
-        CALL_ACLRT(aclrtFreeHost(ptrHost));
 
     } else {
-        const void* ptrHostCopy;
-        diopiGetTensorDataConst(at.tensorHandle(), &ptrHostCopy);
-        ptrHost = const_cast<void*>(ptrHostCopy);
+        diopiGetTensorData(const_cast<diopiTensorHandle_t>(at.tensorHandle()), &ptrHost);
     }
 
     std::cout << "numel = " << at.numel() << std::endl;
