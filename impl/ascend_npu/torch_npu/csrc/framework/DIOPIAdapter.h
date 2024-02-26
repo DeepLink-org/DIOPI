@@ -542,10 +542,18 @@ public:
     // From CalcuOpUtil part
     static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type) { INTERFACE_NOT_IMPL; }
     static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type, const string& realDataType) { INTERFACE_NOT_IMPL; }
-    static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) { INTERFACE_NOT_IMPL; }
+    static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
+        at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
+        at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
+        int deviceIndex = 0;
+        NPU_CHECK_ERROR(c10_npu::GetDevice(&deviceIndex));
+        return cpuPinMemTensor.to(c10::Device(c10::DeviceType::PrivateUse1, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
+    }
     static at::Tensor copy_tensor_host_to_device(const at::Tensor& cpu_tensor) { INTERFACE_NOT_IMPL; }
 
-    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) {
+        return tensor.unsafeGetTensorImpl()->is_wrapped_number() && (!torch_npu::utils::is_npu(tensor));
+    }
     static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
     // check output tensor
