@@ -8,6 +8,7 @@
 #include "../../../ascend/common/gil_scoped_release.hpp"
 #include "../../../ascend/common/stream_lock.hpp"
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
+#include "../../third_party/acl/inc/acl/acl_base.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
@@ -81,6 +82,12 @@ aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_
 
 namespace at_npu {
 namespace native {
+
+aclDataType OpPreparation::convert_to_acl_data_type(const at::ScalarType& data_type) {
+        auto acl_dtype = kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(data_type)];
+        TORCH_CHECK(acl_dtype != ACL_DT_UNDEFINED, std::string(c10::toString(data_type)) + " has not been supported")
+        return acl_dtype;
+    }
 
 bool FormatCastHelper::IsSameGroupType(const at::Tensor& src, const at::Tensor& dst) {
     auto src_format = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_.npu_format_;
@@ -157,6 +164,19 @@ UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& 
     unified_result.common_type = out.scalar_type();
     unified_result.common_shape = out.sizes();
     return unified_result;
+}
+
+void OpPreparation::check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) {
+    c10::SmallVector<at::Tensor, N> in = inputs;
+    c10::SmallVector<at::Tensor, N> out = outputs;
+    // CalcuOpUtil::CheckMemoryOverLaps(in, out);
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size) {
+    check_memory(src_list, {dst});
+    TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
+    TORCH_CHECK(dst.scalar_type() == expect_dtype, "expected dtype ", expect_dtype, " but got dtype ", dst.scalar_type());
+    // check_tensor_size(src_list, dst, expect_size);
 }
 
 void NpuUtils::format_fresh_view(at::Tensor& x, const at::Tensor& y) {
