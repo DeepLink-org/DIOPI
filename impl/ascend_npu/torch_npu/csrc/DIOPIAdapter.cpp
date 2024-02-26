@@ -1,5 +1,4 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
-
 #include <ATen/EmptyTensor.h>
 #include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
@@ -84,10 +83,10 @@ namespace at_npu {
 namespace native {
 
 aclDataType OpPreparation::convert_to_acl_data_type(const at::ScalarType& data_type) {
-        auto acl_dtype = kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(data_type)];
-        TORCH_CHECK(acl_dtype != ACL_DT_UNDEFINED, std::string(c10::toString(data_type)) + " has not been supported")
-        return acl_dtype;
-    }
+    auto acl_dtype = kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(data_type)];
+    TORCH_CHECK(acl_dtype != ACL_DT_UNDEFINED, std::string(c10::toString(data_type)) + " has not been supported")
+    return acl_dtype;
+}
 
 bool FormatCastHelper::IsSameGroupType(const at::Tensor& src, const at::Tensor& dst) {
     auto src_format = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_.npu_format_;
@@ -172,7 +171,8 @@ void OpPreparation::check_memory(const std::initializer_list<at::Tensor>& inputs
     // CalcuOpUtil::CheckMemoryOverLaps(in, out);
 }
 
-void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size) {
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype,
+                                 c10::IntArrayRef expect_size) {
     check_memory(src_list, {dst});
     TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
     TORCH_CHECK(dst.scalar_type() == expect_dtype, "expected dtype ", expect_dtype, " but got dtype ", dst.scalar_type());
@@ -2456,9 +2456,7 @@ OpCommand& OpCommand::Name(const string& name) {
     return *this;
 }
 
-void OpCommand::SetCustomHandler(PROC_FUNC func) {
-    aclCmd->SetCustomHandler(func);
-}
+void OpCommand::SetCustomHandler(PROC_FUNC func) { aclCmd->SetCustomHandler(func); }
 
 OpCommand& OpCommand::Expect(UnifiedResult unified_result) {
     commonType = unified_result.common_type;

@@ -299,7 +299,7 @@ public:
     /// is guaranteed to be a NPU device.
     c10::Device device() const { return stream_.device(); }
 
-    c10::StreamId id() const { INTERFACE_NOT_IMPL; } //return stream_.id(); }
+    c10::StreamId id() const { INTERFACE_NOT_IMPL; }
 
     bool query() const { INTERFACE_NOT_IMPL; }
 
@@ -320,9 +320,7 @@ public:
     }
 
     /// Explicit conversion to rtStream_t， with out empty taskQ.
-    aclrtStream stream(const bool need_empty) const {
-         return aclStream_;
-    }
+    aclrtStream stream(const bool need_empty) const { return aclStream_; }
 
 private:
     c10::Stream stream_;
