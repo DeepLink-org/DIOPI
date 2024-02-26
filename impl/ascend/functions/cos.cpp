@@ -6,18 +6,27 @@
 
 #include <set>
 
-#include "../aclnn/aclnn.hpp"
 #include "../common/acloprunner.hpp"
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    diopiCos(ctx, input, input);
+    AclTensor inputAcl(input);
+    if (!inputAcl.defined() || inputAcl.numel() == 0) {
+        return diopiSuccess;
+    }
+
+    ACLNN_ADAPTOR(aclnnInplaceCos, ctx, inputAcl);
     return diopiSuccess;
 }
 
 diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    aclnnCosAdaptor(ctx, input, out);
+    AclTensor inputAcl(input), outAcl(out);
+    if (!inputAcl.defined() || inputAcl.numel() == 0) {
+        return diopiSuccess;
+    }
+
+    ACLNN_ADAPTOR(aclnnCos, ctx, inputAcl, outAcl);
     return diopiSuccess;
 }
 

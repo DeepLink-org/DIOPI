@@ -34,19 +34,23 @@ diopiError_t getPermuteOrder(const DiopiTensor& src, std::vector<int32_t>& order
         return diopiSuccess;
     }
 
-    int dim = src.dim();
-    std::vector<int> inputStrides(dim, 1);
-    std::vector<int> inputSizes(dim, 1);
+    std::vector<int64_t> stride = src.stride();
+    std::vector<int64_t> shape = src.shape();
+    getPermuteOrder(shape, stride, orderOut, reverseOrder);
+    return diopiSuccess;
+}
 
-    for (int i = 0; i < dim; i++) {
-        inputStrides[i] = src.stride()[i];
-        inputSizes[i] = src.shape()[i];
-    }
+diopiError_t getPermuteOrder(std::vector<int64_t>& shape, std::vector<int64_t>& stride, std::vector<int32_t>& orderOut, std::vector<int32_t>& reverseOrder) {
+    int dim = shape.size();
+    std::vector<int> inputStrides(stride.begin(), stride.end());
+    std::vector<int> inputSizes(shape.begin(), shape.end());
+
     std::vector<std::pair<int, int>> stridesSizes(dim, std::pair<int, int>(1, 1));
     for (int i = 0; i < dim; ++i) {
         stridesSizes[i] = std::pair<int, int>(inputStrides[i], inputSizes[i]);
     }
-
+    orderOut.resize(dim);
+    reverseOrder.resize(dim);
     // shape:2,3,4,5 stride:60,1,15,3 -> orderOut: 0,3,1,2, reverseOrder: 0,2,3,1
     sort(stridesSizes.begin(), stridesSizes.end(), [](std::pair<int, int> a, std::pair<int, int> b) { return a.first > b.first; });
     for (int i = 0; i < dim; ++i) {
@@ -99,14 +103,9 @@ diopiError_t calCnnlLayout(diopiMemoryFormat_t memoryFormat, int64_t dim, cnnlTe
     return diopiSuccess;
 }
 
-// static bool hasZero(std::vector<int64_t> vec) {
-//     return std::any_of(vec.begin(), vec.end(), [](auto i) { return i == 0; });
-// }
-
-template <typename T>
-static std::vector<T> changeVecAccordingToOrder(std::vector<T> vec, std::vector<int32_t> order) {
+std::vector<int64_t> changeVecAccordingToOrder(const std::vector<int64_t> vec, std::vector<int32_t> order) {
     DIOPI_CHECK_ABORT(order.size() == vec.size(), "order's len %ld is not equal vec's len %ld", order.size(), vec.size());
-    std::vector<T> newVec(vec.size(), 0);
+    std::vector<int64_t> newVec(vec.size(), 0);
     int j = 0;
     for (auto i : order) {
         newVec[j++] = vec[i];
