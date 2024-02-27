@@ -41,7 +41,7 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 
     bool keepdim = outAt.dim() == inputAt.dim();
     auto pvalue = calculateP(pAt);
-    acl_op::norm_out(inputAt, pAt, dimAt, false, outAt);
+    op_api::norm_out(inputAt, pAt, dimAt, false, outAt);
     END_CALL_ACL_OP();
 }
 
