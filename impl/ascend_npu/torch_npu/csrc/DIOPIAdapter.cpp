@@ -1501,14 +1501,14 @@ at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, a
 }
 
 at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
-    ASCEND_LOGD("Alloc workspace %zu bytes unsafely.", size);
-    c10::Allocator* allocator = c10_npu::NPUCachingAllocator::get();
-    c10::intrusive_ptr<c10::StorageImpl> storage_impl =
-        c10::make_intrusive<torch_npu::NPUStorageImpl>(c10::StorageImpl::use_byte_size_t(), size, allocator->allocate(size), allocator, true);
-    static auto dtype = c10::scalarTypeToTypeMeta(dtype_or_default(at::kByte));
-    auto tensor = at::detail::make_tensor<torch_npu::NPUTensorImpl>(storage_impl, dtype);
-    tensor.unsafeGetTensorImpl()->empty_tensor_restride(c10::MemoryFormat::Contiguous);
-    return tensor;
+    diopiTensorHandle_t tensorDiopi = nullptr;
+    std::vector<int64_t> sizeVec(1, size);
+    diopiError_t ret = diopiRequireBuffer(context, &tensorDiopi, size, diopi_device);
+    if (enableDumpArgs()) {
+        std::cout << __FUNCTION__ << ": diopiRequireBuffer: " << size << "(bytes)." << std::endl;
+    }
+    TORCH_CHECK(diopiSuccess == ret);
+    return impl::aten::buildATen(tensorDiopi);
 }
 
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
