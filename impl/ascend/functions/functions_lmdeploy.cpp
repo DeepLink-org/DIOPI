@@ -9,8 +9,11 @@
 
 #include <array>
 #include <cassert>
+#include <chrono>
 #include <cstring>
 #include <vector>
+
+// #define SYNC_AND_TIME
 
 #define FLT_MIN __FLT_MIN__
 #define FLT_MAX __FLT_MAX__
@@ -172,10 +175,11 @@ DIOPI_API diopiError_t diopiFusedSiluFfnInp(diopiContextHandle_t ctx, diopiTenso
 DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, diopiTensorHandle_t inoutput, diopiConstTensorHandle_t qkv_weight,
                                                      diopiConstTensorHandle_t qkv_bias, diopiTensorHandle_t pre_work, int64_t* pre_work_size, bool is_prepared,
                                                      diopiTensorHandle_t workspace, int64_t* workspace_size, int64_t fusion_level,
-                                                     diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, int64_t batch_size, diopiConstTensorHandle_t input_lengths,
-                                                     diopiConstTensorHandle_t history_lengths, diopiConstTensorHandle_t context_lengths, int64_t layer_id,
-                                                     int64_t local_head_num, int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len,
-                                                     int64_t max_q_len, int64_t max_kv_len, int64_t rotary_embedding, float rope_theta) {
+                                                     diopiTensorHandle_t* key_cache, diopiTensorHandle_t* value_cache, int64_t batch_size,
+                                                     diopiConstTensorHandle_t input_lengths, diopiConstTensorHandle_t history_lengths,
+                                                     diopiConstTensorHandle_t context_lengths, int64_t layer_id, int64_t local_head_num,
+                                                     int64_t local_kv_head_num, int64_t size_per_head, int64_t max_seq_len, int64_t max_q_len,
+                                                     int64_t max_kv_len, int64_t rotary_embedding, float rope_theta) {
     if (fusion_level >= 0) {
         // workspace_size and pre_work_size
         diopiSize_t shapeinfo;
@@ -351,9 +355,9 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                     attention_mask_members_length += 1;
                 }
                 // cat
-                combAsCat(ctx, mask_i_upper_part, attention_mask_members, attention_mask_members_length, 1);
+                diopiCat(ctx, mask_i_upper_part, attention_mask_members, attention_mask_members_length, 1);
                 diopiFill(ctx, mask_i_lower_part, &dnone);
-                
+
                 // for cal
                 diopiMulInpScalar(ctx, attention_mask_i, &d10000);
             }
@@ -461,9 +465,9 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
             diopiAdd(ctx, k_buffer, k_buffer_temp, k_bias, &scalar_done);
             diopiAdd(ctx, v_buffer, v_buffer_temp, v_bias, &scalar_done);
         } else {
-            diopiLmdeployCopyD2D(ctx, q_buffer, q_buffer_temp, false);
-            diopiLmdeployCopyD2D(ctx, k_buffer, k_buffer_temp, false);
-            diopiLmdeployCopyD2D(ctx, v_buffer, v_buffer_temp, false);
+            diopiLmdeployCopyD2D(ctx, q_buffer, q_buffer_temp, true);
+            diopiLmdeployCopyD2D(ctx, k_buffer, k_buffer_temp, true);
+            diopiLmdeployCopyD2D(ctx, v_buffer, v_buffer_temp, true);
         }
         // copy to kv cache and get kv
         // k_cache_buf_ and v_cache_buf_ for attn and q_cache_buf_ for transposed q_buffer
@@ -629,7 +633,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
 
                 diopiCastDtype(ctx, split0_buffer, cat0_buffer);
                 diopiCastDtype(ctx, split1_buffer, cat1_buffer);
-                combAsCat(ctx, q_buffer_forsplit, const_splits_buffer, 2, 3);
+                diopiCat(ctx, q_buffer_forsplit, const_splits_buffer, 2, 3);
                 // cat
                 // combAsCat(ctx, q_buffer_forsplit, cat_buffer, 2, 3);
                 // k
@@ -657,7 +661,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
 
                 diopiCastDtype(ctx, split0_buffer, cat0_buffer);
                 diopiCastDtype(ctx, split1_buffer, cat1_buffer);
-                combAsCat(ctx, k_buffer_forsplit, const_splits_buffer, 2, 3);
+                diopiCat(ctx, k_buffer_forsplit, const_splits_buffer, 2, 3);
                 // cat
                 // combAsCat(ctx, k_buffer_forsplit, cat_buffer, 2, 3);
                 // cache begin
@@ -692,7 +696,7 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 diopiSize_t qcal102_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(qcal102_ptr)), -1};
                 diopiRequireTensor(ctx, &qcal102, &newshape, &qcal102_stride, dtype, device);
                 diopiConstTensorHandle_t cat2qcal[2] = {prepared_q_buffer, zeros_q};
-                combAsCat(ctx, qcal102, cat2qcal, 2, 0);
+                diopiCat(ctx, qcal102, cat2qcal, 2, 0);
                 diopiPermute(ctx, q_cal, qcal102, trans102);
                 // k
                 diopiTensorHandle_t k_cal;  // k buffer with cache for attn
@@ -770,42 +774,69 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t kvcal_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(kvcal_ptr)), -1};
                         diopiRequireTensor(ctx, &kvcal, &newshape, &kvcal_stride, dtype, device);
                         diopiConstTensorHandle_t cat2kcal[2] = {prepared_k_buffer, zeros_kv};
-                        combAsCat(ctx, kvcal, cat2kcal, 2, 0);
+                        diopiCat(ctx, kvcal, cat2kcal, 2, 0);
                         diopiPermute(ctx, k_cal, kvcal, trans120);
                         // v for cal
                         diopiConstTensorHandle_t cat2vcal[2] = {prepared_v_buffer, zeros_kv};
-                        combAsCat(ctx, kvcal, cat2vcal, 2, 0);
+                        diopiCat(ctx, kvcal, cat2vcal, 2, 0);
                         diopiPermute(ctx, v_cal, kvcal, trans102);
                     } else {
                         diopiPermute(ctx, k_cal, prepared_k_buffer, trans120);
                         diopiPermute(ctx, v_cal, prepared_v_buffer, trans102);
                     }
 
-                    if (max_seq_len > input_length) {
-                        diopiTensorHandle_t zeros_kv_all;
+                    if (fusion_level == 10) {
+                        // k cache
+                        diopiTensorHandle_t ki_cache;
                         newshape.len = 3;
-                        shape[0] = max_seq_len - input_length;
+                        shape[0] = input_length;
                         shape[1] = local_kv_head_num;
                         shape[2] = size_per_head;
-                        diopiSize_t zeros_kv_all_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(zeros_ptr)), -1};
-                        diopiRequireTensor(ctx, &zeros_kv_all, &newshape, &zeros_kv_all_stride, dtype, device);
-                        diopiTensorHandle_t kvcache102;
+                        void* key_cache_ptr;
+                        diopiGetTensorData(key_cache[i], &key_cache_ptr);
+                        char* ki_cache_ptr = reinterpret_cast<char*>(key_cache_ptr) + layer_offset;
+                        diopiSize_t ki_cache_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cache_ptr)), -1};
+                        diopiRequireTensor(ctx, &ki_cache, &newshape, &ki_cache_stride, dtype, device);
+                        diopiLmdeployCopyD2D(ctx, ki_cache, prepared_k_buffer, true);
+                        // v cache
+                        diopiTensorHandle_t vi_cache;
                         newshape.len = 3;
-                        shape[0] = max_seq_len;
+                        shape[0] = input_length;
                         shape[1] = local_kv_head_num;
                         shape[2] = size_per_head;
-                        char* kvcache102_ptr = reinterpret_cast<char*>(workspace1_ptr);
-                        diopiSize_t kvcache102_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(kvcache102_ptr)), -1};
-                        diopiRequireTensor(ctx, &kvcache102, &newshape, &kvcache102_stride, dtype, device);
-                        diopiConstTensorHandle_t cat2kcache[2] = {prepared_k_buffer, zeros_kv_all};
-                        combAsCat(ctx, kvcache102, cat2kcache, 2, 0);
-                        diopiPermute(ctx, k_cache, kvcache102, trans102);
-                        diopiConstTensorHandle_t cat2vcache[2] = {prepared_v_buffer, zeros_kv_all};
-                        combAsCat(ctx, kvcache102, cat2vcache, 2, 0);
-                        diopiPermute(ctx, v_cache, kvcache102, trans102);
+                        void* value_cache_ptr;
+                        diopiGetTensorData(value_cache[i], &value_cache_ptr);
+                        char* vi_cache_ptr = reinterpret_cast<char*>(value_cache_ptr) + layer_offset;
+                        diopiSize_t vi_cache_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(vi_cache_ptr)), -1};
+                        diopiRequireTensor(ctx, &vi_cache, &newshape, &vi_cache_stride, dtype, device);
+                        diopiLmdeployCopyD2D(ctx, vi_cache, prepared_v_buffer, true);
                     } else {
-                        diopiPermute(ctx, k_cache, prepared_k_buffer, trans102);
-                        diopiPermute(ctx, v_cache, prepared_v_buffer, trans102);
+                        if (max_seq_len > input_length) {
+                            diopiTensorHandle_t zeros_kv_all;
+                            newshape.len = 3;
+                            shape[0] = max_seq_len - input_length;
+                            shape[1] = local_kv_head_num;
+                            shape[2] = size_per_head;
+                            diopiSize_t zeros_kv_all_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(zeros_ptr)), -1};
+                            diopiRequireTensor(ctx, &zeros_kv_all, &newshape, &zeros_kv_all_stride, dtype, device);
+                            diopiTensorHandle_t kvcache102;
+                            newshape.len = 3;
+                            shape[0] = max_seq_len;
+                            shape[1] = local_kv_head_num;
+                            shape[2] = size_per_head;
+                            char* kvcache102_ptr = reinterpret_cast<char*>(workspace1_ptr);
+                            diopiSize_t kvcache102_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(kvcache102_ptr)), -1};
+                            diopiRequireTensor(ctx, &kvcache102, &newshape, &kvcache102_stride, dtype, device);
+                            diopiConstTensorHandle_t cat2kcache[2] = {prepared_k_buffer, zeros_kv_all};
+                            diopiCat(ctx, kvcache102, cat2kcache, 2, 0);
+                            diopiPermute(ctx, k_cache, kvcache102, trans102);
+                            diopiConstTensorHandle_t cat2vcache[2] = {prepared_v_buffer, zeros_kv_all};
+                            diopiCat(ctx, kvcache102, cat2vcache, 2, 0);
+                            diopiPermute(ctx, v_cache, kvcache102, trans102);
+                        } else {
+                            diopiPermute(ctx, k_cache, prepared_k_buffer, trans102);
+                            diopiPermute(ctx, v_cache, prepared_v_buffer, trans102);
+                        }
                     }
                 } else {
                     // transpose info
@@ -858,51 +889,80 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t zeros_kv_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(zeros_ptr)), -1};
                         diopiRequireTensor(ctx, &zeros_kv, &newshape, &zeros_kv_stride, dtype, device);
                         diopiConstTensorHandle_t cat2kcal[3] = {his_k102, prepared_k_buffer, zeros_kv};
-                        combAsCat(ctx, kvcal, cat2kcal, 3, 0);
+                        diopiCat(ctx, kvcal, cat2kcal, 3, 0);
                         diopiPermute(ctx, k_cal, kvcal, trans120);
                         // v for cal
                         diopiConstTensorHandle_t cat2vcal[3] = {his_v102, prepared_v_buffer, zeros_kv};
-                        combAsCat(ctx, kvcal, cat2vcal, 3, 0);
+                        diopiCat(ctx, kvcal, cat2vcal, 3, 0);
                         diopiPermute(ctx, v_cal, kvcal, trans102);
                     } else {
                         diopiConstTensorHandle_t cat2kcal[2] = {his_k102, prepared_k_buffer};
-                        combAsCat(ctx, kvcal, cat2kcal, 2, 0);
+                        diopiCat(ctx, kvcal, cat2kcal, 2, 0);
                         diopiPermute(ctx, k_cal, kvcal, trans120);
                         // v for cal
                         diopiConstTensorHandle_t cat2vcal[2] = {his_v102, prepared_v_buffer};
-                        combAsCat(ctx, kvcal, cat2vcal, 2, 0);
+                        diopiCat(ctx, kvcal, cat2vcal, 2, 0);
                         diopiPermute(ctx, v_cal, kvcal, trans102);
                     }
 
-                    diopiTensorHandle_t kvcache102;
-                    newshape.len = 3;
-                    shape[0] = max_seq_len;
-                    shape[1] = local_kv_head_num;
-                    shape[2] = size_per_head;
-                    char* kvcache102_ptr = reinterpret_cast<char*>(his_v102_ptr) + itemsize * local_kv_head_num * history_length * size_per_head;
-                    diopiSize_t kvcache102_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(kvcache102_ptr)), -1};
-                    diopiRequireTensor(ctx, &kvcache102, &newshape, &kvcache102_stride, dtype, device);
-                    if (max_seq_len > input_length + history_length) {
-                        diopiTensorHandle_t zeros_kv_all;
+                    if (fusion_level == 10) {
+                        // k cache
+                        diopiTensorHandle_t ki_cache;
                         newshape.len = 3;
-                        shape[0] = max_seq_len - input_length - history_length;
+                        shape[0] = input_length;
                         shape[1] = local_kv_head_num;
                         shape[2] = size_per_head;
-                        diopiSize_t zeros_kv_all_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(zeros_ptr)), -1};
-                        diopiRequireTensor(ctx, &zeros_kv_all, &newshape, &zeros_kv_all_stride, dtype, device);
-                        diopiConstTensorHandle_t cat2kcache[3] = {his_k102, prepared_k_buffer, zeros_kv_all};
-                        combAsCat(ctx, kvcache102, cat2kcache, 3, 0);
-                        diopiPermute(ctx, k_cache, kvcache102, trans102);
-                        diopiConstTensorHandle_t cat2vcache[3] = {his_v102, prepared_v_buffer, zeros_kv_all};
-                        combAsCat(ctx, kvcache102, cat2vcache, 3, 0);
-                        diopiPermute(ctx, v_cache, kvcache102, trans102);
+                        void* key_cache_ptr;
+                        diopiGetTensorData(key_cache[i], &key_cache_ptr);
+                        char* ki_cache_ptr =
+                            reinterpret_cast<char*>(key_cache_ptr) + layer_offset + itemsize * local_kv_head_num * history_length * size_per_head;
+                        diopiSize_t ki_cache_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cache_ptr)), -1};
+                        diopiRequireTensor(ctx, &ki_cache, &newshape, &ki_cache_stride, dtype, device);
+                        diopiLmdeployCopyD2D(ctx, ki_cache, prepared_k_buffer, true);
+                        // v cache
+                        diopiTensorHandle_t vi_cache;
+                        newshape.len = 3;
+                        shape[0] = input_length;
+                        shape[1] = local_kv_head_num;
+                        shape[2] = size_per_head;
+                        void* value_cache_ptr;
+                        diopiGetTensorData(value_cache[i], &value_cache_ptr);
+                        char* vi_cache_ptr =
+                            reinterpret_cast<char*>(value_cache_ptr) + layer_offset + itemsize * local_kv_head_num * history_length * size_per_head;
+                        diopiSize_t vi_cache_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(vi_cache_ptr)), -1};
+                        diopiRequireTensor(ctx, &vi_cache, &newshape, &vi_cache_stride, dtype, device);
+                        diopiLmdeployCopyD2D(ctx, vi_cache, prepared_v_buffer, true);
                     } else {
-                        diopiConstTensorHandle_t cat2kcache[2] = {his_k102, prepared_k_buffer};
-                        combAsCat(ctx, kvcache102, cat2kcache, 2, 0);
-                        diopiPermute(ctx, k_cache, kvcache102, trans102);
-                        diopiConstTensorHandle_t cat2vcache[2] = {his_v102, prepared_v_buffer};
-                        combAsCat(ctx, kvcache102, cat2vcache, 2, 0);
-                        diopiPermute(ctx, v_cache, kvcache102, trans102);
+                        diopiTensorHandle_t kvcache102;
+                        newshape.len = 3;
+                        shape[0] = max_seq_len;
+                        shape[1] = local_kv_head_num;
+                        shape[2] = size_per_head;
+                        char* kvcache102_ptr = reinterpret_cast<char*>(his_v102_ptr) + itemsize * local_kv_head_num * history_length * size_per_head;
+                        diopiSize_t kvcache102_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(kvcache102_ptr)), -1};
+                        diopiRequireTensor(ctx, &kvcache102, &newshape, &kvcache102_stride, dtype, device);
+                        if (max_seq_len > input_length + history_length) {
+                            diopiTensorHandle_t zeros_kv_all;
+                            newshape.len = 3;
+                            shape[0] = max_seq_len - input_length - history_length;
+                            shape[1] = local_kv_head_num;
+                            shape[2] = size_per_head;
+                            diopiSize_t zeros_kv_all_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(zeros_ptr)), -1};
+                            diopiRequireTensor(ctx, &zeros_kv_all, &newshape, &zeros_kv_all_stride, dtype, device);
+                            diopiConstTensorHandle_t cat2kcache[3] = {his_k102, prepared_k_buffer, zeros_kv_all};
+                            diopiCat(ctx, kvcache102, cat2kcache, 3, 0);
+                            diopiPermute(ctx, k_cache, kvcache102, trans102);
+                            diopiConstTensorHandle_t cat2vcache[3] = {his_v102, prepared_v_buffer, zeros_kv_all};
+                            diopiCat(ctx, kvcache102, cat2vcache, 3, 0);
+                            diopiPermute(ctx, v_cache, kvcache102, trans102);
+                        } else {
+                            diopiConstTensorHandle_t cat2kcache[2] = {his_k102, prepared_k_buffer};
+                            diopiCat(ctx, kvcache102, cat2kcache, 2, 0);
+                            diopiPermute(ctx, k_cache, kvcache102, trans102);
+                            diopiConstTensorHandle_t cat2vcache[2] = {his_v102, prepared_v_buffer};
+                            diopiCat(ctx, kvcache102, cat2vcache, 2, 0);
+                            diopiPermute(ctx, v_cache, kvcache102, trans102);
+                        }
                     }
                 }
                 total_input_length += input_length;
@@ -947,8 +1007,6 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
             for (int64_t i = 0; i < batch_size; i++) {
                 int64_t input_length = intdtype == diopiDtype_t::diopi_dtype_int32 ? *(reinterpret_cast<int32_t*>(input_lengths_host_data) + i)
                                                                                    : *(reinterpret_cast<int64_t*>(input_lengths_host_data) + i);
-                int64_t history_length = intdtype == diopiDtype_t::diopi_dtype_int32 ? *(reinterpret_cast<int32_t*>(history_lengths_host_data) + i)
-                                                                                     : *(reinterpret_cast<int64_t*>(history_lengths_host_data) + i);
                 diopiTensorHandle_t q_withpad;
                 newshape.len = 3;
                 shape[0] = local_head_num;
@@ -957,15 +1015,26 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 char* q_withpad_ptr = reinterpret_cast<char*>(q_cache_buf_ptr) + itemsize * i * local_head_num * max_q_len * size_per_head;
                 diopiSize_t q_withpad_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_withpad_ptr)), -1};
                 diopiRequireTensor(ctx, &q_withpad, &newshape, &q_withpad_stride, dtype, device);
-                diopiTensorHandle_t q_withoutpad;
-                newshape.len = 3;
-                shape[0] = local_head_num;
-                shape[1] = input_length;
-                shape[2] = size_per_head;
-                char* q_withoutpad_ptr = reinterpret_cast<char*>(workspace1_ptr);
-                diopiSize_t q_withoutpad_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_withoutpad_ptr)), -1};
-                diopiRequireTensor(ctx, &q_withoutpad, &newshape, &q_withoutpad_stride, dtype, device);
-                diopiSlice(ctx, q_withoutpad, q_withpad, 1, 0, input_length, 1);
+                // diopiTensorHandle_t q_withoutpad;
+                // newshape.len = 3;
+                // shape[0] = local_head_num;
+                // shape[1] = input_length;
+                // shape[2] = size_per_head;
+                // char* q_withoutpad_ptr = reinterpret_cast<char*>(workspace1_ptr);
+                // diopiSize_t q_withoutpad_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_withoutpad_ptr)), -1};
+                // diopiRequireTensor(ctx, &q_withoutpad, &newshape, &q_withoutpad_stride, dtype, device);
+                // diopiSlice(ctx, q_withoutpad, q_withpad, 1, 0, input_length, 1);
+                // diopiTensorHandle_t q_out;
+                // newshape.len = 3;
+                // shape[0] = input_length;
+                // shape[1] = local_head_num;
+                // shape[2] = size_per_head;
+                // void* inout_ptr;
+                // diopiGetTensorData(inoutput, &inout_ptr);
+                // char* q_out_ptr = reinterpret_cast<char*>(inout_ptr) + itemsize * total_input_length * local_head_num * size_per_head;
+                // diopiSize_t q_out_ptr_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_out_ptr)), -1};
+                // diopiRequireTensor(ctx, &q_out, &newshape, &q_out_ptr_stride, dtype, device);
+                // diopiPermute(ctx, q_out, q_withoutpad, trans102);
                 diopiTensorHandle_t q_out;
                 newshape.len = 3;
                 shape[0] = input_length;
@@ -976,7 +1045,24 @@ DIOPI_API diopiError_t diopiFusedContextAttentionInp(diopiContextHandle_t ctx, d
                 char* q_out_ptr = reinterpret_cast<char*>(inout_ptr) + itemsize * total_input_length * local_head_num * size_per_head;
                 diopiSize_t q_out_ptr_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_out_ptr)), -1};
                 diopiRequireTensor(ctx, &q_out, &newshape, &q_out_ptr_stride, dtype, device);
-                diopiPermute(ctx, q_out, q_withoutpad, trans102);
+
+                diopiTensorHandle_t q_withpad_p;
+                newshape.len = 3;
+                shape[0] = max_q_len;
+                shape[1] = local_head_num;
+                shape[2] = size_per_head;
+                char* q_withpad_p_ptr = reinterpret_cast<char*>(workspace1_ptr);
+                diopiSize_t q_withpad_p_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_withpad_p_ptr)), -1};
+                diopiRequireTensor(ctx, &q_withpad_p, &newshape, &q_withpad_p_stride, dtype, device);
+                diopiPermute(ctx, q_withpad_p, q_withpad, trans102);
+                diopiTensorHandle_t q_withoutpad;
+                newshape.len = 3;
+                shape[0] = input_length;
+                shape[1] = local_head_num;
+                shape[2] = size_per_head;
+                diopiRequireTensor(ctx, &q_withoutpad, &newshape, &q_withpad_p_stride, dtype, device);
+                diopiLmdeployCopyD2D(ctx, q_out, q_withoutpad, true);
+
                 total_input_length += input_length;
             }
         } else {
@@ -1012,12 +1098,16 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                               std::max(int64_t(sizeof(float) * (batch_size + size_per_head) +                         // timesteps + sphsteps + sphsteps_temp
                                                sizeof(float) * batch_size * local_head_num * size_per_head +          // timesteps_buff_32 sphsteps_buff_32
                                                itemsize * batch_size * local_head_num * size_per_head +               // timesteps_buff sphsteps_buff
-                                               itemsize * batch_size * local_head_num * size_per_head * 2),           // split and cat
+                                               sizeof(float) * batch_size * local_head_num * size_per_head * 2),      // split and cat
                                        int64_t(itemsize * local_head_num * (max_seq_len + 1) * size_per_head * 3)) +  // or ki cal
                               0;
             return diopiSuccess;
         }
         bool same = false;
+#ifdef SYNC_AND_TIME
+        diopiLmdeploySync(ctx);
+        auto time1 = std::chrono::high_resolution_clock::now();
+#endif
 
         std::vector<int64_t> shape(4);
         diopiSize_t newshape{shape.data(), 4};
@@ -1096,7 +1186,15 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
         diopiTensorHandle_t qkv_buffers[3]{q_buffer_temp, k_buffer_temp, v_buffer_temp};
         std::vector<int64_t> qkv_buffers_split_sizes_data{local_head_num, local_kv_head_num, local_kv_head_num};
         diopiSize_t qkv_buffers_split_sizes{qkv_buffers_split_sizes_data.data(), 3};
+#ifdef SYNC_AND_TIME
+        diopiLmdeploySync(ctx);
+        auto time2 = std::chrono::high_resolution_clock::now();
+#endif
         diopiSplitWithSizes(ctx, qkv_buffers, 3, qkv_buffer_forsplit, qkv_buffers_split_sizes, 1);
+#ifdef SYNC_AND_TIME
+        diopiLmdeploySync(ctx);
+        auto time3 = std::chrono::high_resolution_clock::now();
+#endif
         // q,k,v bias
         if (qkv_bias != nullptr) {
             const void* qkv_bias_ptr;
@@ -1122,10 +1220,14 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
             diopiAdd(ctx, k_buffer, k_buffer_temp, k_bias, &scalar_done);
             diopiAdd(ctx, v_buffer, v_buffer_temp, v_bias, &scalar_done);
         } else {
-            diopiLmdeployCopyD2D(ctx, q_buffer, q_buffer_temp, false);
-            diopiLmdeployCopyD2D(ctx, k_buffer, k_buffer_temp, false);
-            diopiLmdeployCopyD2D(ctx, v_buffer, v_buffer_temp, false);
+            diopiLmdeployCopyD2D(ctx, q_buffer, q_buffer_temp, true);
+            diopiLmdeployCopyD2D(ctx, k_buffer, k_buffer_temp, true);
+            diopiLmdeployCopyD2D(ctx, v_buffer, v_buffer_temp, true);
         }
+#ifdef SYNC_AND_TIME
+        diopiLmdeploySync(ctx);
+        auto time4 = std::chrono::high_resolution_clock::now();
+#endif
         // finished
         shape[0] = batch_size;
         newshape.len = 1;
@@ -1133,51 +1235,24 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
         bool finished_host_data[batch_size];
         diopiSize_t finished_host_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(finished_host_data)), -1};
         diopiRequireTensor(ctx, &finished_host, &newshape, &finished_host_stride, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
-        diopiLmdeployCopyD2H(ctx, finished_host, finished, false);
+        diopiLmdeployCopyD2H(ctx, finished_host, finished, true);
         // keep same
-        diopiTensorHandle_t q_buffer_back;
-        if (same) {
-            shape[0] = batch_size;
-            shape[1] = local_head_num;
-            shape[2] = size_per_head;
-            newshape.len = 3;
-            diopiRequireTensor(ctx, &q_buffer_back, &newshape, nullptr, dtype, device);
-            for (int64_t i = 0; i < batch_size; i++) {
-                if (finished_host_data[i]) {
-                    diopiTensorHandle_t q_buffer_back_one;
-                    shape[0] = local_head_num;
-                    shape[1] = size_per_head;
-                    newshape.len = 2;
-                    void* q_buffer_back_one_ptr;
-                    diopiGetTensorData(q_buffer_back, &q_buffer_back_one_ptr);
-                    diopiSize_t q_buffer_back_one_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(reinterpret_cast<char*>(q_buffer_back_one_ptr) +
-                                                                                                                i * itemsize * local_head_num * size_per_head)),
-                                                         -1};
-                    diopiRequireTensor(ctx, &q_buffer_back_one, &newshape, &q_buffer_back_one_stride, dtype, device);
-                    diopiTensorHandle_t q_buffer_one;
-                    shape[0] = local_head_num;
-                    shape[1] = size_per_head;
-                    newshape.len = 2;
-                    char* q_buffer_one_ptr = q_buffer_ptr + i * itemsize * local_head_num * size_per_head;
-                    diopiSize_t q_buffer_one_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_buffer_one_ptr)), -1};
-                    diopiRequireTensor(ctx, &q_buffer_one, &newshape, &q_buffer_one_stride, dtype, device);
-                    diopiLmdeployCopyD2D(ctx, q_buffer_back_one, q_buffer_one, true);
-                }
-            }
-        }
-
         shape[0] = batch_size;
         newshape.len = 1;
         diopiTensorHandle_t sequence_lengths_host;
         char sequence_lengths_host_data[batch_size * intitemsize];
         diopiSize_t sequence_lengths_host_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(sequence_lengths_host_data)), -1};
         diopiRequireTensor(ctx, &sequence_lengths_host, &newshape, &sequence_lengths_host_stride, intdtype, diopiDevice_t::diopi_host);
-        diopiLmdeployCopyD2H(ctx, sequence_lengths_host, sequence_lengths, false);
+        diopiLmdeployCopyD2H(ctx, sequence_lengths_host, sequence_lengths, true);
         // scalar_dstep
         diopiScalar_t scalar_dstep{dtype, double(step - 1)};
         // ROPE
         if (rotary_embedding > 0) {
             // ROPE prepare
+#ifdef SYNC_AND_TIME
+            diopiLmdeploySync(ctx);
+            auto time5 = std::chrono::high_resolution_clock::now();
+#endif
             diopiDtype_t ropedtype = diopiDtype_t::diopi_dtype_float32;
             diopiTensorHandle_t timesteps;
             newshape.len = 1;
@@ -1245,26 +1320,40 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
             diopiSin(ctx, sphsteps_buff_32, timesteps_buff_32);  // sphsteps_buff as sin
             diopiCosInp(ctx, timesteps_buff_32);                 // timesteps_buff as cos
 
-            diopiTensorHandle_t timesteps_buff;
+            // diopiTensorHandle_t timesteps_buff;
+            // newshape.len = 4;
+            // shape[0] = batch_size;
+            // shape[1] = local_head_num;
+            // shape[2] = size_per_head / 2;
+            // shape[3] = 1;
+            // char* timesteps_buff_ptr = reinterpret_cast<char*>(sphsteps_buff_32_ptr) + sizeof(float) * batch_size * local_head_num * size_per_head / 2;
+            // diopiSize_t timesteps_buff_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(timesteps_buff_ptr)), -1};
+            // diopiRequireTensor(ctx, &timesteps_buff, &newshape, &timesteps_buff_stride, dtype, device);
+            // diopiTensorHandle_t sphsteps_buff;
+            // newshape.len = 4;
+            // shape[0] = batch_size;
+            // shape[1] = local_head_num;
+            // shape[2] = size_per_head / 2;
+            // shape[3] = 1;
+            // char* sphsteps_buff_ptr = reinterpret_cast<char*>(timesteps_buff_ptr) + itemsize * batch_size * local_head_num * size_per_head / 2;
+            // diopiSize_t sphsteps_buff_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(sphsteps_buff_ptr)), -1};
+            // diopiRequireTensor(ctx, &sphsteps_buff, &newshape, &sphsteps_buff_stride, dtype, device);
+            // diopiCastDtype(ctx, timesteps_buff, timesteps_buff_32);
+            // diopiCastDtype(ctx, sphsteps_buff, sphsteps_buff_32);
+
+            diopiTensorHandle_t split0_buffer_32;  // x0
+            diopiTensorHandle_t split1_buffer_32;  // x1
             newshape.len = 4;
             shape[0] = batch_size;
             shape[1] = local_head_num;
             shape[2] = size_per_head / 2;
             shape[3] = 1;
-            char* timesteps_buff_ptr = reinterpret_cast<char*>(sphsteps_buff_32_ptr) + sizeof(float) * batch_size * local_head_num * size_per_head / 2;
-            diopiSize_t timesteps_buff_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(timesteps_buff_ptr)), -1};
-            diopiRequireTensor(ctx, &timesteps_buff, &newshape, &timesteps_buff_stride, dtype, device);
-            diopiTensorHandle_t sphsteps_buff;
-            newshape.len = 4;
-            shape[0] = batch_size;
-            shape[1] = local_head_num;
-            shape[2] = size_per_head / 2;
-            shape[3] = 1;
-            char* sphsteps_buff_ptr = reinterpret_cast<char*>(timesteps_buff_ptr) + itemsize * batch_size * local_head_num * size_per_head / 2;
-            diopiSize_t sphsteps_buff_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(sphsteps_buff_ptr)), -1};
-            diopiRequireTensor(ctx, &sphsteps_buff, &newshape, &sphsteps_buff_stride, dtype, device);
-            diopiCastDtype(ctx, timesteps_buff, timesteps_buff_32);
-            diopiCastDtype(ctx, sphsteps_buff, sphsteps_buff_32);
+            char* split0_buffer_32_ptr = reinterpret_cast<char*>(sphsteps_buff_32_ptr) + sizeof(float) * batch_size * local_head_num * size_per_head / 2;
+            diopiSize_t split0_buffer_32_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(split0_buffer_32_ptr)), -1};
+            diopiRequireTensor(ctx, &split0_buffer_32, &newshape, &split0_buffer_32_stride, ropedtype, device);
+            char* split1_buffer_32_ptr = reinterpret_cast<char*>(split0_buffer_32_ptr) + sizeof(float) * batch_size * local_head_num * size_per_head / 2;
+            diopiSize_t split1_buffer_32_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(split1_buffer_32_ptr)), -1};
+            diopiRequireTensor(ctx, &split1_buffer_32, &newshape, &split1_buffer_32_stride, ropedtype, device);
 
             diopiTensorHandle_t split0_buffer;  // x0
             diopiTensorHandle_t split1_buffer;  // x1
@@ -1273,24 +1362,30 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
             shape[1] = local_head_num;
             shape[2] = size_per_head / 2;
             shape[3] = 1;
-            char* split0_buffer_ptr = reinterpret_cast<char*>(sphsteps_buff_ptr) + itemsize * batch_size * local_head_num * size_per_head / 2;
+            char* split0_buffer_ptr = reinterpret_cast<char*>(split1_buffer_32_ptr) + sizeof(float) * batch_size * local_head_num * size_per_head / 2;
             diopiSize_t split0_buffer_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(split0_buffer_ptr)), -1};
             diopiRequireTensor(ctx, &split0_buffer, &newshape, &split0_buffer_stride, dtype, device);
             char* split1_buffer_ptr = reinterpret_cast<char*>(split0_buffer_ptr) + itemsize * batch_size * local_head_num * size_per_head / 2;
             diopiSize_t split1_buffer_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(split1_buffer_ptr)), -1};
             diopiRequireTensor(ctx, &split1_buffer, &newshape, &split1_buffer_stride, dtype, device);
+
             diopiTensorHandle_t cat0_buffer;  // x0
             diopiTensorHandle_t cat1_buffer;  // x1
             char* cat0_buffer_ptr = reinterpret_cast<char*>(split1_buffer_ptr) + itemsize * batch_size * local_head_num * size_per_head / 2;
             diopiSize_t cat0_buffer_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(cat0_buffer_ptr)), -1};
-            diopiRequireTensor(ctx, &cat0_buffer, &newshape, &cat0_buffer_stride, dtype, device);
-            char* cat1_buffer_ptr = reinterpret_cast<char*>(cat0_buffer_ptr) + itemsize * batch_size * local_head_num * size_per_head / 2;
+            diopiRequireTensor(ctx, &cat0_buffer, &newshape, &cat0_buffer_stride, ropedtype, device);
+            char* cat1_buffer_ptr = reinterpret_cast<char*>(cat0_buffer_ptr) + sizeof(float) * batch_size * local_head_num * size_per_head / 2;
             diopiSize_t cat1_buffer_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(cat1_buffer_ptr)), -1};
-            diopiRequireTensor(ctx, &cat1_buffer, &newshape, &cat1_buffer_stride, dtype, device);
+            diopiRequireTensor(ctx, &cat1_buffer, &newshape, &cat1_buffer_stride, ropedtype, device);
             diopiTensorHandle_t splits_buffer[2] = {split0_buffer, split1_buffer};
+            diopiConstTensorHandle_t const_splits_buffer[2] = {split0_buffer, split1_buffer};
             diopiConstTensorHandle_t cat_buffer[2] = {cat0_buffer, cat1_buffer};
             std::vector<int64_t> split_sizes_data{1, 1};
             diopiSize_t split_sizes{split_sizes_data.data(), 2};
+#ifdef SYNC_AND_TIME
+            diopiLmdeploySync(ctx);
+            auto time6 = std::chrono::high_resolution_clock::now();
+#endif
             // q
             diopiTensorHandle_t q_buffer_forsplit;
             newshape.len = 4;
@@ -1301,16 +1396,23 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
             diopiSize_t q_buffer_forsplit_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_buffer_ptr)), -1};
             diopiRequireTensor(ctx, &q_buffer_forsplit, &newshape, &q_buffer_forsplit_stride, dtype, device);
             diopiSplitWithSizes(ctx, splits_buffer, 2, q_buffer_forsplit, split_sizes, 3);
+
+            diopiCastDtype(ctx, split0_buffer_32, split0_buffer);
+            diopiCastDtype(ctx, split1_buffer_32, split1_buffer);
             // 0
-            diopiMul(ctx, cat0_buffer, split0_buffer, timesteps_buff);
-            diopiMul(ctx, cat1_buffer, split1_buffer, sphsteps_buff);
+            diopiMul(ctx, cat0_buffer, split0_buffer_32, timesteps_buff_32);
+            diopiMul(ctx, cat1_buffer, split1_buffer_32, sphsteps_buff_32);
             diopiSubInp(ctx, cat0_buffer, cat1_buffer, &scalar_done);
             // 1
-            diopiMulInp(ctx, split0_buffer, sphsteps_buff);
-            diopiMulInp(ctx, split1_buffer, timesteps_buff);
-            diopiAdd(ctx, cat1_buffer, split0_buffer, split1_buffer, &scalar_done);
+            diopiMulInp(ctx, split0_buffer_32, sphsteps_buff_32);
+            diopiMulInp(ctx, split1_buffer_32, timesteps_buff_32);
+            diopiAdd(ctx, cat1_buffer, split0_buffer_32, split1_buffer_32, &scalar_done);
+
+            diopiCastDtype(ctx, split0_buffer, cat0_buffer);
+            diopiCastDtype(ctx, split1_buffer, cat1_buffer);
+            diopiCat(ctx, q_buffer_forsplit, const_splits_buffer, 2, 3);
             // cat
-            combAsCat(ctx, q_buffer_forsplit, cat_buffer, 2, 3);
+            // diopiCat(ctx, q_buffer_forsplit, cat_buffer, 2, 3);
             if (local_kv_head_num == local_head_num) {
                 // k
                 diopiTensorHandle_t k_buffer_forsplit;
@@ -1322,24 +1424,41 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                 diopiSize_t k_buffer_forsplit_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(k_buffer_ptr)), -1};
                 diopiRequireTensor(ctx, &k_buffer_forsplit, &newshape, &k_buffer_forsplit_stride, dtype, device);
                 diopiSplitWithSizes(ctx, splits_buffer, 2, k_buffer_forsplit, split_sizes, 3);
+
+                diopiCastDtype(ctx, split0_buffer_32, split0_buffer);
+                diopiCastDtype(ctx, split1_buffer_32, split1_buffer);
                 // 0
-                diopiMul(ctx, cat0_buffer, split0_buffer, timesteps_buff);
-                diopiMul(ctx, cat1_buffer, split1_buffer, sphsteps_buff);
+                diopiMul(ctx, cat0_buffer, split0_buffer_32, timesteps_buff_32);
+                diopiMul(ctx, cat1_buffer, split1_buffer_32, sphsteps_buff_32);
                 diopiSubInp(ctx, cat0_buffer, cat1_buffer, &scalar_done);
                 // 1
-                diopiMulInp(ctx, split0_buffer, sphsteps_buff);
-                diopiMulInp(ctx, split1_buffer, timesteps_buff);
-                diopiAdd(ctx, cat1_buffer, split0_buffer, split1_buffer, &scalar_done);
-                // cat
-                combAsCat(ctx, k_buffer_forsplit, cat_buffer, 2, 3);
+                diopiMulInp(ctx, split0_buffer_32, sphsteps_buff_32);
+                diopiMulInp(ctx, split1_buffer_32, timesteps_buff_32);
+                diopiAdd(ctx, cat1_buffer, split0_buffer_32, split1_buffer_32, &scalar_done);
+
+                diopiCastDtype(ctx, split0_buffer, cat0_buffer);
+                diopiCastDtype(ctx, split1_buffer, cat1_buffer);
+                diopiCat(ctx, k_buffer_forsplit, const_splits_buffer, 2, 3);
             } else {
                 return diopiErrorOccurred;
             }
+            diopiLmdeploySync(ctx);  // sync for D2H
+#ifdef SYNC_AND_TIME
+            auto time7 = std::chrono::high_resolution_clock::now();
+            auto time8 = std::chrono::high_resolution_clock::now();
+            auto time9 = std::chrono::high_resolution_clock::now();
+            auto time10 = std::chrono::high_resolution_clock::now();
+            auto time11 = std::chrono::high_resolution_clock::now();
+#endif
             // kv cache offset
             int64_t kv_cache_layer_offset = layer_id * local_kv_head_num * max_seq_len * size_per_head * itemsize;
             // transpose info
             std::vector<int64_t> trans021_data{0, 2, 1};
             diopiSize_t trans021{trans021_data.data(), 3};
+            std::vector<int64_t> trans120_data{1, 2, 0};
+            diopiSize_t trans120{trans120_data.data(), 3};
+            std::vector<int64_t> trans102_data{1, 0, 2};
+            diopiSize_t trans102{trans102_data.data(), 3};
             // qk scale
             diopiScalar_t inv_sqrt_dh{dtype, double(1.F / (sqrtf(float(size_per_head) * 1.f)))};
             for (int64_t i = 0; i < batch_size; i++) {
@@ -1368,11 +1487,6 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         char* ki_buffer_ptr = reinterpret_cast<char*>(k_buffer_ptr) + i * itemsize * local_kv_head_num * size_per_head;
                         diopiSize_t ki_buffer_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_buffer_ptr)), -1};
                         diopiRequireTensor(ctx, &ki_buffer1, &newshape, &ki_buffer_stride, dtype, device);
-                        diopiTensorHandle_t ki_buffer2;
-                        shape[0] = local_kv_head_num;
-                        shape[1] = size_per_head;
-                        shape[2] = 1;
-                        diopiRequireTensor(ctx, &ki_buffer2, &newshape, &ki_buffer_stride, dtype, device);
                         // k cache
                         diopiTensorHandle_t k_cache;
                         newshape.len = 3;
@@ -1385,36 +1499,54 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t k_cache_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(k_cache_ptr)), -1};
                         diopiRequireTensor(ctx, &k_cache, &newshape, &k_cache_stride, dtype, device);
                         // update k cache, index is tlength_circ
-                        diopiConstTensorHandle_t cat_kcache[3];
-                        int64_t cat_kcache_length = 1;
-                        if (tlength_circ > 0) {
-                            diopiTensorHandle_t ki_cache_beg;
+                        if (fusion_level == 10) {
+                            // copy to k cache
+                            diopiTensorHandle_t k_cache_step;
+                            newshape.len = 3;
                             shape[0] = local_kv_head_num;
-                            shape[1] = tlength_circ;
+                            shape[1] = 1;
                             shape[2] = size_per_head;
-                            char* ki_cache_beg_ptr = reinterpret_cast<char*>(workspace1_ptr);
-                            diopiSize_t ki_cache_beg_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cache_beg_ptr)), -1};
-                            diopiRequireTensor(ctx, &ki_cache_beg, &newshape, &ki_cache_beg_stride, dtype, device);
-                            diopiSlice(ctx, ki_cache_beg, k_cache, 1, 0, tlength_circ, 1);
-                            cat_kcache[0] = ki_cache_beg;
-                            cat_kcache[1] = ki_buffer1;
-                            cat_kcache_length += 1;
+                            void* key_cache_ptr;
+                            diopiGetTensorData(key_cache[i], &key_cache_ptr);
+                            char* k_cache_step_ptr = reinterpret_cast<char*>(key_cache_ptr) + kv_cache_layer_offset +
+                                                     itemsize * local_kv_head_num * size_per_head * (tlength - first_step);
+                            diopiSize_t k_cache_step_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(k_cache_step_ptr)), -1};
+                            diopiRequireTensor(ctx, &k_cache_step, &newshape, &k_cache_step_stride, dtype, device);
+                            diopiLmdeployCopyD2D(ctx, k_cache_step, ki_buffer1, true);
                         } else {
-                            cat_kcache[0] = ki_buffer1;
+                            diopiConstTensorHandle_t cat_kcache[3];
+                            int64_t cat_kcache_length = 1;
+                            if (tlength_circ > 0) {
+                                diopiTensorHandle_t ki_cache_beg;
+                                newshape.len = 3;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = tlength_circ;
+                                shape[2] = size_per_head;
+                                char* ki_cache_beg_ptr = reinterpret_cast<char*>(workspace1_ptr);
+                                diopiSize_t ki_cache_beg_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cache_beg_ptr)), -1};
+                                diopiRequireTensor(ctx, &ki_cache_beg, &newshape, &ki_cache_beg_stride, dtype, device);
+                                diopiSlice(ctx, ki_cache_beg, k_cache, 1, 0, tlength_circ, 1);
+                                cat_kcache[0] = ki_cache_beg;
+                                cat_kcache[1] = ki_buffer1;
+                                cat_kcache_length += 1;
+                            } else {
+                                cat_kcache[0] = ki_buffer1;
+                            }
+                            if (tlength_circ != max_seq_len - 1) {
+                                diopiTensorHandle_t ki_cache_end;
+                                newshape.len = 3;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = max_seq_len - tlength_circ - 1;
+                                shape[2] = size_per_head;
+                                char* ki_cache_end_ptr = reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_kv_head_num * tlength_circ * size_per_head;
+                                diopiSize_t ki_cache_end_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cache_end_ptr)), -1};
+                                diopiRequireTensor(ctx, &ki_cache_end, &newshape, &ki_cache_end_stride, dtype, device);
+                                diopiSlice(ctx, ki_cache_end, k_cache, 1, tlength_circ + 1, max_seq_len, 1);
+                                cat_kcache[cat_kcache_length] = ki_cache_end;
+                                cat_kcache_length += 1;
+                            }
+                            diopiCat(ctx, k_cache, cat_kcache, cat_kcache_length, 1);
                         }
-                        if (tlength_circ != max_seq_len - 1) {
-                            diopiTensorHandle_t ki_cache_end;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = max_seq_len - tlength_circ - 1;
-                            shape[2] = size_per_head;
-                            char* ki_cache_end_ptr = reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_kv_head_num * tlength_circ * size_per_head;
-                            diopiSize_t ki_cache_end_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cache_end_ptr)), -1};
-                            diopiRequireTensor(ctx, &ki_cache_end, &newshape, &ki_cache_end_stride, dtype, device);
-                            diopiSlice(ctx, ki_cache_end, k_cache, 1, tlength_circ + 1, max_seq_len, 1);
-                            cat_kcache[cat_kcache_length] = ki_cache_end;
-                            cat_kcache_length += 1;
-                        }
-                        combAsCat(ctx, k_cache, cat_kcache, cat_kcache_length, 1);
                         // ki for cal
                         diopiTensorHandle_t ki_cal;
                         newshape.len = 3;
@@ -1428,74 +1560,92 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         int64_t kvi_beg = first_step % max_seq_len;
                         int64_t kvi_end = tlength % max_seq_len;
                         int64_t n_maxseqlen = kvi_length / max_seq_len;
-                        std::vector<diopiConstTensorHandle_t> cat_kcal;
-                        // assert(kvi_length < max_seq_len);
-                        if (n_maxseqlen > 0) {
-                            diopiTensorHandle_t catki_cache_beg;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = max_seq_len - kvi_end;
+                        if (fusion_level == 10) {
+                            diopiTensorHandle_t ki_cache;
+                            newshape.len = 3;
+                            shape[0] = tlength - first_step + 1;
+                            shape[1] = local_kv_head_num;
                             shape[2] = size_per_head;
-                            diopiRequireTensor(ctx, &catki_cache_beg, &newshape, nullptr, dtype, device);
-                            diopiSlice(ctx, catki_cache_beg, k_cache, 1, kvi_end, max_seq_len, 1);
-                            diopiTensorHandle_t catki_cache_end;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = kvi_end;
-                            shape[2] = size_per_head;
-                            diopiRequireTensor(ctx, &catki_cache_end, &newshape, nullptr, dtype, device);
-                            diopiSlice(ctx, catki_cache_end, k_cache, 1, 0, kvi_end, 1);
-                            while (n_maxseqlen > 0) {
-                                cat_kcal.emplace_back(catki_cache_beg);
-                                cat_kcal.emplace_back(catki_cache_end);
-                                --n_maxseqlen;
-                            }
-                        }
-                        if (kvi_beg > kvi_end) {
-                            diopiTensorHandle_t catki_cache_beg_gt;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = max_seq_len - kvi_beg;
-                            shape[2] = size_per_head;
-                            char* catki_cache_beg_gt_ptr =
-                                reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
-                            diopiSize_t catki_cache_beg_gt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catki_cache_beg_gt_ptr)), -1};
-                            diopiRequireTensor(ctx, &catki_cache_beg_gt, &newshape, &catki_cache_beg_gt_stride, dtype, device);
-                            diopiSlice(ctx, catki_cache_beg_gt, k_cache, 1, kvi_beg, max_seq_len, 1);
-                            cat_kcal.emplace_back(catki_cache_beg_gt);
-                            if (kvi_end > 0) {
-                                diopiTensorHandle_t catki_cache_end_gt;
+                            void* key_cache_ptr;
+                            diopiGetTensorData(key_cache[i], &key_cache_ptr);
+                            char* ki_cache_ptr = reinterpret_cast<char*>(key_cache_ptr) + kv_cache_layer_offset;
+                            diopiSize_t ki_cache_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cache_ptr)), -1};
+                            diopiRequireTensor(ctx, &ki_cache, &newshape, &ki_cache_stride, dtype, device);
+                            diopiPermute(ctx, ki_cal, ki_cache, trans120);
+                        } else {
+                            std::vector<diopiConstTensorHandle_t> cat_kcal;
+                            // assert(kvi_length < max_seq_len);
+                            if (n_maxseqlen > 0) {
+                                diopiTensorHandle_t catki_cache_beg;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = max_seq_len - kvi_end;
+                                shape[2] = size_per_head;
+                                diopiRequireTensor(ctx, &catki_cache_beg, &newshape, nullptr, dtype, device);
+                                diopiSlice(ctx, catki_cache_beg, k_cache, 1, kvi_end, max_seq_len, 1);
+                                diopiTensorHandle_t catki_cache_end;
                                 shape[0] = local_kv_head_num;
                                 shape[1] = kvi_end;
                                 shape[2] = size_per_head;
-                                char* catki_cache_end_gt_ptr =
-                                    reinterpret_cast<char*>(catki_cache_beg_gt_ptr) + itemsize * local_kv_head_num * size_per_head * (max_seq_len - kvi_beg);
-                                diopiSize_t catki_cache_end_gt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catki_cache_end_gt_ptr)), -1};
-                                diopiRequireTensor(ctx, &catki_cache_end_gt, &newshape, &catki_cache_end_gt_stride, dtype, device);
-                                diopiSlice(ctx, catki_cache_end_gt, k_cache, 1, 0, kvi_end, 1);
-                                cat_kcal.emplace_back(catki_cache_end_gt);
+                                diopiRequireTensor(ctx, &catki_cache_end, &newshape, nullptr, dtype, device);
+                                diopiSlice(ctx, catki_cache_end, k_cache, 1, 0, kvi_end, 1);
+                                while (n_maxseqlen > 0) {
+                                    cat_kcal.emplace_back(catki_cache_beg);
+                                    cat_kcal.emplace_back(catki_cache_end);
+                                    --n_maxseqlen;
+                                }
                             }
-                        } else if (kvi_beg < kvi_end) {
-                            diopiTensorHandle_t catki_cache_end_lt;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = kvi_end - kvi_beg;
+                            if (kvi_beg > kvi_end) {
+                                diopiTensorHandle_t catki_cache_beg_gt;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = max_seq_len - kvi_beg;
+                                shape[2] = size_per_head;
+                                char* catki_cache_beg_gt_ptr =
+                                    reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
+                                diopiSize_t catki_cache_beg_gt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catki_cache_beg_gt_ptr)), -1};
+                                diopiRequireTensor(ctx, &catki_cache_beg_gt, &newshape, &catki_cache_beg_gt_stride, dtype, device);
+                                diopiSlice(ctx, catki_cache_beg_gt, k_cache, 1, kvi_beg, max_seq_len, 1);
+                                cat_kcal.emplace_back(catki_cache_beg_gt);
+                                if (kvi_end > 0) {
+                                    diopiTensorHandle_t catki_cache_end_gt;
+                                    shape[0] = local_kv_head_num;
+                                    shape[1] = kvi_end;
+                                    shape[2] = size_per_head;
+                                    char* catki_cache_end_gt_ptr = reinterpret_cast<char*>(catki_cache_beg_gt_ptr) +
+                                                                   itemsize * local_kv_head_num * size_per_head * (max_seq_len - kvi_beg);
+                                    diopiSize_t catki_cache_end_gt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catki_cache_end_gt_ptr)), -1};
+                                    diopiRequireTensor(ctx, &catki_cache_end_gt, &newshape, &catki_cache_end_gt_stride, dtype, device);
+                                    diopiSlice(ctx, catki_cache_end_gt, k_cache, 1, 0, kvi_end, 1);
+                                    cat_kcal.emplace_back(catki_cache_end_gt);
+                                }
+                            } else if (kvi_beg < kvi_end) {
+                                diopiTensorHandle_t catki_cache_end_lt;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = kvi_end - kvi_beg;
+                                shape[2] = size_per_head;
+                                char* catki_cache_end_lt_ptr =
+                                    reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
+                                diopiSize_t catki_cache_end_lt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catki_cache_end_lt_ptr)), -1};
+                                diopiRequireTensor(ctx, &catki_cache_end_lt, &newshape, &catki_cache_end_lt_stride, dtype, device);
+                                diopiSlice(ctx, catki_cache_end_lt, k_cache, 1, kvi_beg, kvi_end, 1);
+                                cat_kcal.emplace_back(catki_cache_end_lt);
+                            }
+                            cat_kcal.emplace_back(ki_buffer1);
+                            diopiTensorHandle_t ki_cal021;
+                            newshape.len = 3;
+                            shape[0] = local_head_num;
+                            shape[1] = tlength - first_step + 1;
                             shape[2] = size_per_head;
-                            char* catki_cache_end_lt_ptr =
-                                reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
-                            diopiSize_t catki_cache_end_lt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catki_cache_end_lt_ptr)), -1};
-                            diopiRequireTensor(ctx, &catki_cache_end_lt, &newshape, &catki_cache_end_lt_stride, dtype, device);
-                            diopiSlice(ctx, catki_cache_end_lt, k_cache, 1, kvi_beg, kvi_end, 1);
-                            cat_kcal.emplace_back(catki_cache_end_lt);
+                            char* ki_cal021_ptr =
+                                reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1) * 2;
+                            diopiSize_t ki_cal021_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cal021_ptr)), -1};
+                            diopiRequireTensor(ctx, &ki_cal021, &newshape, &ki_cal021_stride, dtype, device);
+                            diopiCat(ctx, ki_cal021, cat_kcal.data(), cat_kcal.size(), 1);
+                            diopiPermute(ctx, ki_cal, ki_cal021, trans021);
                         }
-                        cat_kcal.emplace_back(ki_buffer1);
-                        diopiTensorHandle_t ki_cal021;
-                        newshape.len = 3;
-                        shape[0] = local_head_num;
-                        shape[1] = tlength - first_step + 1;
-                        shape[2] = size_per_head;
-                        char* ki_cal021_ptr =
-                            reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1) * 2;
-                        diopiSize_t ki_cal021_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(ki_cal021_ptr)), -1};
-                        diopiRequireTensor(ctx, &ki_cal021, &newshape, &ki_cal021_stride, dtype, device);
-                        combAsCat(ctx, ki_cal021, cat_kcal.data(), cat_kcal.size(), 1);
-                        diopiPermute(ctx, ki_cal, ki_cal021, trans021);
+#ifdef SYNC_AND_TIME
+                        diopiLmdeploySync(ctx);
+                        time8 = std::chrono::high_resolution_clock::now();
+#endif
                         // qk_cal
                         diopiTensorHandle_t qki_cal;
                         newshape.len = 3;
@@ -1513,6 +1663,10 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t qki_softmax_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(qki_softmax_ptr)), -1};
                         diopiRequireTensor(ctx, &qki_softmax, &newshape, &qki_softmax_stride, dtype, device);
                         diopiSoftmax(ctx, qki_softmax, qki_cal, 2);
+#ifdef SYNC_AND_TIME
+                        diopiLmdeploySync(ctx);
+                        time9 = std::chrono::high_resolution_clock::now();
+#endif
                         // vi_buffer
                         diopiTensorHandle_t vi_buffer;
                         newshape.len = 3;
@@ -1534,38 +1688,54 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t v_cache_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(v_cache_ptr)), -1};
                         diopiRequireTensor(ctx, &v_cache, &newshape, &v_cache_stride, dtype, device);
                         // update v cache, index is tlength_circ
-                        diopiConstTensorHandle_t cat_vcache[3];
-                        int64_t cat_vcache_length = 1;
-                        if (tlength_circ > 0) {
-                            diopiTensorHandle_t vi_cache_beg;
+                        if (fusion_level == 10) {
+                            // copy to v cache
+                            diopiTensorHandle_t v_cache_step;
+                            newshape.len = 3;
                             shape[0] = local_kv_head_num;
-                            shape[1] = tlength_circ;
+                            shape[1] = 1;
                             shape[2] = size_per_head;
-                            char* vi_cache_beg_ptr =
-                                reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
-                            diopiSize_t vi_cache_beg_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(vi_cache_beg_ptr)), -1};
-                            diopiRequireTensor(ctx, &vi_cache_beg, &newshape, &vi_cache_beg_stride, dtype, device);
-                            diopiSlice(ctx, vi_cache_beg, v_cache, 1, 0, tlength_circ, 1);
-                            cat_vcache[0] = vi_cache_beg;
-                            cat_vcache[1] = vi_buffer;
-                            cat_vcache_length += 1;
+                            void* value_cache_ptr;
+                            diopiGetTensorData(value_cache[i], &value_cache_ptr);
+                            char* v_cache_step_ptr = reinterpret_cast<char*>(value_cache_ptr) + kv_cache_layer_offset +
+                                                     itemsize * local_kv_head_num * size_per_head * (tlength - first_step);
+                            diopiSize_t v_cache_step_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(v_cache_step_ptr)), -1};
+                            diopiRequireTensor(ctx, &v_cache_step, &newshape, &v_cache_step_stride, dtype, device);
+                            diopiLmdeployCopyD2D(ctx, v_cache_step, vi_buffer, true);
                         } else {
-                            cat_vcache[0] = vi_buffer;
+                            diopiConstTensorHandle_t cat_vcache[3];
+                            int64_t cat_vcache_length = 1;
+                            if (tlength_circ > 0) {
+                                diopiTensorHandle_t vi_cache_beg;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = tlength_circ;
+                                shape[2] = size_per_head;
+                                char* vi_cache_beg_ptr =
+                                    reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
+                                diopiSize_t vi_cache_beg_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(vi_cache_beg_ptr)), -1};
+                                diopiRequireTensor(ctx, &vi_cache_beg, &newshape, &vi_cache_beg_stride, dtype, device);
+                                diopiSlice(ctx, vi_cache_beg, v_cache, 1, 0, tlength_circ, 1);
+                                cat_vcache[0] = vi_cache_beg;
+                                cat_vcache[1] = vi_buffer;
+                                cat_vcache_length += 1;
+                            } else {
+                                cat_vcache[0] = vi_buffer;
+                            }
+                            if (tlength_circ != max_seq_len - 1) {
+                                diopiTensorHandle_t vi_cache_end;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = max_seq_len - tlength_circ - 1;
+                                shape[2] = size_per_head;
+                                char* vi_cache_end_ptr =
+                                    reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1) * 2;
+                                diopiSize_t vi_cache_end_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(vi_cache_end_ptr)), -1};
+                                diopiRequireTensor(ctx, &vi_cache_end, &newshape, &vi_cache_end_stride, dtype, device);
+                                diopiSlice(ctx, vi_cache_end, v_cache, 1, tlength_circ + 1, max_seq_len, 1);
+                                cat_vcache[cat_vcache_length] = vi_cache_end;
+                                cat_vcache_length += 1;
+                            }
+                            diopiCat(ctx, v_cache, cat_vcache, cat_vcache_length, 1);
                         }
-                        if (tlength_circ != max_seq_len - 1) {
-                            diopiTensorHandle_t vi_cache_end;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = max_seq_len - tlength_circ - 1;
-                            shape[2] = size_per_head;
-                            char* vi_cache_end_ptr =
-                                reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1) * 2;
-                            diopiSize_t vi_cache_end_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(vi_cache_end_ptr)), -1};
-                            diopiRequireTensor(ctx, &vi_cache_end, &newshape, &vi_cache_end_stride, dtype, device);
-                            diopiSlice(ctx, vi_cache_end, v_cache, 1, tlength_circ + 1, max_seq_len, 1);
-                            cat_vcache[cat_vcache_length] = vi_cache_end;
-                            cat_vcache_length += 1;
-                        }
-                        combAsCat(ctx, v_cache, cat_vcache, cat_vcache_length, 1);
                         // vi for cal
                         diopiTensorHandle_t vi_cal;
                         newshape.len = 3;
@@ -1575,64 +1745,82 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         char* vi_cal_ptr = reinterpret_cast<char*>(workspace1_ptr) + itemsize * local_head_num * (tlength - first_step + 1);
                         diopiSize_t vi_cal_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(vi_cal_ptr)), -1};
                         diopiRequireTensor(ctx, &vi_cal, &newshape, &vi_cal_stride, dtype, device);
-                        n_maxseqlen = kvi_length / max_seq_len;
-                        std::vector<diopiConstTensorHandle_t> cat_vcal;
-                        if (n_maxseqlen > 0) {
-                            diopiTensorHandle_t catvi_cache_beg;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = max_seq_len - kvi_end;
+                        if (fusion_level == 10) {
+                            diopiTensorHandle_t vi_cache;
+                            newshape.len = 3;
+                            shape[0] = tlength - first_step + 1;
+                            shape[1] = local_kv_head_num;
                             shape[2] = size_per_head;
-                            diopiRequireTensor(ctx, &catvi_cache_beg, &newshape, nullptr, dtype, device);
-                            diopiSlice(ctx, catvi_cache_beg, v_cache, 1, kvi_beg, max_seq_len, 1);
-                            diopiTensorHandle_t catvi_cache_end;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = kvi_end;
-                            shape[2] = size_per_head;
-                            diopiRequireTensor(ctx, &catvi_cache_end, &newshape, nullptr, dtype, device);
-                            diopiSlice(ctx, catvi_cache_end, v_cache, 1, 0, kvi_beg, 1);
-                            while (n_maxseqlen > 0) {
-                                cat_vcal.emplace_back(catvi_cache_beg);
-                                cat_vcal.emplace_back(catvi_cache_end);
-                                --n_maxseqlen;
-                            }
-                        }
-                        if (kvi_beg > kvi_end) {
-                            diopiTensorHandle_t catvi_cache_beg_gt;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = max_seq_len - kvi_beg;
-                            shape[2] = size_per_head;
-                            char* catvi_cache_beg_gt_ptr =
-                                reinterpret_cast<char*>(vi_cal_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
-                            diopiSize_t catvi_cache_beg_gt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catvi_cache_beg_gt_ptr)), -1};
-                            diopiRequireTensor(ctx, &catvi_cache_beg_gt, &newshape, &catvi_cache_beg_gt_stride, dtype, device);
-                            diopiSlice(ctx, catvi_cache_beg_gt, v_cache, 1, kvi_beg, max_seq_len, 1);
-                            cat_kcal.emplace_back(catvi_cache_beg_gt);
-                            if (kvi_end > 0) {
-                                diopiTensorHandle_t catvi_cache_end_gt;
+                            void* value_cache_ptr;
+                            diopiGetTensorData(value_cache[i], &value_cache_ptr);
+                            char* vi_cache_ptr = reinterpret_cast<char*>(value_cache_ptr) + kv_cache_layer_offset;
+                            diopiSize_t vi_cache_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(vi_cache_ptr)), -1};
+                            diopiRequireTensor(ctx, &vi_cache, &newshape, &vi_cache_stride, dtype, device);
+                            diopiPermute(ctx, vi_cal, vi_cache, trans102);
+                        } else {
+                            n_maxseqlen = kvi_length / max_seq_len;
+                            std::vector<diopiConstTensorHandle_t> cat_vcal;
+                            if (n_maxseqlen > 0) {
+                                diopiTensorHandle_t catvi_cache_beg;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = max_seq_len - kvi_end;
+                                shape[2] = size_per_head;
+                                diopiRequireTensor(ctx, &catvi_cache_beg, &newshape, nullptr, dtype, device);
+                                diopiSlice(ctx, catvi_cache_beg, v_cache, 1, kvi_beg, max_seq_len, 1);
+                                diopiTensorHandle_t catvi_cache_end;
                                 shape[0] = local_kv_head_num;
                                 shape[1] = kvi_end;
                                 shape[2] = size_per_head;
-                                char* catvi_cache_end_gt_ptr =
-                                    reinterpret_cast<char*>(catvi_cache_beg_gt_ptr) + itemsize * local_head_num * size_per_head * (max_seq_len - kvi_beg);
-                                diopiSize_t catvi_cache_end_gt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catvi_cache_end_gt_ptr)), -1};
-                                diopiRequireTensor(ctx, &catvi_cache_end_gt, &newshape, &catvi_cache_end_gt_stride, dtype, device);
-                                diopiSlice(ctx, catvi_cache_end_gt, v_cache, 1, 0, kvi_end, 1);
-                                cat_vcal.emplace_back(catvi_cache_end_gt);
+                                diopiRequireTensor(ctx, &catvi_cache_end, &newshape, nullptr, dtype, device);
+                                diopiSlice(ctx, catvi_cache_end, v_cache, 1, 0, kvi_beg, 1);
+                                while (n_maxseqlen > 0) {
+                                    cat_vcal.emplace_back(catvi_cache_beg);
+                                    cat_vcal.emplace_back(catvi_cache_end);
+                                    --n_maxseqlen;
+                                }
                             }
-                        } else if (kvi_beg < kvi_end) {
-                            diopiTensorHandle_t catvi_cache_end_lt;
-                            shape[0] = local_kv_head_num;
-                            shape[1] = kvi_end - kvi_beg;
-                            shape[2] = size_per_head;
-                            char* catvi_cache_end_lt_ptr =
-                                reinterpret_cast<char*>(vi_cal_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
-                            diopiSize_t catvi_cache_end_lt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catvi_cache_end_lt_ptr)), -1};
-                            diopiRequireTensor(ctx, &catvi_cache_end_lt, &newshape, &catvi_cache_end_lt_stride, dtype, device);
-                            diopiSlice(ctx, catvi_cache_end_lt, v_cache, 1, kvi_beg, kvi_end, 1);
-                            cat_vcal.emplace_back(catvi_cache_end_lt);
+                            if (kvi_beg > kvi_end) {
+                                diopiTensorHandle_t catvi_cache_beg_gt;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = max_seq_len - kvi_beg;
+                                shape[2] = size_per_head;
+                                char* catvi_cache_beg_gt_ptr =
+                                    reinterpret_cast<char*>(vi_cal_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
+                                diopiSize_t catvi_cache_beg_gt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catvi_cache_beg_gt_ptr)), -1};
+                                diopiRequireTensor(ctx, &catvi_cache_beg_gt, &newshape, &catvi_cache_beg_gt_stride, dtype, device);
+                                diopiSlice(ctx, catvi_cache_beg_gt, v_cache, 1, kvi_beg, max_seq_len, 1);
+                                cat_vcal.emplace_back(catvi_cache_beg_gt);
+                                if (kvi_end > 0) {
+                                    diopiTensorHandle_t catvi_cache_end_gt;
+                                    shape[0] = local_kv_head_num;
+                                    shape[1] = kvi_end;
+                                    shape[2] = size_per_head;
+                                    char* catvi_cache_end_gt_ptr =
+                                        reinterpret_cast<char*>(catvi_cache_beg_gt_ptr) + itemsize * local_head_num * size_per_head * (max_seq_len - kvi_beg);
+                                    diopiSize_t catvi_cache_end_gt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catvi_cache_end_gt_ptr)), -1};
+                                    diopiRequireTensor(ctx, &catvi_cache_end_gt, &newshape, &catvi_cache_end_gt_stride, dtype, device);
+                                    diopiSlice(ctx, catvi_cache_end_gt, v_cache, 1, 0, kvi_end, 1);
+                                    cat_vcal.emplace_back(catvi_cache_end_gt);
+                                }
+                            } else if (kvi_beg < kvi_end) {
+                                diopiTensorHandle_t catvi_cache_end_lt;
+                                shape[0] = local_kv_head_num;
+                                shape[1] = kvi_end - kvi_beg;
+                                shape[2] = size_per_head;
+                                char* catvi_cache_end_lt_ptr =
+                                    reinterpret_cast<char*>(vi_cal_ptr) + itemsize * local_head_num * size_per_head * (tlength - first_step + 1);
+                                diopiSize_t catvi_cache_end_lt_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(catvi_cache_end_lt_ptr)), -1};
+                                diopiRequireTensor(ctx, &catvi_cache_end_lt, &newshape, &catvi_cache_end_lt_stride, dtype, device);
+                                diopiSlice(ctx, catvi_cache_end_lt, v_cache, 1, kvi_beg, kvi_end, 1);
+                                cat_vcal.emplace_back(catvi_cache_end_lt);
+                            }
+                            cat_vcal.emplace_back(vi_buffer);
+                            diopiCat(ctx, vi_cal, cat_vcal.data(), cat_vcal.size(), 1);
                         }
-                        cat_vcal.emplace_back(vi_buffer);
-                        combAsCat(ctx, vi_cal, cat_vcal.data(), cat_vcal.size(), 1);
+#ifdef SYNC_AND_TIME
+                        diopiLmdeploySync(ctx);
+                        time10 = std::chrono::high_resolution_clock::now();
+#endif
                         // * v
                         diopiTensorHandle_t inouti;
                         shape[0] = local_head_num;
@@ -1643,30 +1831,26 @@ DIOPI_API diopiError_t diopiFusedDecoderAttentionInp(diopiContextHandle_t ctx, d
                         diopiSize_t inouti_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(inouti_ptr)), -1};
                         diopiRequireTensor(ctx, &inouti, &newshape, &inouti_stride, dtype, device);
                         diopiBmm(ctx, inouti, qki_softmax, vi_cal);
-                    } else if (same) {
-                        diopiTensorHandle_t q_buffer_back_one;
-                        shape[0] = local_head_num;
-                        shape[1] = size_per_head;
-                        newshape.len = 2;
-                        void* q_buffer_back_one_ptr;
-                        diopiGetTensorData(q_buffer_back, &q_buffer_back_one_ptr);
-                        diopiSize_t q_buffer_back_one_stride{
-                            static_cast<const int64_t*>(
-                                reinterpret_cast<int64_t*>(reinterpret_cast<char*>(q_buffer_back_one_ptr) + i * itemsize * local_head_num * size_per_head)),
-                            -1};
-                        diopiRequireTensor(ctx, &q_buffer_back_one, &newshape, &q_buffer_back_one_stride, dtype, device);
-                        diopiTensorHandle_t q_buffer_one;
-                        shape[0] = local_head_num;
-                        shape[1] = size_per_head;
-                        newshape.len = 2;
-                        char* q_buffer_one_ptr = q_buffer_ptr + i * itemsize * local_head_num * size_per_head;
-                        diopiSize_t q_buffer_one_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(q_buffer_one_ptr)), -1};
-                        diopiRequireTensor(ctx, &q_buffer_one, &newshape, &q_buffer_one_stride, dtype, device);
-                        diopiLmdeployCopyD2D(ctx, q_buffer_one, q_buffer_back_one, true);
+#ifdef SYNC_AND_TIME
+                        diopiLmdeploySync(ctx);
+                        time11 = std::chrono::high_resolution_clock::now();
+#endif
                     }
                 } else {
                     return diopiErrorOccurred;
                 }
+#ifdef SYNC_AND_TIME
+                std::cout << "diopitime 1-2:" << std::chrono::duration_cast<std::chrono::microseconds>(time2 - time1).count() << std::endl;
+                std::cout << "diopitime 2-3:" << std::chrono::duration_cast<std::chrono::microseconds>(time3 - time2).count() << std::endl;
+                std::cout << "diopitime 3-4:" << std::chrono::duration_cast<std::chrono::microseconds>(time4 - time3).count() << std::endl;
+                std::cout << "diopitime 4-5:" << std::chrono::duration_cast<std::chrono::microseconds>(time5 - time4).count() << std::endl;
+                std::cout << "diopitime 5-6:" << std::chrono::duration_cast<std::chrono::microseconds>(time6 - time5).count() << std::endl;
+                std::cout << "diopitime 6-7:" << std::chrono::duration_cast<std::chrono::microseconds>(time7 - time6).count() << std::endl;
+                std::cout << "diopitime 7-8:" << std::chrono::duration_cast<std::chrono::microseconds>(time8 - time7).count() << std::endl;
+                std::cout << "diopitime 8-9:" << std::chrono::duration_cast<std::chrono::microseconds>(time9 - time8).count() << std::endl;
+                std::cout << "diopitime 9-10:" << std::chrono::duration_cast<std::chrono::microseconds>(time10 - time9).count() << std::endl;
+                std::cout << "diopitime 10-11:" << std::chrono::duration_cast<std::chrono::microseconds>(time11 - time10).count() << std::endl;
+#endif
             }
         }
         return diopiSuccess;
@@ -1944,7 +2128,10 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
         }  // TODO: check logits and max k
 
         assert(shapeinfo.data[1] == vocab_size_padded);
-
+#ifdef SYNC_AND_TIME
+        diopiLmdeploySync(ctx);
+        auto time0 = std::chrono::high_resolution_clock::now();
+#endif
         std::vector<int64_t> shape(4);
         diopiSize_t newshape{shape.data(), 4};
         void* logits_ptr;
@@ -1963,44 +2150,63 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
         diopiGetTensorDtype(logits, &dtype);
 
         diopiTensorHandle_t h_finished = nullptr;
-        bool* h_finished_data = nullptr;
+        // bool* h_finished_data = nullptr;
+        bool h_finished_data[batch_size];
         if (finished != nullptr) {
             shape[0] = batch_size;
             newshape.len = 1;
-            diopiRequireTensor(ctx, &h_finished, &newshape, nullptr, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
-            diopiLmdeployCopyD2H(ctx, h_finished, finished, false);
-            diopiGetTensorData(h_finished, reinterpret_cast<void**>(&h_finished_data));
+            diopiSize_t h_finished_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_finished_data)), -1};
+            diopiRequireTensor(ctx, &h_finished, &newshape, &h_finished_stride, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
+            // diopiGetTensorData(h_finished, reinterpret_cast<void**>(&h_finished_data));
+            diopiLmdeployCopyD2H(ctx, h_finished, finished, true);
         }
         diopiTensorHandle_t h_sequence_lengths = nullptr;
-        void* h_sequence_lengths_data = nullptr;
+        // void* h_sequence_lengths_data = nullptr;
+        int32_t h_sequence_lengths_data[batch_size];
         if (sequence_lengths != nullptr) {
+            diopiDtype_t sequence_lengths_dtype;
+            diopiGetTensorDtype(sequence_lengths, &sequence_lengths_dtype);
+            assert(sequence_lengths_dtype == diopiDtype_t::diopi_dtype_int32);
             shape[0] = batch_size;
             newshape.len = 1;
-            diopiRequireTensor(ctx, &h_sequence_lengths, &newshape, nullptr, intdtype, diopiDevice_t::diopi_host);
-            diopiLmdeployCopyD2H(ctx, h_sequence_lengths, sequence_lengths, false);
-            diopiGetTensorData(h_sequence_lengths, &h_sequence_lengths_data);
+            diopiSize_t h_sequence_lengths_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_sequence_lengths_data)), -1};
+            diopiRequireTensor(ctx, &h_sequence_lengths, &newshape, &h_sequence_lengths_stride, diopiDtype_t::diopi_dtype_int32, diopiDevice_t::diopi_host);
+            // diopiGetTensorData(h_sequence_lengths, &h_sequence_lengths_data);
+            diopiLmdeployCopyD2H(ctx, h_sequence_lengths, sequence_lengths, true);
         }
         diopiTensorHandle_t h_end_ids;
-        void* h_end_ids_data;
+        // void* h_end_ids_data;
+        int32_t h_end_ids_data[batch_size];
         shape[0] = batch_size;
         newshape.len = 1;
-        diopiRequireTensor(ctx, &h_end_ids, &newshape, nullptr, intdtype, diopiDevice_t::diopi_host);
-        diopiGetTensorData(h_end_ids, &h_end_ids_data);
-        diopiLmdeployCopyD2H(ctx, h_end_ids, end_ids, false);
+        diopiDtype_t end_ids_dtype;
+        diopiGetTensorDtype(end_ids, &end_ids_dtype);
+        assert(end_ids_dtype == diopiDtype_t::diopi_dtype_int32);
+        diopiSize_t h_end_ids_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_end_ids_data)), -1};
+        diopiRequireTensor(ctx, &h_end_ids, &newshape, &h_end_ids_stride, diopiDtype_t::diopi_dtype_int32, diopiDevice_t::diopi_host);
+        // diopiGetTensorData(h_end_ids, &h_end_ids_data);
+        diopiLmdeployCopyD2H(ctx, h_end_ids, end_ids, true);
         diopiTensorHandle_t h_skip_decode = nullptr;
-        bool* h_skip_decode_data = nullptr;
+        // bool* h_skip_decode_data = nullptr;
+        bool h_skip_decode_data[batch_size];
         if (skip_decode != nullptr) {
             shape[0] = batch_size;
             newshape.len = 1;
-            diopiRequireTensor(ctx, &h_skip_decode, &newshape, nullptr, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
-            diopiLmdeployCopyD2H(ctx, h_skip_decode, skip_decode, false);
-            diopiGetTensorData(h_skip_decode, reinterpret_cast<void**>(&h_skip_decode_data));
+            diopiSize_t h_skip_decode_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_skip_decode_data)), -1};
+            diopiRequireTensor(ctx, &h_skip_decode, &newshape, &h_skip_decode_stride, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
+            diopiLmdeployCopyD2H(ctx, h_skip_decode, skip_decode, true);
+            // diopiGetTensorData(h_skip_decode, reinterpret_cast<void**>(&h_skip_decode_data));
         }
         diopiTensorHandle_t h_runtime_top_k;
-        void* h_runtime_top_k_data;
-        diopiRequireTensor(ctx, &h_runtime_top_k, &newshape, nullptr, intdtype, diopiDevice_t::diopi_host);
-        diopiGetTensorData(h_runtime_top_k, &h_runtime_top_k_data);
-        diopiLmdeployCopyD2H(ctx, h_runtime_top_k, runtime_top_k, false);
+        // void* h_runtime_top_k_data;
+        int32_t h_runtime_top_k_data[batch_size];
+        diopiDtype_t runtime_top_k_dtype;
+        diopiGetTensorDtype(runtime_top_k, &runtime_top_k_dtype);
+        assert(runtime_top_k_dtype == diopiDtype_t::diopi_dtype_int32);
+        diopiSize_t h_runtime_top_k_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_runtime_top_k_data)), -1};
+        diopiRequireTensor(ctx, &h_runtime_top_k, &newshape, &h_runtime_top_k_stride, diopiDtype_t::diopi_dtype_int32, diopiDevice_t::diopi_host);
+        // diopiGetTensorData(h_runtime_top_k, &h_runtime_top_k_data);
+        diopiLmdeployCopyD2H(ctx, h_runtime_top_k, runtime_top_k, true);
         diopiTensorHandle_t h_runtime_top_p;
         float h_runtime_top_p_data[batch_size];
         diopiSize_t h_runtime_top_p_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_runtime_top_p_data)), -1};
@@ -2012,20 +2218,28 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
             diopiRequireTensor(
                 ctx, &runtime_top_p_forcast, &newshape, &runtime_top_p_forcast_stride, diopiDtype_t::diopi_dtype_float32, diopiDevice_t::diopi_device);
             diopiCastDtype(ctx, runtime_top_p_forcast, runtime_top_p);
-            diopiLmdeployCopyD2H(ctx, h_runtime_top_p, runtime_top_p_forcast, false);
+            diopiLmdeployCopyD2H(ctx, h_runtime_top_p, runtime_top_p_forcast, true);
         } else {
-            diopiLmdeployCopyD2H(ctx, h_runtime_top_p, runtime_top_p, false);
+            diopiLmdeployCopyD2H(ctx, h_runtime_top_p, runtime_top_p, true);
         }
-
+        diopiLmdeploySync(ctx);  // sync for D2H
+#ifdef SYNC_AND_TIME
+        auto time1 = std::chrono::high_resolution_clock::now();
+        auto time2 = std::chrono::high_resolution_clock::now();
+        auto time3 = std::chrono::high_resolution_clock::now();
+        auto time4 = std::chrono::high_resolution_clock::now();
+        auto time5 = std::chrono::high_resolution_clock::now();
+        auto time6 = std::chrono::high_resolution_clock::now();
+        auto time7 = std::chrono::high_resolution_clock::now();
+#endif
         // addBiasEndMask
         double MAX_T_VAL = dtype == diopiDtype_t::diopi_dtype_float16 ? 65504.F : FLT_MAX;
         diopiScalar_t scalar_dmax{dtype, MAX_T_VAL};
         diopiScalar_t scalar_dmin{dtype, -MAX_T_VAL};
         for (int64_t i = 0; i < batch_size; i++) {
             // no bias and vocab_size_padded = vocab_size
-            if (h_finished_data != nullptr && h_finished_data[i]) {
-                int64_t end_id = intdtype == diopiDtype_t::diopi_dtype_int32 ? *(reinterpret_cast<int32_t*>(h_end_ids_data) + i)
-                                                                             : *(reinterpret_cast<int64_t*>(h_end_ids_data) + i);
+            if (finished != nullptr && h_finished_data[i]) {
+                int64_t end_id = h_end_ids_data[i];
                 if (end_id < vocab_size_padded) {
                     diopiTensorHandle_t logit_masks;
                     newshape.len = 1;
@@ -2077,21 +2291,19 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
         diopiSize_t topk_index_buffer_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(topk_index_buffer_ptr)), -1};
         diopiRequireTensor(ctx, &topk_index_buffer, &newshape, &topk_index_buffer_stride, diopiDtype_t::diopi_dtype_int64, device);
         for (int64_t i = 0; i < batch_size; i++) {
-            if (h_skip_decode_data != nullptr && h_skip_decode_data[i]) continue;
+            if (skip_decode != nullptr && h_skip_decode_data[i]) continue;
             diopiTensorHandle_t output_id;
             newshape.len = 1;
             shape[0] = 1;
             char* output_id_ptr = reinterpret_cast<char*>(output_ids_ptr) + step * intitemsize * batch_size + i * intitemsize;
             diopiSize_t output_id_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(output_id_ptr)), -1};
             diopiRequireTensor(ctx, &output_id, &newshape, &output_id_stride, intdtype, device);
-            if (h_finished_data != nullptr && h_finished_data[i]) {
-                scalar_did.fval = double(diopiDtype_t::diopi_dtype_int32 == intdtype ? *(reinterpret_cast<int32_t*>(h_end_ids_data) + i)
-                                                                                     : *(reinterpret_cast<int64_t*>(h_end_ids_data) + i));
+            if (finished != nullptr && h_finished_data[i]) {
+                scalar_did.fval = double(h_end_ids_data[i]);
                 diopiFill(ctx, output_id, &scalar_did);
                 continue;
             }
-            int64_t k = diopiDtype_t::diopi_dtype_int32 == intdtype ? *(reinterpret_cast<int32_t*>(h_runtime_top_k_data) + i)
-                                                                    : *(reinterpret_cast<int64_t*>(h_runtime_top_k_data) + i);
+            int64_t k = h_runtime_top_k_data[i];
             float p{h_runtime_top_p_data[i]};
             diopiTensorHandle_t logit;
             newshape.len = 1;
@@ -2107,9 +2319,15 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
             newshape.len = 1;
             shape[0] = k;
             diopiRequireTensor(ctx, &topk_index, &newshape, &topk_index_buffer_stride, diopiDtype_t::diopi_dtype_int64, device);
+#ifdef SYNC_AND_TIME
+            diopiLmdeploySync(ctx);
+            time2 = std::chrono::high_resolution_clock::now();
+#endif
             diopiTopk(ctx, topk_value, topk_index, logit, k, 0, true, true);
-            // return diopiSuccess;
-
+#ifdef SYNC_AND_TIME
+            diopiLmdeploySync(ctx);
+            time3 = std::chrono::high_resolution_clock::now();
+#endif
             if (cum_log_probs == nullptr && output_log_probs == nullptr) {
                 diopiTensorHandle_t topk_max;
                 newshape.len = 1;
@@ -2121,7 +2339,10 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
                 diopiSubInp(ctx, topk_value, topk_max, &scalar_done);
                 diopiExpInp(ctx, topk_value);
             }
-
+#ifdef SYNC_AND_TIME
+            diopiLmdeploySync(ctx);
+            time4 = std::chrono::high_resolution_clock::now();
+#endif
             diopiTensorHandle_t rand_num;
             newshape.len = 1;
             shape[0] = 1;
@@ -2133,9 +2354,12 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
             float h_rand_num_data[1];
             diopiSize_t h_rand_num_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_rand_num_data)), -1};
             diopiRequireTensor(ctx, &h_rand_num, &newshape, &h_rand_num_stride, diopiDtype_t::diopi_dtype_float32, diopiDevice_t::diopi_host);
-            diopiLmdeployCopyD2H(ctx, h_rand_num, rand_num, false);
+            diopiLmdeployCopyD2H(ctx, h_rand_num, rand_num, true);
+            diopiLmdeploySync(ctx);    // needed
             h_rand_num_data[0] = 0.5;  // for test
-
+#ifdef SYNC_AND_TIME
+            time5 = std::chrono::high_resolution_clock::now();
+#endif
             diopiTensorHandle_t topk_sum;
             char* topk_sum_ptr = reinterpret_cast<char*>(logit_ptr);
             diopiSize_t topk_sum_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(topk_sum_ptr)), -1};
@@ -2192,6 +2416,10 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
             }
             scalar_did.fval = double(h_topk_index_data[k_index]);
             diopiFill(ctx, output_id, &scalar_did);
+#ifdef SYNC_AND_TIME
+            diopiLmdeploySync(ctx);
+            time6 = std::chrono::high_resolution_clock::now();
+#endif
             if (cum_log_probs != nullptr || output_log_probs != nullptr) {
                 diopiTensorHandle_t top_value;
                 newshape.len = 1;
@@ -2228,23 +2456,30 @@ DIOPI_API diopiError_t diopiTopKSampling(diopiContextHandle_t ctx, diopiTensorHa
             }
             if (sequence_lengths != nullptr && finished != nullptr) {
                 if (!h_finished_data[i]) {
-                    if (intdtype == diopiDtype_t::diopi_dtype_int32) {
-                        int32_t* h_sequence_length_i = reinterpret_cast<int32_t*>(h_sequence_lengths_data) + i;
-                        *h_sequence_length_i += 1;
-                    } else {
-                        int64_t* h_sequence_length_i = reinterpret_cast<int64_t*>(h_sequence_lengths_data) + i;
-                        *h_sequence_length_i += 1;
-                    }
+                    h_sequence_lengths_data[i] += 1;
                 }
-                int64_t h_end_ids_i = diopiDtype_t::diopi_dtype_int32 == intdtype ? *(reinterpret_cast<int32_t*>(h_end_ids_data) + i)
-                                                                                  : *(reinterpret_cast<int64_t*>(h_end_ids_data) + i);
-                h_finished_data[i] = int64_t(scalar_did.fval) == h_end_ids_i;
+                h_finished_data[i] = int64_t(scalar_did.fval) == int64_t(h_end_ids_data[i]);
             }
+#ifdef SYNC_AND_TIME
+            diopiLmdeploySync(ctx);
+            time7 = std::chrono::high_resolution_clock::now();
+#endif
         }
         if (sequence_lengths != nullptr && finished != nullptr) {
             diopiLmdeployCopyH2D(ctx, sequence_lengths, h_sequence_lengths, false);
             diopiLmdeployCopyH2D(ctx, finished, h_finished, false);
         }
+#ifdef SYNC_AND_TIME
+        auto time8 = std::chrono::high_resolution_clock::now();
+        std::cout << "diopiTopk 0-1:" << std::chrono::duration_cast<std::chrono::microseconds>(time1 - time0).count() << std::endl;
+        std::cout << "diopiTopk 1-2:" << std::chrono::duration_cast<std::chrono::microseconds>(time2 - time1).count() << std::endl;
+        std::cout << "diopiTopk 2-3:" << std::chrono::duration_cast<std::chrono::microseconds>(time3 - time2).count() << std::endl;
+        std::cout << "diopiTopk 3-4:" << std::chrono::duration_cast<std::chrono::microseconds>(time4 - time3).count() << std::endl;
+        std::cout << "diopiTopk 4-5:" << std::chrono::duration_cast<std::chrono::microseconds>(time5 - time4).count() << std::endl;
+        std::cout << "diopiTopk 5-6:" << std::chrono::duration_cast<std::chrono::microseconds>(time6 - time5).count() << std::endl;
+        std::cout << "diopiTopk 6-7:" << std::chrono::duration_cast<std::chrono::microseconds>(time7 - time6).count() << std::endl;
+        std::cout << "diopiTopk 7-8:" << std::chrono::duration_cast<std::chrono::microseconds>(time8 - time7).count() << std::endl;
+#endif
     }
     return diopiSuccess;
 }
@@ -2699,23 +2934,54 @@ DIOPI_API diopiError_t diopiLengthCriterion(diopiContextHandle_t ctx, diopiTenso
         return diopiErrorOccurred;
     }
 
-    diopiScalar_t step_scalar;
-    step_scalar.stype = diopi_dtype_float64;
-    step_scalar.fval = double(step);
+    diopiDtype_t sequence_limit_length_dtype;
+    diopiGetTensorDtype(sequence_limit_length, &sequence_limit_length_dtype);
+    assert(sequence_limit_length_dtype == diopiDtype_t::diopi_dtype_int32);
 
-    diopiLeScalar(ctx, finished, sequence_limit_length, &step_scalar);
-    diopiTensorHandle_t finished_int32;
+    diopiTensorHandle_t h_sequence_limit_length;
+    diopiSize_t sequence_limit_length_shape;
+    diopiGetTensorShape(sequence_limit_length, &sequence_limit_length_shape);
+    int32_t h_sequence_limit_length_data[batch_size];
+    diopiSize_t h_sequence_limit_length_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_sequence_limit_length_data)), -1};
+    diopiRequireTensor(ctx,
+                       &h_sequence_limit_length,
+                       &sequence_limit_length_shape,
+                       &h_sequence_limit_length_stride,
+                       diopiDtype_t::diopi_dtype_int32,
+                       diopiDevice_t::diopi_host);
+    diopiLmdeployCopyD2H(ctx, h_sequence_limit_length, sequence_limit_length, false);
+
+    diopiTensorHandle_t h_finished;
     diopiSize_t finished_shape;
     diopiGetTensorShape(finished, &finished_shape);
-    diopiRequireTensor(ctx, &finished_int32, &finished_shape, nullptr, diopiDtype_t::diopi_dtype_int32, diopiDevice_t::diopi_device);
-    diopiCastDtype(ctx, finished_int32, finished);
+    bool h_finished_data[batch_size];
+    diopiSize_t h_finished_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_finished_data)), -1};
+    diopiRequireTensor(ctx, &h_finished, &finished_shape, &h_finished_stride, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
+    int64_t h_finished_sum = 0;
+    for (int64_t i = 0; i < batch_size; i++) {
+        if (h_sequence_limit_length_data[i] <= step) {
+            h_finished_data[i] = true;
+        }
+        if (h_finished_data[i] = true) {
+            ++h_finished_sum;
+        }
+    }
+    diopiLmdeployCopyH2D(ctx, finished, h_finished, false);
+    diopiScalar_t dfinished{diopiDtype_t::diopi_dtype_int32, h_finished_sum};
+    diopiFill(ctx, finished_sum, &dfinished);
 
-    diopiSize_t dim_zero;
-    int64_t tmp_zero = 0;
-    dim_zero.data = &tmp_zero;
-    dim_zero.len = 1;
-    diopiSum(ctx, finished_sum, finished_int32, dim_zero);
-    diopiAll(ctx, should_stop, finished, &tmp_zero);
+    bool should_stop_;
+    if (h_finished_sum == batch_size) {
+        should_stop_ = true;
+    } else {
+        should_stop_ = false;
+    }
+    diopiTensorHandle_t h_should_stop;
+    int64_t i1 = 1;
+    diopiSize_t h_should_stop_shape{&i1, 1};
+    diopiSize_t h_should_stop_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(&should_stop_)), -1};
+    diopiRequireTensor(ctx, &h_should_stop, &h_should_stop_shape, &h_should_stop_stride, diopiDtype_t::diopi_dtype_bool, diopiDevice_t::diopi_host);
+    diopiLmdeployCopyH2D(ctx, should_stop, h_should_stop, false);
     return diopiSuccess;
 }
 
@@ -2739,9 +3005,9 @@ DIOPI_API diopiError_t diopiEmbeddingLookupPosEncoding(diopiContextHandle_t ctx,
     diopiSize_t this_step_ids_shape;
     this_step_ids_shape.len = 1;
     this_step_ids_shape.data = &batch_size;
-    diopiRequireTensor(ctx, &this_step_ids, &this_step_ids_shape, nullptr, in_type, in_device);
-
-    sliceAsSelect(ctx, this_step_ids, all_ids, 0, step);
+    auto this_step_ids_ptr = getDataOffsetPtr(const_cast<diopiTensorHandle_t>(all_ids), step);
+    diopiSize_t this_step_ids_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(this_step_ids_ptr)), -1};
+    diopiRequireTensor(ctx, &this_step_ids, &this_step_ids_shape, &this_step_ids_stride, in_type, in_device);
     diopiIndexSelect(ctx, from_tensor, embedding_table, 0, this_step_ids);
     return diopiSuccess;
 }
@@ -3173,7 +3439,7 @@ DIOPI_API diopiError_t diopiBatchApplyRepetitionPenaltyInp(diopiContextHandle_t 
             valid_output_ids_col_shape.data = &vaild_output_ids_col_len;
             diopiRequireTensor(ctx, &valid_output_ids_col, &valid_output_ids_col_shape, nullptr, output_ids_type, diopi_device);
             diopiConstTensorHandle_t to_cat[2] = {output_ids_col_front, output_ids_col_back};
-            combAsCat(ctx, valid_output_ids_col, to_cat, 2, 0);
+            diopiCat(ctx, valid_output_ids_col, to_cat, 2, 0);
         }
 
         diopiTensorHandle_t logits_this_batch;
@@ -3267,14 +3533,18 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
     diopiSize_t logits_shape;
     diopiGetTensorShape(logits, &logits_shape);
     assert(logits_shape.len == 2 && logits_shape.data[0] == batch_size && logits_shape.data[1] == vocab_size_padd);
-    diopiTensorHandle_t lhs;
-    std::vector<int64_t> lhs_shape_vec = {batch_size, vocab_size};
-    diopiSize_t lhs_shape{lhs_shape_vec.data(), 2};
-    diopiRequireTensor(ctx, &lhs, &lhs_shape, nullptr, logits_dtype, diopi_device);
-    diopiSlice(ctx, lhs, logits, 1, 0, vocab_size, 1);
-
+    diopiTensorHandle_t lhs = nullptr;
     diopiTensorHandle_t rhs = nullptr;
+#ifdef SYNC_AND_TIME
+    diopiLmdeploySync(ctx);
+    auto time1 = std::chrono::high_resolution_clock::now();
+#endif
     if (vocab_size_padd > vocab_size) {
+        std::vector<int64_t> lhs_shape_vec = {batch_size, vocab_size};
+        diopiSize_t lhs_shape{lhs_shape_vec.data(), 2};
+        diopiRequireTensor(ctx, &lhs, &lhs_shape, nullptr, logits_dtype, diopi_device);
+        diopiSlice(ctx, lhs, logits, 1, 0, vocab_size, 1);
+
         std::vector<int64_t> rhs_shape_vec = {batch_size, vocab_size_padd - vocab_size};
         diopiSize_t rhs_shape{rhs_shape_vec.data(), 2};
         diopiRequireTensor(ctx, &rhs, &rhs_shape, nullptr, logits_dtype, diopi_device);
@@ -3284,43 +3554,42 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
         scalar_val.stype = logits_dtype;
         scalar_val.fval = -MAX_T_VAL;
         diopiFill(ctx, rhs, &scalar_val);
+    } else {
+        lhs = logits;
     }
-    diopiDtype_t temperatures_dtype;
-    diopiGetTensorDtype(temperatures, &temperatures_dtype);
-    diopiTensorHandle_t new_temperatures = nullptr;
-    diopiSize_t temperatures_shape;
-    diopiGetTensorShape(temperatures, &temperatures_shape);
-    diopiRequireTensor(ctx, &new_temperatures, &temperatures_shape, nullptr, temperatures_dtype, diopi_device);
-
-    assert(temperatures_dtype == diopi_dtype_float32);
-
-    diopiScalar_t eps_scalar;
-    eps_scalar.stype = temperatures_dtype;
-    eps_scalar.fval = 1e-6;
-    diopiScalar_t one_scalar;
-    one_scalar.stype = temperatures_dtype;
-    one_scalar.fval = 1.0;
-    diopiAddScalar(ctx, new_temperatures, temperatures, &eps_scalar, &one_scalar);
-
+#ifdef SYNC_AND_TIME
+    diopiLmdeploySync(ctx);
+    auto time2 = std::chrono::high_resolution_clock::now();
+#endif
     if (bias != nullptr) {
         diopiScalar_t t;
         t.stype = logits_dtype;
         t.fval = 1.0;
         diopiAddInp(ctx, lhs, bias, &t);
     }
-
-    diopiSize_t new_temperatures_shape;
-    diopiGetTensorShape(new_temperatures, &new_temperatures_shape);
-    diopiTensorHandle_t new_temperatures_host;
-    diopiRequireTensor(ctx, &new_temperatures_host, &new_temperatures_shape, nullptr, temperatures_dtype, diopi_host);
-    diopiLmdeployCopyD2H(ctx, new_temperatures_host, new_temperatures, false);
-    char* new_temperatures_host_data;
-
-    diopiGetTensorData(new_temperatures_host, reinterpret_cast<void**>(&new_temperatures_host_data));
+#ifdef SYNC_AND_TIME
+    diopiLmdeploySync(ctx);
+    auto time3 = std::chrono::high_resolution_clock::now();
+#endif
+    diopiDtype_t temperatures_dtype;
+    diopiGetTensorDtype(temperatures, &temperatures_dtype);
+    assert(temperatures_dtype == diopi_dtype_float32);
+    diopiTensorHandle_t h_temperatures;
+    diopiSize_t temperatures_shape;
+    diopiGetTensorShape(temperatures, &temperatures_shape);
+    float h_temperatures_data[batch_size];
+    diopiSize_t h_temperatures_stride{static_cast<const int64_t*>(reinterpret_cast<int64_t*>(h_temperatures_data)), -1};
+    diopiRequireTensor(ctx, &h_temperatures, &temperatures_shape, &h_temperatures_stride, temperatures_dtype, diopi_host);
+    diopiLmdeployCopyD2H(ctx, h_temperatures, temperatures, false);
+#ifdef SYNC_AND_TIME
+    diopiLmdeploySync(ctx);
+    auto time4 = std::chrono::high_resolution_clock::now();
+#endif
     for (int64_t i = 0; i < batch_size; ++i) {
         diopiScalar_t temperature_scalar;
         temperature_scalar.stype = diopi_dtype_float32;
-        temperature_scalar.fval = reinterpret_cast<float*>(new_temperatures_host_data)[i];
+        temperature_scalar.fval = h_temperatures_data[i] + 1e-6;
+        // temperature_scalar.fval = 1/(h_temperatures_data[i] + 1e-6);
 
         diopiTensorHandle_t logits_row;
         diopiSize_t logits_row_shape, logits_row_stride;
@@ -3331,14 +3600,25 @@ diopiError_t diopiBatchApplyTemperaturePenaltyInp(diopiContextHandle_t ctx, diop
         logits_row_stride.data = getDataOffsetPtr(lhs, i * vocab_size);
         diopiRequireTensor(ctx, &logits_row, &logits_row_shape, &logits_row_stride, logits_dtype, diopi_device);
         diopiDivInpScalar(ctx, logits_row, &temperature_scalar, RoundModeNone);
+        // diopiMulInpScalar(ctx, logits_row, &temperature_scalar);
     }
-
-    if (rhs == nullptr) {
-        diopiCopyInp(ctx, lhs, logits);
-    } else {
+#ifdef SYNC_AND_TIME
+    diopiLmdeploySync(ctx);
+    auto time5 = std::chrono::high_resolution_clock::now();
+#endif
+    if (rhs != nullptr) {
         std::array<diopiConstTensorHandle_t, 2> tensors = {lhs, rhs};
-        combAsCat(ctx, logits, tensors.data(), tensors.size(), 1);
+        diopiCat(ctx, logits, tensors.data(), tensors.size(), 1);
     }
+#ifdef SYNC_AND_TIME
+    diopiLmdeploySync(ctx);
+    auto time6 = std::chrono::high_resolution_clock::now();
+    std::cout << "TemperaturePenalty time 1-2:" << std::chrono::duration_cast<std::chrono::microseconds>(time2 - time1).count() << std::endl;
+    std::cout << "TemperaturePenalty time 2-3:" << std::chrono::duration_cast<std::chrono::microseconds>(time3 - time2).count() << std::endl;
+    std::cout << "TemperaturePenalty time 3-4:" << std::chrono::duration_cast<std::chrono::microseconds>(time4 - time3).count() << std::endl;
+    std::cout << "TemperaturePenalty time 4-5:" << std::chrono::duration_cast<std::chrono::microseconds>(time5 - time4).count() << std::endl;
+    std::cout << "TemperaturePenalty time 5-6:" << std::chrono::duration_cast<std::chrono::microseconds>(time6 - time5).count() << std::endl;
+#endif
     return diopiSuccess;
 }
 

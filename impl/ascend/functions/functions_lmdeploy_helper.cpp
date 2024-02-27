@@ -38,6 +38,13 @@ namespace ascend {
         }                                                                                         \
     } while (0);
 
+DIOPI_API diopiError_t diopiLmdeploySync(diopiContextHandle_t ctx) {
+    diopiStreamHandle_t stream;
+    diopiGetStream(ctx, &stream);
+    CALL_ACLRT(::aclrtSynchronizeStream(stream));
+    return diopiSuccess;
+}
+
 DIOPI_API diopiError_t diopiLmdeployCopyH2D(diopiContextHandle_t ctx, diopiTensorHandle_t dst, diopiConstTensorHandle_t src, bool async) {
     diopiDevice_t dst_dev;
     diopiGetTensorDevice(dst, &dst_dev);

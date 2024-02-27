@@ -13,6 +13,7 @@
 extern "C" {
 #endif  // __cplusplus
 
+DIOPI_API diopiError_t diopiLmdeploySync(diopiContextHandle_t ctx);
 /**
  * @brief CopyH2D, contiguous only with same shape and stride and dtype.
  * @param[in] ctx The diopi context.
@@ -209,13 +210,13 @@ DIOPI_API diopiError_t diopiSetupTopkRuntimeArgsInp(diopiContextHandle_t ctx, di
  * @param[inout] workspace : Workspace or buffer.shape = [workspace_size].type = [float32, float16]
  * @param[inout] workspace_size : Workspace size, if workspace_size < 0 then only cal workspace_size.type = [int64*, int32*]
  * @param[in] fusion_level : Fusion level, 0 represents no fusion, and the higher the numerical value, the higher the degree of fusion.type = [int64, int32]
- * @param[in] end_ids : End ids.shape = [batch_size].type = [int64, int32]
+ * @param[in] end_ids : End ids.shape = [batch_size].type = [int32]
  * @param[inout] finished : Finished batch.shape = [batch_size].type = [bool]
- * @param[inout] sequence_lengths : Sequence lengths.shape = [batch_size].type = [int64, int32]
+ * @param[inout] sequence_lengths : Sequence lengths.shape = [batch_size].type = [int32]
  * @param[in] step : Step.type = [int64, int32]
  * @param[in] batch_size : Batch size.type = [int64, int32]
  * @param[in] vocab_size_padded : Padded vocab size.type = [int64, int32]
- * @param[in] runtime_top_k : TopKs tensor.shape = [batch_size].type = [int64, int32]
+ * @param[in] runtime_top_k : TopKs tensor.shape = [batch_size].type = [int32]
  * @param[in] runtime_top_p : TopPs tensor.shape = [batch_size].type = [float32]
  * @param[in] skip_decode : Need skip or not.shape = [batch_size].type = [bool]
  * @param[inout] cum_log_probs : Cum log probs or none.shape = [batch_size].type = [float32]

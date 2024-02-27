@@ -194,6 +194,27 @@ ascend:
 - diopiLogicalOr
 - diopiMaxPool2dWithIndices
 - diopiLinspace
+- diopiLmdeployProf
+- diopiLmdeployCopyH2D
+- diopiLmdeployCopyD2H
+- diopiLmdeployCopyD2D
+- diopiFusedSiluFfnInp
+- diopiFusedContextAttentionInp
+- diopiFusedDecoderAttentionInp
+- diopiSetupTopkRuntimeArgsInp
+- diopiTopKSampling
+- diopiSetupToppRuntimeArgsInp
+- diopiTopPSampling
+- diopiGatherOutput
+- diopiPlusScalarInp
+- diopiUpdatePaddingCount
+- diopiEmbeddingLookupPosEncoding
+- diopiInputIdsEmbeddingLookupPosEncoding
+- diopiBanBadWordsInp
+- diopiStopWordsCriterion
+- diopiLengthCriterion
+- diopiBatchApplyRepetitionPenaltyInp
+- diopiBatchApplyTemperaturePenaltyInp
 ascend_npu:
 - diopiRemainderTensor
 - diopiRemainderScalar
