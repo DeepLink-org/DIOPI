@@ -41,18 +41,7 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 
     bool keepdim = outAt.dim() == inputAt.dim();
     auto pvalue = calculateP(pAt);
-    at_npu::native::OpCommand cmd1;
-    cmd1.Name("LpNormReduceV2")
-        .Input(inputAt)
-        .Output(outAt)
-        .Attr("p", pvalue)
-        .Attr("axes", dimAt)
-        .Attr("keepdim", keepdim)
-        .Attr("epsilon", static_cast<float>(0))
-        .Run();
-
-    at_npu::native::OpCommand cmd2;
-    cmd2.Name("LpNormUpdateV2").Input(outAt).Output(outAt).Attr("p", pvalue).Attr("epsilon", static_cast<float>(0)).Run();
+    acl_op::norm_out(inputAt, pAt, dimAt, false, outAt);
     END_CALL_ACL_OP();
 }
 
