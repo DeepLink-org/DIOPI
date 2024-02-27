@@ -5,8 +5,7 @@
  */
 
 #include "helper.hpp"
-#include "op_plugin/AclOpsInterface.h"
-
+#include "op_plugin/OpApiInterface.h"
 namespace {
 using npu_utils = at_npu::native::NpuUtils;
 using npu_compile_type = at_npu::native::CompileType;
@@ -23,15 +22,7 @@ at::Tensor& normalOutNpuNocheck(at::Tensor& result, c10::optional<at::Generator>
     at::SmallVector<int64_t, N> counter = {0, offset};
     const int32_t alg = 1;
 
-    at_npu::native::OpCommand cmd;
-    cmd.Name("StatelessRandomNormalV2")
-        .Input(result.sizes(), at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT)
-        .Input(key, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, (string) "uint64")
-        .Input(counter, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, (string) "uint64")
-        .Input(at::Scalar(alg), at::ScalarType::Int)
-        .Output(result)
-        .Attr("dtype", result.scalar_type())
-        .Run();
+    op_api::normal_out(0, 1, result.sizes(), gen, result);
     return result;
 }
 }  // namespace
