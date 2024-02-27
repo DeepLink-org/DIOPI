@@ -203,6 +203,8 @@ ascend_npu:
 - diopiCastDtype
 - diopiCopyInp
 - diopiCat
+- diopiCeil
+- diopiCeilInp
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
