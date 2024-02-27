@@ -17,7 +17,6 @@
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
-#include "torch_npu/csrc/core/npu/NPUCachingAllocator.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
