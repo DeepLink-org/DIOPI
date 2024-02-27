@@ -357,6 +357,54 @@ struct SecondaryStreamGuard {
     ~SecondaryStreamGuard() {}
 };
 
+struct NPUEvent {
+    // Constructors
+    // Default value for `flags` is specified below
+    NPUEvent() {}
+    NPUEvent(unsigned int flags) {}
+
+    // npu do not support IpcEventHandle until now
+
+    ~NPUEvent() {}
+
+    NPUEvent(const NPUEvent&) = delete;
+    NPUEvent& operator=(const NPUEvent&) = delete;
+
+    operator aclrtEvent() const { INTERFACE_NOT_IMPL; }
+
+    // aclrtEvent do not support Less than operator until now
+
+    c10::optional<at::Device> device() const { INTERFACE_NOT_IMPL; }
+
+    bool isCreated() const { return false; }
+    c10::DeviceIndex device_index() const {
+        INTERFACE_NOT_IMPL;
+        return -1;
+    }
+    aclrtEvent event() const {
+        INTERFACE_NOT_IMPL;
+        return nullptr;
+    }
+
+    bool query() const {
+        INTERFACE_NOT_IMPL;
+        return true;
+    }
+
+    void record() { INTERFACE_NOT_IMPL; }
+
+    void recordOnce(const NPUStream& stream) { INTERFACE_NOT_IMPL; }
+
+    void record(const NPUStream& stream) { INTERFACE_NOT_IMPL; }
+
+    void block(const NPUStream& stream) { INTERFACE_NOT_IMPL; }
+
+    float elapsed_time(const NPUEvent& other) const {}
+
+    void synchronize() const { INTERFACE_NOT_IMPL; }
+
+};  // NPUEvent
+
 namespace NPUCachingAllocator {
 
 static void recordStream(const c10::DataPtr& ptr, c10_npu::NPUStream stream) { INTERFACE_NOT_IMPL; }
