@@ -17,6 +17,7 @@
 #include "../ascend_tensor.hpp"
 #include "../common/acloprunner.hpp"
 #include "../common/utils.hpp"
+#include "../env_vars.hpp"
 #include "acl/acl.h"
 #include "aclnn/acl_meta.h"
 
@@ -39,13 +40,8 @@ constexpr const char kWorkspaceSizeSuffix[] = "GetWorkspaceSize";
 
 inline const char* getOpApiLibName() { return "libopapi.so"; }
 
-inline bool useAclnn() {
-    static bool enable = std::getenv("DIOPI_USE_ACLNN") != nullptr;
-    return enable;
-}
-
 inline void* getOpApiFuncAddrInLib(void* handler, const char* libName, const char* apiName) {
-    auto funcAddr = dlsym(handler, apiName);
+    void* funcAddr = dlsym(handler, apiName);
     if (funcAddr == nullptr) {
         warning(__FILE__, __LINE__, __FUNCTION__, "dlsym %s from %s failed, error:%s.", apiName, libName, dlerror());
     }
@@ -61,7 +57,7 @@ inline void* getOpApiLibHandler(const char* libName) {
 }
 
 inline void* getOpApiFuncAddr(const char* apiName) {
-    static auto opApiHandler = getOpApiLibHandler(getOpApiLibName());
+    static void* opApiHandler = getOpApiLibHandler(getOpApiLibName());
     if (opApiHandler == nullptr) {
         return nullptr;
     }
@@ -146,9 +142,6 @@ constexpr auto convertTypes(Ts&... args) {
         OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                 \
         auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);                             \
         ASCEND_CHECK(ret == ACL_SUCCESS, "%s failed. ERROR: %d\n", name.c_str(), ret);                    \
-                                                                                                          \
-        ret = aclrtSynchronizeStream(stream);                                                             \
-        ASCEND_CHECK(ret == ACL_SUCCESS, "aclrtSynchronizeStream failed. ERROR: %d\n", ret);              \
                                                                                                           \
         if (workspaceSize > 0) {                                                                          \
             aclrtFree(workspaceAddr);                                                                     \
