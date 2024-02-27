@@ -58,6 +58,7 @@ set(OP_PLUGIN_API_SRC
     ${OP_PLUGIN_API_DIR}/AddKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/BmmKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/CeilKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/PowKernelNpuOpApi.cpp
 )
 
 file(GLOB_RECURSE OP_PLUGIN_SRC
