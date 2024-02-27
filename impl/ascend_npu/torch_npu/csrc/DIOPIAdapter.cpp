@@ -4,16 +4,17 @@
  * @copyright  (c) 2024, DeepLink.
  */
 
+#include "torch_npu/csrc/framework/DIOPIAdapter.h"
+
 #include <ATen/EmptyTensor.h>
 #include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
 #include <torch/library.h>
 
-#include "torch_npu/csrc/framework/DIOPIAdapter.h"
 #include "../../../ascend/common/gil_scoped_release.hpp"
 #include "../../../ascend/common/stream_lock.hpp"
-#include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "../../third_party/acl/inc/acl/acl_base.h"
+#include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 
