@@ -17,6 +17,7 @@
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "torch_npu/csrc/core/npu/NPUCachingAllocator.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
@@ -1489,6 +1490,25 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
     auto format = InferFormat::GuessBaseFormat(sizes);
     return NPUNativeFunctions::empty_with_format(
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
+}
+
+at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
+    at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
+    at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
+    int deviceIndex = 0;
+    NPU_CHECK_ERROR(aclrtGetDevice(&deviceIndex));
+    return cpuPinMemTensor.to(c10::Device(c10::DeviceType::XLA, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
+}
+
+at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
+    ASCEND_LOGD("Alloc workspace %zu bytes unsafely.", size);
+    c10::Allocator* allocator = c10_npu::NPUCachingAllocator::get();
+    c10::intrusive_ptr<c10::StorageImpl> storage_impl =
+        c10::make_intrusive<torch_npu::NPUStorageImpl>(c10::StorageImpl::use_byte_size_t(), size, allocator->allocate(size), allocator, true);
+    static auto dtype = c10::scalarTypeToTypeMeta(dtype_or_default(at::kByte));
+    auto tensor = at::detail::make_tensor<torch_npu::NPUTensorImpl>(storage_impl, dtype);
+    tensor.unsafeGetTensorImpl()->empty_tensor_restride(c10::MemoryFormat::Contiguous);
+    return tensor;
 }
 
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
