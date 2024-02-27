@@ -290,14 +290,14 @@ public:
     operator c10::Stream() const { return unwrap(); }
 
     /// Used to avoid baking in device type explicitly to Python-side API.
-    c10::DeviceType device_type() const { INTERFACE_NOT_IMPL; }
+    c10::DeviceType device_type() const { return stream_.device_type(); }
 
     /// Get the NPU device index that this stream is associated with.
     c10::DeviceIndex device_index() const { return stream_.device_index(); }
 
     /// Get the full Device that this stream is associated with.  The Device
     /// is guaranteed to be a NPU device.
-    c10::Device device() const { INTERFACE_NOT_IMPL; }
+    c10::Device device() const { return stream_.device(); }
 
     c10::StreamId id() const { INTERFACE_NOT_IMPL; }
 
@@ -320,7 +320,7 @@ public:
     }
 
     /// Explicit conversion to rtStream_t， with out empty taskQ.
-    aclrtStream stream(const bool need_empty) const { INTERFACE_NOT_IMPL; }
+    aclrtStream stream(const bool need_empty) const { return aclStream_; }
 
 private:
     c10::Stream stream_;
@@ -361,7 +361,7 @@ struct NPUEvent {
     // Constructors
     // Default value for `flags` is specified below
     NPUEvent() {}
-    NPUEvent(unsigned int flags) {}
+    explicit NPUEvent(unsigned int flags) {}
 
     // npu do not support IpcEventHandle until now
 
@@ -402,7 +402,6 @@ struct NPUEvent {
     float elapsed_time(const NPUEvent& other) const {}
 
     void synchronize() const { INTERFACE_NOT_IMPL; }
-
 };  // NPUEvent
 
 namespace NPUCachingAllocator {
@@ -578,6 +577,33 @@ typedef enum CompileType {
     MEMORY_HOST_COMPILE_INDEPENDENT = 2,
 } CompileType;
 
+using StorageAndOffsetMemSizePair = std::pair<const c10::StorageImpl*, int64_t>;
+class CalcuOpUtil {
+public:
+    static aclDataType ConvertToAclDataType(const at::ScalarType& data_type);
+    static aclDataType ConvertToAclDataType(const at::ScalarType& data_type, const string& realDataType);
+    static c10::Scalar ConvertTensorToScalar(const at::Tensor& tensor);
+    static at::Tensor CopyScalarToDevice(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type);
+    static at::Tensor CopyTensorHostToDevice(const at::Tensor& cpu_tensor);
+    static NPUStatus AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t>& dst, size_t dst_size, const std::pair<at::Tensor, int64_t>& src, size_t src_size,
+                                      aclrtMemcpyKind kind);
+    // Add some public interfaces for aclrtmemcpy process,
+    // to launch graph in graph mode automatically.
+    static aclError AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count,
+                                              aclrtMemcpyKind kind);
+    static aclError AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const void* src, size_t count, aclrtMemcpyKind kind);
+    static aclError AclrtMemcpyWithModeSwitch(void* dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count, aclrtMemcpyKind kind);
+
+    static aclError LaunchAsyncCopyTaskWithModeSwitch(const c10::StorageImpl& dst, size_t dstMax, void* src, size_t count, aclrtMemcpyKind kind);
+    static aclError LaunchAsyncCopyTaskWithModeSwitch(const at::Tensor& dst, size_t dstMax, const at::Tensor& src, size_t count, aclrtMemcpyKind kind);
+    static void CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::ArrayRef<at::Tensor> outputs);
+    static bool IsScalarWrappedToTensor(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
+    static float GetScalarFloatValue(const c10::Scalar& scalar);
+    static int64_t GetTensorNpuFormat(const at::Tensor& tensor);
+    static c10::SmallVector<int64_t, SHAPE_SIZE> ConvertIntArrayRefToSmallVector(c10::IntArrayRef intArray);
+    static int8_t GetCubeMathType(bool allowHf32);
+};  // class CalcuOpUtil
+
 class OpPreparation {
 public:
     static UnifiedResult binary_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap);
@@ -588,7 +614,7 @@ public:
     static UnifiedResult reduce_op_check(at::Tensor& out, const at::Tensor& a) { INTERFACE_NOT_IMPL; }
     static UnifiedResult reduce_op_check(at::Tensor& out1, at::Tensor& out2, const at::Tensor& a) { INTERFACE_NOT_IMPL; }
     // From CalcuOpUtil part
-    static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type) { INTERFACE_NOT_IMPL; }
+    static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type);
     static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type, const string& realDataType) { INTERFACE_NOT_IMPL; }
     static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) { INTERFACE_NOT_IMPL; }
     static at::Tensor copy_tensor_host_to_device(const at::Tensor& cpu_tensor) { INTERFACE_NOT_IMPL; }
@@ -597,9 +623,7 @@ public:
     static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
     // check output tensor
-    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size) {
-        INTERFACE_NOT_IMPL;
-    }
+    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size);
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor) { INTERFACE_NOT_IMPL; }
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) { INTERFACE_NOT_IMPL; }
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor,
@@ -607,7 +631,7 @@ public:
         INTERFACE_NOT_IMPL;
     }
     // check memory overlaps
-    static void check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) { INTERFACE_NOT_IMPL; }
+    static void check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs);
 
     // cast format
     static at::Tensor cast_to_ori_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
@@ -660,33 +684,6 @@ public:
     static void CheckMemory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) { INTERFACE_NOT_IMPL; }
     static bool IsCPUScalar(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
 };  // namespace OpPreparation
-
-using StorageAndOffsetMemSizePair = std::pair<const c10::StorageImpl*, int64_t>;
-class CalcuOpUtil {
-public:
-    static aclDataType ConvertToAclDataType(const at::ScalarType& data_type);
-    static aclDataType ConvertToAclDataType(const at::ScalarType& data_type, const string& realDataType);
-    static c10::Scalar ConvertTensorToScalar(const at::Tensor& tensor);
-    static at::Tensor CopyScalarToDevice(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type);
-    static at::Tensor CopyTensorHostToDevice(const at::Tensor& cpu_tensor);
-    static NPUStatus AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t>& dst, size_t dst_size, const std::pair<at::Tensor, int64_t>& src, size_t src_size,
-                                      aclrtMemcpyKind kind);
-    // Add some public interfaces for aclrtmemcpy process,
-    // to launch graph in graph mode automatically.
-    static aclError AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count,
-                                              aclrtMemcpyKind kind);
-    static aclError AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const void* src, size_t count, aclrtMemcpyKind kind);
-    static aclError AclrtMemcpyWithModeSwitch(void* dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count, aclrtMemcpyKind kind);
-
-    static aclError LaunchAsyncCopyTaskWithModeSwitch(const c10::StorageImpl& dst, size_t dstMax, void* src, size_t count, aclrtMemcpyKind kind);
-    static aclError LaunchAsyncCopyTaskWithModeSwitch(const at::Tensor& dst, size_t dstMax, const at::Tensor& src, size_t count, aclrtMemcpyKind kind);
-    static void CheckMemoryOverLaps(c10::ArrayRef<at::Tensor> inputs, c10::ArrayRef<at::Tensor> outputs);
-    static bool IsScalarWrappedToTensor(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
-    static float GetScalarFloatValue(const c10::Scalar& scalar);
-    static int64_t GetTensorNpuFormat(const at::Tensor& tensor);
-    static c10::SmallVector<int64_t, SHAPE_SIZE> ConvertIntArrayRefToSmallVector(c10::IntArrayRef intArray);
-    static int8_t GetCubeMathType(bool allowHf32);
-};  // class CalcuOpUtil
 
 // Max size of discontiguous cases vector
 constexpr int MAX_CASES = 8;
@@ -926,11 +923,11 @@ inline bool IsAllowFP32ToFP16() {
     return false;
 }
 inline bool IsAllowConvHF32() {
-    INTERFACE_NOT_IMPL;
+    // INTERFACE_NOT_IMPL;
     return false;
 }
 inline bool IsAllowMatmulHF32() {
-    INTERFACE_NOT_IMPL;
+    // INTERFACE_NOT_IMPL;
     return false;
 }
 

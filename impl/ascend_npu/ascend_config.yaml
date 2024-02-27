@@ -16,7 +16,6 @@ ascend:
 - diopiBaddbmmInp
 - diopiBitwiseAnd
 - diopiBitwiseNot
-- diopiBmm
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
@@ -199,10 +198,13 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiBmm
 - diopiMatmul
 - diopiCastDtype
 - diopiCopyInp
 - diopiCat
+- diopiCeil
+- diopiCeilInp
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
