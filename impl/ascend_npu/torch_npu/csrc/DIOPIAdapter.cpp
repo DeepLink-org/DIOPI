@@ -93,7 +93,7 @@ namespace option {
 using namespace std;
 
 bool OptionsManager::IsResumeModeEnable() {
-    const static bool isResumeModeEnable = []() -> bool {
+    static const bool isResumeModeEnable = []() -> bool {
         int32_t enable = OptionsManager::GetBoolTypeOption("RESUME_MODE_ENABLE", 0);
         return enable != 0;
     }();
@@ -101,7 +101,7 @@ bool OptionsManager::IsResumeModeEnable() {
 }
 
 bool OptionsManager::IsMultiStreamMemoryReuse() {
-    const static bool hcclRealTimeMemoryReuse = []() -> bool {
+    static const bool hcclRealTimeMemoryReuse = []() -> bool {
         int32_t enable = OptionsManager::GetBoolTypeOption("MULTI_STREAM_MEMORY_REUSE", 0);
         return enable != 0;
     }();
@@ -109,7 +109,7 @@ bool OptionsManager::IsMultiStreamMemoryReuse() {
 }
 
 bool OptionsManager::CheckInfNanModeEnable() {
-    const static bool checkInfNanModeEnable = []() -> bool {
+    static const bool checkInfNanModeEnable = []() -> bool {
         int32_t enable = OptionsManager::GetBoolTypeOption("INF_NAN_MODE_ENABLE", 1);
         return enable != 0;
     }();
@@ -117,7 +117,7 @@ bool OptionsManager::CheckInfNanModeEnable() {
 }
 
 bool OptionsManager::CheckBlockingEnable() {
-    const static bool checkBlockingEnable = []() -> bool {
+    static const bool checkBlockingEnable = []() -> bool {
         int32_t blocking_enable = OptionsManager::GetBoolTypeOption("ASCEND_LAUNCH_BLOCKING", 0);
         return blocking_enable != 0;
     }();
@@ -128,7 +128,7 @@ bool OptionsManager::CheckQueueEnable() {
     if (CheckBlockingEnable()) {
         return false;
     }
-    const static bool checkQueueEnable = []() -> bool {
+    static const bool checkQueueEnable = []() -> bool {
         int32_t queue_enable = OptionsManager::GetBoolTypeOption("TASK_QUEUE_ENABLE", 1);
         return queue_enable != 0;
     }();
@@ -136,7 +136,7 @@ bool OptionsManager::CheckQueueEnable() {
 }
 
 bool OptionsManager::CheckCombinedOptimizerEnable() {
-    const static bool checkCombinedOptimizerEnable = []() -> bool {
+    static const bool checkCombinedOptimizerEnable = []() -> bool {
         int32_t combined_optimize = OptionsManager::GetBoolTypeOption("COMBINED_ENABLE");
         return combined_optimize != 0;
     }();
@@ -144,7 +144,7 @@ bool OptionsManager::CheckCombinedOptimizerEnable() {
 }
 
 bool OptionsManager::CheckAclDumpDateEnable() {
-    const static bool checkAclDumpDateEnable = []() -> bool {
+    static const bool checkAclDumpDateEnable = []() -> bool {
         int32_t acl_dump_data = OptionsManager::GetBoolTypeOption("ACL_DUMP_DATA");
         return acl_dump_data != 0;
     }();
