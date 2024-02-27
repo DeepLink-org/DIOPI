@@ -54,6 +54,11 @@ set(OP_PLUGIN_UTILS_DIR ${op_plugin_SOURCE_DIR}/op_plugin/utils/)
 set(OP_PLUGIN_SRC_V_DIR  ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r1/aclops/)
 set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/opapi/)
 
+set(OP_PLUGIN_API_SRC
+    ${OP_PLUGIN_API_DIR}/AddKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_DIR}/BmmKernelNpuOpApi.cpp
+)
+
 file(GLOB_RECURSE OP_PLUGIN_SRC
   "${OP_PLUGIN_DIR}/*.cpp"
   "${OP_PLUGIN_UTILS_DIR}/*.cpp"
@@ -74,9 +79,6 @@ set(ASCEND_IMPL_DIR
 )
 
 set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r0/opapi/)
-set(OP_PLUGIN_API_SRC
-    ${OP_PLUGIN_API_SRC}
-)
 
 set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
 file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp" "${DIOPI_IMPL_DIR}/functions_ext/*.cpp")
