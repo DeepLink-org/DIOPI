@@ -156,10 +156,6 @@ ascend:
 - diopiSort
 - diopiSqrt
 - diopiSqrtInp
-- diopiSub
-- diopiSubInp
-- diopiSubInpScalar
-- diopiSubScalar
 - diopiSum
 - diopiTanh
 - diopiTanhBackward
@@ -235,4 +231,8 @@ ascend_npu:
 - diopiAtanInp
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
+- diopiSub
+- diopiSubInp
+- diopiSubInpScalar
+- diopiSubScalar
 - diopiFill

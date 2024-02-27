@@ -76,7 +76,8 @@ diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (!outAt.defined() || outAt.numel() <= 0) {
         return diopiSuccess;
     }
-    outAt = op_api::sub(inputAt, otherAt, alphaAt);
+    at::Tensor result = op_api::sub(inputAt, otherAt, alphaAt);
+    outAt.copy_(result);
     END_CALL_ACL_OP();
 }
 
