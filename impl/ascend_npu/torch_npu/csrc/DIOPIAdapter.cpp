@@ -10,6 +10,7 @@
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
 constexpr float EPSILON = 1e-6;
@@ -2662,6 +2663,36 @@ void npu_fast_reshape_(at::Tensor& tensor) {
 #else
     INTERFACE_NOT_IMPL;
 #endif
+}
+
+void ForceAclnn::RegisterOp(const std::string& list) {
+    if (list.empty()) {
+        return;
+    }
+
+    auto value = list;
+    std::string delimiter = ",";
+    auto start = 0U;
+    auto end = value.find(delimiter);
+    std::string token;
+    while (end != std::string::npos) {
+        token = value.substr(start, end - start);
+        if (!token.empty()) {
+            force_aclnn_op_list_.insert(token);
+        }
+        start = end + delimiter.size();
+        end = value.find(delimiter, start);
+    }
+    token = value.substr(start, end - start);
+    if (!token.empty()) {
+        force_aclnn_op_list_.insert(token);
+    }
+    return;
+}
+
+bool ForceAclnn::IsForceAclnnOp(const std::string& op_name) const {
+    bool ret = (force_aclnn_op_list_.find(op_name) != force_aclnn_op_list_.end());
+    return ret;
 }
 
 }  // namespace native
