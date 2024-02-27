@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(op_plugin)
 message(STATUS "op-plugin download done")
 
 add_custom_target(op_plugin_gen
-  COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.0 python
+  COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.1 python
 )
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
@@ -104,7 +104,6 @@ set(IMPL_SRC
   torch_npu/csrc/NPUNativeFunctions.cpp
   torch_npu/csrc/CopyKernel.cpp
   torch_npu/csrc/CopyKernelOpApi.cpp
-  torch_npu/csrc/core/npu/NPUCachingAllocator.cpp
 )
 
 set(OLD_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/)
