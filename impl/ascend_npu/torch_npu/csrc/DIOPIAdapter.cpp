@@ -186,10 +186,6 @@ aclDataType OpPreparation::convert_to_acl_data_type(const at::ScalarType& data_t
     return acl_dtype;
 }
 
-bool OpPreparation::is_scalar_wrapped_to_tensor(const at::Tensor& tensor) {
-    return tensor.unsafeGetTensorImpl()->is_wrapped_number() && (!torch_npu::utils::is_npu(tensor));
-}
-
 bool FormatCastHelper::IsSameGroupType(const at::Tensor& src, const at::Tensor& dst) {
     auto src_format = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_.npu_format_;
     auto dst_format = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.npu_format_;
