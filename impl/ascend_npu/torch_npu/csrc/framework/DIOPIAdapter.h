@@ -641,18 +641,14 @@ public:
     static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type, const string& realDataType) { INTERFACE_NOT_IMPL; }
     static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type);
     static at::Tensor copy_tensor_host_to_device(const at::Tensor& cpu_tensor) { INTERFACE_NOT_IMPL; }
-
-    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { return (tensor.is_cpu() && tensor.numel() == 1); }
+    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor);
     static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
     // check output tensor
     static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size);
-    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor) { INTERFACE_NOT_IMPL; }
-    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) { INTERFACE_NOT_IMPL; }
-    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor,
-                             c10::IntArrayRef expect_size) {
-        INTERFACE_NOT_IMPL;
-    }
+    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor);
+    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size);
+    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor, c10::IntArrayRef expect_size);
     // check memory overlaps
     static void check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs);
 

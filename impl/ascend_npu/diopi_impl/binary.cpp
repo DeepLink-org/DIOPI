@@ -18,7 +18,7 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         return diopiSuccess;
     }
 
-    acl_op::add_out(inputAt, otherAt, alphaAt, outAt);
+    op_api::add_out(inputAt, otherAt, alphaAt, outAt);
     END_CALL_ACL_OP();
 }
 
@@ -27,7 +27,7 @@ diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
     if (!inputAt.defined() || inputAt.numel() <= 0) {
         return diopiSuccess;
     }
-    acl_op::add_out(inputAt, otherAt, alphaAt, inputAt);
+    op_api::add_out(inputAt, otherAt, alphaAt, inputAt);
     END_CALL_ACL_OP();
 }
 
@@ -37,7 +37,7 @@ diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (!outAt.defined() || outAt.numel() <= 0) {
         return diopiSuccess;
     }
-    acl_op::add_out(inputAt, at::scalar_to_tensor(otherAt).to(inputAt.dtype()), alphaAt, outAt);
+    op_api::add_out(inputAt, at::scalar_to_tensor(otherAt), alphaAt, outAt);
     END_CALL_ACL_OP();
 }
 
@@ -46,7 +46,7 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     if (!inputAt.defined() || inputAt.numel() <= 0) {
         return diopiSuccess;
     }
-    acl_op::add_(inputAt, at::scalar_to_tensor(otherAt).to(inputAt.dtype()), alphaAt);
+    op_api::add_(inputAt, otherAt, alphaAt);
     END_CALL_ACL_OP();
 }
 
