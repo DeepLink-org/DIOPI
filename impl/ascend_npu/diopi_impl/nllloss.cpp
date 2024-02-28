@@ -31,8 +31,8 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     }
 
     at::Tensor totalWeightAt = at_npu::native::empty_npu({1}, inputAt.options());
+    const int64_t C = inputAt.dim() >= 4 ? inputAt.size(1) : inputAt.size(-1);
     if (weight == nullptr) {
-        const int64_t C = inputAt.dim() == 4 ? inputAt.size(1) : inputAt.size(-1);
         weightAt = at_npu::native::empty_npu({C}, inputAt.options());
         op_api::fill_(weightAt, c10::Scalar(1.0f));
     }
@@ -41,7 +41,10 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     } else if (inputAt.dim() == 4) {
         op_api::nll_loss2d_forward_out(inputAt, targetAt, weightAt, reduction, ignoreIndex, outAt, totalWeightAt);
     } else {
-        TORCH_CHECK(false, "diopiNLLLoss: invalid input dim");
+        auto veiwedInputAt = impl::aten::viewStorage(inputAt, {inputAt.size(0), inputAt.size(1), inputAt.numel() / inputAt.size(0) / inputAt.size(1), 1});
+        auto veiwedOutAt = (outAt.numel() > 1) ? impl::aten::viewStorage(outAt, {outAt.size(0), outAt.numel() / outAt.size(0), 1}) : outAt;
+        auto veiwedTargetAt = impl::aten::viewStorage(targetAt, {targetAt.size(0), targetAt.numel() / targetAt.size(0), 1});
+        op_api::nll_loss2d_forward_out(veiwedInputAt, veiwedTargetAt, weightAt, reduction, ignoreIndex, veiwedOutAt, totalWeightAt);
     }
     END_CALL_ACL_OP();
 }
