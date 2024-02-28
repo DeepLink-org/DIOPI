@@ -109,10 +109,6 @@ ascend:
 - diopiMinAll
 - diopiMinimum
 - diopiMm
-- diopiMul
-- diopiMulInp
-- diopiMulInpScalar
-- diopiMulScalar
 - diopiMultinomial
 - diopiNLLLoss
 - diopiNLLLossBackward
@@ -236,3 +232,7 @@ ascend_npu:
 - diopiPowInpTensor
 - diopiPowScalar
 - diopiPowTensor
+- diopiMul
+- diopiMulInp
+- diopiMulScalar
+- diopiMulInpScalar
