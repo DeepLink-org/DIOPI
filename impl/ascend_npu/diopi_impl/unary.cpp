@@ -5,7 +5,7 @@
  */
 
 #include "helper.hpp"
-#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 
 namespace OP_IMPL_NS {
 
@@ -14,7 +14,7 @@ diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t input, cons
     if (inputAt.numel() <= 0) {
         return diopiSuccess;
     }
-    acl_op::fill_(inputAt, valueAt);
+    op_api::fill_(inputAt, valueAt);
     END_CALL_ACL_OP();
 }
 

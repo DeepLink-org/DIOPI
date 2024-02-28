@@ -326,6 +326,7 @@
 
 - diopiBmm:
     dtype: (float64)->float32
+    layout: ND
 
 - diopiIsNan:
     dtype: (uint8, int8, int32, int16, int64, bool)->float32
