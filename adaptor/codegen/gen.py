@@ -59,7 +59,7 @@ cast_strategy = {
 }
 
 
-exclude_ops = ["CopyInp", "CastDtype"]
+exclude_ops = ["CopyInp", "CastDtype", "Add", "AddInp", "Add", "AddScalar", "AddInpScalar"]
 inp_config = {
     "BatchNorm": ["running_mean", "running_var"],
     "IndexPut": ["out"],
