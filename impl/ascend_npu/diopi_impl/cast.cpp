@@ -14,7 +14,7 @@ diopiError_t diopiCastDtype(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (out == input || out == nullptr || input == nullptr || !inputAt.defined() || !outAt.defined() || inputAt.numel() <= 0 || outAt.numel() <= 0) {
         return diopiSuccess;
     }
-    outAt.copy_(inputAt);
+    at_npu::native::NPUNativeOpApiFunctions::copy_(outAt, inputAt, false);
     END_CALL_ACL_OP();
 }
 
