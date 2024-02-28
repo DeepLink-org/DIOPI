@@ -660,7 +660,7 @@ public:
     static at::Tensor cast_to_ori_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static at::Tensor& cast_to_ori_format(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
 
-    static int8_t get_cube_math_type(bool allowHf32) { INTERFACE_NOT_IMPL; }
+    static int8_t get_cube_math_type(bool allowHf32);
     static void markAsOutputForApplyTensor(at::Tensor& src);
     // used to apply output tensor
     static at::Tensor apply_tensor(const at::Tensor& src);

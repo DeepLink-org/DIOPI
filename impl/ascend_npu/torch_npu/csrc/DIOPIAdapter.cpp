@@ -1553,6 +1553,8 @@ void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& input, at:
     }
 }
 
+int8_t OpPreparation::get_cube_math_type(bool allowHf32) { return CalcuOpUtil::GetCubeMathType(allowHf32); }
+
 aclFormat InferFormat::GuessFormatWhenContiguous(const at::Tensor& tensor) {
     auto desc = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->npu_desc_;
     // fix: NCDHW -> default format
