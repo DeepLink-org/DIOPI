@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(op_plugin)
 message(STATUS "op-plugin download done")
 
 add_custom_target(op_plugin_gen
-  COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.0 python
+  COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.1 python
 )
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
@@ -53,11 +53,13 @@ set(OP_PLUGIN_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/aclops/)
 set(OP_PLUGIN_UTILS_DIR ${op_plugin_SOURCE_DIR}/op_plugin/utils/)
 set(OP_PLUGIN_SRC_V_DIR  ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r1/aclops/)
 set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/opapi/)
+set(OP_PLUGIN_API_V_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r1/opapi/)
 
 set(OP_PLUGIN_API_SRC
     ${OP_PLUGIN_API_DIR}/AddKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/BmmKernelNpuOpApi.cpp
     ${OP_PLUGIN_API_DIR}/CeilKernelNpuOpApi.cpp
+    ${OP_PLUGIN_API_V_DIR}/CatKernelNpuOpApi.cpp
 )
 
 file(GLOB_RECURSE OP_PLUGIN_SRC
@@ -78,8 +80,6 @@ list(REMOVE_ITEM OP_PLUGIN_SRC
 set(ASCEND_IMPL_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/csrc/impl/
 )
-
-set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r0/opapi/)
 
 set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
 file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp" "${DIOPI_IMPL_DIR}/functions_ext/*.cpp")
