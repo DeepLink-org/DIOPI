@@ -642,7 +642,7 @@ public:
     static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type);
     static at::Tensor copy_tensor_host_to_device(const at::Tensor& cpu_tensor) { INTERFACE_NOT_IMPL; }
 
-    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { return (tensor.is_cpu() && tensor.numel() == 1); }
+    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { return (tensor.is_cpu() && tensor.dim() == 0); }
     static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
     // check output tensor
