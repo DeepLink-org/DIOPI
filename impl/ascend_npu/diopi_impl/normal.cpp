@@ -11,7 +11,7 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiGeneratorHandle_t generator) {
     BEGIN_CALL_ACL_OP(out, generator);
-    op_api::normal_out(mean, std, outAt.sizes(), c10::make_optional(std::move(generatorAt)), outAt);
+    op_api::normal_out(mean, std, outAt.sizes(), generatorAt, outAt);
     END_CALL_ACL_OP();
 }
 
