@@ -16,7 +16,7 @@ message(STATUS "op-plugin download done")
 
 add_custom_target(op_plugin_gen
   COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.1 python
-  BYPRODUCTS OpInterface.h Interface.h AclOpsInterface.h
+  BYPRODUCTS OpInterface.h Interface.h AclOpsInterface.h AclOpsInterface.h
 )
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
