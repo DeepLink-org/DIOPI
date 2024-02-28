@@ -233,6 +233,3 @@ ascend_npu:
 - diopiLogSoftmaxBackward
 - diopiSoftmax
 - diopiSoftmaxBackward
-- diopiNormalScalarTensor
-- diopiNormalTensor
-- diopiNormalTensorScalar
