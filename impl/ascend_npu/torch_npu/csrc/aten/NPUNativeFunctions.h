@@ -2231,4 +2231,10 @@ struct NPUNativeFunctions {
     static ::std::tuple<at::Tensor, at::Tensor> npu_random_choice_with_mask(const at::Tensor& x, int64_t count, int64_t seed, int64_t seed2) { OP_NOT_IMPL }
     static at::Tensor softplus(const at::Tensor& self, const at::Scalar& beta, const at::Scalar& threshold) { OP_NOT_IMPL }
 };
+
+struct NPUNativeOpApiFunctions {
+    static at::Tensor& copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking = false);
+    static at::Tensor clone(const at::Tensor& self, c10::optional<at::MemoryFormat> memory_format = c10::nullopt);
+};  // NPUNativeOpApiFunctions
+
 }  // namespace at_npu::native
