@@ -87,6 +87,96 @@ aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_
 
 }  // namespace
 
+namespace c10_npu {
+namespace option {
+
+using namespace std;
+
+bool OptionsManager::IsResumeModeEnable() {
+    static const bool isResumeModeEnable = []() -> bool {
+        int32_t enable = OptionsManager::GetBoolTypeOption("RESUME_MODE_ENABLE", 0);
+        return enable != 0;
+    }();
+    return isResumeModeEnable;
+}
+
+bool OptionsManager::IsMultiStreamMemoryReuse() {
+    static const bool hcclRealTimeMemoryReuse = []() -> bool {
+        int32_t enable = OptionsManager::GetBoolTypeOption("MULTI_STREAM_MEMORY_REUSE", 0);
+        return enable != 0;
+    }();
+    return hcclRealTimeMemoryReuse;
+}
+
+bool OptionsManager::CheckInfNanModeEnable() {
+    static const bool checkInfNanModeEnable = []() -> bool {
+        int32_t enable = OptionsManager::GetBoolTypeOption("INF_NAN_MODE_ENABLE", 1);
+        return enable != 0;
+    }();
+    return checkInfNanModeEnable;
+}
+
+bool OptionsManager::CheckBlockingEnable() {
+    static const bool checkBlockingEnable = []() -> bool {
+        int32_t blocking_enable = OptionsManager::GetBoolTypeOption("ASCEND_LAUNCH_BLOCKING", 0);
+        return blocking_enable != 0;
+    }();
+    return checkBlockingEnable;
+}
+
+bool OptionsManager::CheckQueueEnable() {
+    if (CheckBlockingEnable()) {
+        return false;
+    }
+    static const bool checkQueueEnable = []() -> bool {
+        int32_t queue_enable = OptionsManager::GetBoolTypeOption("TASK_QUEUE_ENABLE", 1);
+        return queue_enable != 0;
+    }();
+    return checkQueueEnable;
+}
+
+bool OptionsManager::CheckCombinedOptimizerEnable() {
+    static const bool checkCombinedOptimizerEnable = []() -> bool {
+        int32_t combined_optimize = OptionsManager::GetBoolTypeOption("COMBINED_ENABLE");
+        return combined_optimize != 0;
+    }();
+    return checkCombinedOptimizerEnable;
+}
+
+bool OptionsManager::CheckAclDumpDateEnable() {
+    static const bool checkAclDumpDateEnable = []() -> bool {
+        int32_t acl_dump_data = OptionsManager::GetBoolTypeOption("ACL_DUMP_DATA");
+        return acl_dump_data != 0;
+    }();
+    return checkAclDumpDateEnable;
+}
+
+int OptionsManager::GetBoolTypeOption(const char* env_str, int defaultVal) {
+    char* env_val = std::getenv(env_str);
+    int64_t envFlag = (env_val != nullptr) ? strtol(env_val, nullptr, 10) : defaultVal;
+    return (envFlag != 0) ? 1 : 0;
+}
+
+uint32_t OptionsManager::GetHCCLExecTimeout() {
+    char* env_val = std::getenv("HCCL_EXEC_TIMEOUT");
+    int64_t envFlag = (env_val != nullptr) ? strtol(env_val, nullptr, 10) : 0;
+    return static_cast<uint32_t>(envFlag);
+}
+
+int32_t OptionsManager::GetACLExecTimeout() {
+    char* env_val = std::getenv("ACL_STREAM_TIMEOUT");
+    int64_t envFlag = (env_val != nullptr) ? strtol(env_val, nullptr, 10) : -1;
+    return static_cast<int32_t>(envFlag);
+}
+
+const char* OptionsManager::GetAclConfigJsonPath() {
+    char* env_val = std::getenv("ACL_CONFIG_JSON_PATH");
+    return env_val == nullptr ? "" : env_val;
+}
+
+}  // namespace option
+}  // namespace c10_npu
+
 namespace at_npu {
 namespace native {
 
@@ -995,7 +1085,9 @@ int8_t CalcuOpUtil::GetCubeMathType(bool allowHf32) {
 void assert_no_internal_overlap(const at::Tensor& tensor) {
     auto t = tensor.unsafeGetTensorImpl();
     AT_ASSERT(t->layout() == at::kStrided);
-    AT_ASSERT(tensor.is_contiguous());
+    if (t->is_contiguous()) {
+        return;
+    }
     auto strides = t->strides();
     auto sizes = t->sizes();
     for (size_t i = 0; i < strides.size(); ++i) {
@@ -1390,6 +1482,16 @@ at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), fixFormat, keep_format);
 }
 
+inline at::Tensor apply_tensor_use_empty(c10::SymIntArrayRef sizes, const c10::TensorOptions &options) {
+    return NPUNativeFunctions::empty(
+        sizes, options.dtype().toScalarType(), c10::nullopt,
+        at::Device(torch_npu::utils::get_npu_device_type()), false, c10::MemoryFormat::Contiguous);
+}
+
+at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
+    return apply_tensor_use_empty(c10::fromIntArrayRefSlow(sizes), options);
+}
+
 at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
     if (markedOutputs.size() > 0) {
         auto out = *markedOutputs.begin();
@@ -1399,6 +1501,25 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
     auto format = InferFormat::GuessBaseFormat(sizes);
     return NPUNativeFunctions::empty_with_format(
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
+}
+
+at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
+    at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
+    at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
+    int deviceIndex = 0;
+    NPU_CHECK_ERROR(aclrtGetDevice(&deviceIndex));
+    return cpuPinMemTensor.to(c10::Device(c10::DeviceType::XLA, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
+}
+
+at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
+    diopiTensorHandle_t tensorDiopi = nullptr;
+    std::vector<int64_t> sizeVec(1, size);
+    diopiError_t ret = diopiRequireBuffer(context, &tensorDiopi, size, diopi_device);
+    if (enableDumpArgs()) {
+        std::cout << __FUNCTION__ << ": diopiRequireBuffer: " << size << "(bytes)." << std::endl;
+    }
+    TORCH_CHECK(diopiSuccess == ret);
+    return impl::aten::buildATen(tensorDiopi);
 }
 
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
