@@ -626,12 +626,16 @@ at::Tensor img_to_tensor(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
                                                                                 ::std::array<bool, 3> output_mask) {
     CUSTOM_OP_NOT_IMPL;
 }
+
+#if 0
 ::std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_cell_backward(
     const c10::optional<at::Tensor>& grady, const c10::optional<at::Tensor>& gradh, const c10::optional<at::Tensor>& gradc, const at::Tensor& input,
     const at::Tensor& w_ih, const at::Tensor& w_hh, const at::Tensor& h, const at::Tensor& c, const at::Tensor& y_output, const at::Tensor& h_output,
     const at::Tensor& c_output, const at::Tensor& i, const at::Tensor& j, const at::Tensor& f, const at::Tensor& o, const at::Tensor& tanhc) {
     CUSTOM_OP_NOT_IMPL;
 }
+#endif
+
 ::std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor& input, double eps) { CUSTOM_OP_NOT_IMPL; }
 ::std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_update(const at::Tensor& input, const at::Tensor& mean, const at::Tensor& invstd,
                                                                     const c10::optional<at::Tensor>& running_mean, const c10::optional<at::Tensor>& running_var,

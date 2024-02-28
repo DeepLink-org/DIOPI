@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(op_plugin)
 message(STATUS "op-plugin download done")
 
 add_custom_target(op_plugin_gen
-  COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.0 python
+  COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.1 python
 )
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
@@ -49,38 +49,44 @@ set(CMAKE_CXX_FLAGS
     "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable "
 )
 
-set(OP_PLUGIN_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/aclops/)
+set(OP_PLUGIN_BASE_OPS_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/)
 set(OP_PLUGIN_UTILS_DIR ${op_plugin_SOURCE_DIR}/op_plugin/utils/)
-set(OP_PLUGIN_SRC_V_DIR  ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r1/aclops/)
-set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/opapi/)
-
-set(OP_PLUGIN_API_SRC
-    ${OP_PLUGIN_API_DIR}/AddKernelNpuOpApi.cpp
-    ${OP_PLUGIN_API_DIR}/BmmKernelNpuOpApi.cpp
-    ${OP_PLUGIN_API_DIR}/CeilKernelNpuOpApi.cpp
-    ${OP_PLUGIN_API_DIR}/StackKernelNpuOpApi.cpp
-)
+set(OP_PLUGIN_SRC_V_DIR  ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r1/)
 
 file(GLOB_RECURSE OP_PLUGIN_SRC
-  "${OP_PLUGIN_DIR}/*.cpp"
-  "${OP_PLUGIN_UTILS_DIR}/*.cpp"
-  "${OP_PLUGIN_UTILS_DIR}/custom_functions/*.cpp"
-  "${OP_PLUGIN_SRC_V_DIR}/*.cpp"
+  ${OP_PLUGIN_BASE_OPS_DIR}/aclops/*.cpp
+  ${OP_PLUGIN_BASE_OPS_DIR}/opapi/*.cpp
+  ${OP_PLUGIN_UTILS_DIR}/*.cpp
+  ${OP_PLUGIN_UTILS_DIR}/custom_functions/*.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/aclops/*.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/*.cpp
 )
 
 list(REMOVE_ITEM OP_PLUGIN_SRC
-  ${OP_PLUGIN_DIR}/LstmCellKernelNpu.cpp
-  ${OP_PLUGIN_SRC_V_DIR}/LinalgNormKernelNpu.cpp
-  ${OP_PLUGIN_SRC_V_DIR}/EmbeddingBagBackwardKernelNpu.cpp
+  ${OP_PLUGIN_BASE_OPS_DIR}/aclops/LstmCellKernelNpu.cpp
+  ${OP_PLUGIN_BASE_OPS_DIR}/aclops/CtcLossKernelNpu.cpp
+  ${OP_PLUGIN_BASE_OPS_DIR}/opapi/LstmCellKernelNpuApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/aclops/EmbeddingBagBackwardKernelNpu.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/aclops/LinalgNormKernelNpu.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/LinalgNormKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/StdKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/StdMeanKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/VarKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/TraceKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/MedianKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/EmbeddingBagBackwardKernelNpu.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/ForeachPowKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/ForeachPowScalarKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/RepeatInterLeaveKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/ZerosKernelNpuOpApi.cpp
+  ${OP_PLUGIN_SRC_V_DIR}/opapi/ScatterUpdateKernelNpuOpApi.cpp
+  ${OP_PLUGIN_BASE_OPS_DIR}/opapi/CtcLossKernelNpuOpApi.cpp
   ${OP_PLUGIN_UTILS_DIR}/AdvancedIndex.cpp
 )
-
 
 set(ASCEND_IMPL_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/csrc/impl/
 )
-
-set(OP_PLUGIN_API_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r0/opapi/)
 
 set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
 file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp" "${DIOPI_IMPL_DIR}/functions_ext/*.cpp")
@@ -97,6 +103,7 @@ set(IMPL_SRC
   torch_npu/csrc/AdvancedIndex.cpp
   torch_npu/csrc/NPUNativeFunctions.cpp
   torch_npu/csrc/CopyKernel.cpp
+  torch_npu/csrc/CopyKernelOpApi.cpp
 )
 
 set(OLD_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/)
@@ -195,7 +202,7 @@ else()
     message(FATAL_ERROR "No ascend-toolkit found.")
 endif()
 
-list(APPEND IMPL_SRC ${OP_PLUGIN_UTILS_SRC} ${OP_PLUGIN_SRC} ${OP_PLUGIN_API_SRC} ${ASCEND_IMPL_SRC} ${DIOPI_IMPL_SRC} ${OLD_IMPL_SRC})
+list(APPEND IMPL_SRC ${OP_PLUGIN_SRC} ${DIOPI_IMPL_SRC} ${OLD_IMPL_SRC})
 
 # adaptor
 set(USE_ADAPTOR ON)
