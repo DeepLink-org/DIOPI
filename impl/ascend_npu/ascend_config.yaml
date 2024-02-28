@@ -179,10 +179,6 @@ ascend:
 - diopiWhere
 - diopiBatchNorm
 - diopiBatchNormBackward
-- diopiAdd
-- diopiAddInp
-- diopiAddScalar
-- diopiAddInpScalar
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiLogicalAnd
@@ -198,6 +194,10 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiAdd
+- diopiAddInp
+- diopiAddScalar
+- diopiAddInpScalar
 - diopiBmm
 - diopiMatmul
 - diopiCastDtype
