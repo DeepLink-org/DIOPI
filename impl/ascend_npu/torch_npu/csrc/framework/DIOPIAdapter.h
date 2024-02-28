@@ -258,6 +258,29 @@ const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index = -1);
 
 namespace c10_npu {
 
+namespace option {
+
+class OptionsManager {
+public:
+    static bool IsResumeModeEnable();
+    static bool IsMultiStreamMemoryReuse();
+    static bool CheckInfNanModeEnable();
+    static bool CheckBlockingEnable();
+    static bool CheckQueueEnable();
+    static bool CheckCombinedOptimizerEnable();
+    static bool CheckTriCombinedOptimizerEnable();
+    static bool CheckAclDumpDateEnable();
+    static uint32_t GetHCCLExecTimeout();
+    static std::string CheckDisableDynamicPath();
+    static int32_t GetACLExecTimeout();
+    static const char* GetAclConfigJsonPath();
+
+private:
+    static int GetBoolTypeOption(const char* env_str, int defaultVal = 0);
+};
+
+}  // namespace option
+
 namespace acl {
 
 const char* AclGetErrMsg();
@@ -356,6 +379,53 @@ struct SecondaryStreamGuard {
     explicit SecondaryStreamGuard(c10::Stream stream) {}
     ~SecondaryStreamGuard() {}
 };
+
+struct NPUEvent {
+    // Constructors
+    // Default value for `flags` is specified below
+    NPUEvent() {}
+    explicit NPUEvent(unsigned int flags) {}
+
+    // npu do not support IpcEventHandle until now
+
+    ~NPUEvent() {}
+
+    NPUEvent(const NPUEvent&) = delete;
+    NPUEvent& operator=(const NPUEvent&) = delete;
+
+    operator aclrtEvent() const { INTERFACE_NOT_IMPL; }
+
+    // aclrtEvent do not support Less than operator until now
+
+    c10::optional<at::Device> device() const { INTERFACE_NOT_IMPL; }
+
+    bool isCreated() const { return false; }
+    c10::DeviceIndex device_index() const {
+        INTERFACE_NOT_IMPL;
+        return -1;
+    }
+    aclrtEvent event() const {
+        INTERFACE_NOT_IMPL;
+        return nullptr;
+    }
+
+    bool query() const {
+        INTERFACE_NOT_IMPL;
+        return true;
+    }
+
+    void record() { INTERFACE_NOT_IMPL; }
+
+    void recordOnce(const NPUStream& stream) { INTERFACE_NOT_IMPL; }
+
+    void record(const NPUStream& stream) { INTERFACE_NOT_IMPL; }
+
+    void block(const NPUStream& stream) { INTERFACE_NOT_IMPL; }
+
+    float elapsed_time(const NPUEvent& other) const {}
+
+    void synchronize() const { INTERFACE_NOT_IMPL; }
+};  // NPUEvent
 
 namespace NPUCachingAllocator {
 
@@ -571,7 +641,6 @@ public:
     static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type, const string& realDataType) { INTERFACE_NOT_IMPL; }
     static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type);
     static at::Tensor copy_tensor_host_to_device(const at::Tensor& cpu_tensor) { INTERFACE_NOT_IMPL; }
-
     static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor);
     static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
