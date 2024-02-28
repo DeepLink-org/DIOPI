@@ -639,7 +639,7 @@ public:
     // From CalcuOpUtil part
     static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type);
     static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type, const string& realDataType) { INTERFACE_NOT_IMPL; }
-    static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) { INTERFACE_NOT_IMPL; }
+    static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type);
     static at::Tensor copy_tensor_host_to_device(const at::Tensor& cpu_tensor) { INTERFACE_NOT_IMPL; }
 
     static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { return (tensor.is_cpu() && tensor.numel() == 1); }
@@ -699,8 +699,7 @@ public:
     static at::Tensor ApplyTensorWithFormat(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false) {
         return apply_tensor_with_format(sizes, options, format, keep_format);
     }
-
-    static at::Tensor unsafe_empty_workspace(uint64_t size) { INTERFACE_NOT_IMPL; }
+    static at::Tensor unsafe_empty_workspace(uint64_t size);
     // DEPRECATED: ApplyTensorWithSizes will be deprecated, please use apply_tensor_with_sizes instead.
     static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return apply_tensor_with_sizes(sizes, options); }
     // DEPRECATED: CheckMemory will be deprecated, please use check_memory instead.

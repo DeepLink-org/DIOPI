@@ -1085,7 +1085,9 @@ int8_t CalcuOpUtil::GetCubeMathType(bool allowHf32) {
 void assert_no_internal_overlap(const at::Tensor& tensor) {
     auto t = tensor.unsafeGetTensorImpl();
     AT_ASSERT(t->layout() == at::kStrided);
-    AT_ASSERT(tensor.is_contiguous());
+    if (t->is_contiguous()) {
+        return;
+    }
     auto strides = t->strides();
     auto sizes = t->sizes();
     for (size_t i = 0; i < strides.size(); ++i) {
@@ -1489,6 +1491,25 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
     auto format = InferFormat::GuessBaseFormat(sizes);
     return NPUNativeFunctions::empty_with_format(
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
+}
+
+at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
+    at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
+    at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
+    int deviceIndex = 0;
+    NPU_CHECK_ERROR(aclrtGetDevice(&deviceIndex));
+    return cpuPinMemTensor.to(c10::Device(c10::DeviceType::XLA, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
+}
+
+at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
+    diopiTensorHandle_t tensorDiopi = nullptr;
+    std::vector<int64_t> sizeVec(1, size);
+    diopiError_t ret = diopiRequireBuffer(context, &tensorDiopi, size, diopi_device);
+    if (enableDumpArgs()) {
+        std::cout << __FUNCTION__ << ": diopiRequireBuffer: " << size << "(bytes)." << std::endl;
+    }
+    TORCH_CHECK(diopiSuccess == ret);
+    return impl::aten::buildATen(tensorDiopi);
 }
 
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
