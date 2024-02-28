@@ -1085,7 +1085,9 @@ int8_t CalcuOpUtil::GetCubeMathType(bool allowHf32) {
 void assert_no_internal_overlap(const at::Tensor& tensor) {
     auto t = tensor.unsafeGetTensorImpl();
     AT_ASSERT(t->layout() == at::kStrided);
-    AT_ASSERT(tensor.is_contiguous());
+    if (t->is_contiguous()) {
+        return;
+    }
     auto strides = t->strides();
     auto sizes = t->sizes();
     for (size_t i = 0; i < strides.size(); ++i) {
