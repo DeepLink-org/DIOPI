@@ -1493,6 +1493,10 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
 }
 
+at::Tensor apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_without_format(empty_npu(src.sizes(), src.options())); }
+at::Tensor apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return empty_npu(sizes, src.options()); }
+at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return empty_npu(sizes, options); }
+
 at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
     at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
     at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
@@ -3099,7 +3103,7 @@ namespace {
 at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
-    return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
+    return at_npu::native::NPUNativeOpApiFunctions::copy_(self, src, non_blocking);
 }
 
 at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::viewStorage(self, size); }
@@ -3150,7 +3154,11 @@ at::Tensor wrapper_memory_format_empty(c10::SymIntArrayRef size, c10::optional<a
 }
 
 at::Tensor wrapper__clone(const at::Tensor& self, c10::optional<at::MemoryFormat> memory_format) {
-    return at_npu::native::NPUNativeFunctions::clone(self, memory_format);
+    if (at_npu::native::FormatHelper::IsOpInputBaseFormat(self)) {
+        return at_npu::native::NPUNativeOpApiFunctions::clone(self, memory_format);
+    } else {
+        return at_npu::native::NPUNativeFunctions::clone(self, memory_format);
+    }
 }
 
 at::Tensor& wrapper_source_Storage_set_(at::Tensor& self, at::Storage src) {
