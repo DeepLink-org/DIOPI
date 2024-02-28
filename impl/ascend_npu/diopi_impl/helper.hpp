@@ -268,6 +268,8 @@ inline diopiDtype_t getDIOPITensorType(at::ScalarType scalarType) {
     }
 }
 
+inline bool isIntegralTypeWithBool(const diopiDtype_t& type) { return type < 8 || type == 11; }
+
 inline diopiDtype_t getDIOPITensorType(const at::Tensor& tensor) { return getDIOPITensorType(tensor.scalar_type()); }
 
 inline diopiDevice_t getDIOPIDevice(c10::DeviceType device) {
