@@ -5,6 +5,8 @@
 #include <diopi/diopirt.h>
 
 #include <cstdarg>
+#include <cstddef>
+#include <cstdint>
 #include <set>
 #include <string>
 #include <utility>
@@ -66,7 +68,7 @@ inline void error(const char* file, int lineNum, const char* funcName, const cha
     printf("ERROR:[%s:%d in func:%s] : ", file, lineNum, funcName);
     vprintf(format, args);
     printf("\n");
-    throw std::runtime_error("error occuers");
+    throw std::runtime_error("error occurs");
 }
 
 inline void warning(const char* file, int lineNum, const char* funcName, const char* format, ...) {
@@ -85,19 +87,46 @@ inline void info(const char* file, int lineNum, const char* funcName, const char
     printf("\n");
 }
 
+// NOTE: parameter `tensor` is only for printing warning message.
+aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* stride, diopiConstTensorHandle_t tensor);
+
+constexpr aclDataType diopiDtypeToAclDataType(diopiDtype_t dtype) noexcept {
+#define DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype, acl_dtype) \
+    case diopi_dtype:                                         \
+        return acl_dtype;
+
+    switch (dtype) {
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_float16, ACL_FLOAT16)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_float32, ACL_FLOAT)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_float64, ACL_DOUBLE)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_int8, ACL_INT8)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_uint8, ACL_UINT8)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_int16, ACL_INT16)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_uint16, ACL_UINT16)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_int32, ACL_INT32)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_uint32, ACL_UINT32)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_int64, ACL_INT64)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_uint64, ACL_UINT64)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_bool, ACL_BOOL)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_complex64, ACL_COMPLEX64)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_complex128, ACL_COMPLEX128)
+        default:
+            return ACL_DT_UNDEFINED;
+    }
+#undef DIOPI_DTYPE_TO_ACL_DTYPE_CASE
+}
+
 class AscendTensor final {
 public:
     explicit AscendTensor(const diopiConstTensorHandle_t& tensor) : tensor_(tensor) {
         if (tensor_ != nullptr) {
             diopiSize_t diopiShape;
             diopiGetTensorShape(tensor_, &diopiShape);
-            std::vector<int64_t> shapeTmp(diopiShape.data, diopiShape.data + diopiShape.len);
-            shape_ = std::move(shapeTmp);
+            shape_.assign(diopiShape.data, diopiShape.data + diopiShape.len);
 
             diopiSize_t diopiStride;
             diopiGetTensorStride(tensor_, &diopiStride);
-            std::vector<int64_t> strideTmp(diopiStride.data, diopiStride.data + diopiStride.len);
-            stride_ = std::move(strideTmp);
+            stride_.assign(diopiStride.data, diopiStride.data + diopiStride.len);
             ASCEND_CHECK_ABORT(stride_.size() == shape_.size(), "stride_.size() == shape_.size() check failed.");
 
             diopiDtype_t diopiDtype;
@@ -111,10 +140,10 @@ public:
             diopiGetTensorNumel(tensor_, &numel_);
             diopiGetTensorElemSize(tensor_, &elemsize_);
             diopiGetTensorStorageOffset(tensor_, &storageOffset_);
+            diopiGetTensorStorageNbytes(tensor_, &storageNbytes_);
         }
     }
 
-public:
     // default construct
     AscendTensor() = default;
     // Shallow copy.
@@ -160,12 +189,7 @@ public:
 
     int64_t stride(int i) const { return stride()[i]; }
 
-    int64_t dim() const {
-        if (shape_.empty()) {
-            return 0;
-        }
-        return static_cast<int64_t>(this->shape().size());
-    }
+    int64_t dim() const { return static_cast<int64_t>(shape_.size()); }
 
     bool defined() const { return tensor_; }
 
@@ -179,9 +203,14 @@ public:
         return elemsize_;
     }
 
-    int64_t storageOffset() {
+    int64_t storageOffset() const {
         ASCEND_CHECK_NULLPTR_ABORT(tensor_);
         return storageOffset_;
+    }
+
+    std::size_t storageNbytes() const {
+        ASCEND_CHECK_NULLPTR_ABORT(tensor_);
+        return storageNbytes_;
     }
 
     bool isContiguous(diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) const;
@@ -197,8 +226,8 @@ public:
 
     int64_t getAclMemBufferSize() const;
     std::vector<int64_t> getAclMemShape() const;
-    aclFormat getAclDataFormat() const;
-    aclDataType getAclDataType() const;
+    aclFormat getAclDataFormat() const { return inferAclDataFormat(dim(), shape_.data(), stride_.data(), tensor_); }
+    aclDataType getAclDataType() const { return diopiDtypeToAclDataType(dtype_); }
 
     // Those methods may change the class attribute.
     AscendTensor& asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride);
@@ -215,6 +244,7 @@ private:
     int64_t numel_{0};
     int64_t elemsize_{0};
     int64_t storageOffset_{0};
+    std::size_t storageNbytes_{0};
 };
 
 }  // namespace ascend

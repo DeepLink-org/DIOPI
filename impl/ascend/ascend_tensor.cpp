@@ -7,6 +7,7 @@
 #include "ascend_tensor.hpp"
 
 #include <array>
+#include <cstdint>
 #include <mutex>
 #include <utility>
 
@@ -167,17 +168,17 @@ int64_t AscendTensor::getAclMemBufferSize() const {
     }
 }
 
-aclFormat AscendTensor::getAclDataFormat() const {
+aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* stride, diopiConstTensorHandle_t tensor) {
     static std::once_flag warningFlag;
-    if (dim() == 5) {
-        std::array<int64_t, 5> thStride{stride(0), stride(1), stride(2), stride(3), stride(4)};
+    if (dim == 5) {
+        std::array<int64_t, 5> thStride{stride[0], stride[1], stride[2], stride[3], stride[4]};
         int st = 1;
         std::array<int64_t, 5> ncdhwStride;
         for (auto k : {4, 3, 2, 1, 0}) {
             ncdhwStride[k] = st;
-            if (shape(k) == 0) continue;
-            if (shape(k) == -1) st = -1;
-            if (st != -1) st *= shape(k);
+            if (shape[k] == 0) continue;
+            if (shape[k] == -1) st = -1;
+            if (st != -1) st *= shape[k];
         }
         if (thStride == ncdhwStride) {
             return ACL_FORMAT_NCDHW;
@@ -187,25 +188,25 @@ aclFormat AscendTensor::getAclDataFormat() const {
         std::array<int64_t, 5> ndhwcStride;
         for (auto k : {1, 4, 3, 2, 0}) {
             ndhwcStride[k] = st;
-            if (shape(k) == 0) continue;
-            if (shape(k) == -1) st = -1;
-            if (st != -1) st *= shape(k);
+            if (shape[k] == 0) continue;
+            if (shape[k] == -1) st = -1;
+            if (st != -1) st *= shape[k];
         }
         if (thStride == ndhwcStride) {
             return ACL_FORMAT_NDHWC;
         }
         std::call_once(
-            warningFlag, warning, __FILE__, __LINE__, __FUNCTION__, "Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor_).c_str());
-    } else if (dim() == 4) {
-        std::array<int64_t, 4> thStride{stride(0), stride(1), stride(2), stride(3)};
+            warningFlag, warning, __FILE__, __LINE__, __FUNCTION__, "Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor).c_str());
+    } else if (dim == 4) {
+        std::array<int64_t, 4> thStride{stride[0], stride[1], stride[2], stride[3]};
         {
             std::array<int64_t, 4> nchwStride;
             int st = 1;
             for (auto k : {3, 2, 1, 0}) {
                 nchwStride[k] = st;
-                if (shape(k) == 0) continue;
-                if (shape(k) == -1) st = -1;
-                if (st != -1) st *= shape(k);
+                if (shape[k] == 0) continue;
+                if (shape[k] == -1) st = -1;
+                if (st != -1) st *= shape[k];
             }
             if (thStride == nchwStride) {
                 return ACL_FORMAT_NCHW;
@@ -215,51 +216,16 @@ aclFormat AscendTensor::getAclDataFormat() const {
         int st = 1;
         for (auto k : {1, 3, 2, 0}) {
             nhwcStride[k] = st;
-            if (shape(k) == 0) continue;
-            if (shape(k) == -1) st = -1;
-            if (st != -1) st *= shape(k);
+            if (shape[k] == 0) continue;
+            if (shape[k] == -1) st = -1;
+            if (st != -1) st *= shape[k];
         }
         if (thStride == nhwcStride) {
             return ACL_FORMAT_NHWC;
         }
-        std::call_once(warningFlag, warning, __FILE__, __LINE__, __FUNCTION__, "Acl only support NCHW or NHWC format! but get %s", dumpTensor(tensor_).c_str());
+        std::call_once(warningFlag, warning, __FILE__, __LINE__, __FUNCTION__, "Acl only support NCHW or NHWC format! but get %s", dumpTensor(tensor).c_str());
     }
     return ACL_FORMAT_ND;
-}
-
-aclDataType AscendTensor::getAclDataType() const {
-    switch (dtype_) {
-        case diopi_dtype_float16:
-            return ACL_FLOAT16;
-        case diopi_dtype_float32:
-            return ACL_FLOAT;
-        case diopi_dtype_float64:
-            return ACL_DOUBLE;
-        case diopi_dtype_int8:
-            return ACL_INT8;
-        case diopi_dtype_uint8:
-            return ACL_UINT8;
-        case diopi_dtype_int16:
-            return ACL_INT16;
-        case diopi_dtype_uint16:
-            return ACL_UINT16;
-        case diopi_dtype_int32:
-            return ACL_INT32;
-        case diopi_dtype_uint32:
-            return ACL_UINT32;
-        case diopi_dtype_int64:
-            return ACL_INT64;
-        case diopi_dtype_uint64:
-            return ACL_UINT64;
-        case diopi_dtype_bool:
-            return ACL_BOOL;
-        case diopi_dtype_complex64:
-            return ACL_COMPLEX64;
-        case diopi_dtype_complex128:
-            return ACL_COMPLEX128;
-        default:
-            return ACL_DT_UNDEFINED;
-    }
 }
 
 }  // namespace ascend
