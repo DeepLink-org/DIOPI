@@ -6,16 +6,20 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/OpInterface.h"
 
 namespace OP_IMPL_NS {
 
 diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
     BEGIN_CALL_ACL_OP(out);
     at::Tensor outTempAt = outAt;
-    if (outAt.scalar_type() == at::kDouble) {
-        outTempAt = outAt.to(at::kFloat);
-    } else if (outAt.scalar_type() == at::kLong) {
-        outTempAt = outAt.to(at::kInt);
+    if (false) {
+        if (outAt.scalar_type() == at::kDouble) {
+            outTempAt = outAt.to(at::kFloat);
+        } else if (outAt.scalar_type() == at::kLong) {
+            outTempAt = outAt.to(at::kInt);
+        }
     }
 
     std::vector<at::Tensor> tensorsAt;
@@ -28,7 +32,12 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         tensorsAt.push_back(tensorAt.to(outTempAt.scalar_type()));
     }
     if (!tensorsAt.empty()) {
-        acl_op::cat_out(tensorsAt, dim, outTempAt);
+        if (false) {
+            acl_op::cat_out(tensorsAt, dim, outTempAt);
+        } else {
+            at::ITensorListRef listTensorsAt(tensorsAt);
+            op_api::cat_out(listTensorsAt, dim, outTempAt);
+        }
     }
     if (outAt.scalar_type() != outTempAt.scalar_type()) {
         outAt.copy_(outTempAt);
