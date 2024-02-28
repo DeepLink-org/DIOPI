@@ -114,8 +114,7 @@ ascend:
 - diopiMulInpScalar
 - diopiMulScalar
 - diopiMultinomial
-- diopiNLLLoss
-- diopiNLLLossBackward
+
 - diopiNe
 - diopiNeInp
 - diopiNeInpScalar
@@ -197,6 +196,7 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
+- diopiNLLLossBackward
 ascend_npu:
 - diopiBmm
 - diopiMatmul
@@ -236,3 +236,4 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
+- diopiNLLLoss
