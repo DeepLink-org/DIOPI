@@ -85,8 +85,6 @@ ascend:
 - diopiLog2
 - diopiLog2Inp
 - diopiLogInp
-- diopiLogSoftmax
-- diopiLogSoftmaxBackward
 - diopiLogicalAndInp
 - diopiLogicalNot
 - diopiLogicalNotInp
@@ -236,3 +234,5 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
+- diopiLogSoftmax
+- diopiLogSoftmaxBackward
