@@ -78,12 +78,6 @@ ascend:
 - diopiLeakyReluInp
 - diopiLinear
 - diopiLinearBackward
-- diopiLog
-- diopiLog10
-- diopiLog10Inp
-- diopiLog2
-- diopiLog2Inp
-- diopiLogInp
 - diopiLogSoftmax
 - diopiLogSoftmaxBackward
 - diopiLogicalAndInp
@@ -216,6 +210,12 @@ ascend_npu:
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiCol2Im
+- diopiLog
+- diopiLog10
+- diopiLog10Inp
+- diopiLog2
+- diopiLog2Inp
+- diopiLogInp
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIndex
