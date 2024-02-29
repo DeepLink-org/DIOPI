@@ -13,6 +13,7 @@ namespace OP_IMPL_NS {
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     BEGIN_CALL_ACL_OP(input, out);
     if (inputAt.numel() == 0) {
+        op_api::fill_(outAt, c10::Scalar(0.0));
         return diopiSuccess;
     }
 
@@ -22,17 +23,13 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     }
 
     bool keepdim = true;
-    diopiSize_t inS, outS;
-    diopiGetTensorShape(input, &inS);
-    diopiGetTensorShape(out, &outS);
-
-    if (inS.len != outS.len) {
+    if (inputAt.dim() != outAt.dim()) {
         keepdim = false;
     }
 
     at::ArrayRef<int64_t> rdim(dim.data, dim.len);
 
-    op_api::sum_out(inputAt, rdim, keepdim, inputAt.scalar_type(), outAt);
+    op_api::sum_out(inputAt, rdim, keepdim, outAt.scalar_type(), outAt);
 
     END_CALL_ACL_OP();
 }
@@ -40,6 +37,7 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     BEGIN_CALL_ACL_OP(input, out);
     if (inputAt.numel() == 0) {
+        op_api::fill_(outAt, c10::Scalar(std::nanf("")));
         return diopiSuccess;
     }
 
@@ -49,17 +47,13 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     }
 
     bool keepdim = true;
-    diopiSize_t inS, outS;
-    diopiGetTensorShape(input, &inS);
-    diopiGetTensorShape(out, &outS);
-
-    if (inS.len != outS.len) {
+    if (inputAt.dim() != outAt.dim()) {
         keepdim = false;
     }
 
     at::ArrayRef<int64_t> rdim(dim.data, dim.len);
 
-    op_api::mean_out(inputAt, rdim, keepdim, inputAt.scalar_type(), outAt);
+    op_api::mean_out(inputAt, rdim, keepdim, outAt.scalar_type(), outAt);
 
     END_CALL_ACL_OP();
 }

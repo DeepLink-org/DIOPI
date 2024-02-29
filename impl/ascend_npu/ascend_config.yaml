@@ -236,3 +236,5 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
+- diopiSum
+- diopiMean
