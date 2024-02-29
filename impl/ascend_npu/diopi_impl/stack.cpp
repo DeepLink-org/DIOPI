@@ -6,6 +6,8 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/OpInterface.h"
 
 namespace OP_IMPL_NS {
 
@@ -21,7 +23,11 @@ diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         tensorsVec[i] = impl::aten::buildATen(tensors[i]);
     }
     at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
-    acl_op::stack_out(tensorsVec, dim, outAt);
+    if (false) {
+        acl_op::stack_out(tensorsVec, dim, outAt);
+    } else {
+        op_api::stack_out(tensorsVec, dim, outAt);
+    }
 
     END_CALL_ACL_OP();
 }
