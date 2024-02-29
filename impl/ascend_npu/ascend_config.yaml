@@ -1,6 +1,4 @@
 ascend:
-- diopiAbs
-- diopiAbsInp
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcdiv
@@ -76,12 +74,6 @@ ascend:
 - diopiLeakyReluInp
 - diopiLinear
 - diopiLinearBackward
-- diopiLog
-- diopiLog10
-- diopiLog10Inp
-- diopiLog2
-- diopiLog2Inp
-- diopiLogInp
 - diopiLogSoftmax
 - diopiLogSoftmaxBackward
 - diopiLogicalAndInp
@@ -138,9 +130,6 @@ ascend:
 - diopiSigmoid
 - diopiSigmoidBackward
 - diopiSigmoidInp
-- diopiSilu
-- diopiSiluBackward
-- diopiSiluInp
 - diopiSin
 - diopiSinInp
 - diopiSlice
@@ -192,6 +181,8 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiAbs
+- diopiAbsInp
 - diopiArange
 - diopiNonzero
 - diopiBmm
@@ -205,6 +196,9 @@ ascend_npu:
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
+- diopiSilu
+- diopiSiluInp
+- diopiSiluBackward
 - diopiStack
 - diopiNormal
 - diopiNormalInp
@@ -212,6 +206,12 @@ ascend_npu:
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiCol2Im
+- diopiLog
+- diopiLog10
+- diopiLog10Inp
+- diopiLog2
+- diopiLog2Inp
+- diopiLogInp
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIndex
