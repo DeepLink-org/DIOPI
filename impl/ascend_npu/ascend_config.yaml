@@ -90,10 +90,6 @@ ascend:
 - diopiLogicalNot
 - diopiLogicalNotInp
 - diopiLogicalOrInp
-- diopiLt
-- diopiLtInp
-- diopiLtInpScalar
-- diopiLtScalar
 - diopiMSELoss
 - diopiMSELossBackward
 - diopiMaskedFill
@@ -198,6 +194,10 @@ ascend:
 - diopiScatterInpScalar
 ascend_npu:
 - diopiBmm
+- diopiLt
+- diopiLtInp
+- diopiLtInpScalar
+- diopiLtScalar
 - diopiMatmul
 - diopiCastDtype
 - diopiCopyInp
