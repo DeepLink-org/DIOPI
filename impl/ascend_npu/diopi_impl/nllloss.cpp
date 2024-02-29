@@ -82,7 +82,8 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         totalWeightAt = op_api::sum(selectedWeightAt, weightAt.scalar_type());
     } else {
         // If weight is not defined, compute total weight by counting the valid targets
-        totalWeightAt = at::scalar_tensor(mask.sum().item<float>(), inputAt.options());
+        // totalWeightAt = at::scalar_tensor(mask.sum().item<float>(), inputAt.options());
+        totalWeightAt = op_api::sum(mask, inputAt.scalar_type());
     }
 
     if (inputAt.dim() <= 2) {

@@ -642,7 +642,7 @@ public:
     static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type);
     static at::Tensor copy_tensor_host_to_device(const at::Tensor& cpu_tensor) { INTERFACE_NOT_IMPL; }
 
-    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { return (tensor.is_cpu() && tensor.numel() == 1); }
+    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { return (tensor.is_cpu() && tensor.dim() == 0); }
     static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
     // check output tensor
@@ -671,9 +671,9 @@ public:
     static at::Tensor apply_tensor_with_format(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false);
     static at::Tensor apply_tensor_with_format(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false);
     static at::Tensor apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions& options);
-    static at::Tensor apply_tensor_without_format(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
-    static at::Tensor apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL; }
-    static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
+    static at::Tensor apply_tensor_without_format(const at::Tensor& src);
+    static at::Tensor apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes);
+    static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options);
 
     // DEPRECATED: CheckOut will be deprecated, please use check_tensor to check output tensor instead.
     static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst);

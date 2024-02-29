@@ -1494,6 +1494,10 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
 }
 
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_without_format(empty_npu(src.sizes(), src.options())); }
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return empty_npu(sizes, src.options()); }
+at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return empty_npu(sizes, options); }
+
 at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
     at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
     at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
@@ -3237,6 +3241,9 @@ at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, a
 at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
 at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
 at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
+
+at::Tensor& wrapper_NPU__zero_(at::Tensor& self) { return op_api::fill_(self, 0.0); }
+
 }  // namespace
 
 namespace at {
@@ -3277,6 +3284,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
     m.impl("dot", TORCH_FN(wrapper__dot));
     m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
+    m.impl("zero_", TORCH_FN(wrapper_NPU__zero_));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
