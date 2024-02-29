@@ -10,7 +10,6 @@ ascend:
 - diopiAddmm
 - diopiAll
 - diopiAny
-- diopiArgmax
 - diopiArange
 - diopiBaddbmm
 - diopiBaddbmmInp
