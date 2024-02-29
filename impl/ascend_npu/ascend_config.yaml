@@ -206,6 +206,10 @@ ascend_npu:
 - diopiRemainder
 - diopiRepeat
 - diopiStack
+- diopiSub
+- diopiSubInp
+- diopiSubInpScalar
+- diopiSubScalar
 - diopiNormal
 - diopiNormalInp
 - diopiNorm
@@ -231,8 +235,4 @@ ascend_npu:
 - diopiAtanInp
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
-- diopiSub
-- diopiSubInp
-- diopiSubInpScalar
-- diopiSubScalar
 - diopiFill
