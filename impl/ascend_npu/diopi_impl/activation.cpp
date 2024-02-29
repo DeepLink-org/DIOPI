@@ -54,7 +54,7 @@ diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     END_CALL_ACL_OP();
 }
 
-diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { 
+diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input);
     if (false) {
         acl_op::silu_out(inputAt, inputAt);
