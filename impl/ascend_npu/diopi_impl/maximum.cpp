@@ -24,5 +24,3 @@ diopiError_t diopiMax(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTe
 }
 
 }  // namespace OP_IMPL_NS
-
-
