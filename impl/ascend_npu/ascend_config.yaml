@@ -5,8 +5,6 @@ ascend:
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcdiv
 - diopiAddcdivInp
-- diopiAddcmul
-- diopiAddcmulInp
 - diopiAddmm
 - diopiAll
 - diopiAny
@@ -236,3 +234,5 @@ ascend_npu:
 - diopiMaskedSelectBackward
 - diopiFill
 - diopiArgmax
+- diopiAddcmul
+- diopiAddcmulInp
