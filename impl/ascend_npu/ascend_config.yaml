@@ -115,7 +115,6 @@ ascend:
 - diopiNeScalar
 - diopiNeg
 - diopiNegInp
-- diopiNonzero
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -189,6 +188,7 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiNonzero
 - diopiBmm
 - diopiMatmul
 - diopiCastDtype
