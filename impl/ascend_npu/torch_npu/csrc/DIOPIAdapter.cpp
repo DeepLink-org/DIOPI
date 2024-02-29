@@ -3104,7 +3104,11 @@ namespace {
 at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
-    return at_npu::native::NPUNativeOpApiFunctions::copy_(self, src, non_blocking);
+    if (at_npu::native::FormatHelper::IsOpInputBaseFormat(self) && at_npu::native::FormatHelper::IsOpInputBaseFormat(src)) {
+        return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
+    } else {
+        return at_npu::native::NPUNativeOpApiFunctions::copy_(self, src, non_blocking);
+    }
 }
 
 at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::viewStorage(self, size); }
