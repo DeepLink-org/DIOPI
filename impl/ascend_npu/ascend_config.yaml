@@ -11,6 +11,7 @@ ascend:
 - diopiAll
 - diopiAny
 - diopiArgmax
+- diopiArange
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiBitwiseAnd
@@ -236,3 +237,4 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
+- diopiArgmax
