@@ -19,12 +19,6 @@
 - diopiGeluBackward:
     dtype: (float64)->float32
 
-- diopiAbs:
-    dtype: (bool, uint8)->int16
-
-- diopiAbsInp:
-    dtype: (bool, uint8)->int16
-
 - diopiConvolution2d:
     dtype: (float64)->float16
 
