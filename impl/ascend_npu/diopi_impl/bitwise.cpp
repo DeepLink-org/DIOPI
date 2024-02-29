@@ -69,4 +69,4 @@ diopiError_t diopiBitwiseOrInpScalar(diopiContextHandle_t ctx, diopiTensorHandle
     END_CALL_ACL_OP();
 }
 
-}
+}  // namespace OP_IMPL_NS
