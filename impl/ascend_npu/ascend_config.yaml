@@ -234,5 +234,5 @@ ascend_npu:
 - diopiPowTensor
 - diopiMul
 - diopiMulInp
-# - diopiMulScalar
+- diopiMulScalar
 - diopiMulInpScalar
