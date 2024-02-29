@@ -196,6 +196,7 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiArange
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
