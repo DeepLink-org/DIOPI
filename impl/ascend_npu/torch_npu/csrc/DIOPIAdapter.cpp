@@ -269,34 +269,29 @@ void OpPreparation::check_memory(const std::initializer_list<at::Tensor>& inputs
     CalcuOpUtil::CheckMemoryOverLaps(in, out);
 }
 
-static bool check_inplace_tensor(const std::initializer_list<at::Tensor> &srcList, at::Tensor &dst)
-{
+static bool check_inplace_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst) {
     bool isInplaceTensor = false;
     // check whether dst is contained in src_list
-    for (const auto &src : srcList) {
-    if (dst.is_same(src)) {
-        isInplaceTensor = true;
-        break;
-    }
+    for (const auto& src : srcList) {
+        if (dst.is_same(src)) {
+            isInplaceTensor = true;
+            break;
+        }
     }
     return isInplaceTensor;
 }
 
-static void check_tensor_size(const std::initializer_list<at::Tensor> &srcList, at::Tensor &dst,
-                                c10::IntArrayRef expectSize)
-{
+static void check_tensor_size(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, c10::IntArrayRef expectSize) {
     bool is_inplace = check_inplace_tensor(srcList, dst);
     // Preserve legacy resizing behavior of out=... arguments
     if (!dst.sizes().equals(expectSize)) {
-    TORCH_CHECK(!is_inplace, "output with shape ", dst.sizes(), " doesn't match the broadcast shape ",
-                expectSize);
-    dst.resize_(expectSize);
+        TORCH_CHECK(!is_inplace, "output with shape ", dst.sizes(), " doesn't match the broadcast shape ", expectSize);
+        dst.resize_(expectSize);
     }
     return;
 }
 
-void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, at::ScalarType expectDtype,
-                                 c10::IntArrayRef expectSize) {
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, at::ScalarType expectDtype, c10::IntArrayRef expectSize) {
     check_memory(srcList, {dst});
     TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
     TORCH_CHECK(dst.scalar_type() == expectDtype, "expected dtype ", expectDtype, " but got dtype ", dst.scalar_type());
@@ -313,12 +308,13 @@ void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcLis
     check_tensor_size(srcList, dst, expectSize);
 }
 
-void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, const at::Tensor& expectTensor,c10::IntArrayRef expectSize) {
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, const at::Tensor& expectTensor,
+                                 c10::IntArrayRef expectSize) {
     check_tensor(srcList, dst, expectTensor.scalar_type(), expectSize);
 }
 
 bool OpPreparation::is_scalar_wrapped_to_tensor(const at::Tensor& tensor) {
-    return tensor.unsafeGetTensorImpl()->is_wrapped_number() &&(!torch_npu::utils::is_npu(tensor));
+    return tensor.unsafeGetTensorImpl()->is_wrapped_number() && (!torch_npu::utils::is_npu(tensor));
 }
 
 void NpuUtils::format_fresh_view(at::Tensor& x, const at::Tensor& y) {
