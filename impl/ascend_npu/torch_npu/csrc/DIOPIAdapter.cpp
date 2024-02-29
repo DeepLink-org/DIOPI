@@ -266,10 +266,10 @@ UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& 
 void OpPreparation::check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) {
     c10::SmallVector<at::Tensor, N> in = inputs;
     c10::SmallVector<at::Tensor, N> out = outputs;
-    // CalcuOpUtil::CheckMemoryOverLaps(in, out);
+    CalcuOpUtil::CheckMemoryOverLaps(in, out);
 }
 
-bool check_inplace_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst) {
+static bool check_inplace_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst) {
     bool is_inplace_tensor = false;
     // check whether dst is contained in src_list
     for (const auto& src : src_list) {
@@ -281,7 +281,7 @@ bool check_inplace_tensor(const std::initializer_list<at::Tensor>& src_list, at:
     return is_inplace_tensor;
 }
 
-void check_tensor_size(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) {
+static void check_tensor_size(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) {
     bool is_inplace = check_inplace_tensor(src_list, dst);
     // Preserve legacy resizing behavior of out=... arguments
     if (!dst.sizes().equals(expect_size)) {
