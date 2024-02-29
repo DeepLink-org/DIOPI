@@ -11,7 +11,6 @@ ascend:
 - diopiAll
 - diopiAny
 - diopiArange
-- diopiArgmax
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiBitwiseAnd
@@ -122,7 +121,6 @@ ascend:
 - diopiNeScalar
 - diopiNeg
 - diopiNegInp
-- diopiNonzero
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -197,6 +195,8 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiArange
+- diopiNonzero
 - diopiBmm
 - diopiMatmul
 - diopiCastDtype
@@ -236,3 +236,4 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
+- diopiArgmax

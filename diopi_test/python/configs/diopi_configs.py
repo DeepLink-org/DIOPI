@@ -1726,11 +1726,8 @@ diopi_configs = {
         ),
     ),
 
-    # FIXME add输入int8、uint8结果不一致
     'pointwise_binary_diff_dtype': dict(
-        # name=['add', 'mul', 'eq', 'ne', 'le',
-        #       'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
-        name=['mul', 'eq', 'ne', 'le',
+        name=['add', 'mul', 'eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         interface=['torch'],
         tensor_para=dict(
