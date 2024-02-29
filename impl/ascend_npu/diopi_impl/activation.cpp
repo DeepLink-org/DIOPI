@@ -22,6 +22,12 @@ diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     END_CALL_ACL_OP();
 }
 
+diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    BEGIN_CALL_ACL_OP(input, out);
+    acl_op::sigmoid_out(inputAt, outAt);
+    END_CALL_ACL_OP();
+}
+
 diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input, out);
     acl_op::hardswish_out(inputAt, outAt);
