@@ -43,8 +43,6 @@ ascend:
 - diopiEqScalar
 - diopiErf
 - diopiErfInp
-- diopiExp
-- diopiExpInp
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
@@ -123,8 +121,6 @@ ascend:
 - diopiPowInpTensor
 - diopiPowScalar
 - diopiPowTensor
-- diopiReciprocal
-- diopiReciprocalInp
 - diopiRelu
 - diopiReluInp
 - diopiRsqrt
@@ -237,3 +233,7 @@ ascend_npu:
 - diopiMaskedSelectBackward
 - diopiFill
 - diopiArgmax
+- diopiExp
+- diopiExpInp
+- diopiReciprocal
+- diopiReciprocalInp
