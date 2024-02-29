@@ -1,6 +1,4 @@
 ascend:
-- diopiAbs
-- diopiAbsInp
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcdiv
@@ -187,6 +185,8 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiAbs
+- diopiAbsInp
 - diopiArange
 - diopiNonzero
 - diopiBmm
