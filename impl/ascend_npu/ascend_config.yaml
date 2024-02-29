@@ -101,9 +101,7 @@ ascend:
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
 - diopiMaskedFillScalar
-- diopiMax
 - diopiMaxAll
-- diopiMaximum
 - diopiMean
 - diopiMin
 - diopiMinAll
@@ -198,6 +196,8 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiMax
+- diopiMaximum
 - diopiBmm
 - diopiMatmul
 - diopiCastDtype
