@@ -35,12 +35,16 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     }
 
     if (!inputAt.defined()) {
-        acl_op::fill_(outAt, 0);
+        op_api::fill_(outAt, 0);
         return diopiSuccess;
     }
 
     bool keepdim = outAt.dim() == inputAt.dim();
     auto pvalue = calculateP(pAt);
+    if (pvalue == 0) {
+        op_api::fill_(outAt, inputAt.numel());
+        return diopiSuccess;
+    }
     op_api::norm_out(inputAt, pAt, dimAt, false, outAt);
     END_CALL_ACL_OP();
 }
