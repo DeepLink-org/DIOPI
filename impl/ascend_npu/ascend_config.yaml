@@ -10,7 +10,6 @@ ascend:
 - diopiAddmm
 - diopiAll
 - diopiAny
-- diopiArange
 - diopiArgmax
 - diopiBaddbmm
 - diopiBaddbmmInp
@@ -198,6 +197,7 @@ ascend:
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiArange
 - diopiBmm
 - diopiMatmul
 - diopiCastDtype
