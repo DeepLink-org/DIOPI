@@ -6,11 +6,14 @@
 
 #include "utils.hpp"
 
+#include <array>
+#include <cstdint>
 #include <functional>
 #include <numeric>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
+#include <utility>
 
 #include "../ascend_tensor.hpp"
 #include "acloprunner.hpp"
@@ -55,9 +58,40 @@ const char* diopiDtypeToStr(diopiDtype_t dtype) {
         case diopi_dtype_complex128:
             return "diopi_dtype_complex128";
         default:
-            return "unsupport dtype";
+            return "unsupported dtype";
     }
     return "";
+}
+
+std::pair<std::array<std::byte, sizeof(int64_t)>, int64_t> getScalarBytes(const diopiScalar_t* scalar, std::optional<diopiDtype_t> castToDtype) {
+    std::array<std::byte, sizeof(int64_t)> bytes{};  // just for store the value with the different type.
+    int64_t nbytes = 0;
+    auto dtype = castToDtype.value_or(scalar->stype);
+#define DIOPI_GET_SCALAR_BYTES_CASE(diopiType, ctype) \
+    case diopiType: {                                 \
+        nbytes = sizeof(ctype);                        \
+        ctype val = getValue<ctype>(scalar);           \
+        std::memcpy(bytes.data(), &val, nbytes);       \
+        break;                                         \
+    }
+    switch (dtype) {
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_bool, bool)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_int8, int8_t)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_uint8, uint8_t)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_int16, int16_t)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_uint16, uint16_t)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_int32, int32_t)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_uint32, uint32_t)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_int64, int64_t)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_uint64, uint64_t)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_float16, half_float::half)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_float32, float)
+        DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_float64, double)
+        default: {
+            error(__FILE__, __LINE__, __FUNCTION__, "invalid input tensor dtype: %s", diopiDtypeToStr(scalar->stype));
+        }
+    }
+    return {bytes, nbytes};
 }
 
 // ascend tensor utils
@@ -255,73 +289,7 @@ diopiTensorHandle_t createTensorIfNullptrOrConstCast(diopiContextHandle_t ctx, d
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
     // get scalar
-    int64_t nbytes = 0;
-    uint64_t buff = 0;  // just for store the value with the different type.
-    switch (dtype) {
-        case diopi_dtype_bool: {
-            nbytes = 1;
-            *reinterpret_cast<bool*>(&buff) = getValue<bool>(scalar);
-            break;
-        }
-        case diopi_dtype_int8: {
-            nbytes = 1;
-            *reinterpret_cast<int8_t*>(&buff) = getValue<int8_t>(scalar);
-            break;
-        }
-        case diopi_dtype_uint8: {
-            nbytes = 1;
-            *reinterpret_cast<uint8_t*>(&buff) = getValue<uint8_t>(scalar);
-            break;
-        }
-        case diopi_dtype_int16: {
-            nbytes = 2;
-            *reinterpret_cast<int16_t*>(&buff) = getValue<int16_t>(scalar);
-            break;
-        }
-        case diopi_dtype_uint16: {
-            nbytes = 2;
-            *reinterpret_cast<uint16_t*>(&buff) = getValue<uint16_t>(scalar);
-            break;
-        }
-        case diopi_dtype_int32: {
-            nbytes = 4;
-            *reinterpret_cast<int32_t*>(&buff) = getValue<int32_t>(scalar);
-            break;
-        }
-        case diopi_dtype_uint32: {
-            nbytes = 4;
-            *reinterpret_cast<uint32_t*>(&buff) = getValue<uint32_t>(scalar);
-            break;
-        }
-        case diopi_dtype_int64: {
-            nbytes = 8;
-            *reinterpret_cast<int64_t*>(&buff) = getValue<int64_t>(scalar);
-            break;
-        }
-        case diopi_dtype_uint64: {
-            nbytes = 8;
-            *reinterpret_cast<uint64_t*>(&buff) = getValue<uint64_t>(scalar);
-            break;
-        }
-        case diopi_dtype_float16: {
-            nbytes = 2;
-            *reinterpret_cast<half_float::half*>(&buff) = getValue<half_float::half>(scalar);
-            break;
-        }
-        case diopi_dtype_float32: {
-            nbytes = 4;
-            *reinterpret_cast<float*>(&buff) = getValue<float>(scalar);
-            break;
-        }
-        case diopi_dtype_float64: {
-            nbytes = 8;
-            *reinterpret_cast<double*>(&buff) = getValue<double>(scalar);
-            break;
-        }
-        default: {
-            error(__FILE__, __LINE__, __FUNCTION__, "the input tensor dtype %s is not allown", diopiDtypeToStr(dtype));
-        }
-    }
+    auto [bytes, nbytes] = getScalarBytes(scalar, dtype);
     int64_t sizeTmp[1] = {1};
     diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
     void* outDataPtr = nullptr;
@@ -329,7 +297,7 @@ diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t*
     diopiRequireTensor(ctx, &outTmp, &sSize, nullptr, dtype, device);
     if (device == diopi_host) {
         diopiGetTensorData(outTmp, &outDataPtr);
-        memcpy(outDataPtr, &buff, nbytes);
+        memcpy(outDataPtr, bytes.data(), nbytes);
     } else if (device == diopi_device) {
         diopiFill(ctx, outTmp, scalar);
     } else {
