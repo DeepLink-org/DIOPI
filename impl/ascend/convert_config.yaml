@@ -284,6 +284,10 @@
     # data type float64 of input [x] is not supported
     dtype: (float64)->float32
 
+- diopiIm2Col:
+    # data type float64 of input [x] is not supported
+    dtype: (float64)->float32
+
 - diopiRemainderTensor:
     dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
 
