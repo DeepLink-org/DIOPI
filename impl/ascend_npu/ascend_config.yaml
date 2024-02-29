@@ -143,9 +143,6 @@ ascend:
 - diopiSigmoid
 - diopiSigmoidBackward
 - diopiSigmoidInp
-- diopiSilu
-- diopiSiluBackward
-- diopiSiluInp
 - diopiSin
 - diopiSinInp
 - diopiSlice
@@ -208,6 +205,9 @@ ascend_npu:
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
+- diopiSilu
+- diopiSiluInp
+- diopiSiluBackward
 - diopiStack
 - diopiNormal
 - diopiNormalInp
