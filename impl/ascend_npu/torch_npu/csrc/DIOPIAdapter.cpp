@@ -1214,8 +1214,6 @@ void ContiguousTensorDesc::find_match_optimization_cases() {
     }
 }
 
-OptimizationCases TransContiguous::optCasesDefault = {};
-OptimizationCases TransContiguous::optCasesAnyFormat = {"permute"};
 ContiguousTensorDesc TransContiguous::GetTensorDescInfo(const at::Tensor& src, const OptimizationCases& opt_cases) {
     auto src_base_info = torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc();
     c10::SmallVector<int64_t, MAX_DIM> src_size_inferred;
@@ -1343,7 +1341,9 @@ bool CopyOptRegister::CanOptimize(std::string& name, const ContiguousTensorDesc&
 bool CopyOptRegister::Run(const std::string& name, at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
     auto itr = registry.find(name);
     if (itr != registry.end()) {
-        return itr->second->Optimizer(self, src, src_desc);
+        auto ret = itr->second->Optimizer(self, src, src_desc);
+        // std::cout << "use optimize: " << name << " :" << ret << std::endl;
+        return ret;
     }
     return false;
 }
@@ -1413,7 +1413,8 @@ at::Tensor empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType>
 }
 
 at::Tensor clone(const at::Tensor& src, c10::optional<at::MemoryFormat> memory_format) {
-    OptimizationCases opt_cases{"reshape", "slice", "reshapeV2"};
+    // OptimizationCases opt_cases{"reshape", "slice", "reshapeV2"};
+    OptimizationCases opt_cases;
     if (TransContiguous::CanOptimize(src, opt_cases)) {
         // clone with any npu formats
         auto formatTempTensor = TransContiguous::ContiguousOptimizeWithAnyFormat(src, opt_cases);

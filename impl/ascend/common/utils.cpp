@@ -152,28 +152,13 @@ diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTe
     return diopiSuccess;
 }
 
-diopiError_t aclAsStridedCore(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
-    diopiTensorHandle_t targetObj = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
-    AclOpRunner<4, 1>("AsStrided", ctx)
-        .addInput(src.data(), src.getAclMemBufferSize(), src.getAclMemShape(), src.getAclDataFormat(), src.dtype())
-        .addConstInput(src.shape())
-        .addConstInput(src.stride())
-        .addConstInput(0, diopi_dtype_int64)
-        .addOutput(targetObj)
-        .run();
-
-    // update Ascend Tensor attribute.
-    dst = AscendTensor(targetObj);
-    return diopiSuccess;
-}
-
 diopiError_t contiguous(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, diopiMemoryFormat_t format) {
     if (src.isContiguous(format)) {
         dst = const_cast<AscendTensor&>(src);
         return diopiSuccess;
     }
 
-    return aclAsStrided(ctx, src, dst);
+    return diopiCopyInp(ctx, src.tensorHandle(), const_cast<diopiTensorHandle_t>(dst.tensorHandle()));
 }
 
 diopiError_t castTensor(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
@@ -206,18 +191,6 @@ diopiError_t castTensor(diopiContextHandle_t ctx, AscendTensor& src, diopiDtype_
     castTensor(ctx, src, temp);
     src = temp;
     return diopiSuccess;
-}
-
-diopiError_t aclAsStrided(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
-    if (src.dtype() != diopi_dtype_float64) {
-        return aclAsStridedCore(ctx, src, dst);
-    } else {
-        AscendTensor srcCpy = const_cast<AscendTensor&>(src);
-        castTensor(ctx, srcCpy, diopi_dtype_float32);
-        castTensor(ctx, dst, diopi_dtype_float32);
-
-        return aclAsStridedCore(ctx, srcCpy, dst);
-    }
 }
 
 // diopi tensor utils
@@ -574,13 +547,7 @@ diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     diopiGetTensorShape(src, &size);
     diopiRequireTensor(ctx, &srcClone, &size, nullptr, dtype, diopi_device);
     diopiGetTensorStride(src, &stride);
-    if (isContiguous(src)) {
-        diopiCopyInp(ctx, src, srcClone);
-    } else {
-        AscendTensor srcAt(src), srcCloneAt(srcClone);
-        aclAsStrided(ctx, srcAt, srcCloneAt);
-        srcClone = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(srcCloneAt));
-    }
+    diopiCopyInp(ctx, src, srcClone);
     return srcClone;
 }
 

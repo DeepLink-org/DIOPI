@@ -428,11 +428,11 @@ at::Tensor& npu_slice_out(const at::Tensor& self, at::IntArrayRef offsets, at::I
 }
 at::Tensor npu_indexing(const at::Tensor& self, at::IntArrayRef begin, at::IntArrayRef end, at::IntArrayRef strides, int64_t begin_mask, int64_t end_mask,
                         int64_t ellipsis_mask, int64_t new_axis_mask, int64_t shrink_axis_mask) {
-    CUSTOM_OP_NOT_IMPL;
+    return npu_indexing(self, begin, end, strides, begin_mask, end_mask, ellipsis_mask, new_axis_mask, shrink_axis_mask);
 }
 at::Tensor& npu_indexing_out(const at::Tensor& self, at::IntArrayRef begin, at::IntArrayRef end, at::IntArrayRef strides, int64_t begin_mask, int64_t end_mask,
                              int64_t ellipsis_mask, int64_t new_axis_mask, int64_t shrink_axis_mask, at::Tensor& out) {
-    CUSTOM_OP_NOT_IMPL;
+    return acl_op::npu_indexing_out(self, begin, end, strides, begin_mask, end_mask, ellipsis_mask, new_axis_mask, shrink_axis_mask, out);
 }
 at::Tensor npu_softmax_cross_entropy_with_logits_backward(const at::Tensor& grad, const at::Tensor& self, const at::Tensor& labels) { CUSTOM_OP_NOT_IMPL; }
 at::Tensor npu_stride_copy(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset) { CUSTOM_OP_NOT_IMPL; }
