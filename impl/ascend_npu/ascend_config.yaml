@@ -127,7 +127,6 @@ ascend:
 - diopiRsqrtInp
 - diopiSgn
 - diopiSgnInp
-- diopiSigmoid
 - diopiSigmoidBackward
 - diopiSigmoidInp
 - diopiSin
@@ -223,6 +222,7 @@ ascend_npu:
 - diopiContextAttentionInference
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
+- diopiSigmoid
 - diopiTensorDestructionHook
 - diopiHardswish
 - diopiHardswishInp
