@@ -6,6 +6,7 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 
 namespace OP_IMPL_NS {
 
@@ -14,7 +15,7 @@ diopiError_t diopiAtan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     if (!outAt.defined() || outAt.numel() <= 0) {
         return diopiSuccess;
     }
-    acl_op::atan_out(inputAt, outAt);
+    op_api::atan_out(inputAt, outAt);
     END_CALL_ACL_OP();
 }
 
@@ -23,7 +24,7 @@ diopiError_t diopiAtanInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     if (!inputAt.defined() || inputAt.numel() <= 0) {
         return diopiSuccess;
     }
-    acl_op::atan_(inputAt);
+    op_api::atan_(inputAt);
     END_CALL_ACL_OP();
 }
 

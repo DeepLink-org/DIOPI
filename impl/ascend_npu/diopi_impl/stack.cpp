@@ -23,11 +23,7 @@ diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
         tensorsVec[i] = impl::aten::buildATen(tensors[i]);
     }
     at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
-    if (false) {
-        acl_op::stack_out(tensorsVec, dim, outAt);
-    } else {
-        op_api::stack_out(tensorsVec, dim, outAt);
-    }
+    op_api::stack_out(tensorsVec, dim, outAt);
 
     END_CALL_ACL_OP();
 }

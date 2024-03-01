@@ -6,6 +6,7 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 
 namespace {
 using npu_utils = at_npu::native::NpuUtils;
@@ -42,8 +43,8 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
     BEGIN_CALL_ACL_OP(out, generator);
     if (outAt.numel() > 0) {
         normalOutNpuNocheck(outAt, c10::make_optional(std::move(generatorAt)));
-        acl_op::mul_(outAt, std);
-        acl_op::add_(outAt, mean);
+        op_api::mul_(outAt, std);
+        op_api::add_(outAt, mean);
     }
     END_CALL_ACL_OP();
 }

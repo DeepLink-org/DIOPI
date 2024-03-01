@@ -6,6 +6,7 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 
 extern "C" {
 diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeatSize) {
@@ -21,7 +22,7 @@ diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     }
 
     at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
-    outAt = acl_op::repeat(inputAt, repeatSizeAt);
+    outAt = op_api::repeat(inputAt, repeatSizeAt);
     END_CALL_ACL_OP();
 }
 
