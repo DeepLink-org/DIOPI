@@ -26,7 +26,20 @@ diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 
 diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input, out);
-    acl_op::sigmoid_out(inputAt, outAt);
+    op_api::sigmoid_out(inputAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    BEGIN_CALL_ACL_OP(input);
+    op_api::sigmoid_(inputAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                            diopiConstTensorHandle_t output) {
+    BEGIN_CALL_ACL_OP(gradInput, gradOutput, output);
+    op_api::sigmoid_backward_out(gradOutputAt, outputAt, gradInputAt);
     END_CALL_ACL_OP();
 }
 
