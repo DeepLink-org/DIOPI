@@ -10,7 +10,7 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 namespace impl::aten {
-    c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices);
+c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices);
 };
 
 namespace OP_IMPL_NS {
