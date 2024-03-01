@@ -35,8 +35,6 @@ ascend:
 - diopiDivInpScalar
 - diopiDivScalar
 - diopiDropout
-- diopiEmbedding
-- diopiEmbeddingBackward
 - diopiEq
 - diopiEqInp
 - diopiEqInpScalar
@@ -186,6 +184,8 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiEmbedding
+- diopiEmbeddingBackward
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
