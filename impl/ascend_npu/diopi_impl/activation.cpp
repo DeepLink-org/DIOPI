@@ -37,7 +37,7 @@ diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
 }
 
 diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                            diopiConstTensorHandle_t output) {
+                                  diopiConstTensorHandle_t output) {
     BEGIN_CALL_ACL_OP(gradInput, gradOutput, output);
     op_api::sigmoid_backward_out(gradOutputAt, outputAt, gradInputAt);
     END_CALL_ACL_OP();
