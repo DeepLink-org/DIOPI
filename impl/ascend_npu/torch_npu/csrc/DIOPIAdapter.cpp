@@ -1526,14 +1526,6 @@ inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::Tens
                                      c10::MemoryFormat::Contiguous);
 }
 
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_use_empty(src.sizes(), src.options()); }
-
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor_use_empty(sizes, src.options()); }
-
-at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
-    return apply_tensor_use_empty(sizes, options);
-}
-
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
     CheckOut(inputs, output, CalcuOpUtil::GetTensorNpuFormat(dst), dst.scalar_type(), dst.sizes());
 }
