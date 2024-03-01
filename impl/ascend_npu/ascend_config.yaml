@@ -86,10 +86,6 @@ ascend:
 - diopiLtScalar
 - diopiMSELoss
 - diopiMSELossBackward
-- diopiMaskedFill
-- diopiMaskedFillInp
-- diopiMaskedFillInpScalar
-- diopiMaskedFillScalar
 - diopiMax
 - diopiMaxAll
 - diopiMaximum
@@ -151,7 +147,6 @@ ascend:
 - diopiTril
 - diopiTriu
 - diopiTriuInp
-- diopiUniformInp
 - diopiUpsampleLinear
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
@@ -193,6 +188,10 @@ ascend_npu:
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
+- diopiMaskedFill
+- diopiMaskedFillInp
+- diopiMaskedFillInpScalar
+- diopiMaskedFillScalar
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
@@ -237,3 +236,4 @@ ascend_npu:
 - diopiReciprocalInp
 - diopiSoftmax
 - diopiSoftmaxBackward
+- diopiUniformInp
