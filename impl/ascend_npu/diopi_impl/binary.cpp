@@ -49,9 +49,11 @@ diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     BEGIN_CALL_ACL_OP(input, other, out);
     std::string mode = roundModeStr(roundingMode);
     if (mode.empty()) {
-        outAt = op_api::div(inputAt, otherAt);
+        at::Tensor result = op_api::div(inputAt, otherAt);
+        outAt.copy_(result);
     } else {
-        outAt = op_api::div(inputAt, otherAt, mode);
+        at::Tensor result = op_api::div(inputAt, otherAt, mode);
+        outAt.copy_(result);
     }
     END_CALL_ACL_OP();
 }
