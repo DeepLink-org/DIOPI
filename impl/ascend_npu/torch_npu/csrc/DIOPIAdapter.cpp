@@ -1508,6 +1508,23 @@ at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
     return impl::aten::buildATen(tensorDiopi);
 }
 
+inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
+    return NPUNativeFunctions::empty(c10::fromIntArrayRefUnchecked(sizes),
+                                     options.dtype().toScalarType(),
+                                     c10::nullopt,
+                                     at::Device(c10::DeviceType::PrivateUse1),
+                                     false,
+                                     c10::MemoryFormat::Contiguous);
+}
+
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_use_empty(src.sizes(), src.options()); }
+
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor_use_empty(sizes, src.options()); }
+
+at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
+    return apply_tensor_use_empty(sizes, options);
+}
+
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
     CheckOut(inputs, output, CalcuOpUtil::GetTensorNpuFormat(dst), dst.scalar_type(), dst.sizes());
 }
@@ -3095,7 +3112,7 @@ namespace {
 at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
-    return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
+    return at_npu::native::NPUNativeOpApiFunctions::copy_(self, src, non_blocking);
 }
 
 at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::viewStorage(self, size); }
