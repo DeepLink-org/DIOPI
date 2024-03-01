@@ -23,8 +23,8 @@ diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     END_CALL_ACL_OP();
 }
 
-diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                     diopiConstTensorHandle_t output, int64_t dim) {
+diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output,
+                                  int64_t dim) {
     BEGIN_CALL_ACL_OP(gradInput, gradOutput, output);
     if (gradInputAt.numel() == 1) {
         op_api::fill_(gradInputAt, 1);
