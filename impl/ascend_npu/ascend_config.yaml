@@ -199,6 +199,7 @@ ascend:
 ascend_npu:
 - diopiBmm
 - diopiMatmul
+- diopiMaxAll
 - diopiCastDtype
 - diopiCopyInp
 - diopiCat
