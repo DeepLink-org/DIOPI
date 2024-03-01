@@ -17,6 +17,7 @@
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
@@ -1493,6 +1494,10 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
 }
 
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_without_format(empty_npu(src.sizes(), src.options())); }
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return empty_npu(sizes, src.options()); }
+at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return empty_npu(sizes, options); }
+
 at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
     at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
     at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
@@ -1519,14 +1524,6 @@ inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::Tens
                                      at::Device(c10::DeviceType::PrivateUse1),
                                      false,
                                      c10::MemoryFormat::Contiguous);
-}
-
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_use_empty(src.sizes(), src.options()); }
-
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor_use_empty(sizes, src.options()); }
-
-at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
-    return apply_tensor_use_empty(sizes, options);
 }
 
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
@@ -3113,7 +3110,9 @@ void unsetCurCtx() { context = nullptr; }
 
 namespace {
 
-at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
+at::Tensor& wrapper_Tensor_fill__Tensor(at::Tensor& self, const at::Tensor& value) { return op_api::fill_(self, value); }
+
+at::Tensor& wrapper_Tensor_fill__Scalar(at::Tensor& self, const c10::Scalar& value) { return op_api::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
@@ -3251,12 +3250,16 @@ at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, a
 at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
 at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
 at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
+
+at::Tensor& wrapper_NPU__zero_(at::Tensor& self) { return op_api::fill_(self, 0.0); }
+
 }  // namespace
 
 namespace at {
 
 TORCH_LIBRARY_IMPL(aten, XLA, m) {
-    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill_));
+    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill__Tensor));
+    m.impl("fill_.Scalar", TORCH_FN(wrapper_Tensor_fill__Scalar));
     m.impl("copy_", TORCH_FN(wrapper__copy_));
     m.impl("reshape", TORCH_FN(wrapper__view));
     m.impl("view", TORCH_FN(wrapper__view));
@@ -3290,6 +3293,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
     m.impl("dot", TORCH_FN(wrapper__dot));
     m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
+    m.impl("zero_", TORCH_FN(wrapper_NPU__zero_));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }

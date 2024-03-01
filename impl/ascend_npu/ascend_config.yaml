@@ -113,8 +113,7 @@ ascend:
 - diopiMulInpScalar
 - diopiMulScalar
 - diopiMultinomial
-- diopiNLLLoss
-- diopiNLLLossBackward
+
 - diopiNe
 - diopiNeInp
 - diopiNeInpScalar
@@ -139,8 +138,6 @@ ascend:
 - diopiRsqrtInp
 - diopiSgn
 - diopiSgnInp
-- diopiSigmoidBackward
-- diopiSigmoidInp
 - diopiSilu
 - diopiSiluBackward
 - diopiSiluInp
@@ -227,6 +224,8 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiSigmoid
+- diopiSigmoidBackward
+- diopiSigmoidInp
 - diopiTensorDestructionHook
 - diopiHardswish
 - diopiHardswishInp
@@ -236,4 +235,6 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
+- diopiNLLLoss
+- diopiNLLLossBackward
 - diopiArgmax

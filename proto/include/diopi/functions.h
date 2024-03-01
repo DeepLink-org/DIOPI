@@ -575,6 +575,7 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
  *        - (N,d1,d2,...,dK) with K≥1 if reduction is 'none' for K-dimensional loss.
  *        - Scalar if reduction is 'sum' or 'mean'.
  *        Type = [float32, float64].
+ * todo: 训练时需要返回totalWeight给diopiNLLLossBackward
  */
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
@@ -610,6 +611,7 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
  *        Shape:
  *        - Matches the shape of 'input' tensor.
  *        Type = [float32, float64].
+ * todo: 需要传totalWeight避免重复计算
  */
 DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
