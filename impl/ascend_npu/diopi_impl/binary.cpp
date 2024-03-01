@@ -7,6 +7,7 @@
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace OP_IMPL_NS {
 
@@ -47,13 +48,11 @@ diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             diopiRoundMode_t roundingMode) {
     BEGIN_CALL_ACL_OP(input, other, out);
-    std::string mode = roundModeStr(roundingMode);
-    if (mode.empty()) {
-        at::Tensor result = op_api::div(inputAt, otherAt);
-        outAt.copy_(result);
+    if (roundingMode == diopiRoundMode_t::RoundModeNone) {
+        EXEC_NPU_CMD(aclnnDivs, inputAt, otherAt, outAt);
     } else {
-        at::Tensor result = op_api::div(inputAt, otherAt, mode);
-        outAt.copy_(result);
+        int mode = static_cast<int>(roundingMode);
+        EXEC_NPU_CMD(aclnnDivMods, inputAt, otherAt, mode, outAt);
     }
     END_CALL_ACL_OP();
 }
