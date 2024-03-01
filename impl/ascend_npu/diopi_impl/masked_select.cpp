@@ -22,7 +22,12 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
     if (inputAt.dim() < maskAt.dim()) {
         at::Tensor gradInputNew = op_api::zeros_like(maskAt, gradInputAt.scalar_type(), maskAt.layout(), maskAt.device(), false);
         op_api::masked_scatter_(gradInputNew, maskAt, gradOutputAt);
-        op_api::sum_out(gradInputNew, 0, false, gradInputAt.scalar_type(),  gradInputAt);
+        std::vector<int64_t> dims;
+        for (int i = 0; i< maskAt.dim() - inputAt.dim(); i++) {
+            dims.push_back(i);
+        }
+        at::OptionalIntArrayRef sumDim(dims);
+        op_api::sum_out(gradInputNew, sumDim, false, gradInputAt.scalar_type(),  gradInputAt);
     } else {
         at::Scalar zero = 0;
         op_api::fill_(gradInputAt, zero);
