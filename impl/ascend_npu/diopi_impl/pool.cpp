@@ -10,6 +10,9 @@
 namespace OP_IMPL_NS {
 
 diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t outputSize) {
+    if (outputSize.data[0] == 0) {
+        return diopiSuccess;
+    }
     BEGIN_CALL_ACL_OP(input, outputSize, out);
     EXEC_NPU_CMD(aclnnAdaptiveAvgPool2d, inputAt, outputSizeAt, outAt);
     END_CALL_ACL_OP();
