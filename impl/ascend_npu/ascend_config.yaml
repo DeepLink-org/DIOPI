@@ -59,7 +59,6 @@ ascend:
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
-- diopiIndexSelect
 - diopiIsNan
 - diopiLayerNorm
 - diopiLayerNormBackward
@@ -151,7 +150,6 @@ ascend:
 - diopiTril
 - diopiTriu
 - diopiTriuInp
-- diopiUniformInp
 - diopiUpsampleLinear
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
@@ -213,6 +211,8 @@ ascend_npu:
 - diopiLogInp
 - diopiIndexPut
 - diopiIndexPutInp
+- diopiIndexSelect
+- diopiIndexSelectBackward
 - diopiIndex
 - diopiIndexBackward
 - diopiDestIndexCopyKV
@@ -237,3 +237,4 @@ ascend_npu:
 - diopiExpInp
 - diopiReciprocal
 - diopiReciprocalInp
+- diopiUniformInp
