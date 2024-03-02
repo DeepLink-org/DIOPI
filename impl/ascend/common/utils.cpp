@@ -574,13 +574,13 @@ diopiTensorHandle_t clone(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     diopiGetTensorShape(src, &size);
     diopiRequireTensor(ctx, &srcClone, &size, nullptr, dtype, diopi_device);
     diopiGetTensorStride(src, &stride);
-    if (isContiguous(src)) {
-        diopiCopyInp(ctx, src, srcClone);
-    } else {
-        AscendTensor srcAt(src), srcCloneAt(srcClone);
-        aclAsStrided(ctx, srcAt, srcCloneAt);
-        srcClone = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(srcCloneAt));
-    }
+    // if (isContiguous(src)) {
+    ::impl::ascend_npu::diopiCopyInp(ctx, src, srcClone);
+    // } else {
+    //     AscendTensor srcAt(src), srcCloneAt(srcClone);
+    //     aclAsStrided(ctx, srcAt, srcCloneAt);
+    //     srcClone = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(srcCloneAt));
+    // }
     return srcClone;
 }
 
