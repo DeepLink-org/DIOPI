@@ -34,7 +34,7 @@ case $1 in
     ;;
   clang-tidy)
     if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
-      down_clangd_tidy
+      download_clangd_tidy
       find camb ../adaptor/csrc \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) |
       xargs "$CURRENT_PATH/clangd-tidy/clangd-tidy" -j8 -v -p $(dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}")
     else
@@ -43,7 +43,7 @@ case $1 in
     ;;
   clang-tidy-ascend)
     if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
-      down_clangd_tidy
+      download_clangd_tidy
       # Collect source files and run tidy.
       find ascend ascend_npu/diopi_impl ../adaptor/csrc \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) |
       xargs "$CURRENT_PATH/clangd-tidy/clangd-tidy" -j8 -v -p $(dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}")
