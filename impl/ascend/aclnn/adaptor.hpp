@@ -15,10 +15,10 @@
 #include <string>
 
 #include "../ascend_tensor.hpp"
-#include "../common/acloprunner.hpp"
 #include "../common/utils.hpp"
 #include "../env_vars.hpp"
 #include "acl/acl.h"
+#include "acl_tensor.hpp"
 #include "aclnn/acl_meta.h"
 
 namespace impl {
