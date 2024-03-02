@@ -34,9 +34,11 @@ case $1 in
     ;;
   clang-tidy)
     if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
-      download_clangd_tidy
-      find camb ../adaptor/csrc \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) |
-      xargs "$CURRENT_PATH/clangd-tidy/clangd-tidy" -j8 -v -p $(dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}")
+      # #when clangd-tidy can be downloaded, replace clang-tidy with clangd-tidy.
+      # download_clangd_tidy
+      # find camb ../adaptor/csrc \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) |
+      # xargs "$CURRENT_PATH/clangd-tidy/clangd-tidy" -j8 -v -p $(dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}")
+      python3 ${IMPL_PATH}/../run-clang-tidy.py -p $(dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}")
     else
       echo "error: compile_commands.json not found." && exit 1
     fi
