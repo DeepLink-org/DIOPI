@@ -2,9 +2,6 @@
 
 set -e
 
-# Required tools.
-[ -x "$(command -v git)" ] || { echo "::error::Missing git tool" && exit 1; }
-[ -x "$(command -v clangd)" ] || { echo "::error::Missing clangd tool" && exit 1; }
 
 
 CURRENT_PATH=$(
@@ -16,6 +13,10 @@ IMPL_PATH=$(readlink -f ${CURRENT_PATH}/..)
 CMAKE_EXPORT_COMPILE_COMMANDS_FILE=${IMPL_PATH}/build/compile_commands.json
 
 function download_clangd_tidy {
+  # Required tools.
+  [ -x "$(command -v git)" ] || { echo "::error::Missing git tool" && exit 1; }
+  [ -x "$(command -v clangd)" ] || { echo "::error::Missing clangd tool" && exit 1; }
+  # download
   [ -d "$CURRENT_PATH/clangd-tidy" ] ||
   git -c advice.detachedHead=false clone --depth 1 -b v0.1.2 https://github.com/lljbash/clangd-tidy.git "$CURRENT_PATH/clangd-tidy"
 }
@@ -33,7 +34,7 @@ case $1 in
     ;;
   clang-tidy)
     if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
-      download_clangd_tidy
+      down_clangd_tidy
       find camb ../adaptor/csrc \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) |
       xargs "$CURRENT_PATH/clangd-tidy/clangd-tidy" -j8 -v -p $(dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}")
     else
@@ -42,7 +43,7 @@ case $1 in
     ;;
   clang-tidy-ascend)
     if [ -e ${CMAKE_EXPORT_COMPILE_COMMANDS_FILE} ]; then
-      download_clangd_tidy
+      down_clangd_tidy
       # Collect source files and run tidy.
       find ascend ascend_npu/diopi_impl ../adaptor/csrc \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) |
       xargs "$CURRENT_PATH/clangd-tidy/clangd-tidy" -j8 -v -p $(dirname "${CMAKE_EXPORT_COMPILE_COMMANDS_FILE}")
