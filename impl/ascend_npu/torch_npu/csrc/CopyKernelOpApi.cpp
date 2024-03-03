@@ -148,5 +148,12 @@ at::Tensor& NPUNativeOpApiFunctions::copy_(at::Tensor& self, const at::Tensor& s
     return self;
 }
 
+at::Tensor NPUNativeOpApiFunctions::clone(const at::Tensor& src, c10::optional<c10::MemoryFormat> format) {
+    DO_COMPATIBILITY(aclnnInplaceCopy, NPUNativeFunctions::clone(src, format));
+    at::Tensor baseSelf = OpPreparation::apply_tensor_without_format(src);
+    EXEC_NPU_CMD(aclnnInplaceCopy, baseSelf, src);
+    return baseSelf;
+}
+
 }  // namespace native
 }  // namespace at_npu
