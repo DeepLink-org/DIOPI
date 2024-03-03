@@ -3218,15 +3218,15 @@ at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return acl_op::mul(self, other); }
 
-at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
+at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return op_api::add(self, other, alpha); }
 
-at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::sub(self, other, alpha); }
+at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return op_api::sub(self, other, alpha); }
 
 at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return op_api::index_select(self, dim, index); }
 
 at::Tensor wrapper___softmax(const at::Tensor& self, int64_t dim, bool half_to_float) { return acl_op::_softmax(self, dim, half_to_float); }
 
-at::Tensor wrapper_Scalar_eq(const at::Tensor& self, const at::Scalar& other) { return acl_op::eq(self, other); }
+at::Tensor wrapper_Scalar_eq(const at::Tensor& self, const at::Scalar& other) { return op_api::eq(self, other); }
 
 at::Tensor& wrapper_Scalar_masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value) { return acl_op::masked_fill_(self, mask, value); }
 
@@ -3244,11 +3244,11 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
 }
 
 at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
-at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
+at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return op_api::mm_out(self, mat2, out); }
 
 at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
-at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
-at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
+at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return op_api::bmm_out(self, mat2, out); }
+at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return op_api::dot(self, tensor); }
 }  // namespace
 
 namespace at {
