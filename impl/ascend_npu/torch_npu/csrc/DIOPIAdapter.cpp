@@ -3116,7 +3116,6 @@ namespace {
 at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return op_api::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
-    // return at_npu::native::NPUNativeOpApiFunctions::copy_(self, src, non_blocking);
     return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
 }
 
@@ -3217,13 +3216,13 @@ at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return
 
 at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return acl_op::div(self, other); }
 
-at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return op_api::mul(self, other); }
+at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
 
 at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return op_api::mul(self, other); }
 
 at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
 
-at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return op_api::sub(self, other, alpha); }
+at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::sub(self, other, alpha); }
 
 at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return op_api::index_select(self, dim, index); }
 
