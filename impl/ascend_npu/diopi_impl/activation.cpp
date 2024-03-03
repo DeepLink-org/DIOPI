@@ -43,21 +43,20 @@ diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
 diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input, out);
-    acl_op::hardswish_out(inputAt, outAt);
+    op_api::hardswish_out(inputAt, outAt);
     END_CALL_ACL_OP();
 }
 
 diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input);
-    acl_op::hardswish_(inputAt);
+    op_api::hardswish_(inputAt);
     END_CALL_ACL_OP();
 }
 
 diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                     diopiConstTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(gradInput, gradOutput, input);
-    at_npu::native::OpPreparation::markAsOutputForApplyTensor(gradInputAt);
-    acl_op::hardswish_backward(gradOutputAt, inputAt);
+    EXEC_NPU_CMD(aclnnHardswishBackward, gradOutputAt, inputAt, gradInputAt);
     END_CALL_ACL_OP();
 }
 
