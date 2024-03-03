@@ -132,7 +132,6 @@ ascend:
 - diopiSliceBackward
 - diopiSoftmax
 - diopiSoftmaxBackward
-- diopiSort
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
@@ -237,4 +236,5 @@ ascend_npu:
 - diopiExpInp
 - diopiReciprocal
 - diopiReciprocalInp
+- diopiSort
 - diopiUniformInp
