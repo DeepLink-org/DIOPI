@@ -122,8 +122,6 @@ ascend:
 - diopiPowTensor
 - diopiRelu
 - diopiReluInp
-- diopiRsqrt
-- diopiRsqrtInp
 - diopiSgn
 - diopiSgnInp
 - diopiSigmoidBackward
@@ -135,8 +133,6 @@ ascend:
 - diopiSoftmax
 - diopiSoftmaxBackward
 - diopiSort
-- diopiSqrt
-- diopiSqrtInp
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
@@ -193,6 +189,10 @@ ascend_npu:
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
+- diopiRsqrt
+- diopiRsqrtInp
+- diopiSqrt
+- diopiSqrtInp
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
