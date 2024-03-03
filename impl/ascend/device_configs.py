@@ -415,18 +415,6 @@ device_configs = {
         ),
     ),
 
-    'leaky_relu': dict(
-        name=['leaky_relu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
     'sigmoid_focal_loss': dict(
         name=['sigmoid_focal_loss'],
         tensor_para=dict(

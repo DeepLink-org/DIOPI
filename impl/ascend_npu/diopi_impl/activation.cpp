@@ -49,6 +49,25 @@ diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t
     END_CALL_ACL_OP();
 }
 
+diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope) {
+    BEGIN_CALL_ACL_OP(input, out, negativeSlope);
+    op_api::leaky_relu_out(inputAt, negativeSlopeAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* negativeSlope) {
+    BEGIN_CALL_ACL_OP(input, negativeSlope);
+    op_api::leaky_relu_(inputAt, negativeSlopeAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                    diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
+    BEGIN_CALL_ACL_OP(gradInput, gradOutput, input, negativeSlope);
+    op_api::leaky_relu_backward_out(gradOutputAt, inputAt, negativeSlopeAt, inputIsResult, gradInputAt);
+    END_CALL_ACL_OP();
+}
+
 diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input, out);
     EXEC_NPU_CMD(aclnnRelu, inputAt, outAt);

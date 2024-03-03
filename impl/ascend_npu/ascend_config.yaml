@@ -65,9 +65,6 @@ ascend:
 - diopiLeInp
 - diopiLeInpScalar
 - diopiLeScalar
-- diopiLeakyRelu
-- diopiLeakyReluBackward
-- diopiLeakyReluInp
 - diopiLinear
 - diopiLinearBackward
 - diopiLogSoftmax
@@ -226,6 +223,9 @@ ascend_npu:
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
+- diopiLeakyRelu
+- diopiLeakyReluBackward
+- diopiLeakyReluInp
 - diopiAtan
 - diopiAtanInp
 - diopiMaskedSelect
