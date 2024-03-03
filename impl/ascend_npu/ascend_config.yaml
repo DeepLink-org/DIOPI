@@ -51,8 +51,6 @@ ascend:
 - diopiGeInp
 - diopiGeInpScalar
 - diopiGeScalar
-- diopiGelu
-- diopiGeluBackward
 - diopiGroupNorm
 - diopiGt
 - diopiGtInp
@@ -217,6 +215,8 @@ ascend_npu:
 - diopiTanhBackward
 - diopiTanhInp
 - diopiTensorDestructionHook
+- diopiGelu
+- diopiGeluBackward
 - diopiHardswish
 - diopiHardswishInp
 - diopiHardswishBackward

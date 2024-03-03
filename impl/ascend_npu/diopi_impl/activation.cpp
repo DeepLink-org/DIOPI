@@ -10,6 +10,19 @@
 
 namespace OP_IMPL_NS {
 
+diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* approximate) {
+    BEGIN_CALL_ACL_OP(input, out);
+    EXEC_NPU_CMD(aclnnGelu, inputAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                               const char* approximate) {
+    BEGIN_CALL_ACL_OP(gradInput, gradOutput, input);
+    EXEC_NPU_CMD(aclnnGeluBackward, gradOutputAt, inputAt, gradInputAt);
+    END_CALL_ACL_OP();
+}
+
 diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input, out);
     op_api::hardswish_out(inputAt, outAt);
