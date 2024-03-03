@@ -19,6 +19,7 @@
 #include "acl/acl_rt.h"
 #include "ge/ge_api.h"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/OpConstants.h"
 #include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/aten/NPUNativeFunctions.h"

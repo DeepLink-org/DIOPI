@@ -3224,7 +3224,7 @@ at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, c
 
 at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::sub(self, other, alpha); }
 
-at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return acl_op::index_select(self, dim, index); }
+at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return op_api::index_select(self, dim, index); }
 
 at::Tensor wrapper___softmax(const at::Tensor& self, int64_t dim, bool half_to_float) { return acl_op::_softmax(self, dim, half_to_float); }
 
