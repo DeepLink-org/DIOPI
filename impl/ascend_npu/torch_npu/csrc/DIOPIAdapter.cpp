@@ -1493,6 +1493,16 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
 }
 
+int8_t OpPreparation::get_cube_math_type(bool allowHf32) {
+    bool allowFp32ToFp16 = native::env::IsAllowFP32ToFP16();
+    uint8_t CubeMathTypeCode = ((uint8_t)allowHf32 << 1) + (uint8_t)allowFp32ToFp16;
+    auto iter = ACL_CUBE_MATH_TYPE_MAP.find(CubeMathTypeCode);
+    if (iter == ACL_CUBE_MATH_TYPE_MAP.end()) {
+        return ALLOW_FP32_DOWN_PRECISION;
+    }
+    return iter->second;
+}
+
 at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
     at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
     at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
