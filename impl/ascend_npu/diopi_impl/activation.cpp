@@ -10,6 +10,45 @@
 
 namespace OP_IMPL_NS {
 
+diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    BEGIN_CALL_ACL_OP(input, out);
+    op_api::hardswish_out(inputAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    BEGIN_CALL_ACL_OP(input);
+    op_api::hardswish_(inputAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                    diopiConstTensorHandle_t input) {
+    BEGIN_CALL_ACL_OP(gradInput, gradOutput, input);
+    EXEC_NPU_CMD(aclnnHardswishBackward, gradOutputAt, inputAt, gradInputAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiHardtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* minVal,
+                           const diopiScalar_t* maxVal) {
+    BEGIN_CALL_ACL_OP(input, out, minVal, maxVal);
+    EXEC_NPU_CMD(aclnnHardtanh, inputAt, minValAt, maxValAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiHardtanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
+    BEGIN_CALL_ACL_OP(input, minVal, maxVal);
+    EXEC_NPU_CMD(aclnnInplaceHardtanh, inputAt, minValAt, maxValAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                   const diopiScalar_t* minVal, const diopiScalar_t* maxVal) {
+    BEGIN_CALL_ACL_OP(gradInput, gradOutput, input, minVal, maxVal);
+    EXEC_NPU_CMD(aclnnHardtanhBackward, gradOutputAt, inputAt, minValAt, maxValAt, gradInputAt);
+    END_CALL_ACL_OP();
+}
+
 diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input, out);
     EXEC_NPU_CMD(aclnnRelu, inputAt, outAt);
@@ -38,25 +77,6 @@ diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   diopiConstTensorHandle_t output) {
     BEGIN_CALL_ACL_OP(gradInput, gradOutput, output);
     op_api::sigmoid_backward_out(gradOutputAt, outputAt, gradInputAt);
-    END_CALL_ACL_OP();
-}
-
-diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    BEGIN_CALL_ACL_OP(input, out);
-    op_api::hardswish_out(inputAt, outAt);
-    END_CALL_ACL_OP();
-}
-
-diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    BEGIN_CALL_ACL_OP(input);
-    op_api::hardswish_(inputAt);
-    END_CALL_ACL_OP();
-}
-
-diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
-                                    diopiConstTensorHandle_t input) {
-    BEGIN_CALL_ACL_OP(gradInput, gradOutput, input);
-    EXEC_NPU_CMD(aclnnHardswishBackward, gradOutputAt, inputAt, gradInputAt);
     END_CALL_ACL_OP();
 }
 
