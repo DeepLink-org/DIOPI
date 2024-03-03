@@ -140,9 +140,6 @@ ascend:
 - diopiSum
 - diopiTanh
 - diopiTanhBackward
-- diopiThreshold
-- diopiThresholdBackward
-- diopiThresholdInp
 - diopiTopk
 - diopiTranspose
 - diopiTril
@@ -238,3 +235,6 @@ ascend_npu:
 - diopiReciprocal
 - diopiReciprocalInp
 - diopiUniformInp
+- diopiThreshold
+- diopiThresholdBackward
+- diopiThresholdInp
