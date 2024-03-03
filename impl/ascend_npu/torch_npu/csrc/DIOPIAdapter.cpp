@@ -3113,7 +3113,7 @@ void unsetCurCtx() { context = nullptr; }
 
 namespace {
 
-at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
+at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return op_api::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
@@ -3194,17 +3194,15 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     return self;
 }
 
-at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return acl_op::cat(tensors, dim); }
+at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return op_api::cat(tensors, dim); }
 
 at::Tensor& wrapper__index_put_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate) {
-    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
-    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, false);
+    return op_api::_index_put_impl_(self, indices, values, accumulate, false);
 }
 
 at::Tensor& wrapper___index_put_impl_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate,
                                       bool unsafe) {
-    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
-    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, unsafe);
+    return op_api::_index_put_impl_(self, indices, values, accumulate, unsafe);
 }
 
 at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices) {
