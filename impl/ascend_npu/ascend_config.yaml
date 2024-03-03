@@ -41,7 +41,6 @@ ascend:
 - diopiEqInp
 - diopiEqInpScalar
 - diopiEqScalar
-- diopiFlip
 - diopiGather
 - diopiGe
 - diopiGeInp
@@ -180,6 +179,7 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiFlip
 - diopiFloor
 - diopiFloorInp
 - diopiLinspace
