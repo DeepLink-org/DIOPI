@@ -24,8 +24,8 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         outAt.copy_(std::get<0>(result));
     } else {
         if (invRmsAt.scalar_type() != at::kFloat) {
-            auto output_size = op_infer::rms_norm_npu_output_size(inputAt, weightAt);
-            at::Tensor invRmsTempAt = at_npu::native::OpPreparation::apply_tensor_with_format(output_size[0], invRmsAt.options(), ACL_FORMAT_ND);
+            at::Tensor invRmsTempAt = at_npu::native::OpPreparation::apply_tensor_with_format(
+                op_infer::rms_norm_npu_output_size(inputAt, weightAt)[0], invRmsAt.options(), ACL_FORMAT_ND);
             EXEC_NPU_CMD(aclnnRmsNorm, inputAt, weightAt, eps, outAt, invRmsTempAt);
             invRmsAt.copy_(invRmsTempAt);
         } else {
