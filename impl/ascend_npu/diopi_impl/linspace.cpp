@@ -6,7 +6,6 @@
 
 #include "helper.hpp"
 #include "op_plugin/OpApiInterface.h"
-#include "op_plugin/utils/op_api_common.h"
 
 namespace OP_IMPL_NS {
 
