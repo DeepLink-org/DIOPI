@@ -1,6 +1,5 @@
 ascend:
 - diopiAddmm
-- diopiAll
 - diopiAny
 - diopiArange
 - diopiBaddbmm
@@ -182,6 +181,7 @@ ascend_npu:
 - diopiAddcmulInp
 - diopiAddcdiv
 - diopiAddcdivInp
+- diopiAll
 - diopiArange
 - diopiNonzero
 - diopiBmm
