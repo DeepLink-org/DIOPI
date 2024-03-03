@@ -324,3 +324,12 @@
 
 - diopiReluInp:
     dtype: (int16, float64)->float32
+
+- diopiTanh:
+    dtype: (float64)->float32
+
+- diopiTanhInp:
+    dtype: (float64)->float32
+
+- diopiTanhBackward:
+    dtype: (float64)->float32

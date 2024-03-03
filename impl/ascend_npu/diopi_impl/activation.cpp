@@ -78,4 +78,22 @@ diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gra
     END_CALL_ACL_OP();
 }
 
+diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    BEGIN_CALL_ACL_OP(out, input);
+    op_api::tanh_out(inputAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiTanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    BEGIN_CALL_ACL_OP(input);
+    op_api::tanh_(inputAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output) {
+    BEGIN_CALL_ACL_OP(gradInput, gradOutput, output);
+    op_api::tanh_backward_out(gradOutputAt, outputAt, gradInputAt);
+    END_CALL_ACL_OP();
+}
+
 }  // namespace OP_IMPL_NS
