@@ -166,7 +166,6 @@ ascend:
 - diopiRMSNormBackward
 - diopiExpand
 - diopiLinspace
-- diopiProd
 - diopiSplitWithSizes
 - diopiScatter
 - diopiScatterInp
@@ -203,6 +202,7 @@ ascend_npu:
 - diopiNormalInp
 - diopiNorm
 - diopiMaxPool2dWithIndices
+- diopiProd
 - diopiRotaryEmbedding
 - diopiCol2Im
 - diopiLog
