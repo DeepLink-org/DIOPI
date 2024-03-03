@@ -164,7 +164,6 @@ ascend:
 - diopiRMSNorm
 - diopiRMSNormBackward
 - diopiExpand
-- diopiLinspace
 - diopiProd
 - diopiSplitWithSizes
 - diopiScatter
@@ -185,6 +184,7 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiLinspace
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
