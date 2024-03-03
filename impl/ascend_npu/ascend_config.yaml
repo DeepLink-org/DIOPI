@@ -120,14 +120,10 @@ ascend:
 - diopiPowInpTensor
 - diopiPowScalar
 - diopiPowTensor
-- diopiRelu
-- diopiReluInp
 - diopiRsqrt
 - diopiRsqrtInp
 - diopiSgn
 - diopiSgnInp
-- diopiSigmoidBackward
-- diopiSigmoidInp
 - diopiSin
 - diopiSinInp
 - diopiSlice
@@ -223,6 +219,8 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiSigmoid
+- diopiSigmoidBackward
+- diopiSigmoidInp
 - diopiTensorDestructionHook
 - diopiHardswish
 - diopiHardswishInp
@@ -238,3 +236,5 @@ ascend_npu:
 - diopiReciprocal
 - diopiReciprocalInp
 - diopiUniformInp
+- diopiRelu
+- diopiReluInp
