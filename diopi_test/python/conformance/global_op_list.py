@@ -67,6 +67,7 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "copy_": {"input"},
                    "cast_dtype": {"out"},
                    "batch_norm_gather_stats_with_counts": {"running_mean", "running_var"},
+                   "clip_grad_norm_": {"tensors"},
                    "apply_penalty": {"logits"},
                    "context_attention": {"out"},
                    "destindex_copy_kv": {"out"},
@@ -76,4 +77,5 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "uniform": {"input"},
                    "normal_": {"input"},
                    "bernoulli": {"input"},  # compared in manual_test
+                   "slice_op": {"index"},   # index is slice()
                    }
