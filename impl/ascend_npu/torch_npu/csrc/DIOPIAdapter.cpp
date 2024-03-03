@@ -3209,7 +3209,7 @@ at::Tensor& wrapper___index_put_impl_(at::Tensor& self, const c10::List<c10::opt
 
 at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices) {
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
-    return acl_op::index(self, indicesCast);
+    return op_api::index(self, indicesCast);
 }
 
 at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return acl_op::bmm(self, mat2); }
