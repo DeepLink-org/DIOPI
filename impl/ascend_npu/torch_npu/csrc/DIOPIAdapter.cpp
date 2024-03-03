@@ -3116,6 +3116,7 @@ namespace {
 at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return op_api::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
+    // return at_npu::native::NPUNativeOpApiFunctions::copy_(self, src, non_blocking);
     return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
 }
 
@@ -3197,12 +3198,14 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
 at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return op_api::cat(tensors, dim); }
 
 at::Tensor& wrapper__index_put_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate) {
-    return op_api::_index_put_impl_(self, indices, values, accumulate, false);
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, false);
 }
 
 at::Tensor& wrapper___index_put_impl_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate,
                                       bool unsafe) {
-    return op_api::_index_put_impl_(self, indices, values, accumulate, unsafe);
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
+    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, unsafe);
 }
 
 at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices) {
@@ -3210,15 +3213,15 @@ at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::opt
     return op_api::index(self, indicesCast);
 }
 
-at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return acl_op::bmm(self, mat2); }
+at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return op_api::bmm(self, mat2); }
 
 at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return acl_op::div(self, other); }
 
-at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
+at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return op_api::mul(self, other); }
 
-at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return acl_op::mul(self, other); }
+at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return op_api::mul(self, other); }
 
-at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return op_api::add(self, other, alpha); }
+at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
 
 at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return op_api::sub(self, other, alpha); }
 
@@ -3226,11 +3229,11 @@ at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::
 
 at::Tensor wrapper___softmax(const at::Tensor& self, int64_t dim, bool half_to_float) { return acl_op::_softmax(self, dim, half_to_float); }
 
-at::Tensor wrapper_Scalar_eq(const at::Tensor& self, const at::Scalar& other) { return op_api::eq(self, other); }
+at::Tensor wrapper_Scalar_eq(const at::Tensor& self, const at::Scalar& other) { return acl_op::eq(self, other); }
 
 at::Tensor& wrapper_Scalar_masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value) { return acl_op::masked_fill_(self, mask, value); }
 
-at::Tensor wrapper__repeat(const at::Tensor& self, at::IntArrayRef repeats) { return acl_op::repeat(self, repeats); }
+at::Tensor wrapper__repeat(const at::Tensor& self, at::IntArrayRef repeats) { return op_api::repeat(self, repeats); }
 
 at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1) {
     int64_t inputSize = self.dim();
