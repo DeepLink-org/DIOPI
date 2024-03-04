@@ -153,7 +153,6 @@ ascend:
 - diopiLogicalOr
 - diopiRMSNorm
 - diopiRMSNormBackward
-- diopiExpand
 - diopiProd
 - diopiSplitWithSizes
 - diopiScatter
@@ -176,6 +175,7 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiExpand
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
