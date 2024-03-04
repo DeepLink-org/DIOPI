@@ -37,11 +37,6 @@ ascend:
 - diopiEqInp
 - diopiEqInpScalar
 - diopiEqScalar
-- diopiErf
-- diopiErfInp
-- diopiFlip
-- diopiFloor
-- diopiFloorInp
 - diopiGather
 - diopiGe
 - diopiGeInp
@@ -57,7 +52,6 @@ ascend:
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
-- diopiIndexSelect
 - diopiIsNan
 - diopiLayerNorm
 - diopiLayerNormBackward
@@ -80,8 +74,6 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
-- diopiMSELoss
-- diopiMSELossBackward
 - diopiMaskedFill
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
@@ -98,7 +90,6 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
-- diopiMultinomial
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNe
@@ -119,10 +110,6 @@ ascend:
 - diopiPowTensor
 - diopiRelu
 - diopiReluInp
-- diopiRsqrt
-- diopiRsqrtInp
-- diopiSgn
-- diopiSgnInp
 - diopiSigmoidBackward
 - diopiSigmoidInp
 - diopiSin
@@ -131,9 +118,6 @@ ascend:
 - diopiSliceBackward
 - diopiSoftmax
 - diopiSoftmaxBackward
-- diopiSort
-- diopiSqrt
-- diopiSqrtInp
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
@@ -144,7 +128,6 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiTopk
 - diopiTranspose
 - diopiTril
 - diopiTriu
@@ -167,7 +150,6 @@ ascend:
 - diopiRMSNorm
 - diopiRMSNormBackward
 - diopiExpand
-- diopiLinspace
 - diopiProd
 - diopiSplitWithSizes
 - diopiScatter
@@ -178,6 +160,10 @@ ascend_npu:
 - diopiAbs
 - diopiAbsInp
 - diopiArange
+- diopiAtan
+- diopiAtanInp
+- diopiErf
+- diopiErfInp
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
@@ -190,14 +176,25 @@ ascend_npu:
 - diopiDivInp
 - diopiDivInpScalar
 - diopiDivScalar
+- diopiFlip
+- diopiFloor
+- diopiFloorInp
+- diopiLinspace
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
+- diopiRsqrt
+- diopiRsqrtInp
+- diopiSqrt
+- diopiSqrtInp
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
 - diopiStack
+- diopiMSELoss
+- diopiMSELossBackward
+- diopiMultinomial
 - diopiNormal
 - diopiNormalInp
 - diopiNorm
@@ -212,6 +209,8 @@ ascend_npu:
 - diopiLogInp
 - diopiIndexPut
 - diopiIndexPutInp
+- diopiIndexSelect
+- diopiIndexSelectBackward
 - diopiIndex
 - diopiIndexBackward
 - diopiDestIndexCopyKV
@@ -226,8 +225,6 @@ ascend_npu:
 - diopiHardswish
 - diopiHardswishInp
 - diopiHardswishBackward
-- diopiAtan
-- diopiAtanInp
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
@@ -236,4 +233,8 @@ ascend_npu:
 - diopiExpInp
 - diopiReciprocal
 - diopiReciprocalInp
+- diopiSgn
+- diopiSgnInp
+- diopiSort
+- diopiTopk
 - diopiUniformInp
