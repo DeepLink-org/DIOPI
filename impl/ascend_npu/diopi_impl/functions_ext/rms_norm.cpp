@@ -4,7 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "helper.hpp"
+#include "../helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/OpInterface.h"
