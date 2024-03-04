@@ -106,7 +106,6 @@ ascend:
 - diopiNormalTensor
 - diopiNormalTensorScalar
 - diopiOneHot
-- diopiPermute
 - diopiPow
 - diopiPowInp
 - diopiPowInpTensor
@@ -152,7 +151,6 @@ ascend:
 - diopiLogicalOr
 - diopiRMSNorm
 - diopiRMSNormBackward
-- diopiExpand
 - diopiProd
 - diopiSplitWithSizes
 - diopiScatter
@@ -175,6 +173,7 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiExpand
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
@@ -230,11 +229,13 @@ ascend_npu:
 - diopiArgmax
 - diopiExp
 - diopiExpInp
+- diopiPermute
 - diopiReciprocal
 - diopiReciprocalInp
 - diopiSgn
 - diopiSgnInp
 - diopiSort
+- diopiTranspose
 - diopiTopk
 - diopiTril
 - diopiUniformInp
