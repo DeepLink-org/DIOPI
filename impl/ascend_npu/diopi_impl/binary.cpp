@@ -6,6 +6,7 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 
 namespace OP_IMPL_NS {
 
@@ -45,6 +46,46 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
         return diopiSuccess;
     }
     acl_op::add_(inputAt, at::scalar_to_tensor(otherAt).to(inputAt.dtype()), alphaAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiSub(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                      const diopiScalar_t* alpha) {
+    BEGIN_CALL_ACL_OP(input, out, alpha, other);
+    if (!outAt.defined() || outAt.numel() <= 0) {
+        return diopiSuccess;
+    }
+
+    op_api::sub_out(inputAt, otherAt, alphaAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiSubInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
+    BEGIN_CALL_ACL_OP(input, other, alpha);
+    if (!inputAt.defined() || inputAt.numel() <= 0) {
+        return diopiSuccess;
+    }
+    op_api::sub_(inputAt, otherAt, alphaAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiSubScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                            const diopiScalar_t* alpha) {
+    BEGIN_CALL_ACL_OP(input, other, alpha, out);
+    if (!outAt.defined() || outAt.numel() <= 0) {
+        return diopiSuccess;
+    }
+    at::Tensor result = op_api::sub(inputAt, otherAt, alphaAt);
+    outAt.copy_(result);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiSubInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha) {
+    BEGIN_CALL_ACL_OP(input, other, alpha);
+    if (!inputAt.defined() || inputAt.numel() <= 0) {
+        return diopiSuccess;
+    }
+    op_api::sub_(inputAt, otherAt, alphaAt);
     END_CALL_ACL_OP();
 }
 
