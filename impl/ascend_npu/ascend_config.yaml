@@ -106,7 +106,6 @@ ascend:
 - diopiNormalTensor
 - diopiNormalTensorScalar
 - diopiOneHot
-- diopiPermute
 - diopiPow
 - diopiPowInp
 - diopiPowInpTensor
@@ -132,7 +131,6 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiTranspose
 - diopiTril
 - diopiTriu
 - diopiTriuInp
@@ -231,10 +229,12 @@ ascend_npu:
 - diopiArgmax
 - diopiExp
 - diopiExpInp
+- diopiPermute
 - diopiReciprocal
 - diopiReciprocalInp
 - diopiSgn
 - diopiSgnInp
 - diopiSort
+- diopiTranspose
 - diopiTopk
 - diopiUniformInp
