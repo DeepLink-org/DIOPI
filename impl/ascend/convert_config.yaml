@@ -329,7 +329,9 @@
     dtype: (float64)->float32
 
 - diopiMSELossBackward:
-    dtype: (float64)->float32- diopiRelu:
+    dtype: (float64)->float32
+
+- diopiRelu:
     dtype: (int16, float64)->float32
 
 - diopiReluInp:
