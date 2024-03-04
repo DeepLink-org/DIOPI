@@ -294,12 +294,6 @@
 - diopiMatmul:
     dtype: (float64)->float32
 
-- diopiAtan:
-    dtype: (uint8, int8, int32, int16, int64, bool)->float32
-
-- diopiAtanInp:
-    dtype: (uint8, int8, int32, int16, int64, bool)->float32
-
 - diopiNormalTensor:
     dtype: (float64)->float32
 
@@ -319,3 +313,14 @@
 - diopiIsNan:
     dtype: (uint8, int8, int32, int16, int64, bool)->float32
 
+- diopiErf:
+    dtype: (uint8, int8, int16, int32)->float32
+
+- diopiErfInp:
+    dtype: (uint8, int8, int16, int32)->float32
+
+- diopiSgn:
+    dtype: (uint8, int8, int16)->int32
+
+- diopiSgnInp:
+    dtype: (uint8, int8, int16)->int32
