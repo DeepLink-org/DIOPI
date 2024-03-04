@@ -157,6 +157,7 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
+- diopiNormalTensor
 ascend_npu:
 - diopiAbs
 - diopiAbsInp
@@ -195,7 +196,6 @@ ascend_npu:
 - diopiNormal
 - diopiNormalInp
 - diopiNormalScalarTensor
-- diopiNormalTensor
 - diopiNormalTensorScalar
 - diopiNorm
 - diopiMaxPool2dWithIndices
