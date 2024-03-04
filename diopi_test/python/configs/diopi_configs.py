@@ -8233,8 +8233,8 @@ diopi_configs = {
         atol_half=1e-1,
         rtol_half=1e-1,
         interface=['CustomizedTest'],
-        # 在ascend接入下fp16报错，当前使用7.0.0版本的ascendnpu接入，仅支持fp16和fp32
-        # dtype=[np.float16, np.float32, np.float64],
+        # 在ascend接入下fp16报错，当前使用7.0.0版本的ascendnpu接入，仅支持fp16和fp32.inv_rms 在nv和华为上仅支持fp32
+        # dtype=[np.float16, np.float32, np.float64]
         dtype=[np.float16, np.float32, np.float64],
         para=dict(
             eps=[1e-4, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2],

@@ -33,7 +33,7 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
  * @brief Apply Root Mean Square (RMS) Normalization to the input tensor.
  * @param[in] ctx The diopi context.
  * @param[out] out the output tensor containing the normalized values. type = [float32, float16, float64].
- * @param[out] inv_rms The tensor containing the inverse of root mean square. type = [float32, float16, float64].
+ * @param[out] inv_rms The tensor containing the inverse of root mean square. type = [float32].
  * @param[in] input The input tensor to be normalized. type = [float32, float16, float64].
  * @param[in] normalized_shape The shape of the partial input which is needed to be normalized. type = [int32, int64].
  * @param[in] weight The gain parameter used to re-scale the standardized summed inputs type = [float32, float16, float64].
