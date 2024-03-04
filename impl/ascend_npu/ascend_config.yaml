@@ -131,7 +131,6 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiTranspose
 - diopiTriu
 - diopiTriuInp
 - diopiUpsampleLinear
