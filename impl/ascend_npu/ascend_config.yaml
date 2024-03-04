@@ -41,11 +41,6 @@ ascend:
 - diopiEqInp
 - diopiEqInpScalar
 - diopiEqScalar
-- diopiErf
-- diopiErfInp
-- diopiFlip
-- diopiFloor
-- diopiFloorInp
 - diopiGather
 - diopiGe
 - diopiGeInp
@@ -122,10 +117,6 @@ ascend:
 - diopiPowTensor
 - diopiRelu
 - diopiReluInp
-- diopiRsqrt
-- diopiRsqrtInp
-- diopiSgn
-- diopiSgnInp
 - diopiSigmoidBackward
 - diopiSigmoidInp
 - diopiSin
@@ -135,8 +126,6 @@ ascend:
 - diopiSoftmax
 - diopiSoftmaxBackward
 - diopiSort
-- diopiSqrt
-- diopiSqrtInp
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
@@ -170,7 +159,6 @@ ascend:
 - diopiRMSNorm
 - diopiRMSNormBackward
 - diopiExpand
-- diopiLinspace
 - diopiProd
 - diopiSplitWithSizes
 - diopiScatter
@@ -183,6 +171,8 @@ ascend_npu:
 - diopiArange
 - diopiAtan
 - diopiAtanInp
+- diopiErf
+- diopiErfInp
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
@@ -191,10 +181,18 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiFlip
+- diopiFloor
+- diopiFloorInp
+- diopiLinspace
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
+- diopiRsqrt
+- diopiRsqrtInp
+- diopiSqrt
+- diopiSqrtInp
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
@@ -237,4 +235,6 @@ ascend_npu:
 - diopiExpInp
 - diopiReciprocal
 - diopiReciprocalInp
+- diopiSgn
+- diopiSgnInp
 - diopiUniformInp
