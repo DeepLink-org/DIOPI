@@ -25,7 +25,7 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     } else {
         if (invRmsAt.scalar_type() != at::kFloat) {
             at::Tensor invRmsTempAt = at_npu::native::OpPreparation::apply_tensor_with_format(
-                op_infer::rms_norm_npu_output_size(inputAt, weightAt)[0], invRmsAt.options(), ACL_FORMAT_ND);
+                op_infer::rms_norm_npu_output_size(inputAt, weightAt)[0], invRmsAt.options().dtype(at::kFloat), ACL_FORMAT_ND);
             EXEC_NPU_CMD(aclnnRmsNorm, inputAt, weightAt, eps, outAt, invRmsTempAt);
             invRmsAt.copy_(invRmsTempAt);
         } else {
@@ -52,7 +52,14 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         gradInputAt.copy_(std::get<0>(result));
         gradWeightAt.copy_(std::get<1>(result));
     } else {
-        EXEC_NPU_CMD(aclnnRmsNormGrad, gradOutputAt, inputAt, invRmsTempAt, weightAt, gradInputAt, gradWeightAt);
+        if (gradWeightAt.scalar_type() != at::kFloat) {
+            at::Tensor gradWeightTempAt = at_npu::native::OpPreparation::apply_tensor_with_format(
+                op_infer::rms_norm_grad_npu_output_size(inputAt, weightAt)[1], gradWeightAt.options().dtype(at::kFloat), ACL_FORMAT_ND);
+            EXEC_NPU_CMD(aclnnRmsNormGrad, gradOutputAt, inputAt, invRmsTempAt, weightAt, gradInputAt, gradWeightTempAt);
+            gradWeightAt.copy_(gradWeightTempAt);
+        } else {
+            EXEC_NPU_CMD(aclnnRmsNormGrad, gradOutputAt, inputAt, invRmsTempAt, weightAt, gradInputAt, gradWeightAt);
+        }
     }
     END_CALL_ACL_OP();
 }
