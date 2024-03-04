@@ -147,8 +147,6 @@ ascend:
 - diopiAddInp
 - diopiAddScalar
 - diopiAddInpScalar
-- diopiConvolution2d
-- diopiConvolution2dBackward
 - diopiLogicalAnd
 - diopiLogicalOr
 - diopiRMSNorm
@@ -176,6 +174,8 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiConvolution2d
+- diopiConvolution2dBackward
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
