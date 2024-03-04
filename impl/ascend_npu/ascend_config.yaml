@@ -84,7 +84,6 @@ ascend:
 - diopiMax
 - diopiMaxAll
 - diopiMaximum
-- diopiMean
 - diopiMin
 - diopiMinAll
 - diopiMinimum
@@ -226,10 +225,8 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
-- diopiSum
 - diopiMean
 - diopiMm
-- diopiAny
 - diopiArgmax
 - diopiExp
 - diopiExpInp
