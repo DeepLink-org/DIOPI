@@ -46,8 +46,8 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         invRmsTempAt = invRmsAt.to(at::kFloat);
     }
 
-    std::tuple<at::Tensor, at::Tensor> result;
     if (false) {
+        std::tuple<at::Tensor, at::Tensor> result;
         result = acl_op::npu_rms_norm_backward(gradOutputAt, inputAt, weightAt, invRmsTempAt);
         gradInputAt.copy_(std::get<0>(result));
         gradWeightAt.copy_(std::get<1>(result));
