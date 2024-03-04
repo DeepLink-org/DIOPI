@@ -94,7 +94,6 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
-- diopiMultinomial
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNe
@@ -195,6 +194,7 @@ ascend_npu:
 - diopiStack
 - diopiMSELoss
 - diopiMSELossBackward
+- diopiMultinomial
 - diopiNormal
 - diopiNormalInp
 - diopiNorm
