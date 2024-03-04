@@ -48,7 +48,6 @@ ascend:
 - diopiGeScalar
 - diopiGelu
 - diopiGeluBackward
-- diopiGroupNorm
 - diopiGt
 - diopiGtInp
 - diopiGtInpScalar
@@ -168,6 +167,7 @@ ascend_npu:
 - diopiAtanInp
 - diopiErf
 - diopiErfInp
+- diopiGroupNorm
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
