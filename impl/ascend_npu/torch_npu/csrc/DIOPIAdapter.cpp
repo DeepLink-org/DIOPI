@@ -2478,6 +2478,7 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
             NPU_CHECK_ERROR(ret);
         }
         ++index;
+        stream.synchronize();
     } while (NpuUtils::IsOomError(ret, index) && (index < NPU_MAX_OP_EXEC_TRY_NUM));
     if (reset_flag) {
         AclSetCompileopt(aclCompileOpt::ACL_OP_JIT_COMPILE, "disable");
@@ -3217,7 +3218,7 @@ at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return
 
 at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return op_api::div(self, other); }
 
-at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return op_api::mul(self, other); }
+at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
 
 at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return op_api::mul(self, other); }
 
