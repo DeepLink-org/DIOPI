@@ -125,7 +125,6 @@ ascend:
 - diopiSliceBackward
 - diopiSoftmax
 - diopiSoftmaxBackward
-- diopiSort
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
@@ -136,7 +135,6 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiTopk
 - diopiTranspose
 - diopiTril
 - diopiTriu
@@ -237,4 +235,6 @@ ascend_npu:
 - diopiReciprocalInp
 - diopiSgn
 - diopiSgnInp
+- diopiSort
+- diopiTopk
 - diopiUniformInp
