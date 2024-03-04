@@ -168,8 +168,19 @@ int64_t AscendTensor::getAclMemBufferSize() const {
     }
 }
 
-aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* stride, diopiConstTensorHandle_t tensor) {
+aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* stride) {
     static std::once_flag warningFlag;
+    auto warnOnUnsupportedFormat = [dim, shape, stride](const char* file, int line, const char* func) {
+        std::string msg = "Acl only support NCHW or NHWC format! but get shape = [";
+        for (int64_t i = 0; i < dim; i++) {
+            msg += std::to_string(shape[i]) + (i == dim - 1 ? "]" : ", ");
+        }
+        msg += ", stride = [";
+        for (int64_t i = 0; i < dim; i++) {
+            msg += std::to_string(stride[i]) + (i == dim - 1 ? "]" : ", ");
+        }
+        warning(file, line, func, msg.c_str());
+    };
     if (dim == 5) {
         std::array<int64_t, 5> thStride{stride[0], stride[1], stride[2], stride[3], stride[4]};
         int st = 1;
@@ -195,8 +206,7 @@ aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* s
         if (thStride == ndhwcStride) {
             return ACL_FORMAT_NDHWC;
         }
-        std::call_once(
-            warningFlag, warning, __FILE__, __LINE__, __FUNCTION__, "Acl only support NCDHW or NDHWC format! but get %s", dumpTensor(tensor).c_str());
+        std::call_once(warningFlag, warnOnUnsupportedFormat, __FILE__, __LINE__, __FUNCTION__);
     } else if (dim == 4) {
         std::array<int64_t, 4> thStride{stride[0], stride[1], stride[2], stride[3]};
         {
@@ -223,7 +233,7 @@ aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* s
         if (thStride == nhwcStride) {
             return ACL_FORMAT_NHWC;
         }
-        std::call_once(warningFlag, warning, __FILE__, __LINE__, __FUNCTION__, "Acl only support NCHW or NHWC format! but get %s", dumpTensor(tensor).c_str());
+        std::call_once(warningFlag, warnOnUnsupportedFormat, __FILE__, __LINE__, __FUNCTION__);
     }
     return ACL_FORMAT_ND;
 }

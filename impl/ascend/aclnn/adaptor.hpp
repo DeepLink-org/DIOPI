@@ -24,6 +24,7 @@
 
 #include "../ascend_tensor.hpp"
 #include "../common/utils.hpp"
+#include "../env_vars.hpp"
 
 namespace impl {
 namespace ascend {
@@ -87,7 +88,7 @@ inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor
     const void* tensorData = nullptr;
     diopiGetTensorDataConst(tensor, &tensorData);
     auto type = diopiDtypeToAclDataType(dtype);
-    auto format = inferAclDataFormat(shape.len, shape.data, stride.data, tensor);
+    auto format = inferAclDataFormat(shape.len, shape.data, stride.data);
     auto storageSize = static_cast<int64_t>(storageNbytes / elemsize);
     return ::aclCreateTensor(shape.data,
                              shape.len,
@@ -138,16 +139,11 @@ inline void releaseConverted(const aclScalar* scalar) {
     }
 }
 
-inline void logDebugIfEnabled(const char* api) {
-    static int aclDebugFlag = std::getenv("DIOPI_DEBUG_ACLOPRUNNER") == nullptr ? 0 : 1;
-    if (aclDebugFlag) {
-        std::cout << "ACLNN_ADAPTOR for " << api << '\n';
-    }
-}
-
 template <class... Args>
 void callAclnnImpl(const char* api, const char* workspaceApi, diopiContextHandle_t ctx, const Args&... args) {
-    logDebugIfEnabled(api);
+    if (isDebugAclOpRunnerOn()) {
+        std::cout << "ACLNN_ADAPTOR for " << api << '\n';
+    }
 
     /* 0. get aclrtStream */
     aclrtStream stream = nullptr;

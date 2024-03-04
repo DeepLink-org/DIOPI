@@ -87,8 +87,7 @@ inline void info(const char* file, int lineNum, const char* funcName, const char
     printf("\n");
 }
 
-// NOTE: parameter `tensor` is only for printing warning message.
-aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* stride, diopiConstTensorHandle_t tensor);
+aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* stride);
 
 constexpr aclDataType diopiDtypeToAclDataType(diopiDtype_t dtype) noexcept {
 #define DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype, acl_dtype) \
@@ -226,7 +225,7 @@ public:
 
     int64_t getAclMemBufferSize() const;
     std::vector<int64_t> getAclMemShape() const;
-    aclFormat getAclDataFormat() const { return inferAclDataFormat(dim(), shape_.data(), stride_.data(), tensor_); }
+    aclFormat getAclDataFormat() const { return inferAclDataFormat(dim(), shape_.data(), stride_.data()); }
     aclDataType getAclDataType() const { return diopiDtypeToAclDataType(dtype_); }
 
     // Those methods may change the class attribute.

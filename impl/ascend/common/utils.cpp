@@ -69,10 +69,10 @@ std::pair<std::array<std::byte, sizeof(int64_t)>, int64_t> getScalarBytes(const 
     auto dtype = castToDtype.value_or(scalar->stype);
 #define DIOPI_GET_SCALAR_BYTES_CASE(diopiType, ctype) \
     case diopiType: {                                 \
-        nbytes = sizeof(ctype);                        \
-        ctype val = getValue<ctype>(scalar);           \
-        std::memcpy(bytes.data(), &val, nbytes);       \
-        break;                                         \
+        nbytes = sizeof(ctype);                       \
+        ctype val = getValue<ctype>(scalar);          \
+        std::memcpy(bytes.data(), &val, nbytes);      \
+        break;                                        \
     }
     switch (dtype) {
         DIOPI_GET_SCALAR_BYTES_CASE(diopi_dtype_bool, bool)
