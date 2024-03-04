@@ -2,9 +2,11 @@
     supportComposite: true
 
 - diopiRMSNorm:
+    dtype: (float64)->float32
     tensor_dtype:
         inv_rms: (float16, float64)->float32
 
 - diopiRMSNormBackward:
+    dtype: (float64)->float32
     tensor_dtype:
         inv_rms: (float16, float64)->float32
