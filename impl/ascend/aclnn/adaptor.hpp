@@ -18,6 +18,7 @@
 #include <iostream>
 #include <numeric>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -51,12 +52,6 @@ inline void* getOpApiFuncAddr(const char* apiName) {
         return nullptr;
     }
     return getOpApiFuncAddrInLib(opApiHandler, kOpApiLibName, apiName);
-}
-
-template <class... Args>
-decltype(auto) callOpApiFunc(void* opApiAddr, Args&&... args) {
-    using OpApiFuncType = std::add_pointer_t<int(std::decay_t<Args>...)>;
-    return reinterpret_cast<OpApiFuncType>(opApiAddr)(std::forward<Args>(args)...);
 }
 
 inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
@@ -124,8 +119,23 @@ decltype(auto) convertType(T&& param) {
 }
 
 template <class... Args>
-decltype(auto) callOpApiFuncWithConvertedParams(void* opApiAddr, Args&&... args) {
-    return callOpApiFunc(opApiAddr, convertType(std::forward<Args>(args))...);
+constexpr auto convertParams(const Args&... args) {
+    return std::make_tuple(convertType(args)...);
+}
+
+template <class T>
+inline void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
+
+inline void releaseConverted(const aclTensor* tensor) {
+    if (tensor != nullptr) {
+        ::aclDestroyTensor(tensor);
+    }
+}
+
+inline void releaseConverted(const aclScalar* scalar) {
+    if (scalar != nullptr) {
+        ::aclDestroyScalar(scalar);
+    }
 }
 
 inline void logDebugIfEnabled(const char* api) {
@@ -136,7 +146,7 @@ inline void logDebugIfEnabled(const char* api) {
 }
 
 template <class... Args>
-void callAclnnImpl(const char* api, const char* workspaceApi, diopiContextHandle_t ctx, Args&&... args) {
+void callAclnnImpl(const char* api, const char* workspaceApi, diopiContextHandle_t ctx, const Args&... args) {
     logDebugIfEnabled(api);
 
     /* 0. get aclrtStream */
@@ -146,10 +156,13 @@ void callAclnnImpl(const char* api, const char* workspaceApi, diopiContextHandle
     /* 1. call xxxGetWorkspaceSize function. */
     static const auto workspaceSizeFuncAddr = getOpApiFuncAddr(workspaceApi);
     ASCEND_CHECK(workspaceSizeFuncAddr != nullptr, "can't get workSpaceName function.");
+    using WorkspaceSizeFuncType = int (*)(std::decay_t<decltype(convertType(std::declval<Args>()))>..., uint64_t*, aclOpExecutor**);
+    static const auto workspaceSizeFunc = reinterpret_cast<WorkspaceSizeFuncType>(workspaceSizeFuncAddr);
 
     uint64_t workspaceSize = 0;
     aclOpExecutor* executor = nullptr;
-    auto workspaceStatus = callOpApiFuncWithConvertedParams(workspaceSizeFuncAddr, std::forward<Args>(args)..., &workspaceSize, &executor);
+    auto convertedParams = convertParams(args..., &workspaceSize, &executor);
+    auto workspaceStatus = std::apply(workspaceSizeFunc, convertedParams);
     ASCEND_CHECK(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS.");
 
     void* workspaceAddr = nullptr;
@@ -161,10 +174,14 @@ void callAclnnImpl(const char* api, const char* workspaceApi, diopiContextHandle
     /* 2. call aclnnXXX function */
     static const auto opApiFuncAddr = getOpApiFuncAddr(api);
     ASCEND_CHECK(opApiFuncAddr != nullptr, "can't get op function.");
+    using OpApiFuncType = int (*)(void*, uint64_t, aclOpExecutor*, aclrtStream);
+    static const auto opApiFunc = reinterpret_cast<OpApiFuncType>(opApiFuncAddr);
 
-    auto ret = callOpApiFunc(opApiFuncAddr, workspaceAddr, workspaceSize, executor, stream);
+    auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);
     ASCEND_CHECK(ret == ACL_SUCCESS, "%s failed. ERROR: %d\n", api, ret);
 
+    /* 3. clean up */
+    std::apply([](const auto&... args) { (releaseConverted(args), ...); }, convertedParams);
     if (workspaceSize > 0) {
         aclrtFree(workspaceAddr);
     }
