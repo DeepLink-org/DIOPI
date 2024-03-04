@@ -41,11 +41,6 @@ ascend:
 - diopiEqInp
 - diopiEqInpScalar
 - diopiEqScalar
-- diopiErf
-- diopiErfInp
-- diopiFlip
-- diopiFloor
-- diopiFloorInp
 - diopiGather
 - diopiGe
 - diopiGeInp
@@ -83,8 +78,6 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
-- diopiMSELoss
-- diopiMSELossBackward
 - diopiMaskedFill
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
@@ -101,7 +94,6 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
-- diopiMultinomial
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNe
@@ -122,8 +114,6 @@ ascend:
 - diopiPowTensor
 - diopiRelu
 - diopiReluInp
-- diopiSgn
-- diopiSgnInp
 - diopiSigmoidBackward
 - diopiSigmoidInp
 - diopiSin
@@ -132,7 +122,6 @@ ascend:
 - diopiSliceBackward
 - diopiSoftmax
 - diopiSoftmaxBackward
-- diopiSort
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
@@ -140,7 +129,6 @@ ascend:
 - diopiSum
 - diopiTanh
 - diopiTanhBackward
-- diopiTopk
 - diopiTranspose
 - diopiTril
 - diopiTriu
@@ -163,7 +151,6 @@ ascend:
 - diopiRMSNorm
 - diopiRMSNormBackward
 - diopiExpand
-- diopiLinspace
 - diopiProd
 - diopiSplitWithSizes
 - diopiScatter
@@ -174,6 +161,10 @@ ascend_npu:
 - diopiAbs
 - diopiAbsInp
 - diopiArange
+- diopiAtan
+- diopiAtanInp
+- diopiErf
+- diopiErfInp
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
@@ -182,6 +173,10 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiFlip
+- diopiFloor
+- diopiFloorInp
+- diopiLinspace
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
@@ -194,6 +189,9 @@ ascend_npu:
 - diopiSiluInp
 - diopiSiluBackward
 - diopiStack
+- diopiMSELoss
+- diopiMSELossBackward
+- diopiMultinomial
 - diopiNormal
 - diopiNormalInp
 - diopiNorm
@@ -224,8 +222,6 @@ ascend_npu:
 - diopiHardswish
 - diopiHardswishInp
 - diopiHardswishBackward
-- diopiAtan
-- diopiAtanInp
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
@@ -234,6 +230,10 @@ ascend_npu:
 - diopiExpInp
 - diopiReciprocal
 - diopiReciprocalInp
+- diopiSgn
+- diopiSgnInp
+- diopiSort
+- diopiTopk
 - diopiUniformInp
 - diopiThreshold
 - diopiThresholdBackward
