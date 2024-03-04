@@ -61,7 +61,6 @@ ascend:
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
-- diopiIsNan
 - diopiLayerNorm
 - diopiLayerNormBackward
 - diopiLe
@@ -238,3 +237,4 @@ ascend_npu:
 - diopiReciprocal
 - diopiReciprocalInp
 - diopiUniformInp
+- diopiIsNan
