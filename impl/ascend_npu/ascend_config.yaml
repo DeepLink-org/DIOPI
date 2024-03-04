@@ -57,8 +57,6 @@ ascend:
 - diopiHardtanhBackward
 - diopiHardtanhInp
 - diopiIsNan
-- diopiLayerNorm
-- diopiLayerNormBackward
 - diopiLe
 - diopiLeInp
 - diopiLeInpScalar
@@ -201,6 +199,8 @@ ascend_npu:
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiCol2Im
+- diopiLayerNorm
+- diopiLayerNormBackward
 - diopiLog
 - diopiLog10
 - diopiLog10Inp
