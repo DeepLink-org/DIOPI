@@ -314,18 +314,6 @@ device_configs = {
         ),
     ),
 
-    'mse_loss': dict(
-        name=['mse_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((64,)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2964, 32)),Skip((0,)),Skip((16, 0)),Skip((4, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
     'cross_entropy': dict(
         name=['cross_entropy'],
         tensor_para=dict(
