@@ -168,6 +168,7 @@ ascend_npu:
 - diopiErf
 - diopiErfInp
 - diopiGroupNorm
+- diopiGroupNormBackward
 - diopiNonzero
 - diopiBmm
 - diopiMatmul

@@ -24,4 +24,20 @@ diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     END_CALL_ACL_OP();
 }
 
+diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
+                                    diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                    diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, int64_t numGroups) {
+    BEGIN_CALL_ACL_OP(gradInput, gradWeight, gradBias, gradOutput, input, weight, mean, rstd);
+    if (!inputAt.defined() || inputAt.numel() == 0) {
+        return diopiSuccess;
+    }
+    int64_t N = inputAt.sizes()[0];
+    int64_t C = inputAt.sizes()[1];
+    int64_t HW = inputAt.numel() / (N * C);
+    std::array<bool, 3> gradInputMask = {true, true, true};
+    EXEC_NPU_CMD(
+        aclnnGroupNormBackward, gradOutputAt, inputAt, meanAt, rstdAt, weightAt, N, C, HW, numGroups, gradInputMask, gradInputAt, gradWeightAt, gradBiasAt);
+    END_CALL_ACL_OP();
+}
+
 }  // namespace OP_IMPL_NS
