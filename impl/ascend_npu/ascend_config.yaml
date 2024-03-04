@@ -86,9 +86,7 @@ ascend:
 - diopiMaxAll
 - diopiMaximum
 - diopiMean
-- diopiMin
-- diopiMinAll
-- diopiMinimum
+
 - diopiMm
 - diopiMul
 - diopiMulInp
@@ -172,6 +170,9 @@ ascend_npu:
 - diopiBmm
 - diopiMatmul
 - diopiMaxAll
+- diopiMin
+- diopiMinAll
+- diopiMinimum
 - diopiCastDtype
 - diopiCopyInp
 - diopiCat
