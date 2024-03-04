@@ -167,6 +167,8 @@ ascend_npu:
 - diopiAbs
 - diopiAbsInp
 - diopiArange
+- diopiAtan
+- diopiAtanInp
 - diopiErf
 - diopiErfInp
 - diopiNonzero
@@ -223,8 +225,6 @@ ascend_npu:
 - diopiHardswish
 - diopiHardswishInp
 - diopiHardswishBackward
-- diopiAtan
-- diopiAtanInp
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
