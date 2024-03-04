@@ -256,7 +256,7 @@ diopiTensorHandle_t createTensorIfNullptrOrConstCast(diopiContextHandle_t ctx, d
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, const diopiScalar_t* scalar, diopiTensorHandle_t* out, diopiDtype_t dtype, diopiDevice_t device) {
     // get scalar
     int64_t nbytes = 0;
-    uint64_t buff = 0;  // just for store the value with the different type.
+    char buff[8];  // just for store the value with the different type.
     switch (dtype) {
         case diopi_dtype_bool: {
             nbytes = 1;
