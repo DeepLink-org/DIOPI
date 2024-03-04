@@ -22,6 +22,7 @@
 #include <utility>
 
 #include "../ascend_tensor.hpp"
+#include "../common/utils.hpp"
 
 namespace impl {
 namespace ascend {
@@ -104,12 +105,19 @@ inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor
                              const_cast<void*>(tensorData));
 }
 
+inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
+    auto [bytes, nbytes] = getScalarBytes(scalar);
+    return ::aclCreateScalar(bytes.data(), diopiDtypeToAclDataType(scalar->stype));
+}
+
 template <class T, class U = std::remove_cv_t<std::remove_reference_t<T>>>
 decltype(auto) convertType(T&& param) {
     if constexpr (std::is_same_v<U, AscendTensor>) {
         return createAclTensorFromAscendTensor(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiTensorHandle_t> || std::is_same_v<U, diopiConstTensorHandle_t>) {
         return createAclTensorFromDiopiTensor(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, diopiScalar_t*> || std::is_same_v<U, const diopiScalar_t*>) {
+        return createAclScalarFromDiopiScalar(std::forward<T>(param));
     } else {
         return std::forward<T>(param);
     }
