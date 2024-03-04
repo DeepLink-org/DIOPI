@@ -131,7 +131,6 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiTril
 - diopiTriu
 - diopiTriuInp
 - diopiUpsampleLinear
@@ -237,4 +236,5 @@ ascend_npu:
 - diopiSort
 - diopiTranspose
 - diopiTopk
+- diopiTril
 - diopiUniformInp
