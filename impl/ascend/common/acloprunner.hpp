@@ -1,10 +1,9 @@
 #ifndef IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 #define IMPL_ASCEND_COMMON_ACLOPRUNNER_HPP_
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <array>
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <map>
