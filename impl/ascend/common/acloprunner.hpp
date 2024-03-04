@@ -657,7 +657,7 @@ public:
         for (auto pair : nonContiguousOutputPairs_) {
             auto th = pair.first;
             auto thCopy = pair.second;
-            diopiCopyInp(context_, thCopy, th);
+            ::impl::ascend_npu::diopiCopyInp(context_, thCopy, th);
         }
         for (int64_t i = 0; i < syncIdxs_.size(); i++) {
             auto syncIdx = syncIdxs_[i];
