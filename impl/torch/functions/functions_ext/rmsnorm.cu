@@ -85,6 +85,7 @@ void cuda_rms_norm_gradient(at::Tensor* dout, at::Tensor* invvar, at::Tensor* in
 void rms_norm_forward(at::Tensor input, at::IntArrayRef normalized_shape, at::Tensor gamma, double epsilon, at::Tensor output, at::Tensor invvar) {
     DIOPI_TORCH_EXT_CHECK_INPUT(input);
     DIOPI_TORCH_EXT_CHECK_INPUT(gamma);
+    TORCH_CHECK(invvar.scalar_type() == at::ScalarType::Float);
     int n1;
     int n2;
     check_args(input, normalized_shape, gamma, n1, n2);
@@ -100,6 +101,7 @@ void rms_norm_backward(at::Tensor dout, at::Tensor invvar, at::Tensor input, at:
     DIOPI_TORCH_EXT_CHECK_INPUT(invvar);
     DIOPI_TORCH_EXT_CHECK_INPUT(input);
     DIOPI_TORCH_EXT_CHECK_INPUT(gamma);
+    TORCH_CHECK(invvar.scalar_type() == at::ScalarType::Float);
     int n1;
     int n2;
     check_args(input, normalized_shape, gamma, n1, n2);

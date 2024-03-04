@@ -970,7 +970,7 @@ void cuda_rms_norm(at::Tensor* output, at::Tensor* invvar, at::Tensor* input, in
     DISPATCH_DOUBLE_FLOAT_HALF_AND_BFLOAT_INOUT_TYPES(
         input->scalar_type(), output->scalar_type(), "rms_norm_cuda_kernel", using accscalar_t = at::acc_type<scalar_t_in, true>;
         HostApplyRMSNorm<scalar_t_in, accscalar_t, scalar_t_out>(output->data_ptr<scalar_t_out>(),
-                                                                 invvar->data_ptr<accscalar_t>(),
+                                                                 invvar->data_ptr<float>(),
                                                                  input->data_ptr<scalar_t_in>(),
                                                                  n1,
                                                                  n2,
@@ -1012,7 +1012,7 @@ void cuda_rms_norm_gradient(at::Tensor* dout, at::Tensor* invvar, at::Tensor* in
                                                       "cuComputeGradInputRMS",
                                                       using accscalar_t = at::acc_type<scalar_t_in, true>;
                                                       HostRMSNormGradient(dout->data_ptr<scalar_t_out>(),
-                                                                          invvar->data_ptr<accscalar_t>(),
+                                                                          invvar->data_ptr<float>(),
                                                                           input,
                                                                           n1,
                                                                           n2,
