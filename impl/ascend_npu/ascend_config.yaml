@@ -102,9 +102,6 @@ ascend:
 - diopiNeScalar
 - diopiNeg
 - diopiNegInp
-- diopiNormalScalarTensor
-- diopiNormalTensor
-- diopiNormalTensorScalar
 - diopiOneHot
 - diopiPermute
 - diopiPow
@@ -197,6 +194,9 @@ ascend_npu:
 - diopiMultinomial
 - diopiNormal
 - diopiNormalInp
+- diopiNormalScalarTensor
+- diopiNormalTensor
+- diopiNormalTensorScalar
 - diopiNorm
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding

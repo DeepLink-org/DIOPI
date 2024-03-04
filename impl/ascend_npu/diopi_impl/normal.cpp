@@ -6,6 +6,7 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 
 namespace {
 using npu_utils = at_npu::native::NpuUtils;
@@ -36,20 +37,60 @@ at::Tensor& normalOutNpuNocheck(at::Tensor& result, c10::optional<at::Generator>
 }
 }  // namespace
 
+at::Tensor& normal_(at::Tensor& self, double mean = 0, double std = 1, c10::optional<at::Generator> generator = c10::nullopt);
+at::Tensor& normal_out(const at::Tensor& mean, const at::Tensor& std, c10::optional<at::Generator> generator, at::Tensor& out);
+at::Tensor& normal_out(const at::Tensor& mean, double std, c10::optional<at::Generator> generator, at::Tensor& out);
+at::Tensor& normal_out(double mean, const at::Tensor& std, c10::optional<at::Generator> generator, at::Tensor& out);
+at::Tensor& normal_out(double mean, double std, at::IntArrayRef size, c10::optional<at::Generator> generator, at::Tensor& out);
+
 namespace OP_IMPL_NS {
 
 diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiGeneratorHandle_t generator) {
     BEGIN_CALL_ACL_OP(out, generator);
-    if (outAt.numel() > 0) {
-        normalOutNpuNocheck(outAt, c10::make_optional(std::move(generatorAt)));
-        acl_op::mul_(outAt, std);
-        acl_op::add_(outAt, mean);
+    if (out == nullptr || outAt.numel() <= 0) {
+        return diopiSuccess;
     }
+    op_api::normal_out(mean, std, outAt.sizes(), generatorAt, outAt);
     END_CALL_ACL_OP();
 }
 
 diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator) {
-    return OP_IMPL_NS::diopiNormal(ctx, inout, mean, std, generator);
+    BEGIN_CALL_ACL_OP(inout, generator);
+    if (inout == nullptr || inoutAt.numel() <= 0) {
+        return diopiSuccess;
+    }
+    op_api::normal_(inoutAt, mean, std, generatorAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, diopiConstTensorHandle_t std,
+                                     diopiGeneratorHandle_t generator) {
+    BEGIN_CALL_ACL_OP(out, generator, std);
+    if (out == nullptr || outAt.numel() <= 0) {
+        return diopiSuccess;
+    }
+    op_api::normal_out(mean, stdAt, generatorAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t std,
+                               diopiGeneratorHandle_t generator) {
+    BEGIN_CALL_ACL_OP(out, generator, mean, std);
+    if (out == nullptr || outAt.numel() <= 0) {
+        return diopiSuccess;
+    }
+    op_api::normal_out(meanAt, stdAt, generatorAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, double std,
+                                     diopiGeneratorHandle_t generator) {
+    BEGIN_CALL_ACL_OP(out, generator, mean);
+    if (out == nullptr || outAt.numel() <= 0) {
+        return diopiSuccess;
+    }
+    op_api::normal_out(meanAt, std, generatorAt, outAt);
+    END_CALL_ACL_OP();
 }
 
 }  // namespace OP_IMPL_NS
