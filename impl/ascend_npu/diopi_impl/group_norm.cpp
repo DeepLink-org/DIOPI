@@ -28,16 +28,26 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, int64_t numGroups) {
     BEGIN_CALL_ACL_OP(gradInput, gradWeight, gradBias, gradOutput, input, weight, mean, rstd);
-    if (!inputAt.defined() || inputAt.numel() == 0) {
+    if (!inputAt.defined()) {
         return diopiSuccess;
     }
-    int64_t n = inputAt.sizes()[0];
-    int64_t c = inputAt.sizes()[1];
-    int64_t hw = inputAt.numel() / (n * c);
-    std::array<bool, 3> gradInputMask = {true, true, true};
-    EXEC_NPU_CMD(
-        aclnnGroupNormBackward, gradOutputAt, inputAt, meanAt, rstdAt, weightAt, n, c, hw, numGroups, gradInputMask, gradInputAt, gradWeightAt, gradBiasAt);
-    END_CALL_ACL_OP();
+    if (inputAt.numel() == 0) {
+        if (inputAt.sizes()[0] == 0) {
+            op_api::fill_(gradWeightAt, c10::Scalar(0.0));
+            op_api::fill_(gradBiasAt, c10::Scalar(0.0));
+        } else {
+            op_api::fill_(gradWeightAt, c10::Scalar(std::nanf("")));
+            op_api::fill_(gradBiasAt, c10::Scalar(0.0));
+        }
+    } else {
+        int64_t n = inputAt.sizes()[0];
+        int64_t c = inputAt.sizes()[1];
+        int64_t hw = inputAt.numel() / (n * c);
+        std::array<bool, 3> gradInputMask = {true, true, true};
+        EXEC_NPU_CMD(
+            aclnnGroupNormBackward, gradOutputAt, inputAt, meanAt, rstdAt, weightAt, n, c, hw, numGroups, gradInputMask, gradInputAt, gradWeightAt, gradBiasAt);
+        END_CALL_ACL_OP();
+    }
 }
 
 }  // namespace OP_IMPL_NS
