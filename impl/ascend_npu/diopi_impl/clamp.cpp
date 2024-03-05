@@ -4,8 +4,9 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "helper.hpp"
 #include <half.hpp>
+
+#include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 
@@ -22,7 +23,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     } else {
         if (minAt.defined() && !maxAt.defined()) {
             op_api::clamp_min_out(inputTmp, minAt, outAt);
-        } 
+        }
         if (maxAt.defined() && !minAt.defined()) {
             op_api::clamp_max_out(inputTmp, maxAt, outAt);
         }
@@ -35,14 +36,13 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     if (min != nullptr && max != nullptr) {
         BEGIN_CALL_ACL_OP(out, input, min, max);
         if (inputAt.numel() == 0) {
-        return diopiSuccess;
-    }
+            return diopiSuccess;
+        }
         at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
         op_api::clamp_out(inputTmp, minAt, maxAt, outAt);
         END_CALL_ACL_OP();
     } else {
         if (min != nullptr) {
-            std::cout << "max is nullptr" << std::endl;
             BEGIN_CALL_ACL_OP(out, input, min);
             if (inputAt.numel() == 0) {
                 return diopiSuccess;
@@ -52,7 +52,6 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
             END_CALL_ACL_OP();
         }
         if (max != nullptr) {
-            std::cout << "min is nullptr" << std::endl;
             BEGIN_CALL_ACL_OP(out, input, max);
             if (inputAt.numel() == 0) {
                 return diopiSuccess;
@@ -75,7 +74,7 @@ diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, 
     } else {
         if (minAt.defined()) {
             op_api::clamp_min_(inputAt, minAt);
-        } 
+        }
         if (maxAt.defined()) {
             op_api::clamp_max_(inputAt, maxAt);
         }
@@ -87,30 +86,29 @@ diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t i
     if (min != nullptr && max != nullptr) {
         BEGIN_CALL_ACL_OP(input, min, max);
         if (inputAt.numel() == 0) {
-        return diopiSuccess;
-    }
+            return diopiSuccess;
+        }
         op_api::clamp_(inputAt, minAt, maxAt);
         END_CALL_ACL_OP();
     } else {
         if (min != nullptr) {
             BEGIN_CALL_ACL_OP(input, min);
             if (inputAt.numel() == 0) {
-        return diopiSuccess;
-    }
+                return diopiSuccess;
+            }
             op_api::clamp_min_(inputAt, minAt);
             END_CALL_ACL_OP();
         }
         if (max != nullptr) {
             BEGIN_CALL_ACL_OP(input, max);
             if (inputAt.numel() == 0) {
-        return diopiSuccess;
-    }
+                return diopiSuccess;
+            }
             op_api::clamp_max_(inputAt, maxAt);
             END_CALL_ACL_OP();
         }
     }
 }
-
 
 diopiError_t diopiClampMinInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min) {
     BEGIN_CALL_ACL_OP(input, min);
@@ -180,13 +178,10 @@ diopiError_t diopiClampMaxScalar(diopiContextHandle_t ctx, diopiTensorHandle_t o
 }
 
 diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t max) {
-    std::cout << "calling diopiClampMax" << std::endl;
-    
     BEGIN_CALL_ACL_OP(out, input, max);
     if (inputAt.numel() == 0) {
         return diopiSuccess;
     }
-    std::cout << "max is " << maxAt << std::endl;
     at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
     op_api::clamp_max_out(inputTmp, maxAt, outAt);
     END_CALL_ACL_OP();
