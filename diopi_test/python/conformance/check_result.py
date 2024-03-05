@@ -70,7 +70,7 @@ class CheckResult(object):
         assert isinstance(output_reference, (list, tuple))
         assert len(output) == len(output_reference)
         for i in range(len(output)):
-            if isinstance(output[i], Tensor):
+            if isinstance(output[i], Tensor) or isinstance(output[i], np.ndarray):
                 kwargs['name'] = "out" + str(i)
                 CheckResult.allclose(output[i], output_reference[i], **kwargs)
 
@@ -79,7 +79,7 @@ class CheckResult(object):
         assert isinstance(output_reference, dict)
         assert len(output) == len(output_reference)
         for k, v in output.items():
-            if isinstance(v, Tensor):
+            if isinstance(v, Tensor) or isinstance(v, np.ndarray):
                 kwargs['name'] = k
                 CheckResult.allclose(v, output_reference[k], **kwargs)
 
