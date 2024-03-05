@@ -30,8 +30,6 @@ diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     op_api::fill_(onValueTensor, 1);
     at::Tensor offValueTensor = at_npu::native::OpPreparation::apply_tensor_without_format({1}, inputAt.options());
     op_api::fill_(offValueTensor, 0);
-    auto output_size = op_infer::array_to_small_vector(inputAt.sizes());
-    output_size.emplace_back(depth);
     int64_t axis = -1;
     EXEC_NPU_CMD(aclnnOneHot, inputAt, depth, onValueTensor, offValueTensor, axis, outAt);
     END_CALL_ACL_OP();
