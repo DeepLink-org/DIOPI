@@ -122,6 +122,7 @@ ascend_npu:
 - diopiAbs
 - diopiAbsInp
 - diopiArange
+- diopiArgmax
 - diopiAtan
 - diopiAtanInp
 - diopiErf
@@ -210,10 +211,8 @@ ascend_npu:
 - diopiFill
 - diopiLogSoftmax
 - diopiLogSoftmaxBackward
-- diopiArgmax
 - diopiMean
 - diopiMm
-- diopiArgmax
 - diopiPow
 - diopiPowInp
 - diopiPowInpTensor
