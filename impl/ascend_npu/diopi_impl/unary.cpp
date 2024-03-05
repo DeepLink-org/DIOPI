@@ -48,6 +48,18 @@ diopiError_t diopiAbsInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     END_CALL_ACL_OP();
 }
 
+diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    BEGIN_CALL_ACL_OP(input, out);
+    op_api::erf_out(inputAt, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    BEGIN_CALL_ACL_OP(input);
+    op_api::erf_(inputAt);
+    END_CALL_ACL_OP();
+}
+
 diopiError_t diopiRsqrt(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input, out);
     if (inputAt.numel() <= 0) {
