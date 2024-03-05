@@ -13,8 +13,7 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size, bool alignCorners,
                                  const char* mode) {
-    std::string modeStr(mode);
-    TORCH_CHECK(modeStr == "bilinear", "diopiUpsampleLinearBackward unsupport mode %s", modeStr.c_str());
+    TORCH_CHECK(strcmp(mode, "bilinear") == 0, "diopiUpsampleLinearBackward unsupport mode %s", mode);
     BEGIN_CALL_ACL_OP(input, out);
     std::vector<int64_t> sizeVec(size.data, size.data + size.len);
     double scalesH = 1.0;
@@ -25,8 +24,7 @@ diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t o
 
 diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
                                          diopiSize_t inSize, bool alignCorners, const char* mode) {
-    std::string modeStr(mode);
-    TORCH_CHECK(modeStr == "bilinear", "diopiUpsampleLinearBackward unsupport mode %s", modeStr.c_str());
+    TORCH_CHECK(strcmp(mode, "bilinear") == 0, "diopiUpsampleLinearBackward unsupport mode %s", mode);
     BEGIN_CALL_ACL_OP(gradInput, gradOutput);
     std::vector<int64_t> outSizeVec(outSize.data, outSize.data + outSize.len);
     std::vector<int64_t> inSizeVec(inSize.data, inSize.data + inSize.len);
