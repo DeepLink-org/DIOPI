@@ -9,8 +9,6 @@ ascend:
 - diopiAll
 - diopiAny
 - diopiArange
-- diopiBaddbmm
-- diopiBaddbmmInp
 - diopiBitwiseAnd
 - diopiBitwiseNot
 - diopiClamp
@@ -162,6 +160,8 @@ ascend_npu:
 - diopiArange
 - diopiAtan
 - diopiAtanInp
+- diopiBaddbmm
+- diopiBaddbmmInp
 - diopiErf
 - diopiErfInp
 - diopiNonzero
