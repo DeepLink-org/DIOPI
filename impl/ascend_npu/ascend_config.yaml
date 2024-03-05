@@ -73,13 +73,7 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
-- diopiMaskedFill
-- diopiMaskedFillInp
-- diopiMaskedFillInpScalar
-- diopiMaskedFillScalar
-- diopiMax
 - diopiMaxAll
-- diopiMaximum
 - diopiMin
 - diopiMinAll
 - diopiMinimum
@@ -174,6 +168,8 @@ ascend_npu:
 - diopiFloor
 - diopiFloorInp
 - diopiLinspace
+- diopiMax
+- diopiMaximum
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
