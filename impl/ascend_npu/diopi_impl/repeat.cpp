@@ -11,7 +11,7 @@
 extern "C" {
 diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeatSize) {
     BEGIN_CALL_ACL_OP(out, input, repeatSize);
-    if (repeatSizeAt.size() <= 0) {
+    if (repeatSizeAt.empty()) {
         outAt.copy_(inputAt);
         return diopiSuccess;
     }
