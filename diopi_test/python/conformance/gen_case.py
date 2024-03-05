@@ -12,7 +12,7 @@ from configs import model_config
 sys.path.append("../python/configs")
 
 
-def gen_case(cache_path=".", cur_dir="", model_name="", fname="", impl_folder="", case_output_dir="",
+def gen_case(cache_path=".", cur_dir="", model_name="", fname=[""], impl_folder="", case_output_dir="",
              diopi_case_item_file="diopi_case_items.cfg", device_case_item_file="%s_case_items.cfg"):
 
     if model_name != "":
