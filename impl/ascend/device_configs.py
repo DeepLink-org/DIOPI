@@ -860,6 +860,19 @@ device_configs = {
         ),
     ),
 
+    'scatter': dict( # llm used
+        name=['scatter'],
+        tensor_para=dict(
+            # aclnn not support index out of size
+            args=[
+                {
+                    "ins": ['index'],
+                    "shape": [Skip((6,)),],
+                },
+            ],
+        ),
+    ),
+
     'index_put_acc_three_indices': dict( # llm used
         name=['index_put'],
         para=dict(

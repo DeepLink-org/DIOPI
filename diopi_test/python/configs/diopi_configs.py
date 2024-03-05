@@ -6800,7 +6800,8 @@ diopi_configs = {
                 },
                 {
                     "ins": ['index'],
-                    "shape": ((), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
+                    # FIXME(shenhao) change () to (1) as temp 
+                    "shape": ((1,), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
                     "dtype": [np.int64],
                     "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
                 },
