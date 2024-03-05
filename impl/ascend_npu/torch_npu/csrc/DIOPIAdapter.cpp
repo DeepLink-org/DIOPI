@@ -1547,10 +1547,6 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
 }
 
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_without_format(empty_npu(src.sizes(), src.options())); }
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return empty_npu(sizes, src.options()); }
-at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return empty_npu(sizes, options); }
-
 at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
     return CalcuOpUtil::CopyScalarToDevice(cpu_scalar, scalar_data_type);
 }
@@ -1564,15 +1560,6 @@ at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
     }
     TORCH_CHECK(diopiSuccess == ret);
     return impl::aten::buildATen(tensorDiopi);
-}
-
-inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
-    return NPUNativeFunctions::empty(c10::fromIntArrayRefUnchecked(sizes),
-                                     options.dtype().toScalarType(),
-                                     c10::nullopt,
-                                     at::Device(c10::DeviceType::PrivateUse1),
-                                     false,
-                                     c10::MemoryFormat::Contiguous);
 }
 
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
