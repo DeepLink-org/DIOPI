@@ -1,5 +1,13 @@
 ascend:
 - diopiAny
+- diopiAdaptiveAvgPool2d
+- diopiAdaptiveAvgPool2dBackward
+- diopiAddcdiv
+- diopiAddcdivInp
+- diopiAddcmul
+- diopiAddcmulInp
+- diopiAddmm
+- diopiAll
 - diopiArange
 - diopiBaddbmm
 - diopiBaddbmmInp
@@ -77,11 +85,9 @@ ascend:
 - diopiMax
 - diopiMaxAll
 - diopiMaximum
-- diopiMean
 - diopiMin
 - diopiMinAll
 - diopiMinimum
-- diopiMm
 - diopiMul
 - diopiMulInp
 - diopiMulInpScalar
@@ -98,7 +104,6 @@ ascend:
 - diopiNormalTensor
 - diopiNormalTensorScalar
 - diopiOneHot
-- diopiPermute
 - diopiPow
 - diopiPowInp
 - diopiPowInpTensor
@@ -124,8 +129,6 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiTranspose
-- diopiTril
 - diopiTriu
 - diopiTriuInp
 - diopiUpsampleLinear
@@ -145,7 +148,6 @@ ascend:
 - diopiLogicalOr
 - diopiRMSNorm
 - diopiRMSNormBackward
-- diopiExpand
 - diopiSplitWithSizes
 - diopiScatter
 - diopiScatterInp
@@ -175,6 +177,7 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiExpand
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
@@ -228,13 +231,18 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
+- diopiMean
+- diopiMm
 - diopiArgmax
 - diopiExp
 - diopiExpInp
+- diopiPermute
 - diopiReciprocal
 - diopiReciprocalInp
 - diopiSgn
 - diopiSgnInp
 - diopiSort
+- diopiTranspose
 - diopiTopk
+- diopiTril
 - diopiUniformInp
