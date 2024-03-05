@@ -270,7 +270,7 @@ inline diopiDtype_t getDIOPITensorType(at::ScalarType scalarType) {
 
 inline bool isIntegralTypeWithBool(const diopiDtype_t& type) { return type < 8 || type == 11; }
 
-inline bool isFloatingPoint(const diopiDtype_t& type) {return (type <= 10 && type >= 8) || type == 12 || type == 13;}
+inline bool isFloatingPoint(const diopiDtype_t& type) { return (type <= 10 && type >= 8) || type == 12 || type == 13; }
 
 inline diopiDtype_t getDIOPITensorType(const at::Tensor& tensor) { return getDIOPITensorType(tensor.scalar_type()); }
 
