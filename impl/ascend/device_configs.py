@@ -314,18 +314,6 @@ device_configs = {
         ),
     ),
 
-    'mse_loss': dict(
-        name=['mse_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((64,)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2964, 32)),Skip((0,)),Skip((16, 0)),Skip((4, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
     'cross_entropy': dict(
         name=['cross_entropy'],
         tensor_para=dict(
@@ -435,18 +423,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
-
-    'transpose': dict(
-        name=['transpose'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((32,)),Skip((2, 1536, 950)),Skip((16, 8)),Skip((660, 6, 49, 32)),Skip((0,)),Skip((0, 8)),Skip((16, 0, 8)),],
                 },
             ]
         ),
@@ -738,18 +714,6 @@ device_configs = {
 
     'index_fill_tensor_specific': dict(
         name=['index_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'permute': dict(
-        name=['permute'],
         tensor_para=dict(
             args=[
                 {
