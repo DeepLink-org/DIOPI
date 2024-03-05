@@ -19,18 +19,6 @@
 - diopiGeluBackward:
     dtype: (float64)->float32
 
-- diopiAbs:
-    dtype: (bool, uint8)->int16
-
-- diopiAbsInp:
-    dtype: (bool, uint8)->int16
-
-- diopiReciprocal:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
-
-- diopiReciprocalInp:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
-
 - diopiConvolution2d:
     dtype: (float64)->float16
 
@@ -122,9 +110,6 @@
     dtype: (float64)->float32
 
 - diopiAny:
-    dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
-
-- diopiAll:
     dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
 
 - diopiNeg:
@@ -230,7 +215,7 @@
     dtype: (float64)->float32
 
 - diopiExp:
-    dtype: (bool, uint8, int8, int16, int32, int64)->float32
+    dtype: (uint8, int8, int16, int32, int64)->float32
 
 - diopiPow:
     dtype: (uint8)->int16
@@ -248,7 +233,7 @@
     dtype: (bool, uint8, int8, int16, int32, int64, float64)->float32
 
 - diopiRsqrt:
-    dtype: (int8, uint8, int16, int32, int64, bool)->float32
+    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool)->float32
 
 - diopiEmbeddingBackward:
     dtype: (float64)->float32
@@ -306,12 +291,6 @@
 - diopiMatmul:
     dtype: (float64)->float32
 
-- diopiAtan:
-    dtype: (uint8, int8, int32, int16, int64, bool)->float32
-
-- diopiAtanInp:
-    dtype: (uint8, int8, int32, int16, int64, bool)->float32
-
 - diopiNormalTensor:
     dtype: (float64)->float32
 
@@ -331,3 +310,35 @@
 - diopiIsNan:
     dtype: (uint8, int8, int32, int16, int64, bool)->float32
 
+- diopiErf:
+    dtype: (uint8, int8, int16, int32)->float32
+
+- diopiErfInp:
+    dtype: (uint8, int8, int16, int32)->float32
+
+- diopiSgn:
+    dtype: (uint8, int8, int16)->int32
+
+- diopiSgnInp:
+    dtype: (uint8, int8, int16)->int32
+
+- diopiMSELoss:
+    dtype: (float64)->float32
+
+- diopiMSELossBackward:
+    dtype: (float64)->float32
+
+- diopiRelu:
+    dtype: (int16, float64)->float32
+
+- diopiReluInp:
+    dtype: (int16, float64)->float32
+
+- diopiTanh:
+    dtype: (float64)->float32
+
+- diopiTanhInp:
+    dtype: (float64)->float32
+
+- diopiTanhBackward:
+    dtype: (float64)->float32
