@@ -122,7 +122,6 @@ ascend:
 - diopiSubInp
 - diopiSubInpScalar
 - diopiSubScalar
-- diopiSum
 - diopiTanh
 - diopiTanhBackward
 - diopiThreshold
@@ -156,6 +155,7 @@ ascend:
 ascend_npu:
 - diopiAbs
 - diopiAbsInp
+- diopiAny
 - diopiArange
 - diopiAtan
 - diopiAtanInp
@@ -215,6 +215,7 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiSigmoid
+- diopiSum
 - diopiTensorDestructionHook
 - diopiHardswish
 - diopiHardswishInp
