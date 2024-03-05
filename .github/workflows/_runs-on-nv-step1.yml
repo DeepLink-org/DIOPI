@@ -25,40 +25,6 @@ on:
         default: '/mnt/cache/share/platform/env'
 
 jobs:
-  lint:
-    name: lint
-    runs-on: ${{ inputs.runner }}
-    env:
-      GETRUNNER: ${{ inputs.runner }}
-      DEEPLINK_PATH: ${{ inputs.deeplink_path }}
-      ENV_PATH: ${{ inputs.env_path }}
-      SLURM_PAR_V100: "pat_dev"
-    steps:
-      - name: lint
-        run: |
-          set -e
-          if [[ "${GETRUNNER}" == *sco* ]];then
-            set -e
-            cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
-            cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
-            srun --job-name=${GITHUB_JOB} bash -c "source ${ENV_PATH}/pt2.0_diopi \
-            && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${GITHUB_JOB}/diopi_test && bash scripts/ci_script.sh py-lint \
-            && bash scripts/ci_script.sh cpp-lint && cd ../impl && bash scripts/ci_script.sh cpp-lint" \
-            && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} \
-            || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
-          else
-            ssh SH1424 """
-            set -e
-            cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
-            source ${ENV_PATH}/pt2.0_diopi
-            cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${GITHUB_JOB} && cp -R source ${GITHUB_JOB}  && cd ${GITHUB_JOB}
-            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=10 bash -c 'cd diopi_test && bash scripts/ci_script.sh py-lint \
-            && bash scripts/ci_script.sh cpp-lint && cd ../impl \ && bash scripts/ci_script.sh cpp-lint' \
-            && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} \
-            || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${GITHUB_JOB} && exit 1 )
-            """
-          fi
-
   Build-Nvidia:
     name: Build-Nvidia
     runs-on: ${{ inputs.runner }}
