@@ -2,6 +2,7 @@
 import os
 import re
 import pickle
+from typing import Iterable, Optional
 
 import numpy as np
 from collections import defaultdict
@@ -25,7 +26,7 @@ class GenConfigTestCase(object):
         self._module = module
         self.db_case_items = []
 
-        self.__case_items = None
+        self._case_items: Optional[dict] = None
         # d = dict(
         #     batch_norm::batch_norm: dict(
         #         batch_norm::batch_norm_0.pth: dict(),
@@ -33,7 +34,7 @@ class GenConfigTestCase(object):
         #         ...
         #     )
         # )
-        self.__function_set = defaultdict(dict)
+        self._function_set = defaultdict(dict)
 
         self._load_items()
         self._gen_function_set()
@@ -44,18 +45,19 @@ class GenConfigTestCase(object):
                 f"[GenTestCase][load_items] config file {self._config_path} not found."
             )
         with open(self._config_path, "rb") as f:
-            self.__case_items = pickle.load(f)
+            self._case_items = pickle.load(f)
 
     def _gen_function_set(self):
-        for key, value in self.__case_items.items():
+        assert self._case_items is not None
+        for key, value in self._case_items.items():
             prefix_key, _ = re.split(r"_[0-9]+\.", key)
-            self.__function_set[prefix_key][key] = value
+            self._function_set[prefix_key][key] = value
 
     def get_function_set(self):
-        return dict(self.__function_set)
+        return dict(self._function_set)
 
-    def gen_test_cases(self, fname="all_ops"):
-        for tk, tv in self.__function_set.items():
+    def gen_test_cases(self, fname: Iterable[str] = ("all_ops")):
+        for tk, tv in self._function_set.items():
             gc = GenTestCase(self._module, tk, tv, module_path=self._tests_path)
             gc.gen_test_module(fname)
             self.db_case_items.extend(gc.db_case_items)
@@ -84,7 +86,7 @@ class GenTestCase(object):
         mt_name = f"test_{self._module}_{self._suite_name}_{self._func_name}.py"
         self._fm.will_write(mt_name)
 
-    def gen_test_module(self, fname):
+    def gen_test_module(self, fname: Iterable[str]):
         test_diopi_head_import = ""
         test_case_items = []
         if self._func_name not in fname and "all_ops" not in fname:
