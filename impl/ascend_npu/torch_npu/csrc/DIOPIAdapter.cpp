@@ -291,27 +291,52 @@ static void check_tensor_size(const std::initializer_list<at::Tensor>& src_list,
     return;
 }
 
-void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype,
-                                 c10::IntArrayRef expect_size) {
-    check_memory(src_list, {dst});
+static bool check_inplace_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst) {
+    bool isInplaceTensor = false;
+    // check whether dst is contained in src_list
+    for (const auto& src : srcList) {
+        if (dst.is_same(src)) {
+            isInplaceTensor = true;
+            break;
+        }
+    }
+    return isInplaceTensor;
+}
+
+static void check_tensor_size(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, c10::IntArrayRef expectSize) {
+    bool is_inplace = check_inplace_tensor(srcList, dst);
+    // Preserve legacy resizing behavior of out=... arguments
+    if (!dst.sizes().equals(expectSize)) {
+        TORCH_CHECK(!is_inplace, "output with shape ", dst.sizes(), " doesn't match the broadcast shape ", expectSize);
+        dst.resize_(expectSize);
+    }
+    return;
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, at::ScalarType expectDtype, c10::IntArrayRef expectSize) {
+    check_memory(srcList, {dst});
     TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
-    TORCH_CHECK(dst.scalar_type() == expect_dtype, "expected dtype ", expect_dtype, " but got dtype ", dst.scalar_type());
-    check_tensor_size(src_list, dst, expect_size);
+    TORCH_CHECK(dst.scalar_type() == expectDtype, "expected dtype ", expectDtype, " but got dtype ", dst.scalar_type());
+    check_tensor_size(srcList, dst, expectSize);
 }
 
-void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) {
-    check_memory(src_list, {dst});
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, const at::Tensor& expectTensor) {
+    check_tensor(srcList, dst, expectTensor.scalar_type(), expectTensor.sizes());
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, c10::IntArrayRef expectSize) {
+    check_memory(srcList, {dst});
     TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
-    check_tensor_size(src_list, dst, expect_size);
+    check_tensor_size(srcList, dst, expectSize);
 }
 
-void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor) {
-    check_tensor(src_list, dst, expect_tensor.scalar_type(), expect_tensor.sizes());
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, const at::Tensor& expectTensor,
+                                 c10::IntArrayRef expectSize) {
+    check_tensor(srcList, dst, expectTensor.scalar_type(), expectSize);
 }
 
-void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor,
-                                 c10::IntArrayRef expect_size) {
-    check_tensor(src_list, dst, expect_tensor.scalar_type(), expect_size);
+bool OpPreparation::is_scalar_wrapped_to_tensor(const at::Tensor& tensor) {
+    return tensor.unsafeGetTensorImpl()->is_wrapped_number() && (!torch_npu::utils::is_npu(tensor));
 }
 
 void NpuUtils::format_fresh_view(at::Tensor& x, const at::Tensor& y) {
