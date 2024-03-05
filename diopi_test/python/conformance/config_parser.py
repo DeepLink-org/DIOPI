@@ -28,7 +28,7 @@ class ConfigParser(object):
     def __str__(self):
         return str(self._items)
 
-    def parser(self, config, fname="all_ops"):
+    def parser(self, config, fname=["all_ops"]):
         if isinstance(config, dict):
             self._config_dict_parse(config, fname)
         elif os.path.isfile(config):
@@ -40,7 +40,9 @@ class ConfigParser(object):
 
     def _config_dict_parse(self, config, fname):
         for key, value in config.items():
-            if fname != "all_ops" and fname not in value["name"]:
+            skiped = (len(set(fname + value["name"])) == (len(fname) + len(value["name"])))
+            # op_name not in fname will be skiped
+            if "all_ops" not in fname and skiped:
                 continue
             cfg_item = ConfigItem(key, value)
             cfg_item.generate_items()
@@ -65,7 +67,7 @@ class ConfigParser(object):
         with open(self._ofile, "rb") as f:
             configs = pickle.load(f)
         for k, v in configs.items():
-            if fname != "all_ops" and fname != v["name"]:
+            if "all_ops" not in fname and v["name"] not in fname:
                 continue
             self._items.update({k: v})
 
