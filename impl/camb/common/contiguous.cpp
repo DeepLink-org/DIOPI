@@ -117,12 +117,11 @@ std::vector<int64_t> calContiguousStride(std::vector<int64_t> shape) {
     int32_t len = shape.size();
     std::vector<int64_t> stride(len, 1);
     int64_t strideTmp = 1;
-    for (int i = 0; i < len; ++i) {
-        if (i > 0) {
-            strideTmp *= shape[i - 1];
-        }
-        stride[len - i - 1] = strideTmp;
+    for (int i = len - 1; i > 0; i--) {
+        stride[i] = strideTmp;
+        strideTmp *= shape[i];
     }
+    stride[0] = strideTmp;
     return stride;
 }
 
