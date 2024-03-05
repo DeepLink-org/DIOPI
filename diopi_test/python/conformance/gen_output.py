@@ -366,7 +366,7 @@ class GenOutputData(object):
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
             item = {'case_name': case_name, 'model_name': model_name}
-            if fname not in [func_name, 'all_ops']:
+            if "all_ops" not in fname and func_name not in fname:
                 continue
             data_path = os.path.join(input_path, case_name)
             input_ = get_data_from_file(data_path, case_name, 'input')
