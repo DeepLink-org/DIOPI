@@ -17,6 +17,7 @@
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
@@ -3212,6 +3213,10 @@ at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::opt
     return acl_op::index(self, indicesCast);
 }
 
+at::Tensor& wrapper__zero_(at::Tensor& self) { return op_api::zero_(self); }
+
+at::Tensor& wrapper_Scalar_fill_(at::Tensor& self, const at::Scalar& value) { return op_api::fill_(self, value); }
+
 at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return acl_op::bmm(self, mat2); }
 
 at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return acl_op::div(self, other); }
@@ -3272,6 +3277,8 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("index_put_", TORCH_FN(wrapper__index_put_));
     m.impl("_index_put_impl_", TORCH_FN(wrapper___index_put_impl_));
     m.impl("index.Tensor", TORCH_FN(wrapper_Tensor_index));
+    m.impl("fill_.Scalar", TORCH_FN(wrapper_Scalar_fill_));
+    m.impl("zero_", TORCH_FN(wrapper__zero_));
     m.impl("bmm", TORCH_FN(wrapper__bmm));
     m.impl("div.Tensor", TORCH_FN(wrapper_Tensor_div));
     m.impl("mul.Tensor", TORCH_FN(wrapper_Tensor_mul));
