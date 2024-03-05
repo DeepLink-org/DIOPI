@@ -138,8 +138,6 @@ ascend:
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
 - diopiWhere
-- diopiBatchNorm
-- diopiBatchNormBackward
 - diopiAdd
 - diopiAddInp
 - diopiAddScalar
@@ -162,6 +160,8 @@ ascend_npu:
 - diopiArange
 - diopiAtan
 - diopiAtanInp
+- diopiBatchNorm
+- diopiBatchNormBackward
 - diopiErf
 - diopiErfInp
 - diopiNonzero
