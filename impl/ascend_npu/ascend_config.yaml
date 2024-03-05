@@ -1,6 +1,5 @@
 ascend:
 - diopiAny
-- diopiArange
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiClamp
@@ -77,7 +76,6 @@ ascend:
 - diopiConvolution2dBackward
 - diopiRMSNorm
 - diopiRMSNormBackward
-- diopiExpand
 - diopiSplitWithSizes
 - diopiScatter
 - diopiScatterInp
