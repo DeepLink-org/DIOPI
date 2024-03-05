@@ -1051,8 +1051,8 @@ device_configs = {
     'interpolate': dict(
         name=['interpolate'],
         para=dict(
-            # now only support bilinear
-            mode=[Skip('nearest'),Skip('bicubic'),Skip('trilinear'),Skip('linear'),],
+            # support bilinear, nearest
+            mode=[Skip('bicubic'),Skip('trilinear'),Skip('linear'),],
         ),
     ),
 
