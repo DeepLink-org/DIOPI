@@ -139,8 +139,8 @@ inline void releaseConverted(const aclScalar* scalar) {
     }
 }
 
-template <class... Args>
-void callAclnnImpl(const char* api, const char* workspaceApi, diopiContextHandle_t ctx, const Args&... args) {
+template <const char* api, const char* workspaceApi, class... Args>
+void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
     if (isDebugAclOpRunnerOn()) {
         std::cout << "ACLNN_ADAPTOR for " << api << '\n';
     }
@@ -183,7 +183,12 @@ void callAclnnImpl(const char* api, const char* workspaceApi, diopiContextHandle
     }
 }
 
-#define DIOPI_ASCEND_CALL_ACLNN(api, ctx, ...) ::impl::ascend::aclnn_adaptor::callAclnnImpl(#api, #api "GetWorkspaceSize", ctx, __VA_ARGS__)
+#define DIOPI_ASCEND_CALL_ACLNN(api, ctx, ...)                                                       \
+    do {                                                                                             \
+        static constexpr const char kApiName[] = #api;                                               \
+        static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                   \
+        ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, __VA_ARGS__); \
+    } while (false)
 
 }  // namespace aclnn_adaptor
 
