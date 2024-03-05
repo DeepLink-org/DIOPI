@@ -17,6 +17,7 @@
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
@@ -3244,8 +3245,8 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
     perms[dim1] = dim0;
     return acl_op::npu_transpose(self, perms);
 }
-at::Tensor& wrapper__zero_(at::Tensor& self) { return acl_op::zero_(self); }
-at::Tensor& wrapper_Scalar_fill_(at::Tensor& self, const at::Scalar& value) { return acl_op::fill_(self, value); }
+at::Tensor& wrapper__zero_(at::Tensor& self) { return op_api::zero_(self); }
+at::Tensor& wrapper_Scalar_fill_(at::Tensor& self, const at::Scalar& value) { return op_api::fill_(self, value); }
 at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
 at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
 
