@@ -77,5 +77,4 @@ ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "uniform": {"input"},
                    "normal_": {"input"},
                    "bernoulli": {"input"},  # compared in manual_test
-                   "slice_op": {"index"},   # index is slice()
                    }
