@@ -28,9 +28,21 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     std::vector<int64_t> normalizedVec(normalizedShape.data, normalizedShape.data + normalizedShape.len);
     std::array<bool, 3> maskVec{true, true, true};
     auto result = op_api::native_layer_norm_backward(gradOutputAt, inputAt, normalizedVec, meanAt, rstdAt, weightAt, biasAt, maskVec);
-    gradInputAt.copy_(std::get<0>(result));
-    gradWeightAt.copy_(std::get<1>(result));
-    gradBiasAt.copy_(std::get<2>(result));
+    if (gradInputAt.defined()) {
+        gradInputAt.copy_(std::get<0>(result));
+    } else {
+        impl::aten::buildDiopiTensor(ctx, std::get<0>(result), &gradInput);
+    }
+    if (gradWeightAt.defined()) {
+        gradWeightAt.copy_(std::get<1>(result));
+    } else {
+        impl::aten::buildDiopiTensor(ctx, std::get<1>(result), &gradWeight);
+    }
+    if (gradBiasAt.defined()) {
+        gradBiasAt.copy_(std::get<2>(result));
+    } else {
+        impl::aten::buildDiopiTensor(ctx, std::get<2>(result), &gradBias);
+    }
     END_CALL_ACL_OP();
 }
 }  // namespace OP_IMPL_NS
