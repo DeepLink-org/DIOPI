@@ -80,12 +80,6 @@ ascend:
 - diopiMulScalar
 - diopiNLLLoss
 - diopiNLLLossBackward
-- diopiNe
-- diopiNeInp
-- diopiNeInpScalar
-- diopiNeScalar
-- diopiNeg
-- diopiNegInp
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -226,6 +220,10 @@ ascend_npu:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
+- diopiNe
+- diopiNeInp
+- diopiNeInpScalar
+- diopiNeScalar
 - diopiNeg
 - diopiNegInp
 - diopiMaskedSelect
