@@ -1,12 +1,5 @@
 ascend:
-- diopiAdaptiveAvgPool2d
-- diopiAdaptiveAvgPool2dBackward
-- diopiAddcdiv
-- diopiAddcdivInp
-- diopiAddcmul
-- diopiAddcmulInp
-- diopiAddmm
-- diopiAll
+- diopiAny
 - diopiArange
 - diopiBaddbmm
 - diopiBaddbmmInp
@@ -92,6 +85,7 @@ ascend:
 - diopiConvolution2dBackward
 - diopiRMSNorm
 - diopiRMSNormBackward
+- diopiExpand
 - diopiProd
 - diopiSplitWithSizes
 - diopiScatter
@@ -106,7 +100,6 @@ ascend_npu:
 - diopiAddInpScalar
 - diopiAbs
 - diopiAbsInp
-- diopiAny
 - diopiArange
 - diopiArgmax
 - diopiAtan
@@ -159,6 +152,7 @@ ascend_npu:
 - diopiNormalTensorScalar
 - diopiNorm
 - diopiMaxPool2dWithIndices
+- diopiProd
 - diopiRotaryEmbedding
 - diopiCol2Im
 - diopiLog
