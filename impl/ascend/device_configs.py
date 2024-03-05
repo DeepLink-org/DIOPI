@@ -391,18 +391,6 @@ device_configs = {
         ),
     ),
 
-    'transpose': dict(
-        name=['transpose'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((32,)),Skip((2, 1536, 950)),Skip((16, 8)),Skip((660, 6, 49, 32)),Skip((0,)),Skip((0, 8)),Skip((16, 0, 8)),],
-                },
-            ]
-        ),
-    ),
-
     'sigmoid_focal_loss': dict(
         name=['sigmoid_focal_loss'],
         tensor_para=dict(
@@ -677,18 +665,6 @@ device_configs = {
 
     'index_fill_tensor_specific': dict(
         name=['index_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'permute': dict(
-        name=['permute'],
         tensor_para=dict(
             args=[
                 {
