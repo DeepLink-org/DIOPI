@@ -236,7 +236,7 @@
     dtype: (bool, uint8, int8, int16, int32, int64, float64)->float32
 
 - diopiRsqrt:
-    dtype: (int8, uint8, int16, int32, int64, bool)->float32
+    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool)->float32
 
 - diopiEmbeddingBackward:
     dtype: (float64)->float32
@@ -294,12 +294,6 @@
 - diopiMatmul:
     dtype: (float64)->float32
 
-- diopiAtan:
-    dtype: (uint8, int8, int32, int16, int64, bool)->float32
-
-- diopiAtanInp:
-    dtype: (uint8, int8, int32, int16, int64, bool)->float32
-
 - diopiNormalTensor:
     dtype: (float64)->float32
 
@@ -331,3 +325,20 @@
 - diopiMaskedFillScalar:
     dtype: (int16, uint8)->int32, (float64)->float32
 
+- diopiErf:
+    dtype: (uint8, int8, int16, int32)->float32
+
+- diopiErfInp:
+    dtype: (uint8, int8, int16, int32)->float32
+
+- diopiSgn:
+    dtype: (uint8, int8, int16)->int32
+
+- diopiSgnInp:
+    dtype: (uint8, int8, int16)->int32
+
+- diopiMSELoss:
+    dtype: (float64)->float32
+
+- diopiMSELossBackward:
+    dtype: (float64)->float32
