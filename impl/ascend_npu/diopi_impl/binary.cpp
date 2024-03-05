@@ -6,8 +6,67 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace OP_IMPL_NS {
+
+std::string roundModeStr(diopiRoundMode_t roundMode) {
+    if (roundMode == diopiRoundMode_t::RoundModeFloor) {
+        return "floor";
+    } else if (roundMode == diopiRoundMode_t::RoundModeTrunc) {
+        return "trunc";
+    } else {
+        return "";
+    }
+    return "";
+}
+
+diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
+                      diopiRoundMode_t roundingMode) {
+    BEGIN_CALL_ACL_OP(input, other, out);
+    std::string mode = roundModeStr(roundingMode);
+    if (mode.empty()) {
+        op_api::div_out(inputAt, otherAt, outAt);
+    } else {
+        op_api::div_out(inputAt, otherAt, mode, outAt);
+    }
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, diopiRoundMode_t roundingMode) {
+    BEGIN_CALL_ACL_OP(input, other);
+    std::string mode = roundModeStr(roundingMode);
+    if (mode.empty()) {
+        op_api::div_(inputAt, otherAt);
+    } else {
+        op_api::div_(inputAt, otherAt, mode);
+    }
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
+                            diopiRoundMode_t roundingMode) {
+    BEGIN_CALL_ACL_OP(input, other, out);
+    if (roundingMode == diopiRoundMode_t::RoundModeNone) {
+        EXEC_NPU_CMD(aclnnDivs, inputAt, otherAt, outAt);
+    } else {
+        int mode = static_cast<int>(roundingMode);
+        EXEC_NPU_CMD(aclnnDivMods, inputAt, otherAt, mode, outAt);
+    }
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t roundingMode) {
+    BEGIN_CALL_ACL_OP(input, other);
+    std::string mode = roundModeStr(roundingMode);
+    if (mode.empty()) {
+        op_api::div_(inputAt, otherAt);
+    } else {
+        op_api::div_(inputAt, otherAt, mode);
+    }
+    END_CALL_ACL_OP();
+}
 
 diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       const diopiScalar_t* alpha) {

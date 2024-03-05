@@ -1494,11 +1494,7 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
 }
 
 at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
-    at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
-    at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
-    int deviceIndex = 0;
-    NPU_CHECK_ERROR(aclrtGetDevice(&deviceIndex));
-    return cpuPinMemTensor.to(c10::Device(c10::DeviceType::XLA, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
+    return CalcuOpUtil::CopyScalarToDevice(cpu_scalar, scalar_data_type);
 }
 
 at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
