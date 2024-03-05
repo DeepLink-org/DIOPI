@@ -115,29 +115,78 @@ decltype(auto) convertType(T&& param) {
     } else if constexpr (std::is_same_v<U, diopiScalar_t*> || std::is_same_v<U, const diopiScalar_t*>) {
         return createAclScalarFromDiopiScalar(std::forward<T>(param));
     } else {
+        static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
         return std::forward<T>(param);
     }
 }
 
+template <class T, class U = std::remove_reference_t<T>, std::enable_if_t<!std::is_class_v<U> && !std::is_pointer_v<U>, int> = 0>
+void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
+
+#define IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Type)        \
+    inline void releaseConverted(const acl##Type* param) { \
+        if (param != nullptr) {                            \
+            ::aclDestroy##Type(param);                     \
+        }                                                  \
+    }
+IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Tensor)
+IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Scalar)
+IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(TensorList)
+IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(ScalarList)
+IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(IntArray)
+IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(BoolArray)
+IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(FloatArray)
+#undef IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR
+
+// A class to hold the converted parameters and release them when the object is destroyed.
+template <class Tuple>
+class ConvertedParamsHolder final {
+public:
+    explicit ConvertedParamsHolder(Tuple&& params) noexcept : convertedParams_(std::forward<Tuple>(params)) {}
+    ~ConvertedParamsHolder() {
+        std::apply([](const auto&... params) { (releaseConverted(params), ...); }, convertedParams_);
+    }
+    ConvertedParamsHolder(const ConvertedParamsHolder&) = delete;
+    ConvertedParamsHolder& operator=(const ConvertedParamsHolder&) = delete;
+    ConvertedParamsHolder(ConvertedParamsHolder&&) = delete;
+    ConvertedParamsHolder& operator=(ConvertedParamsHolder&&) = delete;
+    const auto& params() const noexcept { return convertedParams_; }
+
+private:
+    Tuple convertedParams_;
+};
+
+template <class Tuple>
+ConvertedParamsHolder(Tuple&&) -> ConvertedParamsHolder<std::remove_reference_t<Tuple>>;
+
 template <class... Args>
 constexpr auto convertParams(const Args&... args) {
-    return std::make_tuple(convertType(args)...);
+    return ConvertedParamsHolder(std::make_tuple(convertType(args)...));
 }
 
-template <class T>
-inline void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
-
-inline void releaseConverted(const aclTensor* tensor) {
-    if (tensor != nullptr) {
-        ::aclDestroyTensor(tensor);
+// A class to alloc acl workspace and release it when the object is destroyed.
+class AclWorkspace final {
+public:
+    explicit AclWorkspace(std::size_t workspaceSize) noexcept {
+        if (workspaceSize > 0) {
+            auto ret = aclrtMalloc(&workspaceAddr_, workspaceSize, ACL_MEM_MALLOC_HUGE_FIRST);
+            ASCEND_CHECK(ret == ACL_SUCCESS, "allocate workspace failed. ERROR: %d\n", ret);
+        }
     }
-}
-
-inline void releaseConverted(const aclScalar* scalar) {
-    if (scalar != nullptr) {
-        ::aclDestroyScalar(scalar);
+    ~AclWorkspace() {
+        if (workspaceAddr_ != nullptr) {
+            aclrtFree(workspaceAddr_);
+        }
     }
-}
+    AclWorkspace(const AclWorkspace&) = delete;
+    AclWorkspace& operator=(const AclWorkspace&) = delete;
+    AclWorkspace(AclWorkspace&&) = delete;
+    AclWorkspace& operator=(AclWorkspace&&) = delete;
+    void* addr() const noexcept { return workspaceAddr_; }
+
+private:
+    void* workspaceAddr_ = nullptr;
+};
 
 template <const char* api, const char* workspaceApi, class... Args>
 void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
@@ -157,15 +206,11 @@ void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
 
     uint64_t workspaceSize = 0;
     aclOpExecutor* executor = nullptr;
-    auto convertedParams = convertParams(args..., &workspaceSize, &executor);
-    auto workspaceStatus = std::apply(workspaceSizeFunc, convertedParams);
+    auto convertedParams = convertParams(args...);
+    auto workspaceStatus = std::apply(workspaceSizeFunc, std::tuple_cat(convertedParams.params(), std::make_tuple(&workspaceSize, &executor)));
     ASCEND_CHECK(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS.");
 
-    void* workspaceAddr = nullptr;
-    if (workspaceSize != 0) {
-        auto ret = aclrtMalloc(&workspaceAddr, workspaceSize, ACL_MEM_MALLOC_HUGE_FIRST);
-        ASCEND_CHECK(ret == ACL_SUCCESS, "allocate workspace failed. ERROR: %d\n", ret);
-    }
+    AclWorkspace workspace(workspaceSize);
 
     /* 2. call aclnnXXX function */
     static const auto opApiFuncAddr = getOpApiFuncAddr(api);
@@ -173,14 +218,8 @@ void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
     using OpApiFuncType = int (*)(void*, uint64_t, aclOpExecutor*, aclrtStream);
     static const auto opApiFunc = reinterpret_cast<OpApiFuncType>(opApiFuncAddr);
 
-    auto ret = opApiFunc(workspaceAddr, workspaceSize, executor, stream);
+    auto ret = opApiFunc(workspace.addr(), workspaceSize, executor, stream);
     ASCEND_CHECK(ret == ACL_SUCCESS, "%s failed. ERROR: %d\n", api, ret);
-
-    /* 3. clean up */
-    std::apply([](const auto&... args) { (releaseConverted(args), ...); }, convertedParams);
-    if (workspaceSize > 0) {
-        aclrtFree(workspaceAddr);
-    }
 }
 
 #define DIOPI_ASCEND_CALL_ACLNN(api, ctx, ...)                                                       \
