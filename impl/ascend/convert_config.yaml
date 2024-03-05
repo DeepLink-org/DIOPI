@@ -330,3 +330,9 @@
 
 - diopiMSELossBackward:
     dtype: (float64)->float32
+
+- diopiUpsampleLinear:
+    dtype: (float64)->float32
+
+- diopiUpsampleLinearBackward:
+    dtype: (float64)->float32

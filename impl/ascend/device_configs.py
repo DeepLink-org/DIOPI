@@ -1050,13 +1050,9 @@ device_configs = {
 
     'interpolate': dict(
         name=['interpolate'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 16, 23)),Skip((2, 256, 25, 38)),Skip((1, 3, 32, 224, 224)),Skip((2, 2, 16, 16)),Skip((2, 2, 16, 16)),Skip((2, 256, 13, 19)),Skip((3, 12, 14, 19)),Skip((2, 16, 1, 1)),Skip((2, 16, 15, 32)),Skip((1, 3, 32, 112, 112)),Skip((1, 3, 32, 112, 112)),Skip((2, 32, 32)),Skip((2, 32, 32)),Skip((2, 32, 32)),],
-                },
-            ]
+        para=dict(
+            # now only support bilinear
+            mode=[Skip('nearest'),Skip('bicubic'),Skip('trilinear'),Skip('linear'),],
         ),
     ),
 
