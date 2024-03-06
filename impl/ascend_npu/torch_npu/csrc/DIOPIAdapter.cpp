@@ -291,30 +291,6 @@ static void check_tensor_size(const std::initializer_list<at::Tensor>& src_list,
     return;
 }
 
-static bool check_inplace_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst) {
-    bool isInplaceTensor = false;
-    // check whether dst is contained in src_list
-    for (const auto& src : srcList) {
-        if (dst.is_same(src)) {
-            isInplaceTensor = true;
-            break;
-        }
-    }
-    return isInplaceTensor;
-}
-
-static void check_tensor_size(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, c10::IntArrayRef expectSize) {
-    bool is_inplace = check_inplace_tensor(srcList, dst);
-    // Preserve legacy resizing behavior of out=... arguments
-    if (!dst.sizes().equals(expectSize)) {
-        TORCH_CHECK(!is_inplace, "output with shape ", dst.sizes(), " doesn't match the broadcast shape ", expectSize);
-        dst.resize_(expectSize);
-    }
-    return;
-}
-
-void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& srcList, at::Tensor& dst, at::ScalarType expectDtype, c10::IntArrayRef expectSize) {
-    check_memory(srcList, {dst});
     TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
     TORCH_CHECK(dst.scalar_type() == expect_dtype, "expected dtype ", expect_dtype, " but got dtype ", dst.scalar_type());
     check_tensor_size(src_list, dst, expect_size);
