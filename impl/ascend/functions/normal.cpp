@@ -64,7 +64,7 @@ diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out
     diopiScalar_t alphaScalar = constructDiopiScalarT(meanTr.dtype(), 1);
     diopiAddInp(ctx, const_cast<diopiTensorHandle_t>(outTrTmp.tensorHandle()), meanTr.tensorHandle(), &alphaScalar);
     if (outTr.dtype() != meanTr.dtype()) {
-        diopiCopyInp(ctx, outTrTmp.tensorHandle(), const_cast<diopiTensorHandle_t>(outTr.tensorHandle()));
+        ::impl::ascend_npu::diopiCopyInp(ctx, outTrTmp.tensorHandle(), const_cast<diopiTensorHandle_t>(outTr.tensorHandle()));
     }
     return diopiSuccess;
 }
