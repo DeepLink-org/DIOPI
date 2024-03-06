@@ -44,6 +44,10 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
+- diopiMaskedFill
+- diopiMaskedFillInp
+- diopiMaskedFillInpScalar
+- diopiMaskedFillScalar
 - diopiMaxAll
 - diopiMin
 - diopiMinAll
