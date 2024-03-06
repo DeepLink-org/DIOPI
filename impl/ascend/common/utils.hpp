@@ -6,7 +6,11 @@
 
 #ifndef IMPL_ASCEND_COMMON_UTILS_HPP_
 #define IMPL_ASCEND_COMMON_UTILS_HPP_
+#include <array>
+#include <cstdint>
+#include <optional>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "../ascend_tensor.hpp"
@@ -58,6 +62,15 @@ T getValue(const diopiScalar_t* scalar) {
         return static_cast<T>(scalar->fval);
     }
 }
+
+/**
+ * Take the value in diopiScalar_t as a byte array.
+ *
+ * @param scalar The input scalar.
+ * @param dtype Cast the value to the given dtype. If not specified, the original data type of the scalar will be used.
+ * @return A pair of (byte array, number of bytes).
+ */
+std::pair<std::array<std::byte, sizeof(int64_t)>, int64_t> getScalarBytes(const diopiScalar_t* scalar, std::optional<diopiDtype_t> castToDtype = std::nullopt);
 
 aclDataType getAclDataType(diopiDtype_t type);
 const char* diopiDtypeToStr(const diopiDtype_t dtype);
