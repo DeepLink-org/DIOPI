@@ -51,9 +51,6 @@ ascend:
 - diopiGtInp
 - diopiGtInpScalar
 - diopiGtScalar
-- diopiHardtanh
-- diopiHardtanhBackward
-- diopiHardtanhInp
 - diopiLayerNorm
 - diopiLayerNormBackward
 - diopiLe
