@@ -154,6 +154,9 @@
 - diopiAddInpScalar:
     layout: ND
 
+- diopiMm:
+    dtype: (float64)->float32
+
 - diopiAddmm:
     dtype: (float64)->float32
 
