@@ -40,8 +40,6 @@ ascend:
 - diopiLeScalar
 - diopiLinear
 - diopiLinearBackward
-- diopiLogSoftmax
-- diopiLogSoftmaxBackward
 - diopiLt
 - diopiLtInp
 - diopiLtInpScalar
@@ -204,6 +202,8 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
+- diopiLogSoftmax
+- diopiLogSoftmaxBackward
 - diopiMean
 - diopiMm
 - diopiArgmax
