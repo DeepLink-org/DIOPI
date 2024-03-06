@@ -1,5 +1,4 @@
 ascend:
-- diopiAny
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiClamp
@@ -82,7 +81,6 @@ ascend:
 - diopiSubInp
 - diopiSubInpScalar
 - diopiSubScalar
-- diopiSum
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
