@@ -159,10 +159,10 @@ ascend_npu:
 - diopiBmm
 - diopiMatmul
 - diopiCastDtype
-- diopiCopyInp
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiCopyInp
 - diopiExpand
 - diopiFlip
 - diopiFloor
