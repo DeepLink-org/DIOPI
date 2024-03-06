@@ -15,8 +15,6 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
                           diopiGeneratorHandle_t generator) {
     BEGIN_CALL_ACL_OP(out, input, mask, generator);
 
-    double keep_prob = 1 - p;
-
     if (p == 0 || train == false) {
         outAt.copy_(inputAt);
         op_api::fill_(maskAt, c10::Scalar(1));
@@ -28,13 +26,17 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         END_CALL_ACL_OP();
     }
 
-    auto results = op_api::_npu_dropout(inputAt, 1 - p);
-    outAt.copy_(std::get<0>(results));
+    if (inputAt.sizes() != maskAt.sizes()) {
+        auto input2d = op_api::ones_like(maskAt, inputAt.scalar_type());
+        auto results = op_api::_npu_dropout(input2d, p);
+        op_api::mul_out(inputAt, std::get<0>(results), outAt);
+        op_api::ne_out(std::get<0>(results), c10::Scalar(0), maskAt);
+        END_CALL_ACL_OP();
+    }
 
-    auto outScaleAt = std::get<0>(results);
-    auto scaleFactor = c10::Scalar(keep_prob);
-    op_api::mul_(outScaleAt, scaleFactor);
-    op_api::eq_out(inputAt, outScaleAt, maskAt);
+    auto results = op_api::_npu_dropout(inputAt, p);
+    outAt.copy_(std::get<0>(results));
+    op_api::ne_out(outAt, c10::Scalar(0), maskAt);
 
     END_CALL_ACL_OP();
 }
@@ -42,18 +44,28 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train,
                              diopiGeneratorHandle_t generator) {
     BEGIN_CALL_ACL_OP(input, mask, generator);
-    if (train) {
-        diopiTensorHandle_t inputCopy;
-        diopiSize_t inputShape;
-        diopiGetTensorShape(input, &inputShape);
-        diopiDtype_t dtype;
-        diopiGetTensorDtype(input, &dtype);
-        diopiDevice_t device;
-        diopiGetTensorDevice(input, &device);
-        diopiRequireTensor(ctx, &inputCopy, &inputShape, nullptr, dtype, device);
-        diopiCopyInp(ctx, input, inputCopy);
-        impl::ascend_npu::diopiDropout(ctx, input, mask, inputCopy, p, train, generator);
+
+    if (p == 0 || train == false) {
+        op_api::fill_(maskAt, c10::Scalar(1));
+        END_CALL_ACL_OP();
     }
+    if (p == 1) {
+        op_api::fill_(inputAt, c10::Scalar(0));
+        op_api::fill_(maskAt, c10::Scalar(0));
+        END_CALL_ACL_OP();
+    }
+    if (inputAt.sizes() != maskAt.sizes()) {
+        auto input2d = op_api::ones_like(maskAt, inputAt.scalar_type());
+        auto results = op_api::_npu_dropout(input2d, p);
+        op_api::mul_(inputAt, std::get<0>(results));
+        op_api::ne_out(std::get<0>(results), c10::Scalar(0), maskAt);
+        END_CALL_ACL_OP();
+    }
+
+    auto results = op_api::_npu_dropout(inputAt, p);
+    inputAt.copy_(std::get<0>(results));
+    op_api::ne_out(inputAt, c10::Scalar(0), maskAt);
+
     END_CALL_ACL_OP();
 }
 
