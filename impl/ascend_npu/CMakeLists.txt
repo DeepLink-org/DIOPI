@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 project(ascend_impl)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -16,6 +16,8 @@ message(STATUS "op-plugin download done")
 
 add_custom_target(op_plugin_gen
   COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.1 python
+  BYPRODUCTS ${op_plugin_SOURCE_DIR}/op_plugin/OpInterface.h ${op_plugin_SOURCE_DIR}/op_plugin/OpInterface.cpp
+             ${op_plugin_SOURCE_DIR}/op_plugin/AclOpsInterface.h  ${op_plugin_SOURCE_DIR}/op_plugin/OpApiInterface.h
 )
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
@@ -177,7 +179,6 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions_ext/rms_norm.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
-    ${OLD_IMPL_DIR}/aclnn/adaptor.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
