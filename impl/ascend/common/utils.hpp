@@ -6,11 +6,27 @@
 
 #ifndef IMPL_ASCEND_COMMON_UTILS_HPP_
 #define IMPL_ASCEND_COMMON_UTILS_HPP_
+#include <array>
+#include <cstdint>
+#include <optional>
+#include <set>
+#include <utility>
 #include <vector>
 
 #include "../ascend_tensor.hpp"
 #include "../env_vars.hpp"
+#include "../error.hpp"
 #include "float16.hpp"
+
+#define DIOPI_CALL(Expr)                                                                                                  \
+    do {                                                                                                                  \
+        diopiError_t ret = Expr;                                                                                          \
+        if (diopiSuccess != ret) {                                                                                        \
+            setLastErrorString("%s: %s at %s:%d\n", ::impl::ascend::getDiopiErrorStr(ret), __func__, __FILE__, __LINE__); \
+            printf("%s", ascendGetLastErrorString(false));                                                                \
+            return ret;                                                                                                   \
+        }                                                                                                                 \
+    } while (false);
 
 namespace impl {
 namespace ascend {
@@ -47,6 +63,16 @@ T getValue(const diopiScalar_t* scalar) {
     }
 }
 
+/**
+ * Take the value in diopiScalar_t as a byte array.
+ *
+ * @param scalar The input scalar.
+ * @param dtype Cast the value to the given dtype. If not specified, the original data type of the scalar will be used.
+ * @return A pair of (byte array, number of bytes).
+ */
+std::pair<std::array<std::byte, sizeof(int64_t)>, int64_t> getScalarBytes(const diopiScalar_t* scalar, std::optional<diopiDtype_t> castToDtype = std::nullopt);
+
+aclDataType getAclDataType(diopiDtype_t type);
 const char* diopiDtypeToStr(const diopiDtype_t dtype);
 
 // Those methods can generate new AscendTensor, so context is needed.
@@ -60,8 +86,6 @@ diopiError_t makeTensor(diopiContextHandle_t ctx, AscendTensor& dst, const std::
 diopiError_t makeTensorLike(diopiContextHandle_t ctx, AscendTensor& dst, const AscendTensor& src, diopiDtype_t dtype = diopi_dtype_unsupported);
 
 diopiError_t makeTensorFromScalar(diopiContextHandle_t ctx, AscendTensor& dst, const diopiScalar_t* scalar, diopiDevice_t device = diopi_device);
-
-diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, const std::vector<int64_t>& shape);
 
@@ -96,6 +120,8 @@ diopiError_t broadcast(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 std::vector<int64_t> inferSize(const std::vector<int64_t>& shape1, const std::vector<int64_t>& shape2);
 
 diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src);
+
+diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<AscendTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype);
 
 }  // namespace ascend
 }  // namespace impl

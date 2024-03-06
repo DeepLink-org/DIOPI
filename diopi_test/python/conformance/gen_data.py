@@ -9,11 +9,12 @@ from .model_list import model_op_list
 from .gen_input import GenInputData
 from .gen_output import GenOutputData
 from .config_parser import ConfigParser
+from .exception import GenDataFailedException
 
 sys.path.append("../python/configs")
 
 
-def gen_data(model_name: str = "", cache_path=".", fname="", diopi_case_item_file="diopi_case_items.cfg"):
+def gen_data(model_name: str = "", cache_path=".", fname=[""], diopi_case_item_file="diopi_case_items.cfg"):
     model_name = model_name.lower()
     if model_name != "":
         logger.info(
@@ -38,4 +39,6 @@ def gen_data(model_name: str = "", cache_path=".", fname="", diopi_case_item_fil
     GenInputData.run(diopi_case_item_path, inputs_dir, fname, model_name)
     GenOutputData.run(diopi_case_item_path, inputs_dir, outputs_dir, fname,
                       model_name)
+    if GenInputData.err_case_counter > 0 or GenOutputData.err_case_counter > 0:
+        raise GenDataFailedException(f"Data generation failed, with {GenInputData.err_case_counter} input case failures and {GenOutputData.err_case_counter} output case failures.")
     return GenInputData.db_case_items, GenOutputData.db_case_items

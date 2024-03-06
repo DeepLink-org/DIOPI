@@ -258,6 +258,29 @@ const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index = -1);
 
 namespace c10_npu {
 
+namespace option {
+
+class OptionsManager {
+public:
+    static bool IsResumeModeEnable();
+    static bool IsMultiStreamMemoryReuse();
+    static bool CheckInfNanModeEnable();
+    static bool CheckBlockingEnable();
+    static bool CheckQueueEnable();
+    static bool CheckCombinedOptimizerEnable();
+    static bool CheckTriCombinedOptimizerEnable();
+    static bool CheckAclDumpDateEnable();
+    static uint32_t GetHCCLExecTimeout();
+    static std::string CheckDisableDynamicPath();
+    static int32_t GetACLExecTimeout();
+    static const char* GetAclConfigJsonPath();
+
+private:
+    static int GetBoolTypeOption(const char* env_str, int defaultVal = 0);
+};
+
+}  // namespace option
+
 namespace acl {
 
 const char* AclGetErrMsg();
@@ -290,14 +313,14 @@ public:
     operator c10::Stream() const { return unwrap(); }
 
     /// Used to avoid baking in device type explicitly to Python-side API.
-    c10::DeviceType device_type() const { INTERFACE_NOT_IMPL; }
+    c10::DeviceType device_type() const { return stream_.device_type(); }
 
     /// Get the NPU device index that this stream is associated with.
     c10::DeviceIndex device_index() const { return stream_.device_index(); }
 
     /// Get the full Device that this stream is associated with.  The Device
     /// is guaranteed to be a NPU device.
-    c10::Device device() const { INTERFACE_NOT_IMPL; }
+    c10::Device device() const { return stream_.device(); }
 
     c10::StreamId id() const { INTERFACE_NOT_IMPL; }
 
@@ -320,7 +343,7 @@ public:
     }
 
     /// Explicit conversion to rtStream_t， with out empty taskQ.
-    aclrtStream stream(const bool need_empty) const { INTERFACE_NOT_IMPL; }
+    aclrtStream stream(const bool need_empty) const { return aclStream_; }
 
 private:
     c10::Stream stream_;
@@ -356,6 +379,53 @@ struct SecondaryStreamGuard {
     explicit SecondaryStreamGuard(c10::Stream stream) {}
     ~SecondaryStreamGuard() {}
 };
+
+struct NPUEvent {
+    // Constructors
+    // Default value for `flags` is specified below
+    NPUEvent() {}
+    explicit NPUEvent(unsigned int flags) {}
+
+    // npu do not support IpcEventHandle until now
+
+    ~NPUEvent() {}
+
+    NPUEvent(const NPUEvent&) = delete;
+    NPUEvent& operator=(const NPUEvent&) = delete;
+
+    operator aclrtEvent() const { INTERFACE_NOT_IMPL; }
+
+    // aclrtEvent do not support Less than operator until now
+
+    c10::optional<at::Device> device() const { INTERFACE_NOT_IMPL; }
+
+    bool isCreated() const { return false; }
+    c10::DeviceIndex device_index() const {
+        INTERFACE_NOT_IMPL;
+        return -1;
+    }
+    aclrtEvent event() const {
+        INTERFACE_NOT_IMPL;
+        return nullptr;
+    }
+
+    bool query() const {
+        INTERFACE_NOT_IMPL;
+        return true;
+    }
+
+    void record() { INTERFACE_NOT_IMPL; }
+
+    void recordOnce(const NPUStream& stream) { INTERFACE_NOT_IMPL; }
+
+    void record(const NPUStream& stream) { INTERFACE_NOT_IMPL; }
+
+    void block(const NPUStream& stream) { INTERFACE_NOT_IMPL; }
+
+    float elapsed_time(const NPUEvent& other) const {}
+
+    void synchronize() const { INTERFACE_NOT_IMPL; }
+};  // NPUEvent
 
 namespace NPUCachingAllocator {
 
@@ -530,89 +600,6 @@ typedef enum CompileType {
     MEMORY_HOST_COMPILE_INDEPENDENT = 2,
 } CompileType;
 
-class OpPreparation {
-public:
-    static UnifiedResult binary_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap);
-    static UnifiedResult binary_op_check(at::Tensor& out, const at::Tensor& a, const c10::Scalar b, bool check_mem_overlap);
-    static UnifiedResult comparison_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap) { INTERFACE_NOT_IMPL; }
-    static UnifiedResult unary_op_check(at::Tensor& out, const at::Tensor& a, bool check_mem_overlap) { INTERFACE_NOT_IMPL; }
-    static void nullary_op(at::Tensor& out) { INTERFACE_NOT_IMPL; }
-    static UnifiedResult reduce_op_check(at::Tensor& out, const at::Tensor& a) { INTERFACE_NOT_IMPL; }
-    static UnifiedResult reduce_op_check(at::Tensor& out1, at::Tensor& out2, const at::Tensor& a) { INTERFACE_NOT_IMPL; }
-    // From CalcuOpUtil part
-    static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type) { INTERFACE_NOT_IMPL; }
-    static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type, const string& realDataType) { INTERFACE_NOT_IMPL; }
-    static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) { INTERFACE_NOT_IMPL; }
-    static at::Tensor copy_tensor_host_to_device(const at::Tensor& cpu_tensor) { INTERFACE_NOT_IMPL; }
-
-    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
-    // check output tensor
-    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size) {
-        INTERFACE_NOT_IMPL;
-    }
-    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor) { INTERFACE_NOT_IMPL; }
-    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) { INTERFACE_NOT_IMPL; }
-    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor,
-                             c10::IntArrayRef expect_size) {
-        INTERFACE_NOT_IMPL;
-    }
-    // check memory overlaps
-    static void check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) { INTERFACE_NOT_IMPL; }
-
-    // cast format
-    static at::Tensor cast_to_ori_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-    static at::Tensor& cast_to_ori_format(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
-
-    static int8_t get_cube_math_type(bool allowHf32) { INTERFACE_NOT_IMPL; }
-    static void markAsOutputForApplyTensor(at::Tensor& src);
-    // used to apply output tensor
-    static at::Tensor apply_tensor(const at::Tensor& src);
-    static at::Tensor apply_tensor(const at::Tensor& src, c10::IntArrayRef sizes);
-    static at::Tensor apply_tensor(const at::Tensor& src, const c10::TensorOptions& options);
-    static at::Tensor apply_tensor(c10::IntArrayRef sizes, const c10::TensorOptions& options, const at::Tensor& src);
-    static at::Tensor apply_tensor_with_format(const at::Tensor& src, int64_t format, bool keep_format = false);
-    static at::Tensor apply_tensor_with_format(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false);
-    static at::Tensor apply_tensor_with_format(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false);
-    static at::Tensor apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions& options);
-    static at::Tensor apply_tensor_without_format(const at::Tensor& src) { INTERFACE_NOT_IMPL; }
-    static at::Tensor apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { INTERFACE_NOT_IMPL; }
-    static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { INTERFACE_NOT_IMPL; }
-
-    // DEPRECATED: CheckOut will be deprecated, please use check_tensor to check output tensor instead.
-    static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst);
-    static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst, c10::IntArrayRef shape);
-    static void CheckOut(const std::initializer_list<at::Tensor>& input, at::Tensor& output, int64_t format, at::ScalarType dtype, c10::IntArrayRef shape);
-    // DEPRECATED: CastBackToOriFormat will be deprecated, please use cast_to_ori_format instead.
-    static at::Tensor CastBackToOriFormat(const at::Tensor& tensor);
-    static at::Tensor& CastBackToOriFormat(at::Tensor& tensor);
-    // DEPRECATED: ApplyTensor will be deprecated, please use apply_tensor instead.
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src) { return apply_tensor(src); }
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor(src, sizes); }
-    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, const c10::TensorOptions& options) { return apply_tensor(src, options); }
-    TORCH_NPU_API static at::Tensor ApplyTensor(c10::IntArrayRef sizes, const c10::TensorOptions& options, const at::Tensor& src) {
-        return apply_tensor(sizes, options, src);
-    }
-    // DEPRECATED: ApplyTensorWithFormat will be deprecated, please use apply_tensor_with_format instead.
-    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, int64_t format, bool keep_format = false) {
-        return apply_tensor_with_format(src, format, keep_format);
-    }
-    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false) {
-        return apply_tensor_with_format(src, sizes, format, keep_format);
-    }
-    static at::Tensor ApplyTensorWithFormat(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false) {
-        return apply_tensor_with_format(sizes, options, format, keep_format);
-    }
-
-    static at::Tensor unsafe_empty_workspace(uint64_t size) { INTERFACE_NOT_IMPL; }
-    // DEPRECATED: ApplyTensorWithSizes will be deprecated, please use apply_tensor_with_sizes instead.
-    static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return apply_tensor_with_sizes(sizes, options); }
-    // DEPRECATED: CheckMemory will be deprecated, please use check_memory instead.
-    static void CheckMemory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) { INTERFACE_NOT_IMPL; }
-    static bool IsCPUScalar(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
-};  // namespace OpPreparation
-
 using StorageAndOffsetMemSizePair = std::pair<const c10::StorageImpl*, int64_t>;
 class CalcuOpUtil {
 public:
@@ -639,6 +626,83 @@ public:
     static c10::SmallVector<int64_t, SHAPE_SIZE> ConvertIntArrayRefToSmallVector(c10::IntArrayRef intArray);
     static int8_t GetCubeMathType(bool allowHf32);
 };  // class CalcuOpUtil
+
+class OpPreparation {
+public:
+    static UnifiedResult binary_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap);
+    static UnifiedResult binary_op_check(at::Tensor& out, const at::Tensor& a, const c10::Scalar b, bool check_mem_overlap);
+    static UnifiedResult comparison_op_check(at::Tensor& out, const at::Tensor& a, const at::Tensor& b, bool check_mem_overlap) { INTERFACE_NOT_IMPL; }
+    static UnifiedResult unary_op_check(at::Tensor& out, const at::Tensor& a, bool check_mem_overlap) { INTERFACE_NOT_IMPL; }
+    static void nullary_op(at::Tensor& out) { INTERFACE_NOT_IMPL; }
+    static UnifiedResult reduce_op_check(at::Tensor& out, const at::Tensor& a) { INTERFACE_NOT_IMPL; }
+    static UnifiedResult reduce_op_check(at::Tensor& out1, at::Tensor& out2, const at::Tensor& a) { INTERFACE_NOT_IMPL; }
+    // From CalcuOpUtil part
+    static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type);
+    static aclDataType convert_to_acl_data_type(const at::ScalarType& data_type, const string& realDataType) { INTERFACE_NOT_IMPL; }
+    static at::Tensor copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type);
+    static at::Tensor copy_tensor_host_to_device(const at::Tensor& cpu_tensor) { INTERFACE_NOT_IMPL; }
+
+    static bool is_scalar_wrapped_to_tensor(const at::Tensor& tensor) { return (tensor.is_cpu() && tensor.dim() == 0); }
+    static int64_t get_tensor_npu_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static c10::SmallVector<int64_t, 5> get_tensor_desc_base_sizes(const at::Tensor& tensor);
+    // check output tensor
+    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype, c10::IntArrayRef expect_size);
+    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor);
+    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size);
+    static void check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor, c10::IntArrayRef expect_size);
+    // check memory overlaps
+    static void check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs);
+
+    // cast format
+    static at::Tensor cast_to_ori_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+    static at::Tensor& cast_to_ori_format(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
+
+    static int8_t get_cube_math_type(bool allowHf32) { INTERFACE_NOT_IMPL; }
+    static void markAsOutputForApplyTensor(at::Tensor& src);
+    // used to apply output tensor
+    static at::Tensor apply_tensor(const at::Tensor& src);
+    static at::Tensor apply_tensor(const at::Tensor& src, c10::IntArrayRef sizes);
+    static at::Tensor apply_tensor(const at::Tensor& src, const c10::TensorOptions& options);
+    static at::Tensor apply_tensor(c10::IntArrayRef sizes, const c10::TensorOptions& options, const at::Tensor& src);
+    static at::Tensor apply_tensor_with_format(const at::Tensor& src, int64_t format, bool keep_format = false);
+    static at::Tensor apply_tensor_with_format(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false);
+    static at::Tensor apply_tensor_with_format(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false);
+    static at::Tensor apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions& options);
+    static at::Tensor apply_tensor_without_format(const at::Tensor& src);
+    static at::Tensor apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes);
+    static at::Tensor apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options);
+
+    // DEPRECATED: CheckOut will be deprecated, please use check_tensor to check output tensor instead.
+    static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst);
+    static void CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst, c10::IntArrayRef shape);
+    static void CheckOut(const std::initializer_list<at::Tensor>& input, at::Tensor& output, int64_t format, at::ScalarType dtype, c10::IntArrayRef shape);
+    // DEPRECATED: CastBackToOriFormat will be deprecated, please use cast_to_ori_format instead.
+    static at::Tensor CastBackToOriFormat(const at::Tensor& tensor);
+    static at::Tensor& CastBackToOriFormat(at::Tensor& tensor);
+    // DEPRECATED: ApplyTensor will be deprecated, please use apply_tensor instead.
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src) { return apply_tensor(src); }
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor(src, sizes); }
+    TORCH_NPU_API static at::Tensor ApplyTensor(const at::Tensor& src, const c10::TensorOptions& options) { return apply_tensor(src, options); }
+    TORCH_NPU_API static at::Tensor ApplyTensor(c10::IntArrayRef sizes, const c10::TensorOptions& options, const at::Tensor& src) {
+        return apply_tensor(sizes, options, src);
+    }
+    // DEPRECATED: ApplyTensorWithFormat will be deprecated, please use apply_tensor_with_format instead.
+    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, int64_t format, bool keep_format = false) {
+        return apply_tensor_with_format(src, format, keep_format);
+    }
+    static at::Tensor ApplyTensorWithFormat(const at::Tensor& src, c10::IntArrayRef sizes, int64_t format, bool keep_format = false) {
+        return apply_tensor_with_format(src, sizes, format, keep_format);
+    }
+    static at::Tensor ApplyTensorWithFormat(c10::IntArrayRef sizes, const c10::TensorOptions& options, int64_t format, bool keep_format = false) {
+        return apply_tensor_with_format(sizes, options, format, keep_format);
+    }
+    static at::Tensor unsafe_empty_workspace(uint64_t size);
+    // DEPRECATED: ApplyTensorWithSizes will be deprecated, please use apply_tensor_with_sizes instead.
+    static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return apply_tensor_with_sizes(sizes, options); }
+    // DEPRECATED: CheckMemory will be deprecated, please use check_memory instead.
+    static void CheckMemory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) { INTERFACE_NOT_IMPL; }
+    static bool IsCPUScalar(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.dim() == 0; }
+};  // namespace OpPreparation
 
 // Max size of discontiguous cases vector
 constexpr int MAX_CASES = 8;
@@ -878,11 +942,11 @@ inline bool IsAllowFP32ToFP16() {
     return false;
 }
 inline bool IsAllowConvHF32() {
-    INTERFACE_NOT_IMPL;
+    // INTERFACE_NOT_IMPL;
     return false;
 }
 inline bool IsAllowMatmulHF32() {
-    INTERFACE_NOT_IMPL;
+    // INTERFACE_NOT_IMPL;
     return false;
 }
 

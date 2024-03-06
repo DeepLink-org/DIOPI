@@ -23,12 +23,13 @@ class GenInputData(object):
     Generate input data for all functions by using numpy
     """
     db_case_items = []
+    err_case_counter = 0
 
     @staticmethod
     def run(
         diopi_item_config_path="diopi_case_items.cfg",
         input_path="data/inputs/",
-        fname="all_ops",
+        fname=["all_ops"],
         model_name="diopi",
     ):
         if not os.path.exists(input_path):
@@ -60,7 +61,7 @@ class GenInputData(object):
                 "is_inplace" in each_cfg_dict.keys() and each_cfg_dict["is_inplace"] is True
             ):
                 item["inplace_flag"] = 1
-            if fname not in [func_name, "all_ops"]:
+            if "all_ops" not in fname and func_name not in fname:
                 # GenInputData.db_case_items.append(item)
                 continue
             # logger.info(f"diopi_functions.{func_name} [config] {each_cfg_dict}")
@@ -74,9 +75,13 @@ class GenInputData(object):
                 )
                 item["result"] = "passed"
             except Exception as err_msg:
-                raise GenDataFailedException(f"Generate input data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}")
-
-            GenInputData.db_case_items.append(item)
+                logger.error(
+                    f"Generate input data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}"
+                )
+                item.update({"result": "failed", "err_msg": err_msg})
+                GenInputData.err_case_counter += 1
+            finally:
+                GenInputData.db_case_items.append(item)
 
         logger.info(f"Generate test cases number for input data: {case_counter}")
         if case_counter == 0:

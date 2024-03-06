@@ -39,20 +39,18 @@ void dropoutTrainCore(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTe
     float prob = 1. - p;
     AclOpRunner<5, 1, dtypeConvertor>("StatelessDropOutGenMask", ctx)
         .addConstInput(inputSize)
-        .addConstInput(prob, diopi_dtype_float32)
+        .addConstInput(prob, inputAt.dtype())
         .addConstInput(pair.first, diopi_dtype_int32)
         .addConstInput(0, diopi_dtype_int32)
         .addConstInput(offset)
         .addOutput(maskTempTensor)
         .run();
 
-    diopiScalar_t oneScalar = constructDiopiScalarT(diopi_dtype_float64, 1);
-    diopiTensorHandle_t oneTh;
-    makeTensorFromScalar(ctx, &oneScalar, &oneTh, inputAt.dtype(), diopi_device);
-    AclOpRunner<3, 1, dtypeConvertor>("DropOutDoMask", ctx).addInput(input).addInput(maskTempTensor).addInput(oneTh).addOutput(out).run();
+    diopiScalar_t oneScalar = constructDiopiScalarT(inputAt.dtype(), 1);
+    AclOpRunner<3, 1, dtypeConvertor>("DropOutDoMask", ctx).addInput(input).addInput(maskTempTensor).addConstInput(oneScalar).addOutput(out).run();
 
     diopiEq(ctx, mask, input, out);
-    diopiScalar_t probReciprocalScalar = constructDiopiScalarT(diopi_dtype_float64, 1. / prob);
+    diopiScalar_t probReciprocalScalar = constructDiopiScalarT(inputAt.dtype(), 1. / prob);
     diopiMulInpScalar(ctx, out, &probReciprocalScalar);
 }
 
@@ -71,7 +69,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
             dropoutTrainCore(ctx, out, mask, input, p, generator);
         }
     } else {
-        diopiCopyInp(ctx, input, out);
+        ::impl::ascend_npu::diopiCopyInp(ctx, input, out);
     }
     return diopiSuccess;
 }
@@ -81,7 +79,7 @@ diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     if (train) {
         diopiTensorHandle_t inputCopy;
         makeTensorLike(ctx, &inputCopy, input);
-        diopiCopyInp(ctx, input, inputCopy);
+        ::impl::ascend_npu::diopiCopyInp(ctx, input, inputCopy);
         diopiDropout(ctx, input, mask, inputCopy, p, train, generator);
     }
     return diopiSuccess;

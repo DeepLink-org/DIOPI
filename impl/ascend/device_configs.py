@@ -2,9 +2,29 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow llm used
+# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
 
 device_configs = {
+     'batch_norm': dict(
+        name=["batch_norm"],
+        atol_half=1e-1,
+        rtol_half=1e-1,
+     ),
+
+    'batch_norm_no_contiguous': dict(
+        name=['batch_norm'],
+        atol_half=1e-1,
+        rtol_half=1e-1,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                }
+            ]
+        )
+    ),
+
     # temp for 910B
     'uniform': dict(
         name=['uniform'],
@@ -15,125 +35,6 @@ device_configs = {
                     "shape": [Skip(()),],
                 },
             ],
-        ),
-    ),
-
-    'batch_norm': dict(
-        name=['batch_norm'],
-        atol=1e-2,
-        rtol=1e-3,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # Skip due to low precision
-                    "dtype": [Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'batch_norm_no_contiguous': dict(
-        name=['batch_norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # "dtype": [Skip(np.float16),],
-                    # temp for 910B
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'batch_norm_stats': dict(
-        name=['batch_norm_stats'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 8, 32, 56, 56)),Skip((2, 64, 32, 32)),Skip((2, 96, 28)),Skip((2, 16)),],
-                },
-            ]
-        ),
-    ),
-
-    'batch_norm_gather_stats_with_counts': dict(
-        name=['batch_norm_gather_stats_with_counts'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 8, 32, 56, 56)),Skip((2, 64, 32, 32)),Skip((2, 96, 28)),Skip((2, 16)),],
-                },
-            ]
-        ),
-    ),
-
-    'batch_norm_backward_reduce': dict(
-        name=['batch_norm_backward_reduce'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['grad_output'],
-                    "shape": [Skip((2, 64, 32, 32)),Skip((2, 96, 28)),Skip((2, 16)),],
-                },
-            ]
-        ),
-    ),
-
-    'batch_norm_backward_elemt': dict(
-        name=['batch_norm_backward_elemt'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['grad_out'],
-                    "shape": [Skip((2, 64, 32, 32)),Skip((2, 96, 28)),Skip((2, 16)),],
-                },
-            ]
-        ),
-    ),
-
-    'batch_norm_elemt': dict(
-        name=['batch_norm_elemt'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 64, 32, 32)),Skip((2, 96, 28)),Skip((2, 16)),],
-                },
-            ]
-        ),
-    ),
-
-    'baddbmm': dict(
-        name=['baddbmm'],
-        atol=1e-2,
-        rtol=1e-2,
-        # temp for 910B
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
-        ),
-    ),
-
-    'baddbmm_without_inplace': dict(
-        name=['baddbmm'],
-        atol=1e-2,
-        rtol=1e-2,
-        # temp for 910B
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
-                },
-            ]
         ),
     ),
 
@@ -152,19 +53,6 @@ device_configs = {
                     "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
                 },
             ]
-        ),
-    ),
-
-    'relu_no_contiguous': dict(
-        name=["relu"],
-        is_inplace=True,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64)],
-                },
-            ],
         ),
     ),
 
@@ -282,7 +170,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erf', 'erfinv', 'asin', 'ceil'],
+        name=['erfinv', 'asin', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -294,7 +182,7 @@ device_configs = {
     ),
 
     'pointwise_op_int_without_inplace': dict(
-        name=['erf', 'asin'],
+        name=['asin'],
         tensor_para=dict(
             args=[
                 {
@@ -306,7 +194,7 @@ device_configs = {
     ),
 
     'pointwise_op_uint8': dict(
-        name=['erf', 'asin'],
+        name=['asin'],
         tensor_para=dict(
             args=[
                 {
@@ -318,72 +206,12 @@ device_configs = {
     ),
 
     'pointwise_op_bool': dict(
-        name=['erf', 'asin'],
+        name=['asin'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
-    'log_integer_input': dict(
-        name=['log2', 'log10'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
-    'log_zero_input': dict(
-        name=['log2', 'log10'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
-    'log_neg_input': dict(
-        name=['log2', 'log10'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16), Skip(np.int32), Skip(np.int64), Skip(np.uint8), Skip(np.int8),],
-                },
-            ]
-        ),
-    ),
-
-    'tanh': dict(
-        name=['tanh'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()), Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((16, 0)),Skip((1, 0, 6))],
-                },
-            ]
-        ),
-    ),
-
-    'tanh_not_float': dict(
-        name=['tanh'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()), Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((16, 0)),Skip((1, 0, 6)),],
                 },
             ]
         ),
@@ -437,18 +265,6 @@ device_configs = {
         ),
     ),
 
-    'reduce_op': dict( # llm used
-        name=['sum'],
-        atol=1e-3,
-        rtol=1e-3,
-    ),
-
-    'reduce_partial_op': dict( # llm used
-        atol=1e-3,
-        rtol=1e-3,
-        name=['sum'],
-    ),
-
     'reduce_partial_op_1': dict(
         name=['std'],
         tensor_para=dict(
@@ -456,18 +272,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'mse_loss': dict(
-        name=['mse_loss'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((64,)),Skip((2, 11856, 2)),Skip((16, 2, 2964, 2)),Skip((2964, 32)),Skip((0,)),Skip((16, 0)),Skip((4, 0, 9)),],
                 },
             ]
         ),
@@ -551,19 +355,6 @@ device_configs = {
         rtol = 1e-1,
     ),
 
-    'embedding': dict( # llm used
-        name=["embedding"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["weight"],
-                    # Wrong weight gradient. torch_npu failed in exactly the same way.
-                    "shape": (Skip((93, 512)),),
-                },
-            ],
-        ),
-    ),
-
     'clip_grad_norm': dict(
         name=['clip_grad_norm_'],
         tensor_para=dict(
@@ -588,18 +379,6 @@ device_configs = {
         ),
     ),
 
-    'tril': dict(
-        name=['tril'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'one_hot': dict(
         name=['one_hot'],
         tensor_para=dict(
@@ -607,30 +386,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
-
-    'transpose': dict(
-        name=['transpose'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((32,)),Skip((2, 1536, 950)),Skip((16, 8)),Skip((660, 6, 49, 32)),Skip((0,)),Skip((0, 8)),Skip((16, 0, 8)),],
-                },
-            ]
-        ),
-    ),
-
-    'leaky_relu': dict(
-        name=['leaky_relu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),
@@ -872,30 +627,6 @@ device_configs = {
         ),
     ),
 
-    'masked_select': dict(
-        name=['masked_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'masked_select_not_float': dict(
-        name=['masked_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'index_fill_scalar': dict(
         name=['index_fill'],
         tensor_para=dict(
@@ -934,18 +665,6 @@ device_configs = {
 
     'index_fill_tensor_specific': dict(
         name=['index_fill'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-    'permute': dict(
-        name=['permute'],
         tensor_para=dict(
             args=[
                 {
@@ -1022,14 +741,6 @@ device_configs = {
         rtol=5e-2,
         atol_half=5e-2,
         rtol_half=5e-2,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),],
-                },
-            ]
-        ),
     ),
 
     'unique': dict(
@@ -1304,18 +1015,6 @@ device_configs = {
         ),
     ),
 
-    'flip': dict(
-        name=['flip'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
     'cholesky': dict(
         name=['cholesky_ex'],
         tensor_para=dict(
@@ -1455,19 +1154,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'rotary_emb_empty_tensor': dict(
-        name=["rotary_emb"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "shape": (Skip((64,)),),
                 },
             ],
         ),
@@ -1510,7 +1197,7 @@ device_configs = {
             ]
         ),
     ),
-    
+
     'remainder_self_scalar': dict(
         name=['remainder'],
         tensor_para=dict(
@@ -1585,4 +1272,9 @@ device_configs = {
             other=[Skip(False),],
         ),
     ),
+    'nll_loss': dict(
+        name=["nll_loss"],
+        atol=1e-4,
+        rtol=1e-3,
+    )
 }

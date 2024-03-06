@@ -19,14 +19,7 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     diopiTensorHandle_t resultTmp;
     diopiRequireTensor(ctx, &resultTmp, &size, nullptr, dtype, diopi_device);
     AclOpRunner<1, 1> runner("LpNormReduce", ctx);
-    if (diopi_dtype_float32 != dtype) {
-        diopiTensorHandle_t fp32;
-        makeTensorLike(ctx, &fp32, input, diopi_dtype_float32);
-        diopiCastDtype(ctx, fp32, input);
-        runner.addInput(fp32);
-    } else {
-        runner.addInput(input);
-    }
+    runner.addInput(input);
     std::vector<int> dimVec;
     for (size_t i = 0; i < dim.len; ++i) {
         dimVec.emplace_back(dim.data[i]);

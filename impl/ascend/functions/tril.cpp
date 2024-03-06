@@ -4,13 +4,19 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal) {
-    AclOpRunner<1, 1>("Tril", ctx).addInput(input).setAttr("diagonal", diagonal).addOutput(out).run();
+    AscendTensor inputAt(input);
+    AscendTensor outAt(out);
+    if (!inputAt.defined() || inputAt.numel() == 0) {
+        return diopiSuccess;
+    }
+
+    DIOPI_ASCEND_CALL_ACLNN(aclnnTril, ctx, inputAt, diagonal, outAt);
     return diopiSuccess;
 }
 

@@ -13,24 +13,23 @@
 namespace impl {
 namespace ascend {
 
-extern diopiError_t negativeInputRtnFillNan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
-
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
-    int64_t numel = 0;
-    diopiGetTensorNumel(input, &numel);
-    if (0 == numel) {
-        AclOpRunner<1, 1>("Fills", ctx).addInput(out).setAttr<float>("value", 0).addOutput(out).run();
+    AscendTensor inputAt(input);
+    if (inputAt.numel() == 0) {
+        diopiScalar_t scalar = constructDiopiScalarT(inputAt.dtype(), 0);
+        diopiFill(ctx, out, &scalar);
+        return diopiSuccess;
+    }
+    if (inputAt.dim() == 0) {
+        ::impl::ascend_npu::diopiCopyInp(ctx, input, out);
         return diopiSuccess;
     }
 
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
-    std::set<diopiDtype_t> typeSet{diopi_dtype_float16, diopi_dtype_float32};
     diopiTensorHandle_t inputTemp;
     diopiTensorHandle_t outTemp;
-    if (typeSet.find(dtype) == typeSet.end()) {
-        makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
-        makeTensorLike(ctx, &outTemp, out, diopi_dtype_float32);
+    if (isIntegralTypeWithBool(inputAt.dtype())) {
+        makeTensorLike(ctx, &inputTemp, input, diopi_dtype_int64);
+        outTemp = out;
         diopiCastDtype(ctx, inputTemp, input);
     } else {
         inputTemp = const_cast<diopiTensorHandle_t>(input);
@@ -56,23 +55,26 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         keepdim = false;
     }
     runner.setAttr<uint8_t>("keep_dims", keepdim).addOutput(outTemp).run();
-    if (typeSet.find(dtype) == typeSet.end()) {
-        diopiCastDtype(ctx, out, outTemp);
-    }
     return diopiSuccess;
 }
 
 diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
     int64_t numel = 0;
     diopiGetTensorNumel(input, &numel);
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(input, &dtype);
+
+    diopiScalar_t nanScalar;
     if (0 == numel) {
-        diopiScalar_t nanScalar = {diopi_dtype_float64, NAN};
+        if (isFloatingType(dtype)) {
+            nanScalar = constructDiopiScalarT(dtype, NAN);
+        } else {
+            nanScalar = constructDiopiScalarT(diopi_dtype_float32, NAN);
+        }
         diopiFill(ctx, out, &nanScalar);
         return diopiSuccess;
     }
 
-    diopiDtype_t dtype;
-    diopiGetTensorDtype(input, &dtype);
     std::set<diopiDtype_t> typeSet{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int8, diopi_dtype_uint8};
 
     diopiTensorHandle_t inputTemp;

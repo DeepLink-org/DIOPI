@@ -47,12 +47,25 @@ diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout,
 
 diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t std,
                                diopiGeneratorHandle_t generator) {
-    stdNormal(ctx, out, generator);
+    AscendTensor meanTr(mean);
+    AscendTensor stdTr(std);
+    AscendTensor outTr(out);
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};
+    std::vector<AscendTensor*> pTensors{&meanTr, &stdTr};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+    AscendTensor outTrTmp = outTr;
+    if (outTr.dtype() != meanTr.dtype()) {
+        castTensor(ctx, outTrTmp, meanTr.dtype());
+    }
 
+    stdNormal(ctx, const_cast<diopiTensorHandle_t>(outTrTmp.tensorHandle()), generator);
     // N(0,1) --> N(mean,std)
-    diopiMulInp(ctx, out, std);
-    diopiScalar_t alphaScalar = constructDiopiScalarT(diopi_dtype_float64, 1);
-    diopiAddInp(ctx, out, mean, &alphaScalar);
+    diopiMulInp(ctx, const_cast<diopiTensorHandle_t>(outTrTmp.tensorHandle()), std);
+    diopiScalar_t alphaScalar = constructDiopiScalarT(meanTr.dtype(), 1);
+    diopiAddInp(ctx, const_cast<diopiTensorHandle_t>(outTrTmp.tensorHandle()), meanTr.tensorHandle(), &alphaScalar);
+    if (outTr.dtype() != meanTr.dtype()) {
+        ::impl::ascend_npu::diopiCopyInp(ctx, outTrTmp.tensorHandle(), const_cast<diopiTensorHandle_t>(outTr.tensorHandle()));
+    }
     return diopiSuccess;
 }
 

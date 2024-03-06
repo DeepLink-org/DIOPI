@@ -438,7 +438,14 @@ at::Tensor npu_softmax_cross_entropy_with_logits_backward(const at::Tensor& grad
 at::Tensor npu_stride_copy(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset) { CUSTOM_OP_NOT_IMPL; }
 
 at::Tensor& npu_stride_copy_out(const at::Tensor& self, at::IntArrayRef shape, at::IntArrayRef stride, const at::Scalar& storage_offset, at::Tensor& out) {
-    return acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
+    auto outPtr = out.storage().data();
+    auto result = acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
+
+    if (outPtr != result.storage().data()) {
+        // the copy result may be stored in a new storage and need to be copied into the storage pre-allocated here.
+        aclrtMemcpyAsync(outPtr, out.nbytes(), result.storage().data(), result.nbytes(), ACL_MEMCPY_DEVICE_TO_DEVICE, c10_npu::getCurrentNPUStream());
+    }
+    return out;
 }
 
 at::Tensor npu_roi_align(const at::Tensor& self, const at::Tensor& rois, double spatial_scale, int64_t pooled_height, int64_t pooled_width, int64_t sample_num,
@@ -619,12 +626,16 @@ at::Tensor img_to_tensor(const at::Tensor& self) { CUSTOM_OP_NOT_IMPL; }
                                                                                 ::std::array<bool, 3> output_mask) {
     CUSTOM_OP_NOT_IMPL;
 }
+
+#if 0
 ::std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_cell_backward(
     const c10::optional<at::Tensor>& grady, const c10::optional<at::Tensor>& gradh, const c10::optional<at::Tensor>& gradc, const at::Tensor& input,
     const at::Tensor& w_ih, const at::Tensor& w_hh, const at::Tensor& h, const at::Tensor& c, const at::Tensor& y_output, const at::Tensor& h_output,
     const at::Tensor& c_output, const at::Tensor& i, const at::Tensor& j, const at::Tensor& f, const at::Tensor& o, const at::Tensor& tanhc) {
     CUSTOM_OP_NOT_IMPL;
 }
+#endif
+
 ::std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor& input, double eps) { CUSTOM_OP_NOT_IMPL; }
 ::std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_update(const at::Tensor& input, const at::Tensor& mean, const at::Tensor& invstd,
                                                                     const c10::optional<at::Tensor>& running_mean, const c10::optional<at::Tensor>& running_var,

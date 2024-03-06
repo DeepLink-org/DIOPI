@@ -23,6 +23,10 @@
 
 namespace op_plugin {
 
+at::Tensor& nonzero_out(const at::Tensor& self, at::Tensor& out) { return acl_op::nonzero_out(self, out); }
+
+at::Tensor& npu_broadcast_out(const at::Tensor& self, at::IntArrayRef size, at::Tensor& out) { return acl_op::npu_broadcast_out(self, size, out); }
+
 namespace {
 std::vector<at::Tensor> npu_expand_outplace(at::TensorList to_expand) {
     // expands a list of Tensors; ignores undefined (null) tensors

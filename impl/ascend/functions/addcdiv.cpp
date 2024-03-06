@@ -20,11 +20,9 @@ diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     broadcast(ctx, inAt, inAt, size);
     broadcast(ctx, t1, t1, size);
     broadcast(ctx, t2, t2, size);
-    diopiTensorHandle_t trOther = nullptr;
     diopiDtype_t dtype;
-    diopiGetTensorDtype(out, &dtype);
-    makeTensorFromScalar(ctx, value, &trOther, dtype, diopiDevice_t::diopi_device);
-    AclOpRunner<4, 1>("Addcdiv", ctx).addInput(inAt).addInput(t1).addInput(t2).addInput(trOther).addOutput(out).run();
+    diopiGetTensorDtype(input, &dtype);
+    AclOpRunner<4, 1>("Addcdiv", ctx).addInput(inAt).addInput(t1).addInput(t2).addConstInput(*value, dtype).addOutput(out).run();
     return diopiSuccess;
 }
 

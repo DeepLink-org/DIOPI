@@ -10,7 +10,6 @@ import torchvision
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
 from conformance.db_operation import db_conn
-from conformance.exception import GenDataFailedException
 
 
 def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
@@ -341,6 +340,7 @@ class GenOutputData(object):
     Generate output data for all functions by using numpy and input data
     '''
     db_case_items = {}
+    err_case_counter = 0
 
     @staticmethod
     def run(diopi_item_config_path='diopi_case_items.cfg',
@@ -366,7 +366,7 @@ class GenOutputData(object):
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
             item = {'case_name': case_name, 'model_name': model_name}
-            if fname not in [func_name, 'all_ops']:
+            if "all_ops" not in fname and func_name not in fname:
                 continue
             data_path = os.path.join(input_path, case_name)
             input_ = get_data_from_file(data_path, case_name, 'input')
@@ -380,11 +380,13 @@ class GenOutputData(object):
                 output, saved_grads = gen_tensor_obj.gen_data(input_)
                 item['result'] = 'passed'
             except Exception as err_msg:
-                raise GenDataFailedException(
-                    f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
-            GenOutputData.db_case_items[case_name] = item
+                logger.error(f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
+                item.update({'result': 'failed', 'err_msg': err_msg})
+                GenOutputData.err_case_counter += 1
+                continue
+            finally:
+                GenOutputData.db_case_items[case_name] = item
             if output is not None:
-                # import pdb; pdb.set_trace()
                 with open(os.path.join(output_path, case_name), "wb") as f:
                     pickle.dump(GenOutputData.to_numpy(output), f, protocol=4)
                     logger_str = "output"
@@ -462,12 +464,8 @@ class GenTensor(object):
         if 'dtype' in kwargs.keys():
             kwargs['dtype'] = self.change_np_dtype_to_torch(kwargs['dtype'])
         func_call = f"{self.module}.{self.func_name}(**kwargs)"
-
-        try:
-            self.output = eval(func_call)
-            self.if_forward_success = True
-        except Exception as e:
-            raise GenDataFailedException(f"Failed to execute function {func_call}, caused by {e}")
+        self.output = eval(func_call)
+        self.if_forward_success = True
         return self.output
 
     def gen_backward_data(self, input_data):

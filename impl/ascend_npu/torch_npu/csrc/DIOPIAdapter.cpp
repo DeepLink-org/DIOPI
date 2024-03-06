@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2024, DeepLink.
+ */
+
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 #include <ATen/EmptyTensor.h>
@@ -7,9 +13,11 @@
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
 #include "../../../ascend/common/stream_lock.hpp"
+#include "../../third_party/acl/inc/acl/acl_base.h"
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
 constexpr float EPSILON = 1e-6;
@@ -79,8 +87,104 @@ aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_
 
 }  // namespace
 
+namespace c10_npu {
+namespace option {
+
+using namespace std;
+
+bool OptionsManager::IsResumeModeEnable() {
+    static const bool isResumeModeEnable = []() -> bool {
+        int32_t enable = OptionsManager::GetBoolTypeOption("RESUME_MODE_ENABLE", 0);
+        return enable != 0;
+    }();
+    return isResumeModeEnable;
+}
+
+bool OptionsManager::IsMultiStreamMemoryReuse() {
+    static const bool hcclRealTimeMemoryReuse = []() -> bool {
+        int32_t enable = OptionsManager::GetBoolTypeOption("MULTI_STREAM_MEMORY_REUSE", 0);
+        return enable != 0;
+    }();
+    return hcclRealTimeMemoryReuse;
+}
+
+bool OptionsManager::CheckInfNanModeEnable() {
+    static const bool checkInfNanModeEnable = []() -> bool {
+        int32_t enable = OptionsManager::GetBoolTypeOption("INF_NAN_MODE_ENABLE", 1);
+        return enable != 0;
+    }();
+    return checkInfNanModeEnable;
+}
+
+bool OptionsManager::CheckBlockingEnable() {
+    static const bool checkBlockingEnable = []() -> bool {
+        int32_t blocking_enable = OptionsManager::GetBoolTypeOption("ASCEND_LAUNCH_BLOCKING", 0);
+        return blocking_enable != 0;
+    }();
+    return checkBlockingEnable;
+}
+
+bool OptionsManager::CheckQueueEnable() {
+    if (CheckBlockingEnable()) {
+        return false;
+    }
+    static const bool checkQueueEnable = []() -> bool {
+        int32_t queue_enable = OptionsManager::GetBoolTypeOption("TASK_QUEUE_ENABLE", 1);
+        return queue_enable != 0;
+    }();
+    return checkQueueEnable;
+}
+
+bool OptionsManager::CheckCombinedOptimizerEnable() {
+    static const bool checkCombinedOptimizerEnable = []() -> bool {
+        int32_t combined_optimize = OptionsManager::GetBoolTypeOption("COMBINED_ENABLE");
+        return combined_optimize != 0;
+    }();
+    return checkCombinedOptimizerEnable;
+}
+
+bool OptionsManager::CheckAclDumpDateEnable() {
+    static const bool checkAclDumpDateEnable = []() -> bool {
+        int32_t acl_dump_data = OptionsManager::GetBoolTypeOption("ACL_DUMP_DATA");
+        return acl_dump_data != 0;
+    }();
+    return checkAclDumpDateEnable;
+}
+
+int OptionsManager::GetBoolTypeOption(const char* env_str, int defaultVal) {
+    char* env_val = std::getenv(env_str);
+    int64_t envFlag = (env_val != nullptr) ? strtol(env_val, nullptr, 10) : defaultVal;
+    return (envFlag != 0) ? 1 : 0;
+}
+
+uint32_t OptionsManager::GetHCCLExecTimeout() {
+    char* env_val = std::getenv("HCCL_EXEC_TIMEOUT");
+    int64_t envFlag = (env_val != nullptr) ? strtol(env_val, nullptr, 10) : 0;
+    return static_cast<uint32_t>(envFlag);
+}
+
+int32_t OptionsManager::GetACLExecTimeout() {
+    char* env_val = std::getenv("ACL_STREAM_TIMEOUT");
+    int64_t envFlag = (env_val != nullptr) ? strtol(env_val, nullptr, 10) : -1;
+    return static_cast<int32_t>(envFlag);
+}
+
+const char* OptionsManager::GetAclConfigJsonPath() {
+    char* env_val = std::getenv("ACL_CONFIG_JSON_PATH");
+    return env_val == nullptr ? "" : env_val;
+}
+
+}  // namespace option
+}  // namespace c10_npu
+
 namespace at_npu {
 namespace native {
+
+aclDataType OpPreparation::convert_to_acl_data_type(const at::ScalarType& data_type) {
+    auto acl_dtype = kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(data_type)];
+    TORCH_CHECK(acl_dtype != ACL_DT_UNDEFINED, std::string(c10::toString(data_type)) + " has not been supported")
+    return acl_dtype;
+}
 
 bool FormatCastHelper::IsSameGroupType(const at::Tensor& src, const at::Tensor& dst) {
     auto src_format = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_.npu_format_;
@@ -157,6 +261,57 @@ UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& 
     unified_result.common_type = out.scalar_type();
     unified_result.common_shape = out.sizes();
     return unified_result;
+}
+
+void OpPreparation::check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) {
+    c10::SmallVector<at::Tensor, N> in = inputs;
+    c10::SmallVector<at::Tensor, N> out = outputs;
+    CalcuOpUtil::CheckMemoryOverLaps(in, out);
+}
+
+static bool check_inplace_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst) {
+    bool is_inplace_tensor = false;
+    // check whether dst is contained in src_list
+    for (const auto& src : src_list) {
+        if (dst.is_same(src)) {
+            is_inplace_tensor = true;
+            break;
+        }
+    }
+    return is_inplace_tensor;
+}
+
+static void check_tensor_size(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) {
+    bool is_inplace = check_inplace_tensor(src_list, dst);
+    // Preserve legacy resizing behavior of out=... arguments
+    if (!dst.sizes().equals(expect_size)) {
+        TORCH_CHECK(!is_inplace, "output with shape ", dst.sizes(), " doesn't match the broadcast shape ", expect_size);
+        dst.resize_(expect_size);
+    }
+    return;
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype,
+                                 c10::IntArrayRef expect_size) {
+    check_memory(src_list, {dst});
+    TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
+    TORCH_CHECK(dst.scalar_type() == expect_dtype, "expected dtype ", expect_dtype, " but got dtype ", dst.scalar_type());
+    check_tensor_size(src_list, dst, expect_size);
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) {
+    check_memory(src_list, {dst});
+    TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
+    check_tensor_size(src_list, dst, expect_size);
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor) {
+    check_tensor(src_list, dst, expect_tensor.scalar_type(), expect_tensor.sizes());
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor,
+                                 c10::IntArrayRef expect_size) {
+    check_tensor(src_list, dst, expect_tensor.scalar_type(), expect_size);
 }
 
 void NpuUtils::format_fresh_view(at::Tensor& x, const at::Tensor& y) {
@@ -967,7 +1122,9 @@ int8_t CalcuOpUtil::GetCubeMathType(bool allowHf32) {
 void assert_no_internal_overlap(const at::Tensor& tensor) {
     auto t = tensor.unsafeGetTensorImpl();
     AT_ASSERT(t->layout() == at::kStrided);
-    AT_ASSERT(tensor.is_contiguous());
+    if (t->is_contiguous()) {
+        return;
+    }
     auto strides = t->strides();
     auto sizes = t->sizes();
     for (size_t i = 0; i < strides.size(); ++i) {
@@ -1362,6 +1519,16 @@ at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), fixFormat, keep_format);
 }
 
+inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return at_npu::native::empty_npu(sizes, options); }
+
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_use_empty(src.sizes(), src.options()); }
+
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor_use_empty(sizes, src.options()); }
+
+at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
+    return apply_tensor_use_empty(sizes, options);
+}
+
 at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
     if (markedOutputs.size() > 0) {
         auto out = *markedOutputs.begin();
@@ -1371,6 +1538,25 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
     auto format = InferFormat::GuessBaseFormat(sizes);
     return NPUNativeFunctions::empty_with_format(
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
+}
+
+at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
+    at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
+    at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
+    int deviceIndex = 0;
+    NPU_CHECK_ERROR(aclrtGetDevice(&deviceIndex));
+    return cpuPinMemTensor.to(c10::Device(c10::DeviceType::XLA, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
+}
+
+at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
+    diopiTensorHandle_t tensorDiopi = nullptr;
+    std::vector<int64_t> sizeVec(1, size);
+    diopiError_t ret = diopiRequireBuffer(context, &tensorDiopi, size, diopi_device);
+    if (enableDumpArgs()) {
+        std::cout << __FUNCTION__ << ": diopiRequireBuffer: " << size << "(bytes)." << std::endl;
+    }
+    TORCH_CHECK(diopiSuccess == ret);
+    return impl::aten::buildATen(tensorDiopi);
 }
 
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
@@ -2291,7 +2477,7 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
                 outputTensor[sync_index[i]].resize_(real_shape);
             }
         } else {
-            if (0) {
+            if (1) {
                 ret = aclopCompileAndExecute(name.c_str(),
                                              inputSize,
                                              params.inDesc.data(),
@@ -2436,7 +2622,7 @@ OpCommand& OpCommand::Name(const string& name) {
     return *this;
 }
 
-void OpCommand::SetCustomHandler(PROC_FUNC func) { INTERFACE_NOT_IMPL; }
+void OpCommand::SetCustomHandler(PROC_FUNC func) { aclCmd->SetCustomHandler(func); }
 
 OpCommand& OpCommand::Expect(UnifiedResult unified_result) {
     commonType = unified_result.common_type;
@@ -2617,9 +2803,6 @@ void OpCommand::Run() {
     aclCmd->SetEnginePriority();
     const string& op_name = aclCmd->GetName();
     aclCmd->Run(sync, sync_index, outputTensor);
-    if (sync) {
-        Sync();
-    }
     aclCmd->releaseSource();
 }
 
@@ -2628,7 +2811,6 @@ OpCommand& OpCommand::Sync(c10::SmallVector<int64_t, N>& index) {
     if (!index.empty()) {
         sync = true;
     }
-    Sync();
     return *this;
 }
 
@@ -2666,6 +2848,36 @@ void npu_fast_reshape_(at::Tensor& tensor) {
 #else
     INTERFACE_NOT_IMPL;
 #endif
+}
+
+void ForceAclnn::RegisterOp(const std::string& list) {
+    if (list.empty()) {
+        return;
+    }
+
+    auto value = list;
+    std::string delimiter = ",";
+    auto start = 0U;
+    auto end = value.find(delimiter);
+    std::string token;
+    while (end != std::string::npos) {
+        token = value.substr(start, end - start);
+        if (!token.empty()) {
+            force_aclnn_op_list_.insert(token);
+        }
+        start = end + delimiter.size();
+        end = value.find(delimiter, start);
+    }
+    token = value.substr(start, end - start);
+    if (!token.empty()) {
+        force_aclnn_op_list_.insert(token);
+    }
+    return;
+}
+
+bool ForceAclnn::IsForceAclnnOp(const std::string& op_name) const {
+    bool ret = (force_aclnn_op_list_.find(op_name) != force_aclnn_op_list_.end());
+    return ret;
 }
 
 }  // namespace native
@@ -2730,10 +2942,7 @@ NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
 
 NPUStream getCurrentSecondaryStream(c10::DeviceIndex device_index) { return getCurrentNPUStream(device_index); }
 
-void NPUStream::synchronize() const {
-    NPU_CHECK_ERROR(aclrtSynchronizeStream(aclStream_));
-    NPU_CHECK_ERROR(aclrtSynchronizeDevice());
-}
+void NPUStream::synchronize() const { NPU_CHECK_ERROR(aclrtSynchronizeStream(aclStream_)); }
 
 aclError queue::LaunchAsyncCopyTask(void* dst, size_t dstLen, void* src, size_t srcLen, aclrtMemcpyKind kind) {
     c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();

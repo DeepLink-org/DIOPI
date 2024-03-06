@@ -51,7 +51,8 @@ def parse_args():
     gen_data_args.add_argument(
         "--fname",
         type=str,
-        default="all_ops",
+        default=["all_ops"],
+        nargs="*",
         help="the name of the function for which the test will run (default: all_ops)",
     )
     gen_data_args.add_argument(
@@ -201,7 +202,7 @@ if __name__ == "__main__":
         if exit_code != 0:
             raise SystemExit(exit_code)
     else:
-        print("available options for mode: gen_data, run_test and utest")
+        print("available options for mode: gen_data, gen_case, run_test and utest")
 
     # if is_ci != "null" and error_counter[0] != 0:
     #     raise DiopiException(str(error_counter[0]) + " errors during this program")

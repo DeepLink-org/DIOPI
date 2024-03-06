@@ -8,11 +8,13 @@
 #define IMPL_ASCEND_COMMON_DEBUG_HPP_
 
 #include <algorithm>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "../ascend_tensor.hpp"
+#include "float16.hpp"
 #include "impl_functions.hpp"
 
 namespace impl {
@@ -98,7 +100,7 @@ inline std::string dumpTensor(const AscendTensor& at, const std::string& message
     return stream.str();
 }
 
-void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, char* name);
+void printContiguousTensor(diopiContextHandle_t ctx, const AscendTensor& at, const char* name);
 void printTensor(diopiContextHandle_t ctx, diopiSize_t& th, char* name);
 }  // namespace ascend
 }  // namespace impl

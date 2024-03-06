@@ -46,7 +46,9 @@ diopiError_t diopiScatterInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
 void prepareScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, const diopiScalar_t* value, diopiTensorHandle_t& src, AscendTensor& indexAt) {
     // Shape of valueTh: {1,}
     diopiTensorHandle_t valueTh;
-    makeTensorFromScalar(ctx, value, &valueTh, diopi_device);
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(out, &dtype);
+    makeTensorFromScalar(ctx, value, &valueTh, dtype, diopi_device);
 
     // Ensure that src has the same dtype as out and the same shape as index
     if (indexAt.shape().empty()) {

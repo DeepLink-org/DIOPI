@@ -5,7 +5,7 @@
  */
 
 #include "helper.hpp"
-#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 
 namespace {
 
@@ -35,25 +35,17 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     }
 
     if (!inputAt.defined()) {
-        acl_op::fill_(outAt, 0);
+        op_api::fill_(outAt, 0);
         return diopiSuccess;
     }
-    TORCH_CHECK(inputAt.scalar_type() == at::ScalarType::Float);
-    TORCH_CHECK(outAt.scalar_type() == at::ScalarType::Float);
+
     bool keepdim = outAt.dim() == inputAt.dim();
     auto pvalue = calculateP(pAt);
-    at_npu::native::OpCommand cmd1;
-    cmd1.Name("LpNormReduceV2")
-        .Input(inputAt)
-        .Output(outAt)
-        .Attr("p", pvalue)
-        .Attr("axes", dimAt)
-        .Attr("keepdim", keepdim)
-        .Attr("epsilon", static_cast<float>(0))
-        .Run();
-
-    at_npu::native::OpCommand cmd2;
-    cmd2.Name("LpNormUpdateV2").Input(outAt).Output(outAt).Attr("p", pvalue).Attr("epsilon", static_cast<float>(0)).Run();
+    if (pvalue == 0) {
+        op_api::fill_(outAt, inputAt.numel());
+        return diopiSuccess;
+    }
+    op_api::norm_out(inputAt, pAt, dimAt, false, outAt);
     END_CALL_ACL_OP();
 }
 
