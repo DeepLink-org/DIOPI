@@ -1519,9 +1519,7 @@ at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), fixFormat, keep_format);
 }
 
-inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
-    return at_npu::native::empty_npu(sizes, options);
-}
+inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return at_npu::native::empty_npu(sizes, options); }
 
 at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_use_empty(src.sizes(), src.options()); }
 
