@@ -87,7 +87,7 @@ class GenTestCase(object):
     def gen_test_module(self, fname):
         test_diopi_head_import = ""
         test_case_items = []
-        if fname not in [self._func_name, "all_ops"]:
+        if self._func_name not in fname and "all_ops" not in fname:
             return
         for ck, cv in self._case_set.items():
             # test_diopi_function_module = 'diopi_functions'
