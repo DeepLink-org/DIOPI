@@ -85,10 +85,6 @@ ascend:
 - diopiUpsampleNearestBackward
 - diopiBatchNorm
 - diopiBatchNormBackward
-- diopiAdd
-- diopiAddInp
-- diopiAddScalar
-- diopiAddInpScalar
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiRMSNorm
@@ -100,6 +96,10 @@ ascend:
 - diopiScatterInpScalar
 ascend_npu:
 - diopiWhere
+- diopiAdd
+- diopiAddInp
+- diopiAddScalar
+- diopiAddInpScalar
 - diopiAbs
 - diopiAbsInp
 - diopiAdaptiveAvgPool2d
