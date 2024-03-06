@@ -135,8 +135,6 @@ ascend_npu:
 - diopiCeilInp
 - diopiCopyInp
 - diopiExpand
-- diopiCopyInp
-- diopiExpand
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
