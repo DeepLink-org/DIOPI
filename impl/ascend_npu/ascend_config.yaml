@@ -204,7 +204,6 @@ ascend_npu:
 - diopiFill
 - diopiLogSoftmax
 - diopiLogSoftmaxBackward
-- diopiArgmax
 - diopiMean
 - diopiMm
 - diopiArgmax
