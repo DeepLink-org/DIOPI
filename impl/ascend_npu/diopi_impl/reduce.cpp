@@ -5,8 +5,8 @@
  */
 
 #include "helper.hpp"
-#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace OP_IMPL_NS {
 
@@ -76,6 +76,26 @@ diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         op_api::any_out(inputAt, *dim, keepdim, outAt);
     }
 
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
+    BEGIN_CALL_ACL_OP(input, out);
+    at::IntArrayRef dims;
+    if (dim) {
+        dims = at::IntArrayRef(dim, 1);
+    }
+
+    bool keepDim = false;
+    EXEC_NPU_CMD(aclnnAll, inputAt, dims, keepDim, outAt);
+    END_CALL_ACL_OP();
+}
+
+diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
+    BEGIN_CALL_ACL_OP(input, out);
+    bool keepDim = false;
+    auto dtype = outAt.scalar_type();
+    EXEC_NPU_CMD(aclnnProdDim, inputAt, *dim, keepDim, dtype, outAt);
     END_CALL_ACL_OP();
 }
 
