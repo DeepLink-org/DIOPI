@@ -8306,7 +8306,7 @@ diopi_configs = {
         name=['apply_penalty'],
         interface=['CustomizedTest'],
         para=dict(
-            p_max_len_in_batch=(8,)),
+            p_max_len_in_batch=(5,)),
         tensor_para=dict(
             args=[
                 {
