@@ -439,16 +439,7 @@ inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... arg
     func(std::forward<Args>(args)...);
 }
 
-inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
-    at::IntArrayRef atSize = input.sizes();
-    at::IntArrayRef atStride = input.strides();
-    diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
-    diopiSize_t stride{atStride.data(), static_cast<int64_t>(atStride.size())};
-    diopiDtype_t dtype = getDIOPITensorType(input);
-    diopiDevice_t device = getDIOPIDevice(input.device().type());
-    diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
-    updateATen2Tensor(ctx, input, *out);
-}
+void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out);
 
 // new cuda generator and pass dipu generator state into cuda generator state
 inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
