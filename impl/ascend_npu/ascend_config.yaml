@@ -1,14 +1,5 @@
 ascend:
 - diopiAny
-- diopiAdaptiveAvgPool2d
-- diopiAdaptiveAvgPool2dBackward
-- diopiAddcdiv
-- diopiAddcdivInp
-- diopiAddcmul
-- diopiAddcmulInp
-- diopiAddmm
-- diopiAll
-- diopiArange
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiBitwiseAnd
@@ -80,10 +71,6 @@ ascend:
 - diopiMin
 - diopiMinAll
 - diopiMinimum
-- diopiMul
-- diopiMulInp
-- diopiMulInpScalar
-- diopiMulScalar
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNe
@@ -96,11 +83,6 @@ ascend:
 - diopiNormalTensor
 - diopiNormalTensorScalar
 - diopiOneHot
-- diopiPow
-- diopiPowInp
-- diopiPowInpTensor
-- diopiPowScalar
-- diopiPowTensor
 - diopiSin
 - diopiSinInp
 - diopiSlice
@@ -247,3 +229,12 @@ ascend_npu:
 - diopiUniformInp
 - diopiRelu
 - diopiReluInp
+- diopiMul
+- diopiMulInp
+- diopiMulInpScalar
+- diopiMulScalar
+- diopiPow
+- diopiPowInp
+- diopiPowInpTensor
+- diopiPowScalar
+- diopiPowTensor
