@@ -29,7 +29,7 @@ class GenInputData(object):
     def run(
         diopi_item_config_path="diopi_case_items.cfg",
         input_path="data/inputs/",
-        fname="all_ops",
+        fname=["all_ops"],
         model_name="diopi",
     ):
         if not os.path.exists(input_path):
@@ -61,7 +61,7 @@ class GenInputData(object):
                 "is_inplace" in each_cfg_dict.keys() and each_cfg_dict["is_inplace"] is True
             ):
                 item["inplace_flag"] = 1
-            if fname not in [func_name, "all_ops"]:
+            if "all_ops" not in fname and func_name not in fname:
                 # GenInputData.db_case_items.append(item)
                 continue
             # logger.info(f"diopi_functions.{func_name} [config] {each_cfg_dict}")
