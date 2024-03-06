@@ -22,8 +22,7 @@ diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     }
 
     if (batch1At.numel() == 0 || batch2At.numel() == 0 || alpha == 0.0) {
-        op_api::mul_(inputAt, betaAt);
-        outAt.copy_(inputAt);
+        op_api::mul_out(inputAt, betaAt, outAt);
         END_CALL_ACL_OP();
     }
 
