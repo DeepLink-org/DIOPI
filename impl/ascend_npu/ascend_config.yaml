@@ -26,7 +26,6 @@ ascend:
 - diopiEqInp
 - diopiEqInpScalar
 - diopiEqScalar
-- diopiGather
 - diopiGe
 - diopiGeInp
 - diopiGeInpScalar
@@ -189,6 +188,7 @@ ascend_npu:
 - diopiTanhBackward
 - diopiTanhInp
 - diopiTensorDestructionHook
+- diopiGather
 - diopiGelu
 - diopiGeluBackward
 - diopiHardswish
