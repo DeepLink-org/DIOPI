@@ -1520,8 +1520,7 @@ at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const
 }
 
 inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
-    return at_npu::native::empty_npu(
-        sizes, options.dtype().toScalarType(), c10::nullopt, at::Device(c10::DeviceType::PrivateUse1), false, c10::MemoryFormat::Contiguous);
+    return at_npu::native::empty_npu(sizes, options);
 }
 
 at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_use_empty(src.sizes(), src.options()); }
