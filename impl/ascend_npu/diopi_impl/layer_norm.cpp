@@ -26,22 +26,16 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, diopiSize_t normalizedShape) {
     BEGIN_CALL_ACL_OP(gradInput, gradWeight, gradBias, gradOutput, input, weight, bias, mean, rstd);
     std::vector<int64_t> normalizedVec(normalizedShape.data, normalizedShape.data + normalizedShape.len);
-    std::array<bool, 3> maskVec{true, true, true};
+    std::array<bool, 3> maskVec{gradInputAt.defined(), gradWeightAt.defined(), gradBiasAt.defined()};
     auto result = op_api::native_layer_norm_backward(gradOutputAt, inputAt, normalizedVec, meanAt, rstdAt, weightAt, biasAt, maskVec);
     if (gradInputAt.defined()) {
         gradInputAt.copy_(std::get<0>(result));
-    } else {
-        impl::aten::buildDiopiTensor(ctx, std::get<0>(result), &gradInput);
     }
     if (gradWeightAt.defined()) {
         gradWeightAt.copy_(std::get<1>(result));
-    } else {
-        impl::aten::buildDiopiTensor(ctx, std::get<1>(result), &gradWeight);
     }
     if (gradBiasAt.defined()) {
         gradBiasAt.copy_(std::get<2>(result));
-    } else {
-        impl::aten::buildDiopiTensor(ctx, std::get<2>(result), &gradBias);
     }
     END_CALL_ACL_OP();
 }
