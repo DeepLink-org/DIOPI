@@ -1,4 +1,5 @@
 ascend:
+- diopiAny
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcdiv
@@ -41,16 +42,11 @@ ascend:
 - diopiGeInp
 - diopiGeInpScalar
 - diopiGeScalar
-- diopiGelu
-- diopiGeluBackward
 - diopiGroupNorm
 - diopiGt
 - diopiGtInp
 - diopiGtInpScalar
 - diopiGtScalar
-- diopiHardtanh
-- diopiHardtanhBackward
-- diopiHardtanhInp
 - diopiIsNan
 - diopiLayerNorm
 - diopiLayerNormBackward
@@ -58,9 +54,6 @@ ascend:
 - diopiLeInp
 - diopiLeInpScalar
 - diopiLeScalar
-- diopiLeakyRelu
-- diopiLeakyReluBackward
-- diopiLeakyReluInp
 - diopiLinear
 - diopiLinearBackward
 - diopiLogSoftmax
@@ -104,10 +97,6 @@ ascend:
 - diopiPowInpTensor
 - diopiPowScalar
 - diopiPowTensor
-- diopiRelu
-- diopiReluInp
-- diopiSigmoidBackward
-- diopiSigmoidInp
 - diopiSin
 - diopiSinInp
 - diopiSlice
@@ -119,8 +108,6 @@ ascend:
 - diopiSubInpScalar
 - diopiSubScalar
 - diopiSum
-- diopiTanh
-- diopiTanhBackward
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
@@ -130,7 +117,6 @@ ascend:
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
-- diopiWhere
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiAdd
@@ -143,15 +129,23 @@ ascend:
 - diopiLogicalOr
 - diopiRMSNorm
 - diopiRMSNormBackward
-- diopiProd
 - diopiSplitWithSizes
 - diopiScatter
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
 ascend_npu:
+- diopiWhere
 - diopiAbs
 - diopiAbsInp
+- diopiAdaptiveAvgPool2d
+- diopiAdaptiveAvgPool2dBackward
+- diopiAddcmul
+- diopiAddcmulInp
+- diopiAddcdiv
+- diopiAddcdivInp
+- diopiAddmm
+- diopiAll
 - diopiArange
 - diopiAtan
 - diopiAtanInp
@@ -161,7 +155,6 @@ ascend_npu:
 - diopiBmm
 - diopiMatmul
 - diopiCastDtype
-- diopiCopyInp
 - diopiCat
 - diopiCeil
 - diopiCeilInp
@@ -169,6 +162,7 @@ ascend_npu:
 - diopiDivInp
 - diopiDivInpScalar
 - diopiDivScalar
+- diopiCopyInp
 - diopiExpand
 - diopiFlip
 - diopiFloor
@@ -193,6 +187,7 @@ ascend_npu:
 - diopiNormalInp
 - diopiNorm
 - diopiMaxPool2dWithIndices
+- diopiProd
 - diopiRotaryEmbedding
 - diopiCol2Im
 - diopiLog
@@ -215,10 +210,23 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiSigmoid
+- diopiSigmoidBackward
+- diopiSigmoidInp
+- diopiTanh
+- diopiTanhBackward
+- diopiTanhInp
 - diopiTensorDestructionHook
+- diopiGelu
+- diopiGeluBackward
 - diopiHardswish
 - diopiHardswishInp
 - diopiHardswishBackward
+- diopiHardtanh
+- diopiHardtanhBackward
+- diopiHardtanhInp
+- diopiLeakyRelu
+- diopiLeakyReluBackward
+- diopiLeakyReluInp
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
@@ -237,3 +245,5 @@ ascend_npu:
 - diopiTopk
 - diopiTril
 - diopiUniformInp
+- diopiRelu
+- diopiReluInp
