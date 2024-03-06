@@ -15,8 +15,6 @@
 #include <utility>
 #include <vector>
 
-#include "../aclnn/acl_tensor.hpp"
-#include "../aclnn/adaptor.hpp"
 #include "../ascend_tensor.hpp"
 #include "acl/acl.h"
 #include "acl/acl_op.h"
@@ -659,7 +657,7 @@ public:
         for (auto pair : nonContiguousOutputPairs_) {
             auto th = pair.first;
             auto thCopy = pair.second;
-            diopiCopyInp(context_, thCopy, th);
+            ::impl::ascend_npu::diopiCopyInp(context_, thCopy, th);
         }
         for (int64_t i = 0; i < syncIdxs_.size(); i++) {
             auto syncIdx = syncIdxs_[i];
