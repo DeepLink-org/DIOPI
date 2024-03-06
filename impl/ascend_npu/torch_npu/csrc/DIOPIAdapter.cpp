@@ -3149,7 +3149,7 @@ at::Tensor& wrapper_Tensor_fill__Tensor(at::Tensor& self, const at::Tensor& valu
 at::Tensor& wrapper_Tensor_fill__Scalar(at::Tensor& self, const c10::Scalar& value) { return op_api::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
-    return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
+    return at_npu::native::NPUNativeOpApiFunctions::copy_(self, src, non_blocking);
 }
 
 at::Tensor wrapper__view(const at::Tensor& self, at::IntArrayRef size) { return impl::aten::viewStorage(self, size); }

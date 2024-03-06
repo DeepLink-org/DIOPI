@@ -24,10 +24,6 @@ ascend:
 - diopiLayerNormBackward
 - diopiLinear
 - diopiLinearBackward
-- diopiMaskedFill
-- diopiMaskedFillInp
-- diopiMaskedFillInpScalar
-- diopiMaskedFillScalar
 - diopiMaxAll
 - diopiMin
 - diopiMinAll
@@ -105,6 +101,10 @@ ascend_npu:
 - diopiRemainderScalar
 - diopiRemainder
 - diopiRepeat
+- diopiMaskedFill
+- diopiMaskedFillInp
+- diopiMaskedFillInpScalar
+- diopiMaskedFillScalar
 - diopiRsqrt
 - diopiRsqrtInp
 - diopiSqrt
