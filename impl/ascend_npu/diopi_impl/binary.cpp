@@ -59,7 +59,7 @@ diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
 diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t roundingMode) {
     BEGIN_CALL_ACL_OP(input, other);
-    if (mode.empty()) {
+    if (roundingMode == diopiRoundMode_t::RoundModeNone) {
         op_api::div_(inputAt, otherAt);
     } else {
         std::string mode = roundModeStr(roundingMode);
