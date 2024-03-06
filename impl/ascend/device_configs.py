@@ -1162,19 +1162,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'rotary_emb_empty_tensor': dict(
-        name=["rotary_emb"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "shape": (Skip((64,)),),
                 },
             ],
         ),
