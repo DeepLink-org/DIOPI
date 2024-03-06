@@ -52,8 +52,6 @@ ascend:
 - diopiMin
 - diopiMinAll
 - diopiMinimum
-- diopiNLLLoss
-- diopiNLLLossBackward
 - diopiNe
 - diopiNeInp
 - diopiNeInpScalar
@@ -196,6 +194,8 @@ ascend_npu:
 - diopiLogSoftmaxBackward
 - diopiMean
 - diopiMm
+- diopiNLLLoss
+- diopiNLLLossBackward
 - diopiArgmax
 - diopiLogicalAnd
 - diopiLogicalOr

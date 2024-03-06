@@ -17,6 +17,7 @@
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
@@ -3143,7 +3144,9 @@ void unsetCurCtx() { context = nullptr; }
 
 namespace {
 
-at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
+at::Tensor& wrapper_Tensor_fill__Tensor(at::Tensor& self, const at::Tensor& value) { return op_api::fill_(self, value); }
+
+at::Tensor& wrapper_Tensor_fill__Scalar(at::Tensor& self, const c10::Scalar& value) { return op_api::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     return at_npu::native::NPUNativeFunctions::copy_(self, src, non_blocking);
@@ -3281,12 +3284,16 @@ at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, a
 at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
 at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
 at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
+
+at::Tensor& wrapper_NPU__zero_(at::Tensor& self) { return op_api::fill_(self, 0.0); }
+
 }  // namespace
 
 namespace at {
 
 TORCH_LIBRARY_IMPL(aten, XLA, m) {
-    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill_));
+    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill__Tensor));
+    m.impl("fill_.Scalar", TORCH_FN(wrapper_Tensor_fill__Scalar));
     m.impl("copy_", TORCH_FN(wrapper__copy_));
     m.impl("reshape", TORCH_FN(wrapper__view));
     m.impl("view", TORCH_FN(wrapper__view));
@@ -3320,6 +3327,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
     m.impl("dot", TORCH_FN(wrapper__dot));
     m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
+    m.impl("zero_", TORCH_FN(wrapper_NPU__zero_));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
