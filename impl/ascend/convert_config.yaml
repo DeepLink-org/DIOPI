@@ -142,12 +142,6 @@
 - diopiHardtanhBackward:
     dtype: (float64)->float32
 
-- diopiAdd:
-    dtype: (bool)->int32
-
-- diopiAddInp:
-    dtype: (bool)->int32
-
 - diopiMm:
     dtype: (float64)->float32
 
@@ -170,6 +164,9 @@
     dtype: (float32)->float64
 
 - diopiGroupNorm:
+    dtype: (float64)->float32
+
+- diopiGroupNormBackward:
     dtype: (float64)->float32
 
 - diopiSqrt:
