@@ -70,8 +70,6 @@ ascend:
 - diopiSinInp
 - diopiSlice
 - diopiSliceBackward
-- diopiSoftmax
-- diopiSoftmaxBackward
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
@@ -238,6 +236,8 @@ ascend_npu:
 - diopiIsNan
 - diopiRelu
 - diopiReluInp
+- diopiSoftmax
+- diopiSoftmaxBackward
 - diopiMul
 - diopiMulInp
 - diopiMulInpScalar
