@@ -25,7 +25,7 @@ std::string roundModeStr(diopiRoundMode_t roundMode) {
 diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       diopiRoundMode_t roundingMode) {
     BEGIN_CALL_ACL_OP(input, other, out);
-    if (mode.empty()) {
+    if (roundingMode == diopiRoundMode_t::RoundModeNone) {
         op_api::div_out(inputAt, otherAt, outAt);
     } else {
         std::string mode = roundModeStr(roundingMode);
@@ -36,7 +36,7 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
 diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, diopiRoundMode_t roundingMode) {
     BEGIN_CALL_ACL_OP(input, other);
-    if (mode.empty()) {
+    if (roundingMode == diopiRoundMode_t::RoundModeNone) {
         op_api::div_(inputAt, otherAt);
     } else {
         std::string mode = roundModeStr(roundingMode);
