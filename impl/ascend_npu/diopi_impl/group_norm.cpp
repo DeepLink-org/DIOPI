@@ -46,8 +46,8 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         std::array<bool, 3> gradInputMask = {true, true, true};
         EXEC_NPU_CMD(
             aclnnGroupNormBackward, gradOutputAt, inputAt, meanAt, rstdAt, weightAt, n, c, hw, numGroups, gradInputMask, gradInputAt, gradWeightAt, gradBiasAt);
-        END_CALL_ACL_OP();
     }
+    END_CALL_ACL_OP();
 }
 
 }  // namespace OP_IMPL_NS
