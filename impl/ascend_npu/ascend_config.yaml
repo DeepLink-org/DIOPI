@@ -73,10 +73,6 @@ ascend:
 - diopiThresholdInp
 - diopiTriu
 - diopiTriuInp
-- diopiUpsampleLinear
-- diopiUpsampleLinearBackward
-- diopiUpsampleNearest
-- diopiUpsampleNearestBackward
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiConvolution2d
@@ -233,6 +229,10 @@ ascend_npu:
 - diopiTopk
 - diopiTril
 - diopiUniformInp
+- diopiUpsampleLinear
+- diopiUpsampleLinearBackward
+- diopiUpsampleNearest
+- diopiUpsampleNearestBackward
 - diopiIsNan
 - diopiRelu
 - diopiReluInp
