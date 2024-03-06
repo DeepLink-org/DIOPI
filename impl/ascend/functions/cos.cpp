@@ -4,29 +4,29 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <set>
+#include "../aclnn/adaptor.hpp"
 
-#include "../common/acloprunner.hpp"
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    AclTensor inputAcl(input);
-    if (!inputAcl.defined() || inputAcl.numel() == 0) {
+    AscendTensor inputAt(input);
+    if (!inputAt.defined() || inputAt.numel() == 0) {
         return diopiSuccess;
     }
 
-    ACLNN_ADAPTOR(aclnnInplaceCos, ctx, inputAcl);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCos, ctx, inputAt);
     return diopiSuccess;
 }
 
 diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclTensor inputAcl(input), outAcl(out);
-    if (!inputAcl.defined() || inputAcl.numel() == 0) {
+    AscendTensor inputAt(input);
+    AscendTensor outAt(out);
+    if (!inputAt.defined() || inputAt.numel() == 0) {
         return diopiSuccess;
     }
 
-    ACLNN_ADAPTOR(aclnnCos, ctx, inputAcl, outAcl);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnCos, ctx, inputAt, outAt);
     return diopiSuccess;
 }
 

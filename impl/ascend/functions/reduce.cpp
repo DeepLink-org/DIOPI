@@ -21,7 +21,7 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         return diopiSuccess;
     }
     if (inputAt.dim() == 0) {
-        diopiCopyInp(ctx, input, out);
+        ::impl::ascend_npu::diopiCopyInp(ctx, input, out);
         return diopiSuccess;
     }
 

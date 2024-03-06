@@ -1,14 +1,21 @@
+
 /**
  * @file
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 
+diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, dest, src);
+    return diopiSuccess;
+}
+
+#if 0
 diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src, diopiTensorHandle_t dest) {
     int64_t numel = 0;
     diopiGetTensorNumel(src, &numel);
@@ -36,6 +43,7 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     }
     return diopiSuccess;
 }
+#endif
 
 }  // namespace ascend
 }  // namespace impl
