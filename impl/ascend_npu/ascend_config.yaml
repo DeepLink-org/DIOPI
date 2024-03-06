@@ -40,7 +40,6 @@ ascend:
 - diopiGtInp
 - diopiGtInpScalar
 - diopiGtScalar
-- diopiIsNan
 - diopiLayerNorm
 - diopiLayerNormBackward
 - diopiLe
@@ -235,6 +234,7 @@ ascend_npu:
 - diopiTopk
 - diopiTril
 - diopiUniformInp
+- diopiIsNan
 - diopiRelu
 - diopiReluInp
 - diopiMul
