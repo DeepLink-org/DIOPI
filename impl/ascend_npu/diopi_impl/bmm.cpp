@@ -17,11 +17,7 @@ diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         return diopiSuccess;
     }
     BEGIN_CALL_ACL_OP(input, mat2);
-    if (inputAt.dtype() != at::kDouble) {
-        op_api::bmm_out(inputAt, mat2At, outAt);
-    } else {
-        acl_op::bmm_out(inputAt, mat2At, outAt);
-    }
+    op_api::bmm_out(inputAt, mat2At, outAt);
     END_CALL_ACL_OP();
 }
 
