@@ -143,10 +143,16 @@
     dtype: (float64)->float32
 
 - diopiAdd:
-    dtype: (bool)->int32
+    layout: ND
 
 - diopiAddInp:
-    dtype: (bool)->int32
+    layout: ND
+
+- diopiAddScalar:
+    layout: ND
+
+- diopiAddInpScalar:
+    layout: ND
 
 - diopiMm:
     dtype: (float64)->float32
