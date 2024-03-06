@@ -1,5 +1,4 @@
 ascend:
-- diopiAny
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiClamp
@@ -80,7 +79,6 @@ ascend:
 - diopiSubInp
 - diopiSubInpScalar
 - diopiSubScalar
-- diopiSum
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
@@ -117,6 +115,7 @@ ascend_npu:
 - diopiAddcdivInp
 - diopiAddmm
 - diopiAll
+- diopiAny
 - diopiArange
 - diopiAtan
 - diopiAtanInp
@@ -183,6 +182,7 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiSigmoid
+- diopiSum
 - diopiSigmoidBackward
 - diopiSigmoidInp
 - diopiTanh
