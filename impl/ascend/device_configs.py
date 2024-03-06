@@ -741,14 +741,6 @@ device_configs = {
         rtol=5e-2,
         atol_half=5e-2,
         rtol_half=5e-2,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),],
-                },
-            ]
-        ),
     ),
 
     'unique': dict(
