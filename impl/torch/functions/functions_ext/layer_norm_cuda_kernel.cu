@@ -732,7 +732,7 @@ void HostApplyLayerNorm(V* output, U* mean, U* invvar, const T* input, int n1, i
     cuApplyLayerNorm<<<blocks, threads, nshared, stream>>>(output, mean, invvar, input, n1, n2, U(epsilon), gamma, beta);
 }
 
-template <typename T, typename U = float, typename V = T>
+template <typename T, typename U, typename V = T>
 void HostApplyRMSNorm(V* output, U* invvar, const T* input, int n1, int n2, double epsilon, const V* gamma) {
     auto stream = at::cuda::getCurrentCUDAStream().stream();
     const dim3 threads(32, 4, 1);
@@ -969,8 +969,8 @@ void cuda_rms_norm(at::Tensor* output, at::Tensor* invvar, at::Tensor* input, in
     using namespace at;
     DISPATCH_DOUBLE_FLOAT_HALF_AND_BFLOAT_INOUT_TYPES(
         input->scalar_type(), output->scalar_type(), "rms_norm_cuda_kernel", using accscalar_t = at::acc_type<scalar_t_in, true>;
-        HostApplyRMSNorm<scalar_t_in, float, scalar_t_out>(output->data_ptr<scalar_t_out>(),
-                                                                 invvar->data_ptr<float>(),
+        HostApplyRMSNorm<scalar_t_in, accscalar_t, scalar_t_out>(output->data_ptr<scalar_t_out>(),
+                                                                 invvar->data_ptr<accscalar_t>(),
                                                                  input->data_ptr<scalar_t_in>(),
                                                                  n1,
                                                                  n2,
@@ -1012,7 +1012,7 @@ void cuda_rms_norm_gradient(at::Tensor* dout, at::Tensor* invvar, at::Tensor* in
                                                       "cuComputeGradInputRMS",
                                                       using accscalar_t = at::acc_type<scalar_t_in, true>;
                                                       HostRMSNormGradient(dout->data_ptr<scalar_t_out>(),
-                                                                          invvar->data_ptr<float>(),
+                                                                          invvar->data_ptr<accscalar_t>(),
                                                                           input,
                                                                           n1,
                                                                           n2,
