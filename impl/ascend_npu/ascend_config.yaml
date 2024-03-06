@@ -1,5 +1,4 @@
 ascend:
-- diopiAny
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiClamp
@@ -19,13 +18,7 @@ ascend:
 - diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
-- diopiDiv
-- diopiDivInp
-- diopiDivInpScalar
-- diopiDivScalar
 - diopiDropout
-- diopiEmbedding
-- diopiEmbeddingBackward
 - diopiEq
 - diopiEqInp
 - diopiEqInpScalar
@@ -35,12 +28,10 @@ ascend:
 - diopiGeInp
 - diopiGeInpScalar
 - diopiGeScalar
-- diopiGroupNorm
 - diopiGt
 - diopiGtInp
 - diopiGtInpScalar
 - diopiGtScalar
-- diopiIsNan
 - diopiLayerNorm
 - diopiLayerNormBackward
 - diopiLe
@@ -87,7 +78,6 @@ ascend:
 - diopiSubInp
 - diopiSubInpScalar
 - diopiSubScalar
-- diopiSum
 - diopiTriu
 - diopiTriuInp
 - diopiUpsampleLinear
@@ -121,6 +111,7 @@ ascend_npu:
 - diopiAddcdivInp
 - diopiAddmm
 - diopiAll
+- diopiAny
 - diopiArange
 - diopiAtan
 - diopiAtanInp
@@ -133,11 +124,19 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiDiv
+- diopiDivInp
+- diopiDivInpScalar
+- diopiDivScalar
 - diopiCopyInp
+- diopiEmbedding
+- diopiEmbeddingBackward
 - diopiExpand
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
+- diopiGroupNorm
+- diopiGroupNormBackward
 - diopiLinspace
 - diopiRemainderTensor
 - diopiRemainderScalar
@@ -181,6 +180,7 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiSigmoid
+- diopiSum
 - diopiSigmoidBackward
 - diopiSigmoidInp
 - diopiTanh
@@ -232,6 +232,7 @@ ascend_npu:
 - diopiTopk
 - diopiTril
 - diopiUniformInp
+- diopiIsNan
 - diopiRelu
 - diopiReluInp
 - diopiMul
