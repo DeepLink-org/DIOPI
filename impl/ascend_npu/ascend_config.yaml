@@ -140,8 +140,8 @@ ascend_npu:
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
-- diopiGroup
-- diopiGroupBackward
+- diopiGroupNorm
+- diopiGroupNormBackward
 - diopiLinspace
 - diopiRemainderTensor
 - diopiRemainderScalar
