@@ -1541,10 +1541,6 @@ at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const 
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), format);
 }
 
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_without_format(empty_npu(src.sizes(), src.options())); }
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return empty_npu(sizes, src.options()); }
-at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return empty_npu(sizes, options); }
-
 at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, at::ScalarType scalar_data_type) {
     at::Tensor cpu_tensor = scalar_to_tensor(cpu_scalar).to(scalar_data_type);
     at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
