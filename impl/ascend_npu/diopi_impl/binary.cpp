@@ -84,8 +84,7 @@ diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other,
                             const diopiScalar_t* alpha) {
     BEGIN_CALL_ACL_OP(input, other, alpha, out);
-    op_api::add_out(inputAt, at::scalar_to_tensor(otherAt), alphaAt, outAt);
-    // EXEC_NPU_CMD(aclnnAdds, inputAt, otherAt, alpha, outAt);
+    EXEC_NPU_CMD(aclnnAdds, inputAt, otherAt, alphaAt, outAt);
     END_CALL_ACL_OP();
 }
 
