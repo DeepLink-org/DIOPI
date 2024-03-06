@@ -114,7 +114,7 @@ def reduce_op_process(input, dim=None, keepdim=False, dtype=None):
     if dim is None and keepdim:
         sizeO = [1 for i in range(0, size)]
     elif dim is not None:
-        dim_list = dim if isinstance(dim, list) else [dim]
+        dim_list = dim[:] if isinstance(dim, list) else [dim]
         for i in range(0, len(dim_list)):
             if dim_list[i] < 0:
                 dim_list[i] += size

@@ -56,19 +56,6 @@ device_configs = {
         ),
     ),
 
-    'relu_no_contiguous': dict(
-        name=["relu"],
-        is_inplace=True,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64)],
-                },
-            ],
-        ),
-    ),
-
     'gelu': dict(
         name=['gelu'],
         atol=1e-3,
@@ -225,30 +212,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),],
-                },
-            ]
-        ),
-    ),
-
-    'tanh': dict(
-        name=['tanh'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()), Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((16, 0)),Skip((1, 0, 6))],
-                },
-            ]
-        ),
-    ),
-
-    'tanh_not_float': dict(
-        name=['tanh'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()), Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((16, 0)),Skip((1, 0, 6)),],
                 },
             ]
         ),
@@ -423,18 +386,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
-
-    'leaky_relu': dict(
-        name=['leaky_relu'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),
@@ -790,14 +741,6 @@ device_configs = {
         rtol=5e-2,
         atol_half=5e-2,
         rtol_half=5e-2,
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float16),],
-                },
-            ]
-        ),
     ),
 
     'unique': dict(
@@ -1211,19 +1154,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
-                },
-            ],
-        ),
-    ),
-
-    'rotary_emb_empty_tensor': dict(
-        name=["rotary_emb"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "shape": (Skip((64,)),),
                 },
             ],
         ),
