@@ -49,6 +49,8 @@ ascend:
 - diopiLeScalar
 - diopiLinear
 - diopiLinearBackward
+- diopiLogSoftmax
+- diopiLogSoftmaxBackward
 - diopiLt
 - diopiLtInp
 - diopiLtInpScalar
