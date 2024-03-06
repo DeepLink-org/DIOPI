@@ -704,7 +704,7 @@ public:
     static at::Tensor ApplyTensorWithSizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return apply_tensor_with_sizes(sizes, options); }
     // DEPRECATED: CheckMemory will be deprecated, please use check_memory instead.
     static void CheckMemory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) { INTERFACE_NOT_IMPL; }
-    static bool IsCPUScalar(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.dim() == 0; }
+    static bool IsCPUScalar(const at::Tensor& tensor) { return tensor.is_cpu() && tensor.numel() == 1; }
 };  // namespace OpPreparation
 
 // Max size of discontiguous cases vector
