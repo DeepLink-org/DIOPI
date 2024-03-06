@@ -25,10 +25,10 @@ std::string roundModeStr(diopiRoundMode_t roundMode) {
 diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                       diopiRoundMode_t roundingMode) {
     BEGIN_CALL_ACL_OP(input, other, out);
-    std::string mode = roundModeStr(roundingMode);
     if (mode.empty()) {
         op_api::div_out(inputAt, otherAt, outAt);
     } else {
+        std::string mode = roundModeStr(roundingMode);
         op_api::div_out(inputAt, otherAt, mode, outAt);
     }
     END_CALL_ACL_OP();
@@ -36,10 +36,10 @@ diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
 diopiError_t diopiDivInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, diopiRoundMode_t roundingMode) {
     BEGIN_CALL_ACL_OP(input, other);
-    std::string mode = roundModeStr(roundingMode);
     if (mode.empty()) {
         op_api::div_(inputAt, otherAt);
     } else {
+        std::string mode = roundModeStr(roundingMode);
         op_api::div_(inputAt, otherAt, mode);
     }
     END_CALL_ACL_OP();
@@ -59,10 +59,10 @@ diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
 diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, diopiRoundMode_t roundingMode) {
     BEGIN_CALL_ACL_OP(input, other);
-    std::string mode = roundModeStr(roundingMode);
     if (mode.empty()) {
         op_api::div_(inputAt, otherAt);
     } else {
+        std::string mode = roundModeStr(roundingMode);
         op_api::div_(inputAt, otherAt, mode);
     }
     END_CALL_ACL_OP();
