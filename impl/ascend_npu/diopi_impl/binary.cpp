@@ -26,7 +26,7 @@ diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
     if (!inputAt.defined() || inputAt.numel() <= 0) {
         return diopiSuccess;
     }
-    op_api::add_out(inputAt, otherAt, alphaAt, inputAt);
+    op_api::add_(inputAt, otherAt, alphaAt);
     END_CALL_ACL_OP();
 }
 
