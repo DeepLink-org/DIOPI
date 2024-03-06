@@ -51,7 +51,7 @@ diopiError_t diopiDivScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     if (roundingMode == diopiRoundMode_t::RoundModeNone) {
         EXEC_NPU_CMD(aclnnDivs, inputAt, otherAt, outAt);
     } else {
-        int mode = static_cast<int>(roundingMode);
+        int mode = static_cast<int>(roundingMode);  // the mode of aclnn is matched with of diopiRoundMode_t
         EXEC_NPU_CMD(aclnnDivMods, inputAt, otherAt, mode, outAt);
     }
     END_CALL_ACL_OP();
