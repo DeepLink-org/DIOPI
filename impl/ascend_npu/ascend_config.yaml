@@ -30,10 +30,6 @@ ascend:
 - diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
-- diopiDiv
-- diopiDivInp
-- diopiDivInpScalar
-- diopiDivScalar
 - diopiDropout
 - diopiEmbedding
 - diopiEmbeddingBackward
@@ -163,6 +159,10 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
+- diopiDiv
+- diopiDivInp
+- diopiDivInpScalar
+- diopiDivScalar
 - diopiExpand
 - diopiFlip
 - diopiFloor
