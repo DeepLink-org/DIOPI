@@ -17,6 +17,7 @@
 #include "../../third_party/acl/inc/ge/ge_error_codes.h"
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
@@ -266,7 +267,29 @@ UnifiedResult OpPreparation::binary_op_check(at::Tensor& out, const at::Tensor& 
 void OpPreparation::check_memory(const std::initializer_list<at::Tensor>& inputs, const std::initializer_list<at::Tensor>& outputs) {
     c10::SmallVector<at::Tensor, N> in = inputs;
     c10::SmallVector<at::Tensor, N> out = outputs;
-    // CalcuOpUtil::CheckMemoryOverLaps(in, out);
+    CalcuOpUtil::CheckMemoryOverLaps(in, out);
+}
+
+static bool check_inplace_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst) {
+    bool is_inplace_tensor = false;
+    // check whether dst is contained in src_list
+    for (const auto& src : src_list) {
+        if (dst.is_same(src)) {
+            is_inplace_tensor = true;
+            break;
+        }
+    }
+    return is_inplace_tensor;
+}
+
+static void check_tensor_size(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) {
+    bool is_inplace = check_inplace_tensor(src_list, dst);
+    // Preserve legacy resizing behavior of out=... arguments
+    if (!dst.sizes().equals(expect_size)) {
+        TORCH_CHECK(!is_inplace, "output with shape ", dst.sizes(), " doesn't match the broadcast shape ", expect_size);
+        dst.resize_(expect_size);
+    }
+    return;
 }
 
 void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype,
@@ -274,7 +297,22 @@ void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_li
     check_memory(src_list, {dst});
     TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
     TORCH_CHECK(dst.scalar_type() == expect_dtype, "expected dtype ", expect_dtype, " but got dtype ", dst.scalar_type());
-    // check_tensor_size(src_list, dst, expect_size);
+    check_tensor_size(src_list, dst, expect_size);
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, c10::IntArrayRef expect_size) {
+    check_memory(src_list, {dst});
+    TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
+    check_tensor_size(src_list, dst, expect_size);
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor) {
+    check_tensor(src_list, dst, expect_tensor.scalar_type(), expect_tensor.sizes());
+}
+
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, const at::Tensor& expect_tensor,
+                                 c10::IntArrayRef expect_size) {
+    check_tensor(src_list, dst, expect_tensor.scalar_type(), expect_size);
 }
 
 void NpuUtils::format_fresh_view(at::Tensor& x, const at::Tensor& y) {
@@ -1482,6 +1520,16 @@ at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), fixFormat, keep_format);
 }
 
+inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return at_npu::native::empty_npu(sizes, options); }
+
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_use_empty(src.sizes(), src.options()); }
+
+at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor_use_empty(sizes, src.options()); }
+
+at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
+    return apply_tensor_use_empty(sizes, options);
+}
+
 at::Tensor OpPreparation::apply_tensor_with_sizes(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
     if (markedOutputs.size() > 0) {
         auto out = *markedOutputs.begin();
@@ -1510,23 +1558,6 @@ at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
     }
     TORCH_CHECK(diopiSuccess == ret);
     return impl::aten::buildATen(tensorDiopi);
-}
-
-inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
-    return NPUNativeFunctions::empty(c10::fromIntArrayRefUnchecked(sizes),
-                                     options.dtype().toScalarType(),
-                                     c10::nullopt,
-                                     at::Device(c10::DeviceType::PrivateUse1),
-                                     false,
-                                     c10::MemoryFormat::Contiguous);
-}
-
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src) { return apply_tensor_use_empty(src.sizes(), src.options()); }
-
-at::Tensor OpPreparation::apply_tensor_without_format(const at::Tensor& src, c10::IntArrayRef sizes) { return apply_tensor_use_empty(sizes, src.options()); }
-
-at::Tensor OpPreparation::apply_tensor_without_format(c10::IntArrayRef sizes, const c10::TensorOptions& options) {
-    return apply_tensor_use_empty(sizes, options);
 }
 
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
@@ -3113,7 +3144,9 @@ void unsetCurCtx() { context = nullptr; }
 
 namespace {
 
-at::Tensor& wrapper_Tensor_fill_(at::Tensor& self, const at::Tensor& value) { return acl_op::fill_(self, value); }
+at::Tensor& wrapper_Tensor_fill__Tensor(at::Tensor& self, const at::Tensor& value) { return op_api::fill_(self, value); }
+
+at::Tensor& wrapper_Tensor_fill__Scalar(at::Tensor& self, const c10::Scalar& value) { return op_api::fill_(self, value); }
 
 at::Tensor& wrapper__copy_(at::Tensor& self, const at::Tensor& src, bool non_blocking) {
     return at_npu::native::NPUNativeOpApiFunctions::copy_(self, src, non_blocking);
@@ -3251,12 +3284,16 @@ at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, a
 at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
 at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
 at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
+
+at::Tensor& wrapper_NPU__zero_(at::Tensor& self) { return op_api::fill_(self, 0.0); }
+
 }  // namespace
 
 namespace at {
 
 TORCH_LIBRARY_IMPL(aten, XLA, m) {
-    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill_));
+    m.impl("fill_.Tensor", TORCH_FN(wrapper_Tensor_fill__Tensor));
+    m.impl("fill_.Scalar", TORCH_FN(wrapper_Tensor_fill__Scalar));
     m.impl("copy_", TORCH_FN(wrapper__copy_));
     m.impl("reshape", TORCH_FN(wrapper__view));
     m.impl("view", TORCH_FN(wrapper__view));
@@ -3290,6 +3327,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
     m.impl("dot", TORCH_FN(wrapper__dot));
     m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
+    m.impl("zero_", TORCH_FN(wrapper_NPU__zero_));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
