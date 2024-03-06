@@ -243,7 +243,5 @@ ascend_npu:
 - diopiUniformInp
 - diopiRelu
 - diopiReluInp
-- diopiLogSoftmax
-- diopiLogSoftmaxBackward
 - diopiSoftmax
 - diopiSoftmaxBackward
