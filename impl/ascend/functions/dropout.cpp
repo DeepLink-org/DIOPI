@@ -69,7 +69,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
             dropoutTrainCore(ctx, out, mask, input, p, generator);
         }
     } else {
-        diopiCopyInp(ctx, input, out);
+        ::impl::ascend_npu::diopiCopyInp(ctx, input, out);
     }
     return diopiSuccess;
 }
@@ -79,7 +79,7 @@ diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     if (train) {
         diopiTensorHandle_t inputCopy;
         makeTensorLike(ctx, &inputCopy, input);
-        diopiCopyInp(ctx, input, inputCopy);
+        ::impl::ascend_npu::diopiCopyInp(ctx, input, inputCopy);
         diopiDropout(ctx, input, mask, inputCopy, p, train, generator);
     }
     return diopiSuccess;
