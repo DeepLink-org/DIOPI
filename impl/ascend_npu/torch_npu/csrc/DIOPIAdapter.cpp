@@ -291,6 +291,9 @@ static void check_tensor_size(const std::initializer_list<at::Tensor>& src_list,
     return;
 }
 
+void OpPreparation::check_tensor(const std::initializer_list<at::Tensor>& src_list, at::Tensor& dst, at::ScalarType expect_dtype,
+                                 c10::IntArrayRef expect_size) {
+    check_memory(src_list, {dst});
     TORCH_CHECK(torch_npu::utils::is_npu(dst), "output with device ", dst.device(), " doesn't match the desired device NPU");
     TORCH_CHECK(dst.scalar_type() == expect_dtype, "expected dtype ", expect_dtype, " but got dtype ", dst.scalar_type());
     check_tensor_size(src_list, dst, expect_size);
