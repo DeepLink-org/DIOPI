@@ -40,8 +40,6 @@ ascend:
 - diopiLeScalar
 - diopiLinear
 - diopiLinearBackward
-- diopiLogSoftmax
-- diopiLogSoftmaxBackward
 - diopiLt
 - diopiLtInp
 - diopiLtInpScalar
@@ -72,8 +70,6 @@ ascend:
 - diopiSinInp
 - diopiSlice
 - diopiSliceBackward
-- diopiSoftmax
-- diopiSoftmaxBackward
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
@@ -86,10 +82,6 @@ ascend:
 - diopiUpsampleNearestBackward
 - diopiBatchNorm
 - diopiBatchNormBackward
-- diopiAdd
-- diopiAddInp
-- diopiAddScalar
-- diopiAddInpScalar
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiRMSNorm
@@ -101,6 +93,10 @@ ascend:
 - diopiScatterInpScalar
 ascend_npu:
 - diopiWhere
+- diopiAdd
+- diopiAddInp
+- diopiAddScalar
+- diopiAddInpScalar
 - diopiAbs
 - diopiAbsInp
 - diopiAdaptiveAvgPool2d
@@ -201,6 +197,8 @@ ascend_npu:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
+- diopiLogSoftmax
+- diopiLogSoftmaxBackward
 - diopiMean
 - diopiMm
 - diopiArgmax
@@ -235,6 +233,8 @@ ascend_npu:
 - diopiIsNan
 - diopiRelu
 - diopiReluInp
+- diopiSoftmax
+- diopiSoftmaxBackward
 - diopiMul
 - diopiMulInp
 - diopiMulInpScalar
