@@ -289,8 +289,11 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
 }
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
-inline bool isBool(const diopiScalar_t* scalar) { return scalar->stype == 8; }
-inline bool isFloat(const diopiScalar_t* scalar) { return scalar->stype > 7; }
+inline bool isBool(const diopiScalar_t* scalar) { return scalar->stype == 11; }
+inline bool isFloat(const diopiScalar_t* scalar) {
+    diopiDtype_t type = scalar->stype;
+    return (type <= 10 && type >= 8) || type == 12 || type == 13;
+}
 
 inline at::Scalar buildATen(const diopiScalar_t* scalar) {
     if (scalar == nullptr) {
