@@ -823,6 +823,15 @@ device_configs = {
         para=dict(
             accumulate=[Skip(False),],
         ),
+        tensor_para=dict(
+            # When using aclnn and dtype is not double, the following input shapes will trigger the inner error of the broadcast
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((64, 4, 14, 14),),],
+                },
+            ],
+        ),
     ),
 
     'index_put_acc_two_indices': dict( # llm used
@@ -830,6 +839,16 @@ device_configs = {
         para=dict(
             accumulate=[Skip(False),],
         ),
+        tensor_para=dict(
+            # When using aclnn and dtype is not double, the following input shapes will trigger the inner error of the broadcast
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((16, 4, 4)), Skip((64, 4, 14, 14)),],
+                },
+            ],
+        ),
+        
     ),
 
     'index_put_acc_one_indices': dict( # llm used
