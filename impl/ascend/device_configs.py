@@ -922,20 +922,8 @@ device_configs = {
 
     'layer_norm': dict(
         name=['layer_norm'],
-        atol=1e-2,
-        rtol=1e-3,
-        para=dict(
-            eps=[Skip(2),],
-        ),
-        # temp for 910B
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
+        atol=1e-4,
+        rtol=1e-4,
     ),
 
     'copy': dict( # llm used

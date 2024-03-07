@@ -3277,7 +3277,8 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
     perms[dim1] = dim0;
     return acl_op::npu_transpose(self, perms);
 }
-
+at::Tensor& wrapper__zero_(at::Tensor& self) { return op_api::zero_(self); }
+at::Tensor& wrapper_Scalar_fill_(at::Tensor& self, const at::Scalar& value) { return op_api::fill_(self, value); }
 at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
 at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
 
@@ -3327,6 +3328,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
     m.impl("dot", TORCH_FN(wrapper__dot));
     m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
+    m.impl("fill_.Scalar", TORCH_FN(wrapper_Scalar_fill_));
     m.impl("zero_", TORCH_FN(wrapper_NPU__zero_));
 };
 

@@ -20,8 +20,6 @@ ascend:
 - diopiCrossEntropyLossBackward
 - diopiDropout
 - diopiGather
-- diopiLayerNorm
-- diopiLayerNormBackward
 - diopiLinear
 - diopiLinearBackward
 - diopiNormalScalarTensor
@@ -120,6 +118,8 @@ ascend_npu:
 - diopiRMSNorm
 - diopiRMSNormBackward
 - diopiCol2Im
+- diopiLayerNorm
+- diopiLayerNormBackward
 - diopiLog
 - diopiLog10
 - diopiLog10Inp
