@@ -3232,13 +3232,13 @@ at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return
 
 at::Tensor& wrapper__index_put_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate) {
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
-    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, false);
+    return op_api::_index_put_impl_(self, indicesCast, values, accumulate, false);
 }
 
 at::Tensor& wrapper___index_put_impl_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate,
                                       bool unsafe) {
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
-    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, unsafe);
+    return op_api::_index_put_impl_(self, indicesCast, values, accumulate, unsafe);
 }
 
 at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices) {

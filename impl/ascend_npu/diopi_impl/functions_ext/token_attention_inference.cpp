@@ -27,13 +27,13 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
         int curSeqLen = bSeqLenAt[i].item<int>();
         int curSeqStartLoc = bStartLocAt[i].item<int>();
         at::Tensor kLoc = op_api::index_select(bLocAt[i], 0, op_api::arange(maxInputLen - curSeqLen, maxInputLen, at::kInt, layout, device));
-        at::Tensor key = op_api::index(kAt, {kLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
+        at::Tensor key = at::index(kAt, {kLoc}).view({1, curSeqLen, head, dim}).transpose(1, 2);
         at::Tensor outLoc = op_api::arange(curSeqStartLoc, curSeqStartLoc + curSeqLen, at::kInt, layout, device);
         at::Tensor values =
-            (op_api::matmul(op_api::index(qAt, {torch::scalar_to_tensor(i)}).toType(at::kFloat), key.transpose(2, 3).toType(at::kFloat)) / std::sqrt(dim))
+            (op_api::matmul(at::index(qAt, {torch::scalar_to_tensor(i)}).toType(at::kFloat), key.transpose(2, 3).toType(at::kFloat)) / std::sqrt(dim))
                 .view({head, curSeqLen})
                 .toType(dtype);
-        op_api::index_put_(attentionOutAt, {at::Tensor(), outLoc}, values);
+        at::index_put_(attentionOutAt, {at::Tensor(), outLoc}, values);
     }
     END_CALL_ACL_OP();
 }

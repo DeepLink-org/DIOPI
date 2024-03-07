@@ -23,11 +23,11 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         int curBatchStartIndex = pCumsumSeqLenAt[i].item<int>();
         int curBatchEndIndex = pCumsumSeqLenAt[i + 1].item<int>();
         at::Tensor slice = op_api::arange(curBatchStartIndex, curBatchEndIndex, at::kLong, layout, device);
-        at::Tensor curTokenIds = op_api::index(pTokenIdsAt, {slice});
-        at::Tensor curTokenCounts = op_api::index(pTokenCountsAt, {slice});
+        at::Tensor curTokenIds = at::index(pTokenIdsAt, {slice});
+        at::Tensor curTokenCounts = at::index(pTokenCountsAt, {slice});
         at::Tensor curLogits = logitsAt[i].index_select(0, curTokenIds);
         curLogits = curLogits - curTokenCounts * frequencyPenaltyAt[i] - presencePenaltyAt[i];
-        op_api::index_put_(logitsAt, {torch::scalar_to_tensor(i), curTokenIds}, curLogits);
+        at::index_put_(logitsAt, {torch::scalar_to_tensor(i), curTokenIds}, curLogits);
     }
     END_CALL_ACL_OP();
 }

@@ -40,9 +40,9 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
         int start = bStartLocAt[i].item<int>();
         int end = start + bSeqLenAt[i].item<int>();
         at::Tensor slice = op_api::arange(start, end, at::kLong, layout, device);
-        at::Tensor values = torchContextAttention(
-            op_api::index(qAt, {slice}), op_api::index(kAt, {slice}), op_api::index(vAt, {slice}), 1, bSeqLenAt[i].item<int>(), head, dim);
-        op_api::index_put_(outAt, {slice}, values);
+        at::Tensor values =
+            torchContextAttention(at::index(qAt, {slice}), at::index(kAt, {slice}), at::index(vAt, {slice}), 1, bSeqLenAt[i].item<int>(), head, dim);
+        at::index_put_(outAt, {slice}, values);
     }
     END_CALL_ACL_OP();
 }
