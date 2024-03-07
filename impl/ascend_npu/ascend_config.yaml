@@ -24,10 +24,6 @@ ascend:
 - diopiLayerNormBackward
 - diopiLinear
 - diopiLinearBackward
-- diopiMaxAll
-- diopiMin
-- diopiMinAll
-- diopiMinimum
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -77,6 +73,10 @@ ascend_npu:
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
+- diopiMaxAll
+- diopiMin
+- diopiMinAll
+- diopiMinimum
 - diopiCastDtype
 - diopiCat
 - diopiCeil
