@@ -1,6 +1,54 @@
 - common_config:
     layout: NCHW
 
+- diopiAdd:
+    layout: ND
+
+- diopiAddInp:
+    layout: ND
+
+- diopiAddScalar:
+    layout: ND
+
+- diopiAddInpScalar:
+    layout: ND
+
+- diopiSub:
+    layout: ND
+    
+- diopiSubInp:
+    layout: ND
+
+- diopiSubScalar:
+    layout: ND
+
+- diopiSubInpScalar:
+    layout: ND
+
+- diopiMul:
+    layout: ND
+    
+- diopiMulInp:
+    layout: ND
+
+- diopiMulScalar:
+    layout: ND
+
+- diopiMulInpScalar:
+    layout: ND
+
+- diopiDiv:
+    layout: ND
+    
+- diopiDivInp:
+    layout: ND
+
+- diopiDivScalar:
+    layout: ND
+
+- diopiDivInpScalar:
+    layout: ND
+
 - diopiSoftmax:
     dtype: (float64)->float32
 
@@ -147,18 +195,23 @@
 
 - diopiAddmm:
     dtype: (float64)->float32
+    layout: ND
 
 - diopiAddcmul:
     dtype: (int16, uint16)->int32, (uint32, uint64)->int64, (float64)->float32
+    layout: ND
 
 - diopiAddcmulInp:
     dtype: (int16, uint16)->int32, (uint32, uint64)->int64, (float64)->float32
+    layout: ND
 
 - diopiAddcdiv:
     dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    layout: ND
 
 - diopiAddcdivInp:
     dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    layout: ND
 
 - diopiTopk:
     dtype: (float32)->float64
