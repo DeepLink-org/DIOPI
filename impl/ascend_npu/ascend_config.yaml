@@ -19,7 +19,6 @@ ascend:
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
 - diopiDropout
-- diopiGather
 - diopiLayerNorm
 - diopiLayerNormBackward
 - diopiLinear
@@ -87,6 +86,7 @@ ascend_npu:
 - diopiFlip
 - diopiFloor
 - diopiFloorInp
+- diopiGather
 - diopiGroupNorm
 - diopiGroupNormBackward
 - diopiLinspace
