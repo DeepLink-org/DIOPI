@@ -218,7 +218,10 @@ class CustomizedTest(object):
 
     def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g):
         sum_dy, sum_dy_xmu, grad_weight, grad_bias = torch.batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
-        out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
+        if input_g:
+            out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
+        else:
+            out = (None, None, grad_weight, grad_bias)
         return out
 
     def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count):
@@ -255,6 +258,15 @@ class CustomizedTest(object):
         out = weight * inp
 
         return (out, inv_rms)
+
+    def sort(input, dim, descending, stable=False):
+        # Skip compare while stable==False
+        sizeI = input.size()
+        sorted, indices = torch.sort(input, dim=dim, descending=descending, stable=stable)
+        if len(sizeI) > 0 and not stable:
+            return sorted
+        else:
+            return sorted, indices
 
     def multihead_attention(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
