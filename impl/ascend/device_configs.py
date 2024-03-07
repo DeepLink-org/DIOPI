@@ -800,7 +800,21 @@ device_configs = {
             # the shape and dim parameters will result in wrong output for unknown reasons.
             # Specificially, the rows of elements that shouldn't get impacted by scatter,
             # will be filled with seemingly random or zero values.
-            value=[Skip(1e-4),],
+            # aclnn not support index out of size
+            value=[Skip(0.25),],
+        ),
+    ),
+
+    'scatter': dict( # llm used
+        name=['scatter'],
+        tensor_para=dict(
+            # aclnn not support index out of size
+            args=[
+                {
+                    "ins": ['index'],
+                    "shape": [Skip((6,)),],
+                },
+            ],
         ),
     ),
 

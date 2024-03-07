@@ -44,10 +44,6 @@ ascend:
 - diopiRMSNorm
 - diopiRMSNormBackward
 - diopiSplitWithSizes
-- diopiScatter
-- diopiScatterInp
-- diopiScatterScalar
-- diopiScatterInpScalar
 ascend_npu:
 - diopiWhere
 - diopiAdd
@@ -220,6 +216,10 @@ ascend_npu:
 - diopiPermute
 - diopiReciprocal
 - diopiReciprocalInp
+- diopiScatter
+- diopiScatterInp
+- diopiScatterScalar
+- diopiScatterInpScalar
 - diopiSgn
 - diopiSgnInp
 - diopiSort

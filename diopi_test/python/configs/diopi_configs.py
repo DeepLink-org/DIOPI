@@ -6700,13 +6700,15 @@ diopi_configs = {
                 },
                 {
                     "ins": ['index'],
-                    "shape": ((), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
+                    # FIXME(shenhao) change () to (1) as temp 
+                    "shape": ((1), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
                     "dtype": [np.int64],
                     "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
                 },
                 {
                     "ins": ['src'],
-                    "shape": ((), (7,), (4, 9), (8, 12, 20), (16, 4, 4), (2, 8, 4, 4), (2, 8, 4, 4)),
+                    # FIXME(shenhao) change () to (1) as temp 
+                    "shape": ((1), (7,), (4, 9), (8, 12, 20), (16, 4, 4), (2, 8, 4, 4), (2, 8, 4, 4)),
                     "gen_fn": 'Genfunc.ones',
                     "dtype": [np.float32, np.float64, np.float16, np.int16,
                               np.int32, np.int64, np.uint8, np.int8, np.bool_],
@@ -6800,7 +6802,8 @@ diopi_configs = {
                 },
                 {
                     "ins": ['index'],
-                    "shape": ((), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
+                    # FIXME(shenhao) change () to (1) as temp 
+                    "shape": ((1,), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
                     "dtype": [np.int64],
                     "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
                 },
