@@ -8230,10 +8230,10 @@ diopi_configs = {
         name=['rms_norm'],
         atol=1e-4,
         rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-1,
         interface=['CustomizedTest'],
-        # FIXME fp16报错
-        # dtype=[np.float16, np.float32, np.float64],
-        dtype=[np.float32, np.float64],
+        dtype=[np.float16, np.float32, np.float64],
         para=dict(
             eps=[1e-4, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2],
             # FIXME normalized_shape输入1-d以上时，精度不一致

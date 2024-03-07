@@ -275,6 +275,16 @@
 - diopiRemainder:
     dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
 
+- diopiRMSNorm:
+    dtype: (float64)->float32
+    tensor_dtype:
+        inv_rms: (float16, float64)->float32
+
+- diopiRMSNormBackward:
+    dtype: (float64)->float32
+    tensor_dtype:
+        inv_rms: (float16, float64)->float32
+
 - diopiHardswish:
     # data type DT_DOUBLE of input [x] is not supported
     dtype: (float64)->float32
