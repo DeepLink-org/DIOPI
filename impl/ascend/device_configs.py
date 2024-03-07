@@ -1280,9 +1280,34 @@ device_configs = {
             other=[Skip(False),],
         ),
     ),
+
     'nll_loss': dict(
         name=["nll_loss"],
         atol=1e-4,
         rtol=1e-3,
+    ),
+
+    'gather_0dim': dict(
+        name=["gather"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['index'],
+                    "shape": [Skip(15,),],
+                },
+            ],
+        )
+    ),
+
+    'gather': dict(
+        name=["gather"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['index'],
+                    "shape": [Skip(),],
+                },
+            ],
+        )
     )
 }
