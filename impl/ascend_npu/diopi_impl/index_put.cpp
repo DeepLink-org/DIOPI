@@ -5,7 +5,6 @@
  */
 
 #include "helper.hpp"
-#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 
 namespace OP_IMPL_NS {
@@ -20,7 +19,7 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     }
 
     outAt.copy_(inputAt);
-    op_api::index_put_(outAt, indicesAtList, valuesAt, accumulate);
+    at::index_put_(outAt, indicesAtList, valuesAt, accumulate);
     END_CALL_ACL_OP();
 }
 
@@ -33,7 +32,7 @@ diopiError_t diopiIndexPutInp(diopiContextHandle_t ctx, diopiTensorHandle_t inpu
         indicesAtList.emplace_back(impl::aten::buildATen(indices[i]));
     }
 
-    op_api::index_put_(inputAt, indicesAtList, valuesAt, accumulate);
+    at::index_put_(inputAt, indicesAtList, valuesAt, accumulate);
     END_CALL_ACL_OP();
 }
 
