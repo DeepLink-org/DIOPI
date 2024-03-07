@@ -36,6 +36,36 @@ inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; 
 AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
 #undef ENUM_PAIR_FUNC
 
+#if DIOPI_TORCH_VERSION >= 20100
+#define AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(_)    \
+    _(at::ScalarType::Byte, ACL_UINT8)                 \
+    _(at::ScalarType::Char, ACL_INT8)                  \
+    _(at::ScalarType::Short, ACL_INT16)                \
+    _(at::ScalarType::Int, ACL_INT32)                  \
+    _(at::ScalarType::Long, ACL_INT64)                 \
+    _(at::ScalarType::Half, ACL_FLOAT16)               \
+    _(at::ScalarType::Float, ACL_FLOAT)                \
+    _(at::ScalarType::Double, ACL_DOUBLE)              \
+    _(at::ScalarType::ComplexHalf, ACL_COMPLEX32)      \
+    _(at::ScalarType::ComplexFloat, ACL_COMPLEX64)     \
+    _(at::ScalarType::ComplexDouble, ACL_COMPLEX128)   \
+    _(at::ScalarType::Bool, ACL_BOOL)                  \
+    _(at::ScalarType::QInt8, ACL_DT_UNDEFINED)         \
+    _(at::ScalarType::QUInt8, ACL_DT_UNDEFINED)        \
+    _(at::ScalarType::QInt32, ACL_DT_UNDEFINED)        \
+    _(at::ScalarType::BFloat16, ACL_BF16)              \
+    _(at::ScalarType::QUInt4x2, ACL_DT_UNDEFINED)      \
+    _(at::ScalarType::QUInt2x4, ACL_DT_UNDEFINED)      \
+    _(at::ScalarType::Bits1x8, ACL_DT_UNDEFINED)       \
+    _(at::ScalarType::Bits2x4, ACL_DT_UNDEFINED)       \
+    _(at::ScalarType::Bits4x2, ACL_DT_UNDEFINED)       \
+    _(at::ScalarType::Bits8, ACL_DT_UNDEFINED)         \
+    _(at::ScalarType::Bits16, ACL_DT_UNDEFINED)        \
+    _(at::ScalarType::Float8_e5m2, ACL_DT_UNDEFINED)   \
+    _(at::ScalarType::Float8_e4m3fn, ACL_DT_UNDEFINED) \
+    _(at::ScalarType::Undefined, ACL_DT_UNDEFINED)     \
+    _(at::ScalarType::NumOptions, ACL_DT_UNDEFINED)
+#else
 #define AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(_)  \
     _(at::ScalarType::Byte, ACL_UINT8)               \
     _(at::ScalarType::Char, ACL_INT8)                \
@@ -57,6 +87,7 @@ AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
     _(at::ScalarType::QUInt2x4, ACL_DT_UNDEFINED)    \
     _(at::ScalarType::Undefined, ACL_DT_UNDEFINED)   \
     _(at::ScalarType::NumOptions, ACL_DT_UNDEFINED)
+#endif
 
 constexpr aclDataType kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(at::ScalarType::NumOptions) + 1] = {
 #define DEFINE_ENUM(_1, n) n,
@@ -1148,9 +1179,9 @@ void assert_no_partial_overlap(const at::Tensor& tensora, const at::Tensor& tens
         return;
     }
     if (a->storage().data() == b->storage().data()) {
-        const auto a_begin = static_cast<char*>(a->data());
+        const auto a_begin = static_cast<const char*>(a->data());
         const auto a_end = a_begin + a->numel() * static_cast<int64_t>(a->itemsize());
-        const auto b_begin = static_cast<char*>(b->data());
+        const auto b_begin = static_cast<const char*>(b->data());
         const auto b_end = b_begin + b->numel() * static_cast<int64_t>(b->itemsize());
         if (a_begin == b_begin && a_end == b_end) {
             return;
@@ -1179,25 +1210,25 @@ NPUStatus CalcuOpUtil::AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t>& ds
                                         aclrtMemcpyKind kind) {
     void* dst_ptr = reinterpret_cast<uint8_t*>(dst.first.data_ptr()) + dst.second * dst.first.itemsize();
     void* src_ptr = reinterpret_cast<uint8_t*>(src.first.data_ptr()) + src.second * src.first.itemsize();
-    c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
-    NPU_CHECK_ERROR(aclrtMemcpyAsync(dst_ptr, dst_size, src_ptr, src_size, kind, stream));
+    NPU_CHECK_ERROR(c10_npu::queue::LaunchAsyncCopyTask(dst_ptr, dst_size, const_cast<void*>(src_ptr), src_size, kind));
+
     return "SUCCESS";
 }
 
 aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count,
                                                 aclrtMemcpyKind kind) {
-    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(dst.first->data()) + dst.second);
-    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(src.first->data()) + src.second);
+    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(const_cast<void*>(dst.first->data())) + dst.second);
+    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(const_cast<void*>(src.first->data())) + src.second);
     return AclrtMemcpyParamCheck(dst_ptr, dstMax, const_cast<void*>(src_ptr), count, kind);
 }
 
 aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const void* src, size_t count, aclrtMemcpyKind kind) {
-    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(dst.first->data()) + dst.second);
+    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(const_cast<void*>(dst.first->data())) + dst.second);
     return AclrtMemcpyParamCheck(dst_ptr, dstMax, src, count, kind);
 }
 
 aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(void* dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count, aclrtMemcpyKind kind) {
-    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(src.first->data()) + src.second);
+    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(const_cast<void*>(src.first->data())) + src.second);
     return AclrtMemcpyParamCheck(dst, dstMax, const_cast<void*>(src_ptr), count, kind);
 }
 
@@ -3207,7 +3238,11 @@ at::Tensor& wrapper_source_Storage_set_(at::Tensor& self, at::Storage src) {
     auto* selfImpl = self.unsafeGetTensorImpl();
     auto storage = selfImpl->unsafe_storage();
     auto storageImpl = storage.unsafeGetStorageImpl();
+#if DIOPI_TORCH_VERSION >= 20100
+    storageImpl->set_data_ptr(std::move(src.mutable_data_ptr()));
+#else
     storageImpl->set_data_ptr(std::move(src.data_ptr()));
+#endif
     return self;
 }
 
@@ -3216,7 +3251,11 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     auto* selfImpl = self.unsafeGetTensorImpl();
     auto storage = selfImpl->unsafe_storage();
     auto storageImpl = storage.unsafeGetStorageImpl();
+#if DIOPI_TORCH_VERSION >= 20100
+    storageImpl->set_data_ptr(std::move(source.mutable_data_ptr()));
+#else
     storageImpl->set_data_ptr(std::move(source.data_ptr()));
+#endif
     selfImpl->set_storage_offset(storage_offset);
     if (stride.size() > 0) {
         selfImpl->set_sizes_and_strides(size, stride);
