@@ -3057,7 +3057,9 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     at::IntArrayRef atStrides(stride.data, stride.len);
 
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
-    return fromPreAllocated(data, atDims, atStrides, options);
+    at::Tensor out = fromPreAllocated(data, atDims, atStrides, options);
+    torch_npu::NPUBridge::GetNpuStorageImpl(out)->npu_desc_.diopi_tensor_ = const_cast<diopiTensorHandle_t>(tensor);
+    return out;
 }
 
 at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
