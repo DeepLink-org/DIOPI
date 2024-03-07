@@ -2647,7 +2647,7 @@ OpCommand& OpCommand::AddTensorInput(at::Tensor& tensor, at::ScalarType forceSca
     }
     std::tuple<aclTensorDesc*, aclDataBuffer*> res;
     if (commonType.has_value() && commonType.value() != tensor.scalar_type()) {
-        tensor = acl_op::npu_dtype_cast(tensor, commonType.value());
+        tensor = op_api::npu_dtype_cast(tensor, commonType.value());
     }
 
     if (tensor.sizes().size() == 0) {
@@ -2767,7 +2767,7 @@ OpCommand& OpCommand::Output(at::Tensor& output, const string& descName, const c
         std::cout << aclCmd->GetName() << ":descName:" << descName << ",output:" << impl::aten::dumpArgs(output) << std::endl;
     }
     if (resultTypeDefined == false && commonType.has_value() && commonType.value() != output.scalar_type()) {
-        output = acl_op::npu_dtype_cast(output, commonType.value());
+        output = op_api::npu_dtype_cast(output, commonType.value());
     }
     auto res = CovertToAclOutput(output, realType);
     aclCmd->AddOutput(std::get<0>(res), std::get<1>(res));
