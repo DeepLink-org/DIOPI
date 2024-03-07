@@ -24,6 +24,9 @@ ascend:
 - diopiLayerNormBackward
 - diopiLinear
 - diopiLinearBackward
+- diopiNormalScalarTensor
+- diopiNormalTensor
+- diopiNormalTensorScalar
 - diopiOneHot
 - diopiSin
 - diopiSinInp
@@ -45,7 +48,6 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
-- diopiNormalTensor
 ascend_npu:
 - diopiWhere
 - diopiAdd
@@ -116,8 +118,6 @@ ascend_npu:
 - diopiMultinomial
 - diopiNormal
 - diopiNormalInp
-- diopiNormalScalarTensor
-- diopiNormalTensorScalar
 - diopiNorm
 - diopiMaxPool2dWithIndices
 - diopiProd
