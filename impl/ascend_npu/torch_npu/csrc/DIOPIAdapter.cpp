@@ -2897,11 +2897,9 @@ std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t in
     return ret;
 }
 
-thread_local static at::Generator gDiopiGenerator[16];
-
 namespace detail {
 
-const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { return gDiopiGenerator[device_index]; }
+const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL; }
 
 }  // namespace detail
 
@@ -3080,11 +3078,9 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 #endif
 
 at::Generator buildATen(diopiGeneratorHandle_t generator) {
-    int64_t currentDeviceIndex = current_device();
-    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(currentDeviceIndex);
+    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
     auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
     impl->generator_ = generator;
-    at_npu::gDiopiGenerator[currentDeviceIndex] = gen;
     return gen;
 }
 

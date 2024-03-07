@@ -91,6 +91,10 @@ diopiError_t diopiScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DiopiTensor inputTensor(input);
     DiopiTensor srcTensor(src);
     DiopiTensor indexTensor(index);
+    if (indexTensor.dim() == 0) {
+        diopiCopyInp(ctx, inputTensor.tensorHandle(), outTensor.tensorHandle());
+        return diopiSuccess;
+    }
 
     DIOPI_CALL(scatter(ctx, outTensor, inputTensor, dim, srcTensor, indexTensor, reduce));
     return diopiSuccess;
@@ -105,6 +109,9 @@ diopiError_t diopiScatterInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     DiopiTensor inputTensor(input);
     DiopiTensor srcTensor(src);
     DiopiTensor indexTensor(index);
+    if (indexTensor.dim() == 0) {
+        return diopiSuccess;
+    }
 
     DIOPI_CALL(scatter(ctx, outTensor, inputTensor, dim, srcTensor, indexTensor, reduce));
     return diopiSuccess;
@@ -119,6 +126,10 @@ diopiError_t diopiScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     DiopiTensor inputTensor(input);
     DiopiTensor indexTensor(index);
     DiopiTensor srcTensor = requiresTensor(ctx, indexTensor.shape(), inputTensor.dtype());
+    if (indexTensor.dim() == 0) {
+        diopiCopyInp(ctx, inputTensor.tensorHandle(), outTensor.tensorHandle());
+        return diopiSuccess;
+    }
 
     diopiTensorHandle_t src = srcTensor.tensorHandle();
     DIOPI_CALL(diopiFill(ctx, src, value));
@@ -135,6 +146,9 @@ diopiError_t diopiScatterInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     DiopiTensor inputTensor(input);
     DiopiTensor indexTensor(index);
     DiopiTensor srcTensor = requiresTensor(ctx, indexTensor.shape(), inputTensor.dtype());
+    if (indexTensor.dim() == 0) {
+        return diopiSuccess;
+    }
 
     diopiTensorHandle_t src = srcTensor.tensorHandle();
     DIOPI_CALL(diopiFill(ctx, src, value));

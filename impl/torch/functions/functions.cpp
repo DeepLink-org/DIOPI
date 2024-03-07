@@ -3669,6 +3669,9 @@ diopiError_t diopiScatterInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     auto atInput = impl::aten::buildATen(input);
     auto atSrc = impl::aten::buildATen(src);
     auto atIndex = impl::aten::buildATen(index);
+    if (atIndex.dim() == 0) {
+        return diopiSuccess;
+    }
     at::Tensor atOut;
     if (0 == strcmp(reduce, "add") || 0 == strcmp(reduce, "multiply")) {
         c10::string_view atReduce(reduce, strlen(reduce));
@@ -3686,6 +3689,9 @@ diopiError_t diopiScatterInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     auto atInput = impl::aten::buildATen(input);
     auto atValue = impl::aten::buildAtScalar(value);
     auto atIndex = impl::aten::buildATen(index);
+    if (atIndex.dim() == 0) {
+        return diopiSuccess;
+    }
     at::Tensor atOut;
     if (0 == strcmp(reduce, "add") || 0 == strcmp(reduce, "multiply")) {
         c10::string_view atReduce(reduce, strlen(reduce));
@@ -3704,6 +3710,10 @@ diopiError_t diopiScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atSrc = impl::aten::buildATen(src);
     auto atIndex = impl::aten::buildATen(index);
     auto atOut = impl::aten::buildATen(out);
+    if (atIndex.dim() == 0) {
+        atOut.copy_(atInput);
+        return diopiSuccess;
+    }
     if (0 == strcmp(reduce, "add") || 0 == strcmp(reduce, "multiply")) {
         c10::string_view atReduce(reduce, strlen(reduce));
         at::scatter_out(atOut, atInput, dim, atIndex, atSrc, atReduce);
@@ -3721,6 +3731,10 @@ diopiError_t diopiScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto atValue = impl::aten::buildAtScalar(value);
     auto atIndex = impl::aten::buildATen(index);
     auto atOut = impl::aten::buildATen(out);
+    if (atIndex.dim() == 0) {
+        atOut.copy_(atInput);
+        return diopiSuccess;
+    }
     if (0 == strcmp(reduce, "add") || 0 == strcmp(reduce, "multiply")) {
         c10::string_view atReduce(reduce, strlen(reduce));
         at::scatter_out(atOut, atInput, dim, atIndex, atValue, atReduce);
