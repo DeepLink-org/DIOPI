@@ -51,7 +51,8 @@ def parse_args():
     gen_data_args.add_argument(
         "--fname",
         type=str,
-        default="all_ops",
+        default=["all_ops"],
+        nargs="*",
         help="the name of the function for which the test will run (default: all_ops)",
     )
     gen_data_args.add_argument(
