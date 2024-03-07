@@ -44,46 +44,6 @@ static diopiError_t ascendNpuDropoutOut(at::Tensor& out, at::Tensor& mask, const
     return diopiSuccess;
 }
 
-static diopiError_t ascendNpuDropout2dOut(at::Tensor& out, at::Tensor& mask, const at::Tensor& input, double p, at::Generator gen) {
-    DIOPI_CHECK(GetOpApiFuncAddr("aclnnDropoutGenMask"
-                                 "GetWorkspaceSize") != nullptr &&
-                    GetOpApiFuncAddr("aclnnDropoutGenMask") != nullptr,
-                "[DIOPI][Ascend] aclnnDropoutGenMask not find, check it supported by AscendCL");
-    DIOPI_CHECK(GetOpApiFuncAddr("aclnnDropoutDoMask"
-                                 "GetWorkspaceSize") != nullptr &&
-                    GetOpApiFuncAddr("aclnnDropoutDoMask") != nullptr,
-                "[DIOPI][Ascend] aclnnDropoutDoMask not find, check it supported by AscendCL");
-    DIOPI_CHECK(GetOpApiFuncAddr("aclnnMuls"
-                                 "GetWorkspaceSize") != nullptr &&
-                    GetOpApiFuncAddr("aclnnMuls") != nullptr,
-                "[DIOPI][Ascend] aclnnMuls not find, check it supported by AscendCL");
-    DIOPI_CHECK(GetOpApiFuncAddr("aclnnNeScalar"
-                                 "GetWorkspaceSize") != nullptr &&
-                    GetOpApiFuncAddr("aclnnNeScalar") != nullptr,
-                "[DIOPI][Ascend] aclnnNeScalar not find, check it supported by AscendCL");
-    auto input2d = op_api::ones_like(mask, input.scalar_type());
-    auto out2d = op_api::zeros_like(mask, input.scalar_type());
-
-    int64_t length = (input2d.numel() + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
-    at::Tensor maskNpu = at_npu::native::OpPreparation::apply_tensor_without_format({length}, input2d.options().dtype(at::kByte));
-    at::IntArrayRef shapeArray(input2d.sizes());
-
-    auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
-    const uint64_t seed = pair.first;
-    const uint64_t offset = pair.second;
-
-    EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, p, seed, offset, maskNpu);
-    EXEC_NPU_CMD(aclnnDropoutDoMask, input2d, maskNpu, p, out2d);
-
-    EXEC_NPU_CMD(aclnnMuls, input, out2d, out);
-
-    at::Scalar ref(0.0);
-    at_npu::native::OpPreparation::check_tensor({out}, mask, mask.scalar_type(), out.sizes());
-    EXEC_NPU_CMD(aclnnNeScalar, out, ref, mask);
-
-    return diopiSuccess;
-}
-
 diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, bool train,
                           diopiGeneratorHandle_t generator) {
     BEGIN_CALL_ACL_OP(out, input, mask, generator);
@@ -103,7 +63,10 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     }
 
     if (inputAt.sizes() != maskAt.sizes()) {
-        ascendNpuDropout2dOut(outAt, maskAt, inputAt, p, generatorAt);
+        auto input2d = op_api::ones_like(maskAt, inputAt.scalar_type());
+        auto results = op_api::_npu_dropout(input2d, p);
+        op_api::mul_out(inputAt, std::get<0>(results), outAt);
+        op_api::ne_out(std::get<0>(results), c10::Scalar(0), maskAt);
     } else {
         ascendNpuDropoutOut(outAt, maskAt, inputAt, p, generatorAt);
     }
@@ -127,7 +90,10 @@ diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
         END_CALL_ACL_OP();
     }
     if (inputAt.sizes() != maskAt.sizes()) {
-        ascendNpuDropout2dOut(inputAt, maskAt, inputAt, p, generatorAt);
+        auto input2d = op_api::ones_like(maskAt, inputAt.scalar_type());
+        auto results = op_api::_npu_dropout(input2d, p);
+        op_api::mul_(inputAt, std::get<0>(results));
+        op_api::ne_out(std::get<0>(results), c10::Scalar(0), maskAt);
     } else {
         ascendNpuDropoutOut(inputAt, maskAt, inputAt, p, generatorAt);
     }
