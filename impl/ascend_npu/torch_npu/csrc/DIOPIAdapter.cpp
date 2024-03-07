@@ -3289,7 +3289,7 @@ at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& sourc
 at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return op_api::bmm_out(self, mat2, out); }
 at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return op_api::dot(self, tensor); }
 
-at::Tensor& wrapper_NPU__zero_(at::Tensor& self) { return op_api::fill_(self, 0.0); }
+at::Tensor& wrapper__zero_(at::Tensor& self) { return op_api::zero_(self); }
 
 }  // namespace
 
@@ -3331,7 +3331,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
     m.impl("dot", TORCH_FN(wrapper__dot));
     m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
-    m.impl("zero_", TORCH_FN(wrapper_NPU__zero_));
+    m.impl("zero_", TORCH_FN(wrapper__zero_));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
