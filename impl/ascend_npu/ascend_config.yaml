@@ -6,7 +6,6 @@ ascend:
 - diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
-- diopiDropout
 - diopiGather
 - diopiLayerNorm
 - diopiLayerNormBackward
@@ -68,6 +67,7 @@ ascend_npu:
 - diopiDivInp
 - diopiDivInpScalar
 - diopiDivScalar
+- diopiDropout
 - diopiCopyInp
 - diopiEmbedding
 - diopiEmbeddingBackward
