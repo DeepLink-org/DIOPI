@@ -115,6 +115,11 @@ inline int debugLevel() {
     }                                                                                             \
     return diopiSuccess;
 
+#define RETURN_IF_EMPTY_TENSOR(x)           \
+    if (x == nullptr || xAt.numel() <= 0) { \
+        return diopiSuccess;                \
+    }
+
 inline void logError() { std::cerr << std::endl; }
 
 template <typename First, typename... Rest>
