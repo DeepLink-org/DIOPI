@@ -1281,7 +1281,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['index'],
-                    "shape": [Skip(15,),],
+                    "shape": [Skip((15,)),],
                 },
             ],
         )
