@@ -18,6 +18,7 @@
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
@@ -3279,7 +3280,10 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
     std::iota(perms.begin(), perms.end(), 0);
     perms[dim0] = dim1;
     perms[dim1] = dim0;
-    return acl_op::npu_transpose(self, perms);
+    auto outputSize = op_infer::transpose_npu_output_size(self, perms);
+    at::Tensor output = at_npu::native::OpPreparation::apply_tensor(self, outputSize);
+    EXEC_NPU_CMD(aclnnPermute, self, perms, output);
+    return output;
 }
 
 at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
