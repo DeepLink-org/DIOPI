@@ -3247,7 +3247,7 @@ at::Tensor& wrapper___index_put_impl_(at::Tensor& self, const c10::List<c10::opt
 
 at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices) {
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
-    return acl_op::index(self, indicesCast);
+    return op_api::index(self, indicesCast);
 }
 
 at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return op_api::bmm(self, mat2); }
@@ -3276,14 +3276,14 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
     int64_t inputSize = self.dim();
     if (dim0 < 0) dim0 = dim0 + inputSize;
     if (dim1 < 0) dim1 = dim1 + inputSize;
-    std::vector<int64_t> perms(inputSize);
-    std::iota(perms.begin(), perms.end(), 0);
-    perms[dim0] = dim1;
-    perms[dim1] = dim0;
-    auto outputSize = op_infer::transpose_npu_output_size(self, perms);
+    std::vector<int64_t> dims(inputSize);
+    std::iota(dims.begin(), dims.end(), 0);
+    dims[dim0] = dim1;
+    dims[dim1] = dim0;
+    auto outputSize = op_infer::transpose_npu_output_size(self, dims);
     at::Tensor output = at_npu::native::OpPreparation::apply_tensor(self, outputSize);
-    at::IntArrayRef permsAt(perms);
-    EXEC_NPU_CMD(aclnnPermute, self, permsAt, output);
+    at::IntArrayRef dimsAt(dims);
+    EXEC_NPU_CMD(aclnnPermute, self, dimsAt, output);
     return output;
 }
 
