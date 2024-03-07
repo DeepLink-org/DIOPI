@@ -8233,8 +8233,6 @@ diopi_configs = {
         atol_half=1e-1,
         rtol_half=1e-1,
         interface=['CustomizedTest'],
-        # 当前使用7.0.0版本的ascendnpu接入，仅支持inv为fp32，同时input仅支持fp16和fp32.
-        # 关于inv。在nv上fp16的输入对应fp32的inv
         dtype=[np.float16, np.float32, np.float64],
         para=dict(
             eps=[1e-4, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2],
