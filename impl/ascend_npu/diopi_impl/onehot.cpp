@@ -21,7 +21,7 @@ diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     TORCH_CHECK(depth >= authDepth, "NPU error, not yet support negative num_classes, when num_classes less than -1");
     TORCH_CHECK(inputAt.numel() != 0 || numClasses > minNumClass, "NPU error, can not infer total number of classes from empty tensor.");
     if (depth == authDepth) {
-        depth = inputAt.max().item().toLong() + 1;
+        depth = op_api::max(inputAt).item().toLong() + 1;
         if (depth < minDepth) {
             depth = minDepth;
         }
