@@ -6,6 +6,7 @@
 
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 
 namespace OP_IMPL_NS {
 
@@ -19,7 +20,7 @@ diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
     at_npu::native::OpPreparation::markAsOutputForApplyTensor(runningMeanAt);
     at_npu::native::OpPreparation::markAsOutputForApplyTensor(runningVarAt);
-    acl_op::native_batch_norm_out(inputAt, weightAt, biasAt, runningMeanAt, runningVarAt, training, momentum, eps, outAt, saveMeanAt, saveInvstdAt);
+    op_api::native_batch_norm_out(inputAt, weightAt, biasAt, runningMeanAt, runningVarAt, training, momentum, eps, outAt, saveMeanAt, saveInvstdAt);
     END_CALL_ACL_OP();
 }
 

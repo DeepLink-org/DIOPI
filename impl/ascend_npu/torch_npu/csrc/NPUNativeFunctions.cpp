@@ -2,6 +2,18 @@
 
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
+
+namespace op_api {
+
+at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
+    at::ScalarType dtype = self.scalar_type();
+    EXEC_NPU_CMD(aclnnCast, src, dtype, self);
+    return self;
+}
+
+}  // namespace op_api
 
 namespace at_npu::native {
 
@@ -345,9 +357,9 @@ at::Tensor& npu_dtype_cast_(at::Tensor& self, const at::Tensor& src) {
         source = source.to(at::kFloat);
     }
     if (self.sizes() == source.sizes() && self.strides() == source.strides()) {
-        return acl_op::npu_dtype_cast_(self, source);
+        return op_api::npu_dtype_cast_(self, source);
     } else {
-        auto temp = acl_op::npu_dtype_cast(source, self.scalar_type());
+        auto temp = op_api::npu_dtype_cast(source, self.scalar_type());
         self.copy_(temp);
         return self;
     }

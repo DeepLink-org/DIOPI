@@ -25,12 +25,7 @@ diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     if (inputAt.numel() <= 0) {
         return diopiSuccess;
     }
-
-    if (false) {
-        acl_op::abs_out(inputAt, outAt);
-    } else {
-        op_api::abs_out(inputAt, outAt);
-    }
+    op_api::abs_out(inputAt, outAt);
     END_CALL_ACL_OP();
 }
 
@@ -39,12 +34,7 @@ diopiError_t diopiAbsInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     if (inputAt.numel() <= 0) {
         return diopiSuccess;
     }
-
-    if (false) {
-        acl_op::abs_(inputAt);
-    } else {
-        op_api::abs_(inputAt);
-    }
+    op_api::abs_(inputAt);
     END_CALL_ACL_OP();
 }
 

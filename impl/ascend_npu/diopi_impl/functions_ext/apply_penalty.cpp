@@ -8,6 +8,7 @@
 
 #include "../helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 
 namespace OP_IMPL_NS {
 
@@ -21,7 +22,7 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
     for (int i = 0; i < batch; ++i) {
         int curBatchStartIndex = pCumsumSeqLenAt[i].item<int>();
         int curBatchEndIndex = pCumsumSeqLenAt[i + 1].item<int>();
-        at::Tensor slice = acl_op::arange(curBatchStartIndex, curBatchEndIndex, at::kLong, layout, device);
+        at::Tensor slice = op_api::arange(curBatchStartIndex, curBatchEndIndex, at::kLong, layout, device);
         at::Tensor curTokenIds = at::index(pTokenIdsAt, {slice});
         at::Tensor curTokenCounts = at::index(pTokenCountsAt, {slice});
         at::Tensor curLogits = logitsAt[i].index_select(0, curTokenIds);
