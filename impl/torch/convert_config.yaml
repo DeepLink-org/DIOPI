@@ -1,2 +1,10 @@
 - diopiLinear:
     supportComposite: true
+
+- diopiRMSNorm:
+    tensor_dtype:
+        inv_rms: (float16)->float32
+
+- diopiRMSNormBackward:
+    tensor_dtype:
+        inv_rms: (float16)->float32

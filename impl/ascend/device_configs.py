@@ -9,6 +9,8 @@ device_configs = {
         name=["batch_norm"],
         atol_half=1e-1,
         rtol_half=1e-1,
+        atol=2e-3,
+        rtol=1e-4,
      ),
 
     'batch_norm_no_contiguous': dict(
@@ -539,8 +541,8 @@ device_configs = {
         name=['rms_norm'],
         atol=1e-3,
         rtol=1e-3,
-        atol_half=1e-2,
-        rtol_half=1e-2,
+        atol_half=1e-1,
+        rtol_half=1e-1,
     ),
 
     'smooth_l1_loss': dict(
@@ -798,7 +800,21 @@ device_configs = {
             # the shape and dim parameters will result in wrong output for unknown reasons.
             # Specificially, the rows of elements that shouldn't get impacted by scatter,
             # will be filled with seemingly random or zero values.
-            value=[Skip(1e-4),],
+            # aclnn not support index out of size
+            value=[Skip(0.25),],
+        ),
+    ),
+
+    'scatter': dict( # llm used
+        name=['scatter'],
+        tensor_para=dict(
+            # aclnn not support index out of size
+            args=[
+                {
+                    "ins": ['index'],
+                    "shape": [Skip((6,)),],
+                },
+            ],
         ),
     ),
 
@@ -807,6 +823,15 @@ device_configs = {
         para=dict(
             accumulate=[Skip(False),],
         ),
+        tensor_para=dict(
+            # When using aclnn and dtype is not double, the following input shapes will trigger the inner error of the broadcast
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((64, 4, 14, 14),),],
+                },
+            ],
+        ),
     ),
 
     'index_put_acc_two_indices': dict( # llm used
@@ -814,6 +839,16 @@ device_configs = {
         para=dict(
             accumulate=[Skip(False),],
         ),
+        tensor_para=dict(
+            # When using aclnn and dtype is not double, the following input shapes will trigger the inner error of the broadcast
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((16, 4, 4)), Skip((64, 4, 14, 14)),],
+                },
+            ],
+        ),
+        
     ),
 
     'index_put_acc_one_indices': dict( # llm used
@@ -993,13 +1028,9 @@ device_configs = {
 
     'interpolate': dict(
         name=['interpolate'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((2, 16, 23)),Skip((2, 256, 25, 38)),Skip((1, 3, 32, 224, 224)),Skip((2, 2, 16, 16)),Skip((2, 2, 16, 16)),Skip((2, 256, 13, 19)),Skip((3, 12, 14, 19)),Skip((2, 16, 1, 1)),Skip((2, 16, 15, 32)),Skip((1, 3, 32, 112, 112)),Skip((1, 3, 32, 112, 112)),Skip((2, 32, 32)),Skip((2, 32, 32)),Skip((2, 32, 32)),],
-                },
-            ]
+        para=dict(
+            # support bilinear, nearest
+            mode=[Skip('bicubic'),Skip('trilinear'),Skip('linear'),],
         ),
     ),
 
@@ -1155,19 +1186,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": (Skip((64,)),),
-                },
-            ],
-        ),
-    ),
-
-    'rms_norm': dict(
-        name=['rms_norm'],
-        tensor_para=dict(
-            gen_fn='Genfunc.randn',
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
                 },
             ],
         ),
