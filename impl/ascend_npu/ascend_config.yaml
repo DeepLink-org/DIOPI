@@ -150,7 +150,6 @@ ascend_npu:
 - diopiTanhBackward
 - diopiTanhInp
 - diopiTensorDestructionHook
-- diopiGather
 - diopiGelu
 - diopiGeluBackward
 - diopiHardswish

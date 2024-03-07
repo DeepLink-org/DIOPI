@@ -1293,7 +1293,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['index'],
-                    "shape": [Skip(),],
+                    "shape": [Skip(()),],
                 },
             ],
         )
