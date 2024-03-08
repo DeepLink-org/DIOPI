@@ -292,6 +292,21 @@ class CustomizedTest(object):
             output[start_idx:end_idx, :, :] = qkv_result[i - 1, :end_idx - start_idx, :, :]
         return output
 
+    def flash_attention_forward(q, k, v, p_dropout, softmax_scale, is_causal):
+        # 为了保证精度，因此在test的时候不使用dropout
+        import math
+        _, seqlen = q.shape[0], q.shape[1]
+        softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
+        scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
+        if is_causal:
+            causal_mask = torch.triu(
+                torch.full((seqlen, seqlen), -10000.0, device=scores.device), 1
+            )
+            scores = scores + causal_mask.to(dtype=scores.dtype)
+        attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
+        output = torch.einsum("bhts,bshd->bthd", attention, v)
+        return output
+
     def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
         batch = logits.shape[0]
         for i in range(batch):
