@@ -5,7 +5,7 @@ import sys
 import torch
 import torch.nn.functional as F
 import math
-import torchvision
+# import torchvision
 
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
@@ -292,7 +292,7 @@ class CustomizedTest(object):
             output[start_idx:end_idx, :, :] = qkv_result[i - 1, :end_idx - start_idx, :, :]
         return output
 
-    def flash_attention_forward(q, k, v, p_dropout, softmax_scale, is_causal):
+    def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
         # 为了保证精度，因此在test的时候不使用dropout
         import math
         _, seqlen = q.shape[0], q.shape[1]

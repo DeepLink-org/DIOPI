@@ -1294,5 +1294,18 @@ device_configs = {
         name=["nll_loss"],
         atol=1e-4,
         rtol=1e-3,
-    )
+    ),
+
+    'flash_attention': dict(
+        name=['flash_attention'],
+        tensor_para=dict(
+            # result is incorrect under the following specific shape for flash attention op
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": (Skip((1, 256, 16, 128)), Skip((1, 256, 256, 64))),
+                },
+            ],
+        ),
+    ),
 }
