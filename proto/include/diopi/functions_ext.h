@@ -173,6 +173,53 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
                                                              diopiGeneratorHandle_t gen, double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                              diopiTensorHandle_t grad_v);
 
+/**
+ * @brief Compute the forward pass for Flash Attention.
+ * @param[in] ctx The diopi context.
+ * @param[inout] gen Handle for the random number generator used in dropout op.
+ * @param[in] q Query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float16, float32].
+ * @param[in] k Key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [float16, float32].
+ * @param[in] v Value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [float16, float32].
+ * @param[in] p_dropout The probability of dropout op.
+ * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[in] is_causal Whether to apply causal attention mask.
+ * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float16,
+ * float32].
+ * @param[out] softmax_max Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ * @param[out] softmax_sum Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ * @param[out] softmax_out Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ */
+DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* softmax_max,
+                                           diopiTensorHandle_t* softmax_sum, diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen,
+                                           diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, double p_dropout,
+                                           double softmax_scale, bool is_causal);
+
+/**
+ * @brief Compute the backward pass for Flash Attention.
+ * @param[in] ctx The diopi context.
+ * @param[in] grad_out The gradient of the output tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float16, float32].
+ * @param[in] q Query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float16, float32].
+ * @param[in] k Key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [float16, float32].
+ * @param[in] v Value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [float16, float32].
+ * @param[in] attention_out Tensor representing the forward calculation result. shape = [batch_size, q_seq_len, head_num, head_dim]. type =
+ * [float16, float32].
+ * @param[in] softmax_max Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
+ * @param[in] softmax_sum Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
+ * @param[in] softmax_out Tensor representing the intermediate calculation result of softmax op from the forward pass. type =[float32].
+ * @param[in] gen Handle representing the random number generator used for dropout in the forward pass.
+ * @param[in] p_dropout The probability of dropout op.
+ * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[in] is_causal Whether to apply causal attention mask.
+ * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float16, float32].
+ * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [float16, float32].
+ * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [float16, float32].
+ */
+DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
+                                                   diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+                                                   diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t softmax_max,
+                                                   diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, diopiGeneratorHandle_t gen,
+                                                   double p_dropout, double softmax_scale, bool is_causal);
+
 // ============================================lightllm begin========================================
 
 /**

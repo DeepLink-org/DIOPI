@@ -8677,4 +8677,35 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'flash_attention': dict(
+        name=['flash_attention'],
+        interface=['CustomizedTest'],
+        dtype=[np.float32],
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            p_dropout=[0, 0, 0, 0, 0],
+            is_causal=[False, False, False, False, False],
+            softmax_scale=[None, None, None, None, None]
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                },
+            ],
+        ),
+    ),
+
 }
