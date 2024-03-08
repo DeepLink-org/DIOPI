@@ -4173,7 +4173,7 @@ diopi_configs = {
 
     'sort': dict(
         name=["sort"],
-        interface=['torch'],
+        interface=['CustomizedTest'],
         para=dict(
             dim=[-1, 0, 1, -2, 3, -1, 0, -1, 0, 2],
             descending=[False, True, False, False, True, False, True, True, False, False],
@@ -4196,7 +4196,7 @@ diopi_configs = {
 
     'sort_same_value': dict(
         name=["sort"],
-        interface=['torch'],
+        interface=['CustomizedTest'],
         para=dict(
             dim=[-1, 0, 1],
             descending=[True, False, False],
@@ -4218,7 +4218,7 @@ diopi_configs = {
 
     'sort_no_stable': dict(
         name=["sort"],
-        interface=['torch'],
+        interface=['CustomizedTest'],
         para=dict(
             dim=[-1, 0, 1, -2, 3, -1, 0, -1, 0, 2],
             descending=[False, True, False, False, True, False, True, True, False, False],
@@ -6383,7 +6383,7 @@ diopi_configs = {
                 {
                     "ins": ['log_probs'],
                     "requires_grad": [True],
-                    "shape": ((26, 20, 38), (26, 20, 38), (26, 20, 38), (32, 20, 10)),
+                    "shape": ((26, 20, 38), (26, 20, 38), (26, 20, 38), (32, 20, 50)),
                     # "dtype": [np.float32, np.float64, np.float64, np.float32, np.float32, np.float64],
                     "dtype": [np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
@@ -6393,7 +6393,7 @@ diopi_configs = {
                     "shape": ((20, 10), (20, 14), (20, 11), (20, 54)),
                     # "dtype": [np.int64, np.int64, np.int8, np.int16, np.int32, np.uint8],
                     "dtype": [np.int64, np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', low=1, high=80),
+                    "gen_fn": dict(fn='Genfunc.randint', low=1, high=30),
                 },
                 {
                     "ins": ['input_lengths'],
@@ -6429,7 +6429,7 @@ diopi_configs = {
                 {
                     "ins": ['log_probs'],
                     "requires_grad": [True],
-                    "shape": ((26, 10, 38), (26, 10, 38), (26, 10, 38), (32, 10, 10)),
+                    "shape": ((26, 10, 38), (26, 10, 38), (26, 10, 38), (32, 10, 40)),
                     # "dtype": [np.float32, np.float64, np.float64, np.float32, np.float32, np.float64],
                     "dtype": [np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
@@ -6439,7 +6439,7 @@ diopi_configs = {
                     "shape": ((10, ), (10, ), (10, ), (10, )),
                     # "dtype": [np.int64, np.int64, np.int8, np.int16, np.int32, np.uint8],
                     "dtype": [np.int64, np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', low=1, high=80),
+                    "gen_fn": dict(fn='Genfunc.randint', low=1, high=30),
                 },
                 {
                     "ins": ['input_lengths'],
