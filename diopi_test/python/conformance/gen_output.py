@@ -5,7 +5,7 @@ import sys
 import torch
 import torch.nn.functional as F
 import math
-# import torchvision
+import torchvision
 
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
