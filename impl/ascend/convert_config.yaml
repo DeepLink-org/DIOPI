@@ -1,6 +1,7 @@
 - common_config:
     layout: NCHW
-diopiSoftmax:
+
+- diopiSoftmax:
     dtype: (float64)->float32
     layout: ND
 
@@ -218,6 +219,7 @@ diopiSoftmax:
     dtype: (float64)->float32
 
 - diopiCol2Im:
+    # data type float64 of input [x] is not supported 
     dtype: (float64)->float32
 
 - diopiRemainderTensor:
@@ -232,14 +234,15 @@ diopiSoftmax:
 - diopiRMSNorm:
     dtype: (float64)->float32
     tensor_dtype:
-      inv_rms: (float16, float64)->float32
+        inv_rms: (float16, float64)->float32
 
 - diopiRMSNormBackward:
     dtype: (float64)->float32
     tensor_dtype:
-      inv_rms: (float16, float64)->float32
+        inv_rms: (float16, float64)->float32
 
 - diopiHardswish:
+    # data type DT_DOUBLE of input [x] is not supported
     dtype: (float64)->float32
 
 - diopiHardswishInp:
