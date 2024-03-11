@@ -1492,7 +1492,7 @@ def sort(input, dim=-1, descending=False, stable=None):
             for i in idx:
                 res = res[i]
             temp_vals.append(res)
-        return vals, temp_vals
+        return vals
     return vals, indices
 
 
@@ -4341,7 +4341,7 @@ def ctc_loss_backward(
     return {
         "log_probs": log_softmax_backward(
             log_probs, [grad_input], log_probs_, 2
-        )
+        )["input"]
     }
 
 
