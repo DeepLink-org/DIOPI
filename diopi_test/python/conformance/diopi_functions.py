@@ -5334,9 +5334,13 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
+    attention_mask = Tensor()
+    dropout_mask = Tensor()
     softmax_max = Tensor()
     softmax_sum = Tensor()
     softmax_out = Tensor()
+    attention_mask_ptr = TensorP(attention_mask)
+    dropout_mask_ptr = TensorP(dropout_mask)
     softmax_max_ptr = TensorP(softmax_max)
     softmax_sum_ptr = TensorP(softmax_sum)
     softmax_out_ptr = TensorP(softmax_out)
@@ -5346,6 +5350,8 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
     ret = func(
         q.context(),
         out,
+        attention_mask_ptr,
+        dropout_mask_ptr,
         softmax_max_ptr,
         softmax_sum_ptr,
         softmax_out_ptr,
