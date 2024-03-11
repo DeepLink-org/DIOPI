@@ -108,12 +108,12 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
                                  softmaxOutAt,
                                  attentionOutAt);
 
-    // if (attentionMaskAt.defined()) {
-    //     impl::aten::buildDiopiTensor(ctx, attentionMaskAt, attentionMask);
-    // }
-    // if (dropoutMaskAt.defined()) {
-    //     impl::aten::buildDiopiTensor(ctx, dropoutMaskAt, dropoutMask);
-    // }
+    if (attentionMaskAt.defined()) {
+        impl::aten::buildDiopiTensor(ctx, attentionMaskAt, attentionMask);
+    }
+    if (dropoutMaskAt.defined()) {
+        impl::aten::buildDiopiTensor(ctx, dropoutMaskAt, dropoutMask);
+    }
     impl::aten::buildDiopiTensor(ctx, softmaxMaxAt, softmaxMax);
     impl::aten::buildDiopiTensor(ctx, softmaxSumAt, softmaxSum);
     impl::aten::buildDiopiTensor(ctx, softmaxOutAt, softmaxOut);

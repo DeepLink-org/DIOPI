@@ -5334,8 +5334,14 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    attention_mask = Tensor()
-    dropout_mask = Tensor()
+    if(is_causal):
+        attention_mask = Tensor()
+    else:
+        attention_mask = None
+    if(p_dropout > 0 and p_dropout <= 1):
+        dropout_mask = Tensor()
+    else:
+        dropout_mask = None
     softmax_max = Tensor()
     softmax_sum = Tensor()
     softmax_out = Tensor()
