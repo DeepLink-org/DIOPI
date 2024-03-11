@@ -8687,7 +8687,7 @@ diopi_configs = {
         para=dict(
             p_dropout=[0, 0, 0, 0, 0],
             is_causal=[False, False, False, False, False],
-            softmax_scale=[None, None, None, None, None]
+            softmax_scale=[0.0883, None, 0.125, None, 0.0625]
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
