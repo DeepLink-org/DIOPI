@@ -1103,30 +1103,6 @@ device_configs = {
         ),
     ),
 
-    'lerp': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'lerp_tensor': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
     'amax': dict(
         name=['amax'],
         tensor_para=dict(
