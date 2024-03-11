@@ -28,9 +28,10 @@ diopiError_t dropoutGenMask(at::Tensor& mask, const at::Tensor& input, double p,
 
 }  // namespace
 
-diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
-                                 diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                 diopiConstTensorHandle_t v, double pDropout, double softmaxScale, bool isCausal) {
+diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* attentionMask, diopiTensorHandle_t* dropMask,
+                                 diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum, diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen,
+                                 diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, double pDropout, double softmaxScale,
+                                 bool isCausal) {
     BEGIN_CALL_ACL_OP(q, k, v, gen, attentionOut);
 
     DIOPI_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4-dimensional");
@@ -115,9 +116,10 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
 
 diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
                                          diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                         diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
-                                         diopiConstTensorHandle_t softmaxOut, diopiGeneratorHandle_t gen, double pDropout, double softmaxScale, bool isCausal) {
-    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, softmaxMax, softmaxSum, softmaxOut, gen, gradQ, gradK, gradV, gradOut);
+                                         diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropMask,
+                                         diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum, diopiConstTensorHandle_t softmaxOut,
+                                         double pDropout, double softmaxScale) {
+    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, attentionMask, dropMask, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
     DIOPI_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4-dimensional");
     DIOPI_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4-dimensional");
@@ -140,16 +142,6 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
     at::IntArrayRef prefixN = at::IntArrayRef{};
 
     at::Tensor paddingMaskAt = at::Tensor();
-
-    at::Tensor dropMaskAt = at::Tensor();
-    if (pDropout != 0) {
-        // int64_t length = (input.numel() + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
-        // dropMaskAt = at_npu::native::OpPreparation::apply_tensor_without_format({length}, input.options().dtype(at::kByte));
-    }
-
-    at::Tensor attentionMaskAt = at::Tensor();
-    if (isCausal) {
-    }
 
     int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;

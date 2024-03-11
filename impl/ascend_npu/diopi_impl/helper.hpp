@@ -98,6 +98,10 @@ inline int debugLevel() {
     BUILD_ATEN_ARG11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11)          \
     BUILD_ATEN_ARGS_BODY(x12);
 
+#define BUILD_ATEN_ARG13(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13) \
+    BUILD_ATEN_ARG12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)          \
+    BUILD_ATEN_ARGS_BODY(x13);
+
 #define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, N, ...) N
 #define PRIVATE_MACRO_VAR_ARGS_IMPL(args) PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT args
 
