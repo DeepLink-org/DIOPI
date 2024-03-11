@@ -37,11 +37,14 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
 
     std::string inputLayout = "BSND";
+    char* inputLayoutPtr = const_cast<char*>(inputLayout.c_str());
+
     int64_t b = qAt.size(0);
     int64_t s0 = qAt.size(1);  // S for query
     int64_t s1 = kAt.size(1);  // S for key & value
     int64_t n = qAt.size(2);
     int64_t d = qAt.size(3);
+
     double keepProb = 1 - pDropout;
 
     at::Tensor pseAt = at::Tensor();
@@ -59,7 +62,6 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     if (isCausal) {
     }
 
-    char* inputLayoutPtr = const_cast<char*>(inputLayout.c_str());
     int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;  // 保留参数，暂未使用。0, fp16 high precision. 1, high performance.
@@ -115,11 +117,14 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
 
     std::string inputLayout = "BSND";
+    char* inputLayoutPtr = const_cast<char*>(inputLayout.c_str());
+
     int64_t b = qAt.size(0);
     int64_t s0 = qAt.size(1);  // S for query
     int64_t s1 = kAt.size(1);  // S for key & value
     int64_t n = qAt.size(2);
     int64_t d = qAt.size(3);
+
     double keepProb = 1 - pDropout;
 
     at::Tensor pseAt = at::Tensor();
@@ -138,7 +143,6 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
     if (isCausal) {
     }
 
-    char* inputLayoutPtr = const_cast<char*>(inputLayout.c_str());
     int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;  // 保留参数，暂未使用。0, fp16 high precision. 1, high performance.
