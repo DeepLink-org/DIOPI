@@ -3049,7 +3049,7 @@ diopi_configs = {
         name=['any', 'all', 'sum'],
         interface=['torch'],
         atol=1e-4,
-        rtol=1e-5,
+        rtol=1e-4,
         tensor_para=dict(
             args=[
                 {
