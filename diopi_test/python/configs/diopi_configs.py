@@ -8686,7 +8686,7 @@ diopi_configs = {
         rtol=1e-4,
         para=dict(
             p_dropout=[0, 0, 0, 0, 0],
-            is_causal=[False, False, False, False, False],
+            is_causal=[True, False, True, False, True],
             softmax_scale=[0.0883, None, 0.125, None, 0.0625]
         ),
         tensor_para=dict(

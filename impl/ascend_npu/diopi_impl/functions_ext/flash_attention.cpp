@@ -12,6 +12,8 @@ namespace OP_IMPL_NS {
 
 namespace {
 
+using npu_preparation = at_npu::native::OpPreparation;
+
 const int64_t bitNumber = 128;
 const int64_t uInt8BitNumber = 8;
 
@@ -60,11 +62,17 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
 
     at::Tensor attentionMaskAt = at::Tensor();
     if (isCausal) {
+        // NOTE: reference to: https://gitee.com/ascend/ModelLink/blob/v0.1.0/pretrain_llama.py#L74
+        // It should be noted that the generation logic of attention mask is exactly opposite to common sense on ascend.
+        attentionMaskAt = npu_preparation::apply_tensor_without_format({s0, s1}, qAt.options().dtype(at::kBool));  // [S0, S1]
+        EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskAt);
+        int64_t diagonal = 1;
+        EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskAt, diagonal);
     }
 
     int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;
-    int64_t innerPrecise = 0;  // 保留参数，暂未使用。0, fp16 high precision. 1, high performance.
+    int64_t innerPrecise = 0;
     int64_t sparseMode = 0;
 
     at::Tensor softmaxMaxAt;
@@ -145,7 +153,7 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
 
     int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;
-    int64_t innerPrecise = 0;  // 保留参数，暂未使用。0, fp16 high precision. 1, high performance.
+    int64_t innerPrecise = 0;
     int64_t sparseMode = 0;
 
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScoreGrad,
