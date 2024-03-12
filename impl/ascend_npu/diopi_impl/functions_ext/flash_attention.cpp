@@ -47,16 +47,20 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     at::Tensor paddingMaskAt = at::Tensor();
 
     at::Tensor dropoutMaskAt = at::Tensor();
-    if (pDropout != 0) {
+    if (pDropout > 0 && pDropout <= 1) {
         int64_t numels = b * n * s0 * s1;  // [B,N,S,S]
         int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
-        length += 32;
         dropoutMaskAt = npu_preparation::apply_tensor_without_format({length}, qAt.options().dtype(at::kByte));
-        at::IntArrayRef shapeArray({b, n, s0, s1});
-        auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genAt)->philox_engine_inputs(10);
-        const uint64_t seed = pair.first;
-        const uint64_t offset = pair.second;
-        EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, pDropout, seed, offset, dropoutMaskAt);
+        if (pDropout == 1) {
+            op_api::zero_(dropoutMaskAt);
+        } else {
+            std::vector<int64_t> shapeVector{b, n, s0, s1};
+            at::IntArrayRef shapeArray(shapeVector);
+            auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genAt)->philox_engine_inputs(10);
+            const uint64_t seed = pair.first;
+            const uint64_t offset = pair.second;
+            EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, pDropout, seed, offset, dropoutMaskAt);
+        }
     }
 
     at::Tensor attentionMaskAt = at::Tensor();
