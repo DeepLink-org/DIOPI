@@ -15,15 +15,9 @@ diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto betaAt = at::Scalar(beta);
     auto alphaAt = at::Scalar(alpha);
 
-    if (inputAt.numel() == 0 || beta == 0.0) {
-        op_api::bmm_out(batch1At, batch2At, outAt);
-        op_api::mul_(outAt, alphaAt);
-        END_CALL_ACL_OP();
-    }
-
-    if (batch1At.numel() == 0 || batch2At.numel() == 0 || alpha == 0.0) {
-        outAt.copy_(inputAt);
-        op_api::mul_(outAt, betaAt);
+    if (batch1At.numel() == 0 || batch2At.numel() == 0) {
+        auto outMul = op_api::mul(inputAt, betaAt);
+        outAt.copy_(outMul);
         END_CALL_ACL_OP();
     }
 
@@ -37,13 +31,7 @@ diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     auto betaAt = at::Scalar(beta);
     auto alphaAt = at::Scalar(alpha);
 
-    if (beta == 0.0) {
-        op_api::bmm_out(batch1At, batch2At, inputAt);
-        op_api::mul_(inputAt, alphaAt);
-        END_CALL_ACL_OP();
-    }
-
-    if (batch1At.numel() == 0 || batch2At.numel() == 0 || alpha == 0.0) {
+    if (batch1At.numel() == 0 || batch2At.numel() == 0) {
         op_api::mul_(inputAt, betaAt);
         END_CALL_ACL_OP();
     }
