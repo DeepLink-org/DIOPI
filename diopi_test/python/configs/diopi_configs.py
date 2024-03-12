@@ -8181,7 +8181,8 @@ diopi_configs = {
         dtype=[np.float64, np.float32, np.float16],
         para=dict(
             conj=[True, False, False, False, True, True, False, True, False, True],
-            interleaved=[True, False, True, False, True, False, False, True, True, False]
+            #currently data generation does not support interleaved == true;
+            interleaved=[False, False, False, False, False, False, False, False, False, False]
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -8192,11 +8193,11 @@ diopi_configs = {
                 },
                 {
                     "ins": ['cos'],
-                    "shape": ((6,), (32,), (2, 64), (3, 1, 128), (1, 32), (3, 5, 6), (125, 1, 256), (125, 1, 256), (64, 1, 16), (100, 1, 32)),
+                    "shape": ((6,), (32,), (2, 64), (3, 1, 128), (1, 32), (3, 1, 6), (125, 1, 256), (125, 1, 256), (64, 1, 16), (100, 1, 32)),
                 },
                 {
                     "ins": ['sin'],
-                    "shape": ((6,), (32,), (2, 64), (3, 1, 128), (1, 32), (3, 5, 6), (125, 1, 256), (125, 1, 256), (64, 1, 16), (100, 1, 32)),
+                    "shape": ((6,), (32,), (2, 64), (3, 1, 128), (1, 32), (3, 1, 6), (125, 1, 256), (125, 1, 256), (64, 1, 16), (100, 1, 32)),
                 },
             ],
         ),

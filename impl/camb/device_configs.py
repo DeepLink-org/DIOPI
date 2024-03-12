@@ -1950,7 +1950,8 @@ device_configs = {
         rtol=5e-3,
     ),
 
-    'rotary_emb': dict(
+    'rotary_emb_empty_tensor': dict(
+    #currently camb does not know how to deal with zero-shape
         name=["rotary_emb"],
         tensor_para=dict(
             args=[
