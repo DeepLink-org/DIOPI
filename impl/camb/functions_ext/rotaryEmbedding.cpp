@@ -51,12 +51,6 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     shape[shape.size() - 1] = shape[shape.size() - 1] >> 1;
     std::vector<int64_t> stride;
 
-    // set Tensors' decriptor
-    CnnlTensorDesc inputDesc;
-    CnnlTensorDesc cosDesc;
-    CnnlTensorDesc sinDesc;
-    CnnlTensorDesc outTmpDesc;
-
     if (interleaved) {
         // currently the cpu/cuda reference do not support interleaved
         // but camb is correct
@@ -67,6 +61,12 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
         stride = inputTensor.stride();
         storageOffset = sizeof(float) * shape[shape.size() - 1];
     }
+
+    // set Tensors' decriptor
+    CnnlTensorDesc inputDesc;
+    CnnlTensorDesc cosDesc;
+    CnnlTensorDesc sinDesc;
+    CnnlTensorDesc outTmpDesc;
 
     if (shape.size() == 1) {
         // input:[head_size]
