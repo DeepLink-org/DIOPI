@@ -148,12 +148,6 @@
 - diopiHardtanhBackward:
     dtype: (float64)->float32
 
-- diopiAdd:
-    dtype: (bool)->int32
-
-- diopiAddInp:
-    dtype: (bool)->int32
-
 - diopiMm:
     dtype: (float64)->float32
 
@@ -260,16 +254,16 @@
     dtype: (float64)->float32
 
 - diopiScatter:
-    dtype: (uint8,int8)->int32
+    dtype: (uint8)->int32
 
 - diopiScatterInp:
-    dtype: (uint8,int8)->int32
+    dtype: (uint8)->int32
 
 - diopiScatterScalar:
-    dtype: (uint8,int8)->int32
+    dtype: (uint8)->int32
 
 - diopiScatterInpScalar:
-    dtype: (uint8,int8)->int32
+    dtype: (uint8)->int32
 
 - diopiRotaryEmbedding:
     dtype: (float64)->float32
@@ -286,6 +280,16 @@
 
 - diopiRemainder:
     dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
+
+- diopiRMSNorm:
+    dtype: (float64)->float32
+    tensor_dtype:
+        inv_rms: (float16, float64)->float32
+
+- diopiRMSNormBackward:
+    dtype: (float64)->float32
+    tensor_dtype:
+        inv_rms: (float16, float64)->float32
 
 - diopiHardswish:
     # data type DT_DOUBLE of input [x] is not supported
@@ -319,6 +323,18 @@
 - diopiIsNan:
     dtype: (uint8, int8, int32, int16, int64, bool)->float32
 
+- diopiMaskedFill:
+    dtype: (int16, uint8)->int32, (float64)->float32
+
+- diopiMaskedFillInp:
+    dtype: (int16, uint8)->int32, (float64)->float32
+
+- diopiMaskedFillInpScalar:
+    dtype: (int16, uint8)->int32, (float64)->float32
+
+- diopiMaskedFillScalar:
+    dtype: (int16, uint8)->int32, (float64)->float32
+
 - diopiErf:
     dtype: (uint8, int8, int16, int32)->float32
 
@@ -337,6 +353,18 @@
 - diopiMSELossBackward:
     dtype: (float64)->float32
 
+- diopiUpsampleLinear:
+    dtype: (float64)->float32
+
+- diopiUpsampleLinearBackward:
+    dtype: (float64)->float32
+
+- diopiUpsampleNearest:
+    dtype: (float64)->float32
+
+- diopiUpsampleNearestBackward:
+    dtype: (float64)->float32
+
 - diopiRelu:
     dtype: (int16, float64)->float32
 
@@ -350,4 +378,12 @@
     dtype: (float64)->float32
 
 - diopiTanhBackward:
+    dtype: (float64)->float32
+
+- diopiLerpTensor:
+    # aclnnLerp doesn't support float64
+    dtype: (float64)->float32
+
+- diopiLerpScalar:
+    # aclnnLerps doesn't support float64
     dtype: (float64)->float32

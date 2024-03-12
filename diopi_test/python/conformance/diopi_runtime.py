@@ -134,6 +134,10 @@ def to_numpy_dtype(dtype: Dtype) -> np.dtype:
         return None
 
 
+def is_dtype(dtype) -> bool:
+    return isinstance(dtype, Dtype)
+
+
 def compute_nhwc_stride_2d(sizes, itemsize=1):
     dim = len(sizes)
     strides = [itemsize for i in range(dim)]

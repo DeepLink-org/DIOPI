@@ -1491,7 +1491,7 @@ def sort(input, dim=-1, descending=False, stable=None):
             for i in idx:
                 res = res[i]
             temp_vals.append(res)
-        return vals, temp_vals
+        return vals
     return vals, indices
 
 
@@ -4340,7 +4340,7 @@ def ctc_loss_backward(
     return {
         "log_probs": log_softmax_backward(
             log_probs, [grad_input], log_probs_, 2
-        )
+        )["input"]
     }
 
 
@@ -5153,7 +5153,11 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     out = Tensor(size, input.get_dtype())
     inv_rms_size = size.copy()
     inv_rms_size[-1] = 1
-    inv_rms = Tensor(inv_rms_size, input.get_dtype())
+    inv_dtype = input.get_dtype()
+    # float32 for float16
+    if (inv_dtype == Dtype.float16):
+        inv_dtype = Dtype.float32
+    inv_rms = Tensor(inv_rms_size, inv_dtype)
     normalized_shape = Sizes(list(normalized_shape))
     ret = func(
         input.context(),
