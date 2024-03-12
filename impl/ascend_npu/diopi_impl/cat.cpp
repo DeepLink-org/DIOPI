@@ -14,13 +14,6 @@ namespace OP_IMPL_NS {
 diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
     BEGIN_CALL_ACL_OP(out);
     at::Tensor outTempAt = outAt;
-    if (false) {
-        if (outAt.scalar_type() == at::kDouble) {
-            outTempAt = outAt.to(at::kFloat);
-        } else if (outAt.scalar_type() == at::kLong) {
-            outTempAt = outAt.to(at::kInt);
-        }
-    }
 
     std::vector<at::Tensor> tensorsAt;
     tensorsAt.reserve(numInputs);
