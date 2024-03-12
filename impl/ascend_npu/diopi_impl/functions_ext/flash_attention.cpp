@@ -85,7 +85,7 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     softmaxSumAt = at_npu::native::OpPreparation::apply_tensor_without_format({b, n, s0, 8},
                                                                               qAt.options().dtype(at::kFloat));  // [B, N, S0, 8]
     softmaxOutAt = at_npu::native::OpPreparation::apply_tensor_without_format({0},
-                                                                              qAt.options().dtype(at::kFloat));  // [0]
+                                                                              qAt.options());  // [0]
 
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScore,
                                  qAt,
@@ -145,7 +145,7 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
     double keepProb = 1 - pDropout;
 
     at::Tensor pseAt = at::Tensor();
-    at::Tensor gradPseAt = at_npu::native::OpPreparation::apply_tensor_without_format({0}, qAt.options().dtype(at::kFloat));
+    at::Tensor gradPseAt = at_npu::native::OpPreparation::apply_tensor_without_format({0}, qAt.options());
     at::IntArrayRef prefixN = at::IntArrayRef{};
 
     at::Tensor paddingMaskAt = at::Tensor();
