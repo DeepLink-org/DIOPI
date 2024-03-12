@@ -71,19 +71,19 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     if (shape.size() == 1) {
         // input:[head_size]
         std::vector<int64_t> inputShape = {1, 1, 1, shape[0]};
-        std::vector<int64_t> inputStride = {1, 1, 1, stride[0]};
+        std::vector<int64_t> inputStride = {stride[0], stride[0], stride[0], stride[0]};
         inputDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
         outTmpDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
     } else if (shape.size() == 2) {
         // input:[seqLen,head_size]
         std::vector<int64_t> inputShape = {1, shape[0], 1, shape[1]};
-        std::vector<int64_t> inputStride = {1, stride[0], stride[0], stride[1]};
+        std::vector<int64_t> inputStride = {stride[0], stride[0], stride[1], stride[1]};
         inputDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
         outTmpDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
     } else if (shape.size() == 3) {
         // input:[seqLen,head_num,head_size]
         std::vector<int64_t> inputShape = {1, shape[0], shape[1], shape[2]};
-        std::vector<int64_t> inputStride = {1, stride[0], stride[1], stride[2]};
+        std::vector<int64_t> inputStride = {stride[0], stride[0], stride[1], stride[2]};
         inputDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
         outTmpDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
     } else if (shape.size() == 4) {
