@@ -1,6 +1,4 @@
 ascend:
-- diopiBaddbmm
-- diopiBaddbmmInp
 - diopiContiguous
 - diopiCos
 - diopiCosInp
@@ -50,6 +48,8 @@ ascend_npu:
 - diopiArange
 - diopiAtan
 - diopiAtanInp
+- diopiBaddbmm
+- diopiBaddbmmInp
 - diopiErf
 - diopiErfInp
 - diopiNonzero

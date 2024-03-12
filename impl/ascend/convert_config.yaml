@@ -4,6 +4,12 @@
 - diopiSoftmax:
     dtype: (float64)->float32
 
+- diopiBaddbmm:
+    dtype: (float64)->float32
+
+- diopiBaddbmmInp:
+    dtype: (float64)->float32
+
 - diopiSoftmaxBackward:
     dtype: (float64)->float32
 
