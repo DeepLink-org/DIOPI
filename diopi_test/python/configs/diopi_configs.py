@@ -8682,6 +8682,7 @@ diopi_configs = {
         name=['flash_attention'],
         interface=['CustomizedTest'],
         dtype=[np.float16, np.float32],
+        saved_args=dict(out=0),
         atol=1e-3,
         rtol=1e-4,
         para=dict(
@@ -8695,14 +8696,17 @@ diopi_configs = {
                 {
                     "ins": ['q'],
                     "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                    "requires_grad": [True],
                 },
                 {
                     "ins": ['k'],
                     "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                    "requires_grad": [True],
                 },
                 {
                     "ins": ['v'],
                     "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                    "requires_grad": [True],
                 },
             ],
         ),
