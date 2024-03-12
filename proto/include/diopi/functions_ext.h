@@ -173,6 +173,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
                                                              diopiGeneratorHandle_t gen, double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                              diopiTensorHandle_t grad_v);
 
+// This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
  * @brief Compute the forward pass for Flash Attention.
  * @param[in] ctx The diopi context.
@@ -185,8 +186,8 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
  * @param[in] is_causal Whether to apply causal attention mask.
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float16,
  * float32].
- * @param[out] attention_mask Tensor storing the causal attention mask for back propagation. type = [bool].
- * @param[out] dropout_mask Tensor storing the dropout mask for back propagation. type = [bool].
+ * @param[out] attention_mask Tensor storing the causal attention mask for back propagation. shape = [q_seq_len, k_seq_len]. type = [bool].
+ * @param[out] dropout_mask Tensor storing the dropout mask for back propagation.
  * @param[out] softmax_max Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
  * @param[out] softmax_sum Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
  * @param[out] softmax_out Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
@@ -196,6 +197,7 @@ DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensor
                                            diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                            diopiConstTensorHandle_t v, double p_dropout, double softmax_scale, bool is_causal);
 
+// This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
  * @brief Compute the backward pass for Flash Attention.
  * @param[in] ctx The diopi context.
@@ -205,8 +207,7 @@ DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensor
  * @param[in] v Value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [float16, float32].
  * @param[in] attention_out Tensor representing the forward calculation result. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [float16, float32].
  * @param[in] attention_mask Tensor representing the causal attention mask from the forward pass. shape = [q_seq_len, k_seq_len]. type = [bool].
- * @param[in] dropout_mask Tensor representing the generated dropout mask from the forward pass. shape = [batch_size, q_seq_len, head_num, head_dim]. type =
- * [bool].
+ * @param[in] dropout_mask Tensor representing the generated dropout mask from the forward pass.
  * @param[in] softmax_max Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
  * @param[in] softmax_sum Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
  * @param[in] softmax_out Tensor representing the intermediate calculation result of softmax op from the forward pass. type =[float32].
