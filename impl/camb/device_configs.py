@@ -1950,19 +1950,6 @@ device_configs = {
         rtol=5e-3,
     ),
 
-    'rotary_emb_empty_tensor': dict(
-    #currently camb does not know how to deal with zero-shape
-        name=["rotary_emb"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
-                },
-            ],
-        ),
-    ),
-
     'rms_norm': dict(
         name=["rms_norm"],
         tensor_para=dict(

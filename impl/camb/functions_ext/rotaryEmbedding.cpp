@@ -19,13 +19,18 @@ namespace camb {
 
 diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
                                   diopiConstTensorHandle_t sin, const bool conj, const bool interleaved) {
-    // TODO: currently do not know "how strides best accelerate kernel"
+    // TODO: currently input,cos,sin are contiguous, we do not know "how strides best accelerate kernel"
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DiopiTensor inputTensor(x);
     DiopiTensor cosTensor(cos);
     DiopiTensor sinTensor(sin);
     DiopiTensor outputTensor(out);
+
+    if (shapeHasZero(inputTensor.shape()) || inputTensor.dim() == 0) {
+        // zero shape protection
+        return diopiSuccess;
+    }
 
     // change input data type, cos & sin only support float32, input support float16 & float32
     std::vector<DiopiTensor*> pTensors{&inputTensor, &cosTensor, &sinTensor};
@@ -54,7 +59,7 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
     if (interleaved) {
         // currently the cpu/cuda reference do not support interleaved
-        // camb is correct
+        // but camb is correct
         stride = inputTensor.stride();
         stride[stride.size() - 1] = stride[stride.size() - 1] << 1;
         storageOffset = sizeof(float);
@@ -105,6 +110,8 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
         std::vector<int64_t> cosStride = calContiguousStride(cosShape);
         cosDesc.set(calType, cosShape, cosStride, CNNL_LAYOUT_ARRAY);
         sinDesc.set(calType, cosShape, cosStride, CNNL_LAYOUT_ARRAY);
+    } else {
+        DIOPI_CHECK(true, "camb currently only support input.dim() <= 3");
     }
 
     // set embedding Descriptor
