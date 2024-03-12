@@ -1,6 +1,4 @@
 ascend:
-- diopiBaddbmm
-- diopiBaddbmmInp
 - diopiContiguous
 - diopiCos
 - diopiCosInp
