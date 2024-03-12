@@ -8181,8 +8181,7 @@ diopi_configs = {
         dtype=[np.float64, np.float32, np.float16],
         para=dict(
             conj=[True, False, False, False, True, True, False, True, False, True],
-            #currently data generation does not support interleaved == true;
-            interleaved=[False, False, False, False, False, False, False, False, False, False]
+            interleaved=[True, False, True, False, True, False, False, True, True, False]
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',

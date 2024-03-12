@@ -56,11 +56,13 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
         // but camb is correct
         stride = inputTensor.stride();
         stride[stride.size() - 1] = stride[stride.size() - 1] << 1;
-        storageOffset = sizeof(float);
+        storageOffset = 1;
     } else {
         stride = inputTensor.stride();
-        storageOffset = sizeof(float) * shape[shape.size() - 1];
+        storageOffset = shape[shape.size() - 1];
     }
+    void* input2Ptr = static_cast<void*>((static_cast<float*>(inputTensor.data())) + storageOffset);
+    void* output2Ptr = static_cast<void*>((static_cast<float*>(outTmpTr.data())) + storageOffset);
 
     // set Tensors' decriptor
     CnnlTensorDesc inputDesc;
@@ -87,10 +89,8 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
         inputDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
         outTmpDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
     } else if (shape.size() == 4) {
-        std::vector<int64_t> inputShape = shape;
-        std::vector<int64_t> inputStride = stride;
-        inputDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
-        outTmpDesc.set(calType, inputShape, inputStride, CNNL_LAYOUT_ARRAY);
+        inputDesc.set(calType, shape, stride, CNNL_LAYOUT_ARRAY);
+        outTmpDesc.set(calType, shape, stride, CNNL_LAYOUT_ARRAY);
     } else {
         DIOPI_CHECK(true, "camb currently only support input.dim() <= 4");
     }
@@ -127,7 +127,7 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                         inputDesc.get(),
                                         inputTensor.data(),
                                         inputDesc.get(),
-                                        inputTensor.data() + storageOffset,
+                                        input2Ptr,
                                         cosDesc.get(),
                                         cosTensor.data(),
                                         sinDesc.get(),
@@ -137,7 +137,7 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                         outTmpDesc.get(),
                                         outTmpTr.data(),
                                         outTmpDesc.get(),
-                                        outTmpTr.data() + storageOffset));
+                                        output2Ptr));
 
     if (outTmpTr.dtype() != outputTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outputTensor, outTmpTr));

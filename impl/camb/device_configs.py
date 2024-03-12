@@ -1950,6 +1950,14 @@ device_configs = {
         rtol=5e-3,
     ),
 
+    'rotary_emb': dict(
+        #不是不能做interleaved，而是生成数据不支持interleaved，手算验证camb正确
+        name=["rotary_emb"],
+        para=dict(
+            interleaved = [Skip(True)],
+        ),
+    ),
+
     'rms_norm': dict(
         name=["rms_norm"],
         tensor_para=dict(
