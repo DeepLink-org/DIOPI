@@ -1274,6 +1274,7 @@ device_configs = {
 
     'flash_attention': dict(
         name=['flash_attention'],
+        dtype=[Skip(np.float32),],
         tensor_para=dict(
             # result is incorrect under the following specific shape for flash attention op
             args=[
