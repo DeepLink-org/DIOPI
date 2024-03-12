@@ -5,7 +5,6 @@
  */
 
 #include "helper.hpp"
-#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
@@ -22,8 +21,8 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     for (int i = 0; i < nums; ++i) {
         indicesAtList.emplace_back(impl::aten::buildATen(indices[i]));
     }
-    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indicesAtList);
 
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indicesAtList);
     at::Tensor outAt = op_api::index(inputAt, indicesCast);
     impl::aten::buildDiopiTensor(ctx, outAt, out);
     END_CALL_ACL_OP();
@@ -38,7 +37,8 @@ diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
         indicesAtList.emplace_back(impl::aten::buildATen(indices[i]));
     }
 
-    op_api::index_put_(zerosLikeInputAt, indicesAtList, gradOutputAt, true);
+    auto indicesCast = impl::aten::castIntIndicesToLongIndices(indicesAtList);
+    op_api::_index_put_impl_(zerosLikeInputAt, indicesCast, gradOutputAt, true, false);
     gradInputAt.copy_(zerosLikeInputAt);
     END_CALL_ACL_OP();
 }

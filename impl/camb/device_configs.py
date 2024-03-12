@@ -1292,14 +1292,14 @@ device_configs = {
     'ctc_loss': dict(
         name=["ctc_loss"],
         para=dict(
-            blank=[Skip(0), Skip(9)]
+            blank=[Skip(9)]
         ),
     ),
 
     'ctc_loss_un_padded': dict(
         name=["ctc_loss"],
         para=dict(
-            blank=[Skip(0), Skip(9)]
+            blank=[Skip(9)]
         ),
     ),
 

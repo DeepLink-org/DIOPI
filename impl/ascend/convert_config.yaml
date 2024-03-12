@@ -445,3 +445,10 @@
 
 - diopiSum:
     layout: ND
+- diopiLerpTensor:
+    # aclnnLerp doesn't support float64
+    dtype: (float64)->float32
+
+- diopiLerpScalar:
+    # aclnnLerps doesn't support float64
+    dtype: (float64)->float32

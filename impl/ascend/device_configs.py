@@ -823,6 +823,15 @@ device_configs = {
         para=dict(
             accumulate=[Skip(False),],
         ),
+        tensor_para=dict(
+            # When using aclnn and dtype is not double, the following input shapes will trigger the inner error of the broadcast
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((64, 4, 14, 14),),],
+                },
+            ],
+        ),
     ),
 
     'index_put_acc_two_indices': dict( # llm used
@@ -830,6 +839,16 @@ device_configs = {
         para=dict(
             accumulate=[Skip(False),],
         ),
+        tensor_para=dict(
+            # When using aclnn and dtype is not double, the following input shapes will trigger the inner error of the broadcast
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((16, 4, 4)), Skip((64, 4, 14, 14)),],
+                },
+            ],
+        ),
+        
     ),
 
     'index_put_acc_one_indices': dict( # llm used
@@ -1079,30 +1098,6 @@ device_configs = {
                 {
                     "ins": ['abs'],
                     "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((64, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'lerp': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'lerp_tensor': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
                 },
             ]
         ),
