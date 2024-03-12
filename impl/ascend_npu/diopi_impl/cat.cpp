@@ -29,7 +29,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         if (!tensorAt.defined() || tensorAt.numel() <= 0) {
             continue;
         }
-        tensorsAt.push_back(tensorAt.to(outTempAt.scalar_type()));
+        tensorsAt.push_back(tensorAt);
     }
     if (!tensorsAt.empty()) {
         if (false) {
