@@ -17,15 +17,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 const int64_t bitNumber = 128;
 const int64_t uInt8BitNumber = 8;
 
-diopiError_t dropoutGenMask(at::Tensor& mask, const at::Tensor& input, double p, at::Generator gen) {
-    at::IntArrayRef shapeArray(input.sizes());
-    auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
-    const uint64_t seed = pair.first;
-    const uint64_t offset = pair.second;
-    EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, p, seed, offset, mask);
-    return diopiSuccess;
-}
-
 }  // namespace
 
 diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* attentionMask,
@@ -57,8 +48,15 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
 
     at::Tensor dropoutMaskAt = at::Tensor();
     if (pDropout != 0) {
-        // int64_t length = (input.numel() + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
-        // dropMaskAt = at_npu::native::OpPreparation::apply_tensor_without_format({length}, input.options().dtype(at::kByte));
+        int64_t numels = b * n * s0 * s1;  // [B,N,S,S]
+        int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
+        length += 32;
+        dropoutMaskAt = npu_preparation::apply_tensor_without_format({length}, qAt.options().dtype(at::kByte));
+        at::IntArrayRef shapeArray({b, n, s0, s1});
+        auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genAt)->philox_engine_inputs(10);
+        const uint64_t seed = pair.first;
+        const uint64_t offset = pair.second;
+        EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, pDropout, seed, offset, dropoutMaskAt);
     }
 
     at::Tensor attentionMaskAt = at::Tensor();
