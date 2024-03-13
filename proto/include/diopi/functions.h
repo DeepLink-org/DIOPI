@@ -577,8 +577,8 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
  *        Type = [float32, float64].
  * todo: 训练时需要返回totalWeight给diopiNLLLossBackward
  */
-DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                                    diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
+DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
+                                    diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
 
 /**
  * @brief Compute the backward pass of diopiNLLLoss().
@@ -615,7 +615,7 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
  */
 DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
-                                            diopiReduction_t reduction, int64_t ignore_index);
+                                            diopiConstTensorHandle_t totalWeight, diopiReduction_t reduction, int64_t ignore_index);
 
 /**
  * @brief Measures the Binary Cross Entropy between the target and input probabilities.
