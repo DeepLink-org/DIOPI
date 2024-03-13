@@ -173,6 +173,11 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
                                                              diopiGeneratorHandle_t gen, double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                              diopiTensorHandle_t grad_v);
 
+DIOPI_API diopiError_t diopiPromptFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t query,
+                                                 diopiConstTensorHandle_t key, diopiConstTensorHandle_t value, diopiConstTensorHandle_t padding_mask,
+                                                 diopiConstTensorHandle_t atten_mask, diopiSize_t actual_seq_lengths, int64_t num_heads, double scale,
+                                                 int64_t pre_tokens, int64_t next_tokens, const char* input_layout, int64_t num_key_value_heads);
+
 // ============================================lightllm begin========================================
 
 /**
