@@ -19,8 +19,6 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiTriu
-- diopiTriuInp
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiConvolution2d
@@ -218,6 +216,8 @@ ascend_npu:
 - diopiTranspose
 - diopiTopk
 - diopiTril
+- diopiTriu
+- diopiTriuInp
 - diopiUniformInp
 - diopiClamp
 - diopiClampInp
