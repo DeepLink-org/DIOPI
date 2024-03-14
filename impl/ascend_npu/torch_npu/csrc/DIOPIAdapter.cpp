@@ -18,6 +18,7 @@
 #include "diopi_impl/helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace {
@@ -2647,7 +2648,7 @@ OpCommand& OpCommand::AddTensorInput(at::Tensor& tensor, at::ScalarType forceSca
     }
     std::tuple<aclTensorDesc*, aclDataBuffer*> res;
     if (commonType.has_value() && commonType.value() != tensor.scalar_type()) {
-        tensor = acl_op::npu_dtype_cast(tensor, commonType.value());
+        tensor = op_api::npu_dtype_cast(tensor, commonType.value());
     }
 
     if (tensor.sizes().size() == 0) {
@@ -2767,7 +2768,7 @@ OpCommand& OpCommand::Output(at::Tensor& output, const string& descName, const c
         std::cout << aclCmd->GetName() << ":descName:" << descName << ",output:" << impl::aten::dumpArgs(output) << std::endl;
     }
     if (resultTypeDefined == false && commonType.has_value() && commonType.value() != output.scalar_type()) {
-        output = acl_op::npu_dtype_cast(output, commonType.value());
+        output = op_api::npu_dtype_cast(output, commonType.value());
     }
     auto res = CovertToAclOutput(output, realType);
     aclCmd->AddOutput(std::get<0>(res), std::get<1>(res));
@@ -2896,11 +2897,9 @@ std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t in
     return ret;
 }
 
-thread_local static at::Generator gDiopiGenerator[16];
-
 namespace detail {
 
-const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { return gDiopiGenerator[device_index]; }
+const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL; }
 
 }  // namespace detail
 
@@ -3079,11 +3078,9 @@ inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 #endif
 
 at::Generator buildATen(diopiGeneratorHandle_t generator) {
-    int64_t currentDeviceIndex = current_device();
-    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(currentDeviceIndex);
+    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
     auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
     impl->generator_ = generator;
-    at_npu::gDiopiGenerator[currentDeviceIndex] = gen;
     return gen;
 }
 
@@ -3250,65 +3247,69 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     return self;
 }
 
-at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return acl_op::cat(tensors, dim); }
+at::Tensor wrapper__cat(const at::ITensorListRef& tensors, int64_t dim) { return op_api::cat(tensors, dim); }
 
 at::Tensor& wrapper__index_put_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate) {
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
-    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, false);
+    return op_api::_index_put_impl_(self, indicesCast, values, accumulate, false);
 }
 
 at::Tensor& wrapper___index_put_impl_(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices, const at::Tensor& values, bool accumulate,
                                       bool unsafe) {
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
-    return acl_op::_index_put_impl_(self, indicesCast, values, accumulate, unsafe);
+    return op_api::_index_put_impl_(self, indicesCast, values, accumulate, unsafe);
 }
 
 at::Tensor wrapper_Tensor_index(const at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices) {
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indices);
-    return acl_op::index(self, indicesCast);
+    return op_api::index(self, indicesCast);
 }
 
-at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return acl_op::bmm(self, mat2); }
+at::Tensor wrapper__bmm(const at::Tensor& self, const at::Tensor& mat2) { return op_api::bmm(self, mat2); }
 
-at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return acl_op::div(self, other); }
+at::Tensor wrapper_Tensor_div(const at::Tensor& self, const at::Tensor& other) { return op_api::div(self, other); }
 
-at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return acl_op::mul(self, other); }
+at::Tensor wrapper_Tensor_mul(const at::Tensor& self, const at::Tensor& other) { return op_api::mul(self, other); }
 
-at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return acl_op::mul(self, other); }
+at::Tensor wrapper_Scalar_mul(const at::Tensor& self, const at::Scalar& other) { return op_api::mul(self, other); }
 
-at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::add(self, other, alpha); }
+at::Tensor wrapper_Tensor_add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return op_api::add(self, other, alpha); }
 
-at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return acl_op::sub(self, other, alpha); }
+at::Tensor wrapper_Tensor_sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) { return op_api::sub(self, other, alpha); }
 
-at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return acl_op::index_select(self, dim, index); }
+at::Tensor wrapper__index_select(const at::Tensor& self, int64_t dim, const at::Tensor& index) { return op_api::index_select(self, dim, index); }
 
-at::Tensor wrapper___softmax(const at::Tensor& self, int64_t dim, bool half_to_float) { return acl_op::_softmax(self, dim, half_to_float); }
+at::Tensor wrapper___softmax(const at::Tensor& self, int64_t dim, bool half_to_float) { return op_api::_softmax(self, dim, half_to_float); }
 
-at::Tensor wrapper_Scalar_eq(const at::Tensor& self, const at::Scalar& other) { return acl_op::eq(self, other); }
+at::Tensor wrapper_Scalar_eq(const at::Tensor& self, const at::Scalar& other) { return op_api::eq(self, other); }
 
-at::Tensor& wrapper_Scalar_masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value) { return acl_op::masked_fill_(self, mask, value); }
+at::Tensor& wrapper_Scalar_masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value) { return op_api::masked_fill_(self, mask, value); }
 
-at::Tensor wrapper__repeat(const at::Tensor& self, at::IntArrayRef repeats) { return acl_op::repeat(self, repeats); }
+at::Tensor wrapper__repeat(const at::Tensor& self, at::IntArrayRef repeats) { return op_api::repeat(self, repeats); }
 
 at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1) {
     int64_t inputSize = self.dim();
     if (dim0 < 0) dim0 = dim0 + inputSize;
     if (dim1 < 0) dim1 = dim1 + inputSize;
-    std::vector<int64_t> perms(inputSize);
-    std::iota(perms.begin(), perms.end(), 0);
-    perms[dim0] = dim1;
-    perms[dim1] = dim0;
-    return acl_op::npu_transpose(self, perms);
+    std::vector<int64_t> dims(inputSize);
+    std::iota(dims.begin(), dims.end(), 0);
+    dims[dim0] = dim1;
+    dims[dim1] = dim0;
+    auto outputSize = op_infer::transpose_npu_output_size(self, dims);
+    at::Tensor output = at_npu::native::OpPreparation::apply_tensor(self, outputSize);
+    at::IntArrayRef dimsAt(dims);
+    EXEC_NPU_CMD(aclnnPermute, self, dimsAt, output);
+    return output;
 }
 
 at::Scalar wrapper___local_scalar_dense(const at::Tensor& self) { return at_npu::native::NPUNativeFunctions::_local_scalar_dense(self); }
-at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::mm_out(self, mat2, out); }
+at::Tensor& wrapper_out_mm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return op_api::mm_out(self, mat2, out); }
 
 at::Tensor& wrapper_source_Tensor_set_(at::Tensor& self, const at::Tensor& source) { return at_npu::native::NPUNativeFunctions::set_(self, source); }
-at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return acl_op::bmm_out(self, mat2, out); }
-at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return acl_op::dot(self, tensor); }
+at::Tensor& wrapper_out_bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& out) { return op_api::bmm_out(self, mat2, out); }
+at::Tensor wrapper__dot(const at::Tensor& self, const at::Tensor& tensor) { return op_api::dot(self, tensor); }
 
-at::Tensor& wrapper_NPU__zero_(at::Tensor& self) { return op_api::fill_(self, 0.0); }
+at::Tensor& wrapper__zero_(at::Tensor& self) { return op_api::zero_(self); }
 
 }  // namespace
 
@@ -3350,7 +3351,7 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
     m.impl("set_.source_Tensor", TORCH_FN(wrapper_source_Tensor_set_));
     m.impl("dot", TORCH_FN(wrapper__dot));
     m.impl("bmm.out", TORCH_FN(wrapper_out_bmm_out));
-    m.impl("zero_", TORCH_FN(wrapper_NPU__zero_));
+    m.impl("zero_", TORCH_FN(wrapper__zero_));
 };
 
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }

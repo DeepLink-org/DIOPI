@@ -115,11 +115,6 @@ inline int debugLevel() {
     }                                                                                             \
     return diopiSuccess;
 
-#define RETURN_IF_EMPTY_TENSOR(x)           \
-    if (x == nullptr || xAt.numel() <= 0) { \
-        return diopiSuccess;                \
-    }
-
 inline void logError() { std::cerr << std::endl; }
 
 template <typename First, typename... Rest>
@@ -275,6 +270,8 @@ inline diopiDtype_t getDIOPITensorType(at::ScalarType scalarType) {
 
 inline bool isIntegralTypeWithBool(const diopiDtype_t& type) { return type < 8 || type == 11; }
 
+inline bool isFloatingPoint(const diopiDtype_t& type) { return (type <= 10 && type >= 8) || type == 12 || type == 13; }
+
 inline diopiDtype_t getDIOPITensorType(const at::Tensor& tensor) { return getDIOPITensorType(tensor.scalar_type()); }
 
 inline diopiDevice_t getDIOPIDevice(c10::DeviceType device) {
@@ -292,15 +289,18 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
 }
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
-
-inline bool isFloat(const diopiScalar_t* scalar) { return scalar->stype > 7; }
+inline bool isBool(const diopiScalar_t* scalar) { return scalar->stype == 11; }
+inline bool isFloat(const diopiScalar_t* scalar) {
+    diopiDtype_t type = scalar->stype;
+    return (type <= 10 && type >= 8) || type == 12 || type == 13;
+}
 
 inline at::Scalar buildATen(const diopiScalar_t* scalar) {
     if (scalar == nullptr) {
         NOT_SUPPORTED("scalar is null ptr, we use temporarily zero");
         return at::Scalar();
     }
-    if (isInt(scalar)) {
+    if (isInt(scalar) || isBool(scalar)) {
         int64_t ival = scalar->ival;
         return ival;
     } else {

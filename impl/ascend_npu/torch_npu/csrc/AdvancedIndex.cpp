@@ -17,6 +17,7 @@
 #include "op_plugin/utils/AdvancedIndex.h"
 
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
 #include "op_plugin/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
@@ -60,20 +61,22 @@ std::vector<at::Tensor> npu_expand_outplace(at::TensorList to_expand) {
     return result;
 }
 
-at::Tensor npu_nonzero_transpose(const at::Tensor& self) {
-    c10::SmallVector<int64_t, SIZE> output_size = {self.dim(), self.numel()};
-    at::Tensor result = at_npu::native::OpPreparation::apply_tensor(output_size, self.options().dtype(at::kLong), self);
-    c10::SmallVector<int64_t, N> output_sync_idx = {0};
-    at_npu::native::OpCommand cmd;
-    cmd.Sync(output_sync_idx).Name("NonZero").Input(self).Output(result).Attr("transpose", true).Run();
-    return result;
-}
+// at::Tensor npu_nonzero_transpose(const at::Tensor& self) {
+//     c10::SmallVector<int64_t, SIZE> output_size = {self.dim(), self.numel()};
+//     at::Tensor result = at_npu::native::OpPreparation::apply_tensor(output_size, self.options().dtype(at::kLong), self);
+//     c10::SmallVector<int64_t, N> output_sync_idx = {0};
+//     at_npu::native::OpCommand cmd;
+//     cmd.Sync(output_sync_idx).Name("NonZero").Input(self).Output(result).Attr("transpose", true).Run();
+//     return result;
+// }
 
-at::Tensor npu_nonzero_notranspose(const at::Tensor& self) {
-    at::Tensor result = acl_op::nonzero(self);
-    result = result.transpose(1, 0);
-    return result;
-}
+// at::Tensor npu_nonzero_notranspose(const at::Tensor& self) {
+//     at::Tensor result = acl_op::nonzero(self);
+//     result = result.transpose(1, 0);
+//     return result;
+// }
+
+at::Tensor npu_nonzero_then_transpose(const at::Tensor& self) { return op_api::nonzero(self).transpose(1, 0); }
 }  // namespace
 
 AdvancedIndex::AdvancedIndex(const at::Tensor& src, at::TensorList indices_list) {
@@ -228,7 +231,8 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(const at::Tensor& self,
                 }
                 at::Tensor nonzero;
                 // Replace with nonzeros
-                nonzero = flag_aclnn ? npu_nonzero_notranspose(index) : npu_nonzero_transpose(index);
+                // nonzero = flag_aclnn ? npu_nonzero_notranspose(index) : npu_nonzero_transpose(index);
+                nonzero = npu_nonzero_then_transpose(index);
                 for (int64_t j = 0; j < index.dim(); j++) {
                     result.emplace_back(nonzero.select(0, j));
                 }
