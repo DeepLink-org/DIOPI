@@ -575,10 +575,9 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
  *        - (N,d1,d2,...,dK) with K≥1 if reduction is 'none' for K-dimensional loss.
  *        - Scalar if reduction is 'sum' or 'mean'.
  *        Type = [float32, float64].
- * todo: 训练时需要返回totalWeight给diopiNLLLossBackward
  */
-DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
-                                    diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
+DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+                                    diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
 
 /**
  * @brief Compute the backward pass of diopiNLLLoss().
@@ -611,11 +610,78 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
  *        Shape:
  *        - Matches the shape of 'input' tensor.
  *        Type = [float32, float64].
- * todo: 需要传totalWeight避免重复计算
  */
 DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
-                                            diopiConstTensorHandle_t totalWeight, diopiReduction_t reduction, int64_t ignore_index);
+                                            diopiReduction_t reduction, int64_t ignore_index);
+
+/**
+ * @brief Measures the NLL loss between the target and input probabilities.
+ * @param[in] ctx Context environment.
+ * @param[in] input Input tensor, usually representing log probabilities.
+ *        Shape:
+ *        - (N,C) where N is the batch size and C is the number of classes.
+ *        - Or for K-dimensional loss: (N,C,d1,d2,...,dK) with K≥1.
+ *        Type = [float32, float64]
+ * @param[in] target Target tensor representing class indices, with values in the range of [0, C-1].
+ *        Shape:
+ *        - (N) for single dimensional target.
+ *        - Or for K-dimensional loss: (N,d1,d2,...,dK) with K≥1.
+ *        Type = [int64]
+ * @param[in] weight Optional tensor representing weights manually assigned to each class.
+ *        Shape:
+ *        - (C) where C is the number of classes.
+ *        Type = [float32, float64]
+ * @param[in] reduction  Loss reduction mode, which can be none, sum, or mean.
+ * @param[in] ignore_index  Specifies a target value that should be ignored and does not contribute to the input gradient.
+ * This parameter can be used only when the target contains class indices. Type = [int64].
+ * @param[out] out Output tensor.
+ * @param[out] totalWeight TotalWeight tensor.
+ *        Shape:
+ *        - (N) if reduction is 'none' for single dimensional target.
+ *        - (N,d1,d2,...,dK) with K≥1 if reduction is 'none' for K-dimensional loss.
+ *        - Scalar if reduction is 'sum' or 'mean'.
+ *        Type = [float32, float64].
+ */
+DIOPI_API diopiError_t diopiNLLLossV1(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
+                                      diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
+
+/**
+ * @brief Compute the backward pass of diopiNLLLoss().
+ * @param[in] ctx Context environment.
+ * @param[in] grad_output The gradient tensor with respect to the output of the forward pass.
+ *        Shape:
+ *        - (N) if reduction was 'none' for single dimensional target.
+ *        - (N,d1,d2,...,dK) with K≥1 if reduction was 'none' for K-dimensional loss.
+ *        - Scalar if reduction was 'sum' or 'mean'.
+ *        Type = [float32, float64]
+ * @param[in] input Input tensor, usually representing log probabilities.
+ *        Shape:
+ *        - (N,C) where N is the batch size and C is the number of classes.
+ *        - Or for K-dimensional loss: (N,C,d1,d2,...,dK) with K≥1.
+ *        Type = [float32, float64]
+ * @param[in] target Target tensor representing class indices, with values in the range of [0, C-1].
+ *        Shape:
+ *        - (N) for single dimensional target.
+ *        - Or for K-dimensional loss: (N,d1,d2,...,dK) with K≥1.
+ *        Type = [int64]
+ *
+ * @param[in] weight Optional tensor representing weights manually assigned to each class.
+ *        Shape:
+ *        - (C) where C is the number of classes.
+ *        Type = [float32, float64]
+ * @param[in] totalWeight totalWeight tensor.
+ * @param[in] reduction  Loss reduction mode, which can be none, sum, or mean.
+ * @param[in] ignore_index  Specifies a target value that should be ignored and does not contribute to the input gradient.
+ * This parameter can be used only when the target contains class indices. Type = [int64].
+ * @param[out] grad_input Gradient tensor with respect to the input of the forward pass.
+ *        Shape:
+ *        - Matches the shape of 'input' tensor.
+ *        Type = [float32, float64].
+ */
+DIOPI_API diopiError_t diopiNLLLossV1Backward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                              diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
+                                              diopiConstTensorHandle_t totalWeight, diopiReduction_t reduction, int64_t ignore_index);
 
 /**
  * @brief Measures the Binary Cross Entropy between the target and input probabilities.

@@ -127,13 +127,13 @@ std::string getReductionStr(const diopiReduction_t reduction) {
     return reductionStr;
 }
 
-diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
+diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                           diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightSizeVec = std::vector<int64_t>({1});
     auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
-    diopiTensorHandle_t weightCopy;
+    diopiTensorHandle_t totalWeight, weightCopy;
     AscendTensor inputAt(input);
-    // diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, inputAt.dtype(), diopi_device);
+    diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, inputAt.dtype(), diopi_device);
 
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
@@ -157,12 +157,12 @@ diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 }
 
 diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
-                                  diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t totalWeight, diopiReduction_t reduction, int64_t ignoreIndex) {
+                                  diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     auto totalWeightSizeVec = std::vector<int64_t>({1});
     auto totalWeightSize = vectorToDiopiSize(totalWeightSizeVec);
-    diopiTensorHandle_t weightCopy, out, inputCopy, targetCopy, gradInputCopy;
+    diopiTensorHandle_t weightCopy, totalWeight, out, inputCopy, targetCopy, gradInputCopy;
     AscendTensor inputAt0(input);
-    // diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, inputAt0.dtype(), diopi_device);
+    diopiRequireTensor(ctx, &totalWeight, &totalWeightSize, nullptr, inputAt0.dtype(), diopi_device);
     makeTensorLike(ctx, &out, gradOutput);
 
     diopiSize_t inputShape;
@@ -181,7 +181,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         fillTensor(ctx, weightCopy, static_cast<float>(1.0));
     }
 
-    // nllLossOutWithTotalWeight(ctx, out, totalWeight, input, target, weightCopy, reduction, ignoreIndex);
+    nllLossOutWithTotalWeight(ctx, out, totalWeight, input, target, weightCopy, reduction, ignoreIndex);
 
     std::vector<int64_t> calShapeVec;
     std::vector<int64_t> calTargetShapeVec;
@@ -279,7 +279,7 @@ diopiError_t diopiCrossEntropyLoss(diopiContextHandle_t ctx, diopiTensorHandle_t
     makeTensorLike(ctx, &logTensor, input);
     diopiLogSoftmax(ctx, logTensor, input, 1);
     target = hostToDevice(ctx, target);
-    diopiNLLLoss(ctx, out, nullptr, logTensor, target, weight, reduction, ignoreIndex);
+    diopiNLLLoss(ctx, out, logTensor, target, weight, reduction, ignoreIndex);
     return diopiSuccess;
 }
 
@@ -291,7 +291,7 @@ diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, diopiTensor
     diopiLogSoftmax(ctx, logTensor, input, 1);
     makeTensorLike(ctx, &gradLog, gradInput);
     target = hostToDevice(ctx, target);
-    diopiNLLLossBackward(ctx, gradLog, gradOutput, input, target, weight, nullptr, reduction, ignoreIndex);
+    diopiNLLLossBackward(ctx, gradLog, gradOutput, input, target, weight, reduction, ignoreIndex);
     diopiLogSoftmaxBackward(ctx, gradInput, gradLog, logTensor, 1);
     return diopiSuccess;
 }
