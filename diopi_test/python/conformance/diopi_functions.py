@@ -5,7 +5,6 @@ import ctypes
 import itertools
 import numpy as np
 import diopilib
-import os
 
 from collections import namedtuple
 from ctypes import c_double, byref
@@ -2023,7 +2022,7 @@ def all(input, dim=None, keepdim=False) -> Tensor:
     check_returncode(ret)
     return out
 
-
+# todo: impl for diopiNLLLossV1
 def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
     assert reduction in [
         "mean",
@@ -2040,35 +2039,18 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
         out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
-    testV1 = os.environ.get("diopiNLLLossV1")
-    if testV1:
-        total_weight = Tensor((), input.get_dtype())
-        func = check_function("diopiNLLLossV1")
-        ret = func(
-            input.context(),
-            out,
-            total_weight,
-            input,
-            target,
-            weight,
-            reduction_mode,
-            ignore_index,
-        )
-        check_returncode(ret)
-        return out
-    else:
-        func = check_function("diopiNLLLoss")
-        ret = func(
-            input.context(),
-            out,
-            input,
-            target,
-            weight,
-            reduction_mode,
-            ignore_index,
-        )
-        check_returncode(ret)
-        return out
+    func = check_function("diopiNLLLoss")
+    ret = func(
+        input.context(),
+        out,
+        input,
+        target,
+        weight,
+        reduction_mode,
+        ignore_index,
+    )
+    check_returncode(ret)
+    return out
 
 def sigmoid_focal_loss(
     inputs, targets, alpha=0.25, gamma=2, reduction="none"
@@ -2850,7 +2832,7 @@ def binary_cross_entropy_with_logits_backward(
     check_returncode(ret)
     return {"input": grad_input}
 
-
+# todo: impl for diopiNLLLossV1Backward
 def nll_loss_backward(
     input,
     grad_outputs,
@@ -2869,36 +2851,17 @@ def nll_loss_backward(
 
     reduction_mode = convert_reduction(reduction)
 
-    testV1 = os.environ.get("diopiNLLLossV1")
-    if testV1:
-        # total_weight = Tensor((), input.get_dtype())
-        print('total_weight=', total_weight)
-        func = check_function("diopiNLLLossV1Backward")
-        ret = func(
-            input.context(),
-            grad_input,
-            grad_outputs[0],
-            input,
-            target,
-            weight,
-            total_weight,
-            reduction_mode,
-            ignore_index,
-        )
-    else:
-        func = check_function("diopiNLLLossBackward")
-        ret = func(
-            input.context(),
-            grad_input,
-            grad_outputs[0],
-            input,
-            target,
-            weight,
-            reduction_mode,
-            ignore_index,
-        )
-    check_returncode(ret)
-    return {"input": grad_input}
+    func = check_function("diopiNLLLossBackward")
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_outputs[0],
+        input,
+        target,
+        weight,
+        reduction_mode,
+        ignore_index,
+    )
 
 
 def max_pool2d_backward(
