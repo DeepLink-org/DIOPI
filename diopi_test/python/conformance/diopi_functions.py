@@ -5,6 +5,7 @@ import ctypes
 import itertools
 import numpy as np
 import diopilib
+import os
 
 from collections import namedtuple
 from ctypes import c_double, byref
@@ -2039,19 +2040,35 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
         out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
-    # func = check_function("diopiNLLLossV1")
-    func = check_function("diopiNLLLoss")
-    ret = func(
-        input.context(),
-        out,
-        input,
-        target,
-        weight,
-        reduction_mode,
-        ignore_index,
-    )
-    check_returncode(ret)
-    return out
+    testV1 = os.environ.get("diopiNLLLossV1")
+    if testV1:
+        total_weight = Tensor((), input.get_dtype())
+        func = check_function("diopiNLLLossV1")
+        ret = func(
+            input.context(),
+            out,
+            total_weight,
+            input,
+            target,
+            weight,
+            reduction_mode,
+            ignore_index,
+        )
+        check_returncode(ret)
+        return out, total_weight
+    else:
+        func = check_function("diopiNLLLoss")
+        ret = func(
+            input.context(),
+            out,
+            input,
+            target,
+            weight,
+            reduction_mode,
+            ignore_index,
+        )
+        check_returncode(ret)
+        return out
 
 def sigmoid_focal_loss(
     inputs, targets, alpha=0.25, gamma=2, reduction="none"
@@ -2839,30 +2856,46 @@ def nll_loss_backward(
     grad_outputs,
     target,
     weight=None,
+    # total_weight=None,
     ignore_index=-100,
     reduction="mean",
     **kwargs,
 ) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
+    total_weight = Tensor((), input.get_dtype())
 
     if weight is not None:
         assert isinstance(weight, Tensor), "weigth must be a Tensor"
 
     reduction_mode = convert_reduction(reduction)
 
-    # func = check_function("diopiNLLLossV1Backward")
-    func = check_function("diopiNLLLossBackward")
-    ret = func(
-        input.context(),
-        grad_input,
-        grad_outputs[0],
-        input,
-        target,
-        weight,
-        reduction_mode,
-        ignore_index,
-    )
+    testV1 = os.environ.get("diopiNLLLossV1")
+    if testV1:
+        func = check_function("diopiNLLLossV1Backward")
+        ret = func(
+            input.context(),
+            grad_input,
+            grad_outputs[0],
+            input,
+            target,
+            weight,
+            total_weight,
+            reduction_mode,
+            ignore_index,
+        )
+    else:
+        func = check_function("diopiNLLLossBackward")
+        ret = func(
+            input.context(),
+            grad_input,
+            grad_outputs[0],
+            input,
+            target,
+            weight,
+            reduction_mode,
+            ignore_index,
+        )
     check_returncode(ret)
     return {"input": grad_input}
 
