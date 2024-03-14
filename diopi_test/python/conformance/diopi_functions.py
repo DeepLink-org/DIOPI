@@ -2055,7 +2055,7 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
             ignore_index,
         )
         check_returncode(ret)
-        return out, total_weight
+        return out
     else:
         func = check_function("diopiNLLLoss")
         ret = func(
@@ -2856,7 +2856,7 @@ def nll_loss_backward(
     grad_outputs,
     target,
     weight=None,
-    # total_weight=None,
+    total_weight=None,
     ignore_index=-100,
     reduction="mean",
     **kwargs,
@@ -2871,7 +2871,8 @@ def nll_loss_backward(
 
     testV1 = os.environ.get("diopiNLLLossV1")
     if testV1:
-        total_weight = Tensor((), input.get_dtype())
+        # total_weight = Tensor((), input.get_dtype())
+        print('total_weight=', total_weight)
         func = check_function("diopiNLLLossV1Backward")
         ret = func(
             input.context(),
