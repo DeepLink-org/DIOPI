@@ -17,7 +17,8 @@ diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     }
 
     BEGIN_CALL_ACL_OP(out);
-    op_api::mul_out(inputAt, otherAt, outAt);
+    // op_api::mul_out(inputAt, otherAt, outAt);
+    EXEC_NPU_CMD(aclnnMul, inputAt, otherAt, outAt);
     END_CALL_ACL_OP();
 }
 
@@ -27,7 +28,8 @@ diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
         return diopiSuccess;
     }
 
-    op_api::mul_(inputAt, otherAt);
+    // op_api::mul_(inputAt, otherAt);
+    EXEC_NPU_CMD(aclnnInplaceMul, inputAt, otherAt);
     END_CALL_ACL_OP();
 }
 
@@ -48,7 +50,8 @@ diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
         return diopiSuccess;
     }
 
-    op_api::mul_(inputAt, otherAt);
+    // op_api::mul_(inputAt, otherAt);
+    EXEC_NPU_CMD(aclnnInplaceMuls, inputAt, otherAt);
     END_CALL_ACL_OP();
 }
 
