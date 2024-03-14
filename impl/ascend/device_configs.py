@@ -1270,5 +1270,11 @@ device_configs = {
         name=["nll_loss"],
         atol=1e-4,
         rtol=1e-3,
-    )
+    ),
+
+    'flash_attention': dict(
+        name=['flash_attention'],
+        # the backward of flash attention op does not support float32 on ascend
+        dtype=[Skip(np.float32),],
+    ),
 }

@@ -251,3 +251,5 @@ ascend_npu:
 - diopiPowTensor
 - diopiLerpTensor
 - diopiLerpScalar
+- diopiFlashAttention
+- diopiFlashAttentionBackward
