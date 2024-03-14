@@ -2838,7 +2838,6 @@ def nll_loss_backward(
     grad_outputs,
     target,
     weight=None,
-    total_weight=None,
     ignore_index=-100,
     reduction="mean",
     **kwargs,
