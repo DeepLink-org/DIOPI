@@ -11,7 +11,7 @@
 
 namespace OP_IMPL_NS {
 
-diopiError_t diopiNLLLossV1(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
+diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
                             diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
     BEGIN_CALL_ACL_OP(out, input, target, weight, totalWeight);
     if (input == nullptr) {
@@ -44,7 +44,7 @@ diopiError_t diopiNLLLossV1(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     END_CALL_ACL_OP();
 }
 
-diopiError_t diopiNLLLossV1Backward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+diopiError_t diopiNLLLossV2Backward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                     diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t totalWeight, diopiReduction_t reduction, int64_t ignoreIndex) {
     BEGIN_CALL_ACL_OP(input, target, weight, gradInput, gradOutput, totalWeight);

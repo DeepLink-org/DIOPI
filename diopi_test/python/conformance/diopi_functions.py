@@ -2022,7 +2022,7 @@ def all(input, dim=None, keepdim=False) -> Tensor:
     check_returncode(ret)
     return out
 
-# todo: impl for diopiNLLLossV1
+# todo: impl for diopiNLLLossV2
 def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
     assert reduction in [
         "mean",
@@ -2832,7 +2832,7 @@ def binary_cross_entropy_with_logits_backward(
     check_returncode(ret)
     return {"input": grad_input}
 
-# todo: impl for diopiNLLLossV1Backward
+# todo: impl for diopiNLLLossV2Backward
 def nll_loss_backward(
     input,
     grad_outputs,

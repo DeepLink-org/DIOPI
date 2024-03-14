@@ -179,8 +179,8 @@ ascend_npu:
 - diopiLogSoftmaxBackward
 - diopiMean
 - diopiMm
-- diopiNLLLossV1
-- diopiNLLLossV1Backward
+- diopiNLLLossV2
+- diopiNLLLossV2Backward
 - diopiArgmax
 - diopiLogicalAnd
 - diopiLogicalOr

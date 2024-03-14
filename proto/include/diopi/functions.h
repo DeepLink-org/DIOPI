@@ -643,7 +643,7 @@ DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTenso
  *        - Scalar if reduction is 'sum' or 'mean'.
  *        Type = [float32, float64].
  */
-DIOPI_API diopiError_t diopiNLLLossV1(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
+DIOPI_API diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
                                       diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
 
 /**
@@ -679,7 +679,7 @@ DIOPI_API diopiError_t diopiNLLLossV1(diopiContextHandle_t ctx, diopiTensorHandl
  *        - Matches the shape of 'input' tensor.
  *        Type = [float32, float64].
  */
-DIOPI_API diopiError_t diopiNLLLossV1Backward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+DIOPI_API diopiError_t diopiNLLLossV2Backward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                               diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                               diopiConstTensorHandle_t totalWeight, diopiReduction_t reduction, int64_t ignore_index);
 

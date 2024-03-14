@@ -187,10 +187,10 @@
 - diopiNLLLossBackward:
     dtype: (float64)->float32
 
-- diopiNLLLossV1:
+- diopiNLLLossV2:
     dtype: (float64)->float32
 
-- diopiNLLLossV1Backward:
+- diopiNLLLossV2Backward:
     dtype: (float64)->float32
 
 - diopiMax:
