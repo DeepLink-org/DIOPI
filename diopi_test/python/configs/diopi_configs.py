@@ -3357,6 +3357,7 @@ diopi_configs = {
                 },
             ],
         ),
+        saved_args=dict(out=0, total_weight=1),
     ),
 
     'nll_loss_empty_tensor': dict(
@@ -3388,6 +3389,7 @@ diopi_configs = {
                 },
             ],
         ),
+        saved_args=dict(out=0, total_weight=1),
     ),
 
     # FIXME cross_entropy输入指定shape报错
