@@ -173,6 +173,27 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
                                                              diopiGeneratorHandle_t gen, double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                              diopiTensorHandle_t grad_v);
 
+/**
+ * @brief Function PromptFlashAttention.
+ * @param[in] query: A matrix Tensor. The type support float16, bf16, float32 .
+ * @param[in] key: A matrix Tensor. The type support float16, bf16, float32.
+ * @param[in] value: A matrix Tensor. The type support float16, bf16, float32.
+ * @param[in] padding_mask: A matrix Tensor. The type support float16, bf16, float32.
+ * @param[in] atten_mask: A matrix Tensor. The type support float16, bf16, float32.
+ * @param[in] actual_seq_lengths: A Tensor. The type support INT64.
+ * @param[in] num_heads: A int. The number of the heads.
+ * @param[in] scale_value: A float. The scale value. Default: 1.0.
+ * @param[in] pre_tokens: A int. Previous tokens. Default: 214748647
+ * @param[in] next_tokens: A int. Next tokens. Default: 0
+ * @param[in] input_layout: A string. Specifies the layout of `query`, the value must be one of ["BSH", "SBH"]. Default: "BSH".
+ * @param[in] num_key_value_heads: key value num heads. Default: 1
+ * @param[out] out: A matrix Tensor. The type support float16, float32, int8. \n
+ */
+DIOPI_API diopiError_t diopiPromptFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t query,
+                                                 diopiConstTensorHandle_t key, diopiConstTensorHandle_t value, diopiConstTensorHandle_t padding_mask,
+                                                 diopiConstTensorHandle_t atten_mask, diopiSize_t actual_seq_lengths, int64_t num_heads, double scale,
+                                                 int64_t pre_tokens, int64_t next_tokens, const char* input_layout, int64_t num_key_value_heads);
+
 // ============================================lightllm begin========================================
 
 /**
