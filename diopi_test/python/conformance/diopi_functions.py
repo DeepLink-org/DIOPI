@@ -2863,7 +2863,6 @@ def nll_loss_backward(
 ) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
-    total_weight = Tensor((), input.get_dtype())
 
     if weight is not None:
         assert isinstance(weight, Tensor), "weigth must be a Tensor"
@@ -2872,6 +2871,7 @@ def nll_loss_backward(
 
     testV1 = os.environ.get("diopiNLLLossV1")
     if testV1:
+        total_weight = Tensor((), input.get_dtype())
         func = check_function("diopiNLLLossV1Backward")
         ret = func(
             input.context(),
