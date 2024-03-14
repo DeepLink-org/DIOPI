@@ -2039,36 +2039,8 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
         out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
+    # func = check_function("diopiNLLLossV1")
     func = check_function("diopiNLLLoss")
-    ret = func(
-        input.context(),
-        out,
-        input,
-        target,
-        weight,
-        reduction_mode,
-        ignore_index,
-    )
-    check_returncode(ret)
-    return out
-
-def nll_lossv1(input, target, weight=None, ignore_index=-100, reduction="mean"):
-    assert reduction in [
-        "mean",
-        "sum",
-        "none",
-    ], "reduction must be one of (mean, sum, none)"
-
-    if weight is not None:
-        assert isinstance(weight, Tensor), "weigth must be a Tensor"
-
-    if reduction == "none":
-        out = Tensor(target.size().data, input.get_dtype())
-    else:
-        out = Tensor((), input.get_dtype())
-
-    reduction_mode = convert_reduction(reduction)
-    func = check_function("diopiNLLLossV1")
     ret = func(
         input.context(),
         out,
@@ -2879,6 +2851,7 @@ def nll_loss_backward(
 
     reduction_mode = convert_reduction(reduction)
 
+    # func = check_function("diopiNLLLossV1Backward")
     func = check_function("diopiNLLLossBackward")
     ret = func(
         input.context(),
