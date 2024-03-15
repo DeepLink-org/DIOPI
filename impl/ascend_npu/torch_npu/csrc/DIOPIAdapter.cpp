@@ -3087,18 +3087,21 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     TORCH_CHECK(out != nullptr);
     diopiTensorHandle_t diopiHandle = torch_npu::NPUBridge::GetNpuStorageImpl(input)->npu_desc_.diopi_tensor_;
-    if (diopiHandle == nullptr) {
-        at::IntArrayRef atSize = input.sizes();
-        at::IntArrayRef atStride = input.strides();
-        diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
-        diopiSize_t stride{atStride.data(), static_cast<int64_t>(atStride.size())};
-        diopiDtype_t dtype = getDIOPITensorType(input);
-        diopiDevice_t device = getDIOPIDevice(input.device().type());
-        diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
-        updateATen2Tensor(ctx, input, *out);
-    } else {
-        *out = diopiHandle;
+    if (diopiHandle != nullptr) {
+        at::Tensor outAt = buildATen(diopiHandle);
+        if (outAt.sizes() == input.sizes() && outAt.strides() == input.strides() && outAt.data_ptr() == input.data_ptr()) {
+            *out = diopiHandle;
+            return;
+        }
     }
+    at::IntArrayRef atSize = input.sizes();
+    at::IntArrayRef atStride = input.strides();
+    diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
+    diopiSize_t stride{atStride.data(), static_cast<int64_t>(atStride.size())};
+    diopiDtype_t dtype = getDIOPITensorType(input);
+    diopiDevice_t device = getDIOPIDevice(input.device().type());
+    diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
+    updateATen2Tensor(ctx, input, *out);
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
@@ -3194,6 +3197,7 @@ const at::Tensor& wrapper__resize_(const at::Tensor& self, at::IntArrayRef size,
         auto storage = selfImpl->unsafe_storage();
         auto storageImpl = storage.unsafeGetStorageImpl();
         storageImpl->set_data_ptr_noswap(std::move(c10::InefficientStdFunctionContext::makeDataPtr(out.data_ptr(), c10::detail::deleteNothing, self.device())));
+        torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_.diopi_tensor_ = torch_npu::NPUBridge::GetNpuStorageImpl(out)->npu_desc_.diopi_tensor_;
     }
     selfImpl->set_sizes_contiguous(size);
     return self;
@@ -3228,6 +3232,8 @@ at::Tensor& wrapper_source_Storage_set_(at::Tensor& self, at::Storage src) {
     auto storage = selfImpl->unsafe_storage();
     auto storageImpl = storage.unsafeGetStorageImpl();
     storageImpl->set_data_ptr(std::move(src.data_ptr()));
+    torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_.diopi_tensor_ =
+        torch_npu::NPUBridge::GetNpuStorageImpl(src.unsafeGetStorageImpl())->npu_desc_.diopi_tensor_;
     return self;
 }
 
@@ -3243,7 +3249,8 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     } else {
         selfImpl->set_sizes_contiguous(size);
     }
-
+    torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_.diopi_tensor_ =
+        torch_npu::NPUBridge::GetNpuStorageImpl(source.unsafeGetStorageImpl())->npu_desc_.diopi_tensor_;
     return self;
 }
 
