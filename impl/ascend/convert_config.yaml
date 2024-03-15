@@ -4,6 +4,12 @@
 - diopiSoftmax:
     dtype: (float64)->float32
 
+- diopiBaddbmm:
+    dtype: (float64)->float32
+
+- diopiBaddbmmInp:
+    dtype: (float64)->float32
+
 - diopiSoftmaxBackward:
     dtype: (float64)->float32
 
@@ -168,12 +174,6 @@
 
 - diopiGroupNormBackward:
     dtype: (float64)->float32
-
-- diopiSqrt:
-    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool)->float32
-
-- diopiSqrtInp:
-    dtype: (int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool)->float32
 
 - diopiLayerNorm:
     dtype: (float64)->float32
@@ -372,4 +372,12 @@
     dtype: (float64)->float32
 
 - diopiTanhBackward:
+    dtype: (float64)->float32
+
+- diopiLerpTensor:
+    # aclnnLerp doesn't support float64
+    dtype: (float64)->float32
+
+- diopiLerpScalar:
+    # aclnnLerps doesn't support float64
     dtype: (float64)->float32

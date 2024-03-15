@@ -1,6 +1,4 @@
 ascend:
-- diopiBaddbmm
-- diopiBaddbmmInp
 - diopiContiguous
 - diopiCos
 - diopiCosInp
@@ -21,8 +19,6 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiTriu
-- diopiTriuInp
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiConvolution2d
@@ -50,6 +46,8 @@ ascend_npu:
 - diopiArange
 - diopiAtan
 - diopiAtanInp
+- diopiBaddbmm
+- diopiBaddbmmInp
 - diopiErf
 - diopiErfInp
 - diopiNonzero
@@ -218,6 +216,8 @@ ascend_npu:
 - diopiTranspose
 - diopiTopk
 - diopiTril
+- diopiTriu
+- diopiTriuInp
 - diopiUniformInp
 - diopiClamp
 - diopiClampInp
@@ -249,3 +249,7 @@ ascend_npu:
 - diopiPowInpTensor
 - diopiPowScalar
 - diopiPowTensor
+- diopiLerpTensor
+- diopiLerpScalar
+- diopiFlashAttention
+- diopiFlashAttentionBackward

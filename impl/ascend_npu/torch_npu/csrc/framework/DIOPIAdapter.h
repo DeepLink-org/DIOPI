@@ -228,11 +228,12 @@ struct NPUGeneratorImpl : public c10::GeneratorImpl {
 
     // NPUGeneratorImpl methods
     std::shared_ptr<NPUGeneratorImpl> clone() const { INTERFACE_NOT_IMPL; }
-    virtual GeneratorImpl* clone_impl() const { INTERFACE_NOT_IMPL; }
-
+    GeneratorImpl* clone_impl() const { INTERFACE_NOT_IMPL; }
     void set_current_seed(uint64_t seed) { INTERFACE_NOT_IMPL; }
     uint64_t current_seed() const { INTERFACE_NOT_IMPL; }
     uint64_t seed() { INTERFACE_NOT_IMPL; }
+    void set_offset(uint64_t offset) { INTERFACE_NOT_IMPL; }
+    uint64_t get_offset() const { INTERFACE_NOT_IMPL; }
     void set_state(const c10::TensorImpl& new_state) { INTERFACE_NOT_IMPL; }
     c10::intrusive_ptr<c10::TensorImpl> get_state() const { INTERFACE_NOT_IMPL; }
     void set_philox_offset_per_thread(uint64_t offset) { INTERFACE_NOT_IMPL; }
@@ -657,7 +658,7 @@ public:
     static at::Tensor cast_to_ori_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static at::Tensor& cast_to_ori_format(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
 
-    static int8_t get_cube_math_type(bool allowHf32) { INTERFACE_NOT_IMPL; }
+    static int8_t get_cube_math_type(bool allowHf32) { return CalcuOpUtil::GetCubeMathType(allowHf32); }
     static void markAsOutputForApplyTensor(at::Tensor& src);
     // used to apply output tensor
     static at::Tensor apply_tensor(const at::Tensor& src);
