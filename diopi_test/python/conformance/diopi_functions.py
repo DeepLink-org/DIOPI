@@ -2861,7 +2861,8 @@ def nll_loss_backward(
         reduction_mode,
         ignore_index,
     )
-
+    check_returncode(ret)
+    return {"input": grad_input}
 
 def max_pool2d_backward(
     input,
