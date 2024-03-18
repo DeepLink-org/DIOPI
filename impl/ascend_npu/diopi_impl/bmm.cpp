@@ -19,8 +19,8 @@ diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     }
     BEGIN_CALL_ACL_OP(input, mat2);
     // op_api::bmm_out(inputAt, mat2At, outAt);
-    int cube_math_type = at_npu::native::OpPreparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-    EXEC_NPU_CMD(aclnnBatchMatMul, inputAt, mat2At, outAt, cube_math_type);
+    signed char cubeMathType = at_npu::native::OpPreparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
+    EXEC_NPU_CMD(aclnnBatchMatMul, inputAt, mat2At, outAt, cubeMathType);
     END_CALL_ACL_OP();
 }
 
