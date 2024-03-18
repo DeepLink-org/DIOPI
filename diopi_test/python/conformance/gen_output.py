@@ -334,16 +334,16 @@ class CustomizedTest(object):
             seq_len_in = cu_seqlens[i + 1] - cu_seqlens[i]
             key_padding_mask[i, :seq_len_in] = True
         padded_q_shape = (batch_size, seq_len, num_heads, feature_size)
-        q_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
-        k_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
-        v_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
+        q_padded = torch.zeros(padded_q_shape, dtype=q.dtype, device="cuda")
+        k_padded = torch.zeros(padded_q_shape, dtype=k.dtype, device="cuda")
+        v_padded = torch.zeros(padded_q_shape, dtype=v.dtype, device="cuda")
         for i in range(batch_size):
             seq_len = cu_seqlens[i + 1] - cu_seqlens[i]
             q_padded[i, :seq_len, :, :] = q[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
             k_padded[i, :seq_len, :, :] = k[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
             v_padded[i, :seq_len, :, :] = v[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
         qkv_result = multihead_attention_inside(q_padded, k_padded, v_padded, softmax_scale, is_causal, key_padding_mask)
-        output = torch.zeros(q.shape, dtype=torch.float16).cuda()
+        output = torch.zeros(q.shape, dtype=q.dtype).cuda()
         for i in range(1, len(cu_seqlens)):
             start_idx = cu_seqlens[i - 1]
             end_idx = cu_seqlens[i]

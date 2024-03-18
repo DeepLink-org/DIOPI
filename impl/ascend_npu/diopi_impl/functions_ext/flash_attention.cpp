@@ -216,9 +216,9 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     at::Tensor dropoutMaskAt = at::Tensor();
     if (pDropout > 0 && pDropout <= 1) {
         int64_t numels = n;
-        int64_t accum = cumSeqQAt[0].item<int>() * cumSeqKAt[0].item<int>();
+        int64_t accum = cumSeqQAt[0].item<int64_t>() * cumSeqKAt[0].item<int64_t>();
         for (int64_t i = 1; i < cumSeqQAt.dim(); i++) {
-            accum += ((cumSeqQAt[i].item<int>() - cumSeqQAt[i - 1].item<int>()) * (cumSeqKAt[i].item<int>() - cumSeqKAt[i - 1].item<int>()));
+            accum += ((cumSeqQAt[i].item<int64_t>() - cumSeqQAt[i - 1].item<int64_t>()) * (cumSeqKAt[i].item<int64_t>() - cumSeqKAt[i - 1].item<int64_t>()));
         }
         numels *= accum;
         int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;

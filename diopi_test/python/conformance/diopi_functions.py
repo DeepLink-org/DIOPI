@@ -5400,6 +5400,7 @@ def flash_attention_varlen(q, k, v, cu_seqlens, p_dropout, softmax_scale, is_cau
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
+    cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int64))
     if is_causal:
         attention_mask = Tensor()
     else:
