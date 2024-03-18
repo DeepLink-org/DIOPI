@@ -5395,7 +5395,7 @@ def flash_attention_backward(q, k, v, out, grad_outputs, p_dropout, softmax_scal
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
-def flash_attention_varlen(q, k, v, cu_seqlens, p_dropout, softmax_scale, is_causal):
+def flash_attention_varlen(q, k, v, max_seqlen, cu_seqlens, p_dropout, softmax_scale, is_causal):
     call = "diopiFlashAttentionVarLen"
     func = check_function(call)
     q_size = list(q.size().data)
