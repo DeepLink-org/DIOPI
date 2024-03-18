@@ -225,6 +225,72 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, double p_dropout,
                                                    double softmax_scale);
 
+// This interface is temporarily designed for ascend, please do not use it with other devices.
+/**
+ * @brief Compute the forward pass for the variable length version of Flash Attention.
+ * @param[in] ctx The diopi context.
+ * @param[inout] gen Handle for the random number generator used in dropout op.
+ * @param[in] q Query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type = [bfloat16, float16].
+ * @param[in] k Key tensor. shape = [total_k, head_num, head_dim], where total_k = total number of key tokens in the batch. type = [bfloat16, float16].
+ * @param[in] v Value tensor. shape = [total_v, head_num, head_dim, where total_v = total number of value tokens in the batch. type = [bfloat16, float16].
+ * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size]. type = [int64].
+ * @param[in] cum_seq_k The cumulative sequence lengths of the sequences in the batch for key. shape = [batch_size]. type = [int64].
+ * @param[in] max_seqlen_q Maximum query sequence length in the batch.
+ * @param[in] max_seqlen_k Maximum key sequence length in the batch.
+ * @param[in] p_dropout The probability of dropout op.
+ * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[in] is_causal Whether to apply causal attention mask.
+ * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [total, head_num, head_dim]. type = [bfloat16,
+ * float16].
+ * @param[out] attention_mask Tensor storing the causal attention mask for back propagation. shape = [total_q, total_k]. type = [bool].
+ * @param[out] dropout_mask Tensor storing the dropout mask for back propagation.
+ * @param[out] softmax_max Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ * @param[out] softmax_sum Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ * @param[out] softmax_out Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ */
+DIOPI_API diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* attention_mask,
+                                                 diopiTensorHandle_t* dropout_mask, diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum,
+                                                 diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q,
+                                                 diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q,
+                                                 diopiConstTensorHandle_t cum_seq_k, int64_t max_seqlen_q, int64_t max_seqlen_k, double p_dropout,
+                                                 double softmax_scale, bool is_causal);
+
+// This interface is temporarily designed for ascend, please do not use it with other devices.
+/**
+ * @brief Compute the backward pass for the variable length version of Flash Attention.
+ * @param[in] ctx The diopi context.
+ * @param[in] grad_out The gradient of the output tensor. shape = [total, head_num, head_dim]. type = [bfloat16, float16].
+ * @param[in] q Query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type = [bfloat16, float16].
+ * @param[in] k Key tensor. shape = [total_k, head_num, head_dim], where total_k = total number of key tokens in the batch. type = [bfloat16, float16].
+ * @param[in] v Value tensor. shape = [total_v, head_num, head_dim, where total_v = total number of value tokens in the batch. type = [bfloat16, float16].
+ * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size]. type = [int64].
+ * @param[in] cum_seq_k The cumulative sequence lengths of the sequences in the batch for key. shape = [batch_size]. type = [int64].
+ * @param[in] max_seqlen_q Maximum query sequence length in the batch.
+ * @param[in] max_seqlen_k Maximum key sequence length in the batch.
+ * @param[in] attention_out Tensor representing the forward calculation result. shape = [total, head_num, head_dim]. type = [bfloat16, float16].
+ * @param[in] attention_mask Tensor representing the causal attention mask from the forward pass. shape = [total_q, total_k]. type = [bool].
+ * @param[in] dropout_mask Tensor representing the generated dropout mask from the forward pass.
+ * @param[in] softmax_max Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
+ * @param[in] softmax_sum Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
+ * @param[in] softmax_out Tensor representing the intermediate calculation result of softmax op from the forward pass. type =[float32].
+ * @param[in] p_dropout The probability of dropout op.
+ * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[out] grad_q The gradient of the query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type =
+ * [bfloat16, float16].
+ * @param[out] grad_k The gradient of the key tensor. shape = [total_k, head_num, head_dim], where total_k = total number of key tokens in the batch. type =
+ * [bfloat16, float16].
+ * @param[out] grad_v The gradient of the value tensor. shape = [total_v, head_num, head_dim], where total_v = total number of value tokens in the batch. type =
+ * [bfloat16, float16].
+ */
+DIOPI_API diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
+                                                         diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                                         diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q,
+                                                         diopiConstTensorHandle_t cum_seq_k, int64_t max_seqlen_q, int64_t max_seqlen_k,
+                                                         diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
+                                                         diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
+                                                         diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, double p_dropout,
+                                                         double softmax_scale);
+
 // ============================================lightllm begin========================================
 
 /**
