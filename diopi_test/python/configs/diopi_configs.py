@@ -8711,5 +8711,45 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'flash_attention_varlen': dict(
+        name=['flash_attention_varlen'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            p_dropout=[0, 0, 0],
+            is_causal=[True, False, True],
+            softmax_scale=[0.0883, None, 0.125],
+            max_seqlen=[32, 128, 64],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ["cu_seqlens"],
+                    "value": ([[0, 16, 48, 64],
+                               [0, 32, 64, 128, 256],
+                               [0, 16, 48, 64, 128],],),
+                    "dtype": [np.int64],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+            ],
+        ),
+    ),
 
 }
