@@ -25,7 +25,7 @@ float calculateP(c10::optional<at::Scalar> p) {
     }
 }
 
-inline bool check_use_aclop(float pfloat) {
+inline bool checkUseAclop(float pfloat) {
     if (pfloat != 0.0 && pfloat != 1.0 && pfloat != 2.0 && pfloat != 3.0) {
         return true;
     }
@@ -53,7 +53,7 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
         op_api::fill_(outAt, inputAt.numel());
         return diopiSuccess;
     }
-    bool useAclop = check_use_aclop(pvalue);
+    bool useAclop = checkUseAclop(pvalue);
     if (useAclop) {
         op_api::norm_out(inputAt, pAt, dimAt, keepdim, outAt);
     } else {
