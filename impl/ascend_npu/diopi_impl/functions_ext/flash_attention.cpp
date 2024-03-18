@@ -214,21 +214,25 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     at::Tensor paddingMaskAt = at::Tensor();
 
     at::Tensor dropoutMaskAt = at::Tensor();
-    // if (pDropout > 0 && pDropout <= 1) {
-    //     int64_t numels = b * n * s0 * s1;  // [B,N,S,S]
-    //     int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
-    //     dropoutMaskAt = npu_preparation::apply_tensor_without_format({length}, qAt.options().dtype(at::kByte));
-    //     if (pDropout == 1) {
-    //         op_api::zero_(dropoutMaskAt);
-    //     } else {
-    //         std::vector<int64_t> shapeVector{b, n, s0, s1};
-    //         at::IntArrayRef shapeArray(shapeVector);
-    //         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genAt)->philox_engine_inputs(10);
-    //         const uint64_t seed = pair.first;
-    //         const uint64_t offset = pair.second;
-    //         EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, pDropout, seed, offset, dropoutMaskAt);
-    //     }
-    // }
+    if (pDropout > 0 && pDropout <= 1) {
+        int64_t numels = n;
+        int64_t accum = cumSeqQAt[0].item<int>() * cumSeqKAt[0].item<int>();
+        for (int64_t i = 1; i < cumSeqQAt.dim(); i++) {
+            accum += ((cumSeqQAt[i].item<int>() - cumSeqQAt[i - 1].item<int>()) * (cumSeqKAt[i].item<int>() - cumSeqKAt[i - 1].item<int>()));
+        }
+        numels *= accum;
+        int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
+        dropoutMaskAt = npu_preparation::apply_tensor_without_format({length}, qAt.options().dtype(at::kByte));
+        if (pDropout == 1) {
+            op_api::zero_(dropoutMaskAt);
+        } else {
+            at::IntArrayRef shapeArray(numels);
+            auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genAt)->philox_engine_inputs(10);
+            const uint64_t seed = pair.first;
+            const uint64_t offset = pair.second;
+            EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, pDropout, seed, offset, dropoutMaskAt);
+        }
+    }
 
     at::Tensor attentionMaskAt = at::Tensor();
     if (isCausal) {
