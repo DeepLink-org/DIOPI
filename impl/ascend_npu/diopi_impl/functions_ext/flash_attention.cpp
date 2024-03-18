@@ -190,8 +190,8 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
 diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* attentionMask,
                                        diopiTensorHandle_t* dropoutMask, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
                                        diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                       diopiConstTensorHandle_t v, diopiConstTensorHandle_t cumSeqQ, diopiConstTensorHandle_t cumSeqK, int64_t maxSeqlenQ,
-                                       int64_t maxSeqlenK, double pDropout, double softmaxScale, bool isCausal) {
+                                       diopiConstTensorHandle_t v, diopiConstTensorHandle_t cumSeqQ, diopiConstTensorHandle_t cumSeqK, double pDropout,
+                                       double softmaxScale, bool isCausal) {
     BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqK, gen, attentionOut);
 
     DIOPI_CHECK(qAt.dim() == 3, "The shapes of the input query should be 3-dimensional");
@@ -297,10 +297,9 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
 diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
                                                diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                                diopiConstTensorHandle_t v, diopiConstTensorHandle_t cumSeqQ, diopiConstTensorHandle_t cumSeqK,
-                                               int64_t maxSeqlenQ, int64_t maxSeqlenK, diopiConstTensorHandle_t attentionOut,
-                                               diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
-                                               diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum, diopiConstTensorHandle_t softmaxOut,
-                                               double pDropout, double softmaxScale) {
+                                               diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t attentionMask,
+                                               diopiConstTensorHandle_t dropoutMask, diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
+                                               diopiConstTensorHandle_t softmaxOut, double pDropout, double softmaxScale) {
     BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqK, attentionOut, attentionMask, dropoutMask, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
     DIOPI_CHECK(qAt.dim() == 3, "The shapes of the input query should be 3-dimensional");
