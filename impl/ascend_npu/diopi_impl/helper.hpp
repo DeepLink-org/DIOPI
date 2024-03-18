@@ -32,8 +32,6 @@
 
 #define CREATE_VAR_NAME(x) x##At
 
-#define BUILD_ATEN_ARG1(x) auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x);
-
 inline int debugLevel() {
     static int level = []() {
         const char* env = std::getenv("DIOPI_DEBUG_OP");
@@ -53,6 +51,8 @@ inline int debugLevel() {
 #define BUILD_ATEN_ARGS_BODY(x)                         \
     auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x); \
     DEBUG_ARGS(x##At)
+
+#define BUILD_ATEN_ARG1(x) BUILD_ATEN_ARGS_BODY(x);
 
 #define BUILD_ATEN_ARG2(x, y) \
     BUILD_ATEN_ARGS_BODY(x);  \
