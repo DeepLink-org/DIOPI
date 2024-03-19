@@ -29,20 +29,22 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
     diopiScalar_t lrScalar = constructDiopiScalarT(inputAt.dtype(), lr);
     diopiScalar_t weightDecayScalar = constructDiopiScalarT(inputAt.dtype(), weightDecay);
     diopiScalar_t epsScalar = constructDiopiScalarT(inputAt.dtype(), eps);
+    diopiDtype_t inputDtype = inputAt.dtype();
 
-    AclOpRunner<12, 3>("ApplyAdamW", ctx) adamwRunner.addInput(inputAt)
+    AclOpRunner<12, 3> adamwRunner("ApplyAdamW", ctx);
+    adamwRunner.addInput(inputAt)
         .addInput(expAvgAt)
         .addInput(expAvgSqAt)
-        .addInput(beta1PowerScalar)
-        .addInput(beta2PowerScalar)
-        .addInput(lrScalar)
-        .addInput(weightDecayScalar)
-        .addInput(beta1Scalar)
-        .addInput(beta2Scalar)
-        .addInput(epsScalar)
+        .addConstInput(beta1PowerScalar, inputDtype)
+        .addConstInput(beta2PowerScalar, inputDtype)
+        .addConstInput(lrScalar, inputDtype)
+        .addConstInput(weightDecayScalar, inputDtype)
+        .addConstInput(beta1Scalar, inputDtype)
+        .addConstInput(beta2Scalar, inputDtype)
+        .addConstInput(epsScalar, inputDtype)
         .addInput(gradAt);
 
-    if (maxExpAvgSq.defined()) {
+    if (maxExpAvgSqAt.defined()) {
         adamwRunner.addInput(maxExpAvgSqAt);
     }
 
