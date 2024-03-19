@@ -2023,7 +2023,7 @@ def all(input, dim=None, keepdim=False) -> Tensor:
     check_returncode(ret)
     return out
 
-
+# todo: impl for diopiNLLLossV2
 def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
     assert reduction in [
         "mean",
@@ -2052,7 +2052,6 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
     )
     check_returncode(ret)
     return out
-
 
 def sigmoid_focal_loss(
     inputs, targets, alpha=0.25, gamma=2, reduction="none"
@@ -2834,7 +2833,7 @@ def binary_cross_entropy_with_logits_backward(
     check_returncode(ret)
     return {"input": grad_input}
 
-
+# todo: impl for diopiNLLLossV2Backward
 def nll_loss_backward(
     input,
     grad_outputs,
@@ -2865,7 +2864,6 @@ def nll_loss_backward(
     )
     check_returncode(ret)
     return {"input": grad_input}
-
 
 def max_pool2d_backward(
     input,
