@@ -229,7 +229,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
                                                    diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
                                                    diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, double p_dropout,
-                                                   double softmax_scale);
+                                                   double softmax_scale, int64_t head_num);
 
 // ============================================lightllm begin========================================
 
