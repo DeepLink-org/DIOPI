@@ -9,6 +9,7 @@
 #include <set>
 
 #include "../common/acloprunner.hpp"
+#include "../common/debug.hpp"
 
 namespace impl {
 namespace ascend {
@@ -44,11 +45,16 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
         .addConstInput(epsScalar, inputDtype)
         .addInput(gradAt);
 
-    if (maxExpAvgSqAt.defined()) {
-        adamwRunner.addInput(maxExpAvgSqAt);
-    }
+    // if (maxExpAvgSqAt.defined() && maxExpAvgSqAt.numel() != 0) {
+    //     diopiTensorHandle_t cond;
+    //     makeTensorLike(ctx, &cond, input, diopi_dtype_bool);
+    //     diopiGe(ctx, cond, maxExpAvgSq, expAvg);
+    //     diopiWhere(ctx, maxExpAvgSq, cond, maxExpAvgSq, expAvg);
+    //     adamwRunner.addInput(maxExpAvgSqAt);
+    // }
 
-    adamwRunner.setAttr("amsgrad", amsgrad).setAttr("maximize", false).addOutput(inputAt).addOutput(expAvgAt).addOutput(expAvgSqAt);
+    // at present, ApplyAdamW only supports  amsgrad false.
+    adamwRunner.setAttr("amsgrad", false).setAttr("maximize", false).addOutput(inputAt).addOutput(expAvgAt).addOutput(expAvgSqAt);
     adamwRunner.run();
     return diopiSuccess;
 }
