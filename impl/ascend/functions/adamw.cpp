@@ -4,8 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <math.h>
-
+#include <cmath>
 #include <set>
 
 #include "../common/acloprunner.hpp"
