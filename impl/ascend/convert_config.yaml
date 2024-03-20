@@ -58,6 +58,7 @@
 
 - diopiNeg:
     dtype: (uint8, int16, uint16, uint32, uint64)->int64, (complex32)->complex64
+    layout: ND
 
 - diopiNegInp:
     dtype: (uint8, int16, uint16, uint32, uint64)->int64, (complex32)->complex64
