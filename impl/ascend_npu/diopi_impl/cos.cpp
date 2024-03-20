@@ -10,7 +10,6 @@
 
 namespace OP_IMPL_NS {
 
-
 diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input);
     if (input == nullptr || inputAt.numel() <= 0) {
