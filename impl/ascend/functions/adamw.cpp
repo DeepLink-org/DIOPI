@@ -12,6 +12,7 @@
 
 namespace impl {
 namespace ascend {
+
 diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t expAvg, diopiTensorHandle_t expAvgSq,
                         diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps, float weightDecay, int64_t step, bool amsgrad) {
     AscendTensor inputAt(input);
@@ -44,7 +45,8 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
         .addConstInput(epsScalar, inputDtype)
         .addInput(gradAt);
 
-    // if (maxExpAvgSqAt.defined() && maxExpAvgSqAt.numel() != 0) {
+    // at present, ApplyAdamW only supports  amsgrad false.
+    // if (ams_grad) {
     //     diopiTensorHandle_t cond;
     //     makeTensorLike(ctx, &cond, input, diopi_dtype_bool);
     //     diopiGe(ctx, cond, maxExpAvgSq, expAvg);
@@ -52,7 +54,6 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
     //     adamwRunner.addInput(maxExpAvgSqAt);
     // }
 
-    // at present, ApplyAdamW only supports  amsgrad false.
     adamwRunner.setAttr("amsgrad", false).setAttr("maximize", false).addOutput(inputAt).addOutput(expAvgAt).addOutput(expAvgSqAt);
     adamwRunner.run();
     return diopiSuccess;

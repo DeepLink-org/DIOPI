@@ -1281,12 +1281,14 @@ device_configs = {
     'adam': dict(
         name=['adamw'],
         para = dict (
+            # amsgrad not supported yet
             amsgrad=[Skip(True),]
         ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['param'],
+                    # float64 not supported yet
                     "dtype": [Skip(np.float64)],
                 },
             ]
