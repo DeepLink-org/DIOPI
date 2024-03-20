@@ -15,6 +15,7 @@ namespace ascend {
 
 diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t expAvg, diopiTensorHandle_t expAvgSq,
                         diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps, float weightDecay, int64_t step, bool amsgrad) {
+    ASCEND_CHECK_ABORT(amsgrad == false, "at present, ApplyAdamW only supports  amsgrad false.");
     AscendTensor inputAt(input);
     if (!inputAt.defined() || inputAt.numel() == 0) {
         return diopiSuccess;
@@ -45,7 +46,7 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
         .addConstInput(epsScalar, inputDtype)
         .addInput(gradAt);
 
-    // at present, ApplyAdamW only supports  amsgrad false.
+    // at present, ApplyAdamW only supports amsgrad false.
     // if (ams_grad) {
     //     diopiTensorHandle_t cond;
     //     makeTensorLike(ctx, &cond, input, diopi_dtype_bool);
