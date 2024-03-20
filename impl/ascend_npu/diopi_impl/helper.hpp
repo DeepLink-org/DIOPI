@@ -32,8 +32,6 @@
 
 #define CREATE_VAR_NAME(x) x##At
 
-#define BUILD_ATEN_ARG1(x) auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x);
-
 inline int debugLevel() {
     static int level = []() {
         const char* env = std::getenv("DIOPI_DEBUG_OP");
@@ -53,6 +51,8 @@ inline int debugLevel() {
 #define BUILD_ATEN_ARGS_BODY(x)                         \
     auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x); \
     DEBUG_ARGS(x##At)
+
+#define BUILD_ATEN_ARG1(x) BUILD_ATEN_ARGS_BODY(x);
 
 #define BUILD_ATEN_ARG2(x, y) \
     BUILD_ATEN_ARGS_BODY(x);  \
@@ -456,16 +456,7 @@ inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... arg
     func(std::forward<Args>(args)...);
 }
 
-inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
-    at::IntArrayRef atSize = input.sizes();
-    at::IntArrayRef atStride = input.strides();
-    diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
-    diopiSize_t stride{atStride.data(), static_cast<int64_t>(atStride.size())};
-    diopiDtype_t dtype = getDIOPITensorType(input);
-    diopiDevice_t device = getDIOPIDevice(input.device().type());
-    diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
-    updateATen2Tensor(ctx, input, *out);
-}
+void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out);
 
 // new cuda generator and pass dipu generator state into cuda generator state
 inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
