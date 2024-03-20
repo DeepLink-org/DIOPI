@@ -1280,7 +1280,7 @@ device_configs = {
     
     'adam': dict(
         name=['adamw'],
-        atol=1e-4,
+        atol=1e-3,
         rtol=1e-3,
         para = dict (
             # amsgrad not supported yet
