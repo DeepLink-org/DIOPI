@@ -259,6 +259,7 @@
 
 - diopiMatmul:
     dtype: (float64)->float32
+    layout: ND
 
 - diopiNormalTensor:
     dtype: (float64)->float32
