@@ -255,3 +255,4 @@ ascend_npu:
 - diopiLerpScalar
 - diopiFlashAttention
 - diopiFlashAttentionBackward
+- diopiFlashAttentionV2

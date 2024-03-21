@@ -5327,6 +5327,7 @@ def multihead_attention_varlen_backward(
         check_returncode(ret)
         return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
+# todo: impl for diopiFlashAttentionV2
 def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
     call = "diopiFlashAttention"
     func = check_function(call)

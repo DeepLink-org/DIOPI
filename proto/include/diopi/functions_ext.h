@@ -231,6 +231,32 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, double p_dropout,
                                                    double softmax_scale, int64_t head_num);
 
+// The difference between this interface and the original diopiFlashAttention definition is that the passed input attention mask can be used directly. This
+// prevents the attention mask from being recalculated inside the op. This helps reduce a lot of useless overhead when training large language models.
+/**
+ * @brief Compute the forward pass for Flash Attention.
+ * @param[in] ctx The diopi context.
+ * @param[inout] gen Handle for the random number generator used in dropout op.
+ * @param[in] q Query tensor. shape = [batch_size, q_seq_len, head_num, head_dim] or [q_seq_len, batch_size, hidden_size]. type = [bfloat16, float16, float32].
+ * @param[in] k Key tensor. shape = [batch_size, k_seq_len, head_num, head_dim] or [k_seq_len, batch_size, hidden_size]. type = [bfloat16, float16, float32].
+ * @param[in] v Value tensor. shape = [batch_size, v_seq_len, head_num, head_dim] or [v_seq_len, batch_size, hidden_size]. type = [bfloat16, float16, float32].
+ * @param[in] attention_mask Casual attention mask tensor. When the tensor is empty, it means that the casual mask is not applied. shape = [q_seq_len,
+ * k_seq_len]. type = [bool].
+ * @param[in] p_dropout The probability of dropout op.
+ * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
+ * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_seq_len, head_num, head_dim] or [q_seq_len,
+ * batch_size, hidden_size]. type = [bfloat16, float16, float32].
+ * @param[out] dropout_mask Tensor storing the dropout mask for back propagation.
+ * @param[out] softmax_max Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ * @param[out] softmax_sum Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ * @param[out] softmax_out Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ */
+DIOPI_API diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* dropout_mask,
+                                             diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum, diopiTensorHandle_t* softmax_out,
+                                             diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                             diopiConstTensorHandle_t attention_mask, double p_dropout, double softmax_scale, int64_t head_num);
+
 // ============================================lightllm begin========================================
 
 /**
