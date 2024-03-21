@@ -154,6 +154,7 @@ ascend_npu:
 - diopiLeInp
 - diopiLeInpScalar
 - diopiLeScalar
+- diopiLinalgVecNorm
 - diopiLt
 - diopiLtInp
 - diopiLtInpScalar
