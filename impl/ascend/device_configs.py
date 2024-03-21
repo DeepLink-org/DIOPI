@@ -1280,8 +1280,6 @@ device_configs = {
     
     'adam': dict(
         name=['adamw'],
-        atol_half=1e-3,
-        rtol_half=1e-3,
         tensor_para=dict(
             args=[
                 {
