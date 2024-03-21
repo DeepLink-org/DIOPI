@@ -1665,8 +1665,9 @@ DIOPI_API diopiError_t diopiEqInp(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
 /**
  * @brief True if two tensors have the same size and elements, False otherwise.
- * @param[in] input the input tensor and will be stored result tensor.
- * @param[out] out the output tensor.
+ * @param[in] input the input tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] other ther other tensor to be compared. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[out] out the output tensor. type = [bool].
  */
 DIOPI_API diopiError_t diopiEqual(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other);
 
