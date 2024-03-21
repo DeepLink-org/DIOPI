@@ -1,7 +1,5 @@
 ascend:
 - diopiContiguous
-- diopiCos
-- diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
 - diopiGather
@@ -12,8 +10,6 @@ ascend:
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
-- diopiSin
-- diopiSinInp
 - diopiSlice
 - diopiSliceBackward
 - diopiThreshold
@@ -48,6 +44,8 @@ ascend_npu:
 - diopiAtanInp
 - diopiBaddbmm
 - diopiBaddbmmInp
+- diopiCos
+- diopiCosInp
 - diopiErf
 - diopiErfInp
 - diopiNonzero
@@ -93,6 +91,8 @@ ascend_npu:
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
+- diopiSin
+- diopiSinInp
 - diopiStack
 - diopiMSELoss
 - diopiMSELossBackward
