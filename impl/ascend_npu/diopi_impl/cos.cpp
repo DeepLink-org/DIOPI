@@ -21,5 +21,4 @@ diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     END_CALL_ACL_OP();
 }
 
-
 }  // namespace OP_IMPL_NS
