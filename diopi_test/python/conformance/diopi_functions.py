@@ -5101,6 +5101,16 @@ def amax(input, dim, keepdim) -> Tensor:
     check_returncode(ret)
     return out
 
+def vector_norm(input, ord=2, dim=None, keepdim=False, dtype=None):
+    call = "diopiLinalgVecNorm"
+    func = check_function(call)
+
+    dim, out = reduce_op_process(input, dim, keepdim)
+    dimout = Sizes(list(dim))
+    ord = Scalar(ord)
+    ret = func(input.context(), out, input, ord, dimout, keepdim)
+    check_returncode(ret)
+    return out
 
 def linalgqr(input, mode):
     call = "diopiLinalgQR"

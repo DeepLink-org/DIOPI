@@ -44,6 +44,9 @@
 - diopiBatchNorm:
     dtype: (float64)->float32
 
+- diopiLinalgVecNorm:
+    dtype: (float64)->float32
+
 - diopiBatchNormBackward:
     dtype: (float64)->float32
 

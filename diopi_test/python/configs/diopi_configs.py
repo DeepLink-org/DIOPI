@@ -7607,6 +7607,29 @@ diopi_configs = {
         ),
     ),
 
+    # linalg_vector_norm(input, ord=2, dim=None, keepdim=False, dtype=None):
+    'vector_norm': dict(
+        name=['vector_norm'],
+        interface=['torch.linalg'],
+        para=dict(
+            ord=[2.0, 2.0, 2.0, 2.0, 2.0],
+            dim=[None, 1, (0, 1), (1, 2), None],
+            keepdim=[True, False, True, False, False],
+            dtype=[None, None, None, None, None, ],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((3, 4), (2, 3, 3), (2, 3, 4), (6, 3, 4, 5),
+                              (0, 3, 4)),
+                    "dtype": [np.float16, np.float32, np.float64],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+
     'cholesky': dict(
         name=['cholesky_ex'],
         interface=['torch.linalg'],

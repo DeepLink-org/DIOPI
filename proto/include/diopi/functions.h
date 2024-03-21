@@ -2915,6 +2915,15 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
                                               int64_t num_groups);
 
 /**
+ * \brief Applies Group Normalization over a mini-batch of inputs.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type=[float32, float64, float16].
+ * @param[out] out the output tensor. type=[float32, float64, float16].
+ */
+DIOPI_API diopiError_t diopiLinalgVecNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiScalar_t* ord,
+                                          diopiSize_t dim, bool keepdim);
+
+/**
  * @brief Returns the unique elements of the input tensor.
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor,type = [int64, float32, float64, float16, int16, int32, uint8, int8, bool]
