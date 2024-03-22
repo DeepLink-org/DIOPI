@@ -468,13 +468,14 @@ def lt(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, inplace, "diopiLt", dtype=Dtype.bool)
 
 
-def equal(input, other) -> bool:
+def equal(input, other) -> Tensor:        
     call = "diopiEqual"
     func = check_function(call)
-    out = Tensor(Sizes(list([1])), Dtype.bool)
-    ret = eval(f"func(input.context(), out, input, other)")
+    out = ctypes.c_bool()
+    out_capsule = ctypes.pointer(out)
+    ret = func(input.context(), out_capsule, input, other)
     check_returncode(ret)
-    return out.numpy().item()
+    return Tensor.from_numpy(np.array(out.value))
 
 
 def mul(input, other, inplace=False) -> Tensor:
