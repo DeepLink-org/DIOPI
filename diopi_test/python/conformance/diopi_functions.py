@@ -468,13 +468,19 @@ def lt(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, inplace, "diopiLt", dtype=Dtype.bool)
 
 
-def equal(input, other) -> bool:
+def equal(input, other) -> Tensor:
     call = "diopiEqual"
     func = check_function(call)
-    out = Tensor(Sizes(list([1])), Dtype.bool)
-    ret = eval(f"func(input.context(), out, input, other)")
+
+    out = ctypes.c_bool(True)
+    PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
+    PyCapsule_New = ctypes.pythonapi.PyCapsule_New
+    PyCapsule_New.restype = ctypes.py_object
+    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor,)
+    capsule = PyCapsule_New(ctypes.c_void_p(ctypes.addressof(out)), None, PyCapsule_Destructor(0))
+    ret = func(input.context(), capsule, input, other)
     check_returncode(ret)
-    return out.numpy().item()
+    return np.array(out.value)
 
 
 def mul(input, other, inplace=False) -> Tensor:
@@ -5365,7 +5371,7 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
         dropout_mask = None
         generator = None
     else:
-        assert 0, "The p_dropout value must be in range of [0, 1]"    
+        assert 0, "The p_dropout value must be in range of [0, 1]"
     softmax_max = Tensor()
     softmax_sum = Tensor()
     softmax_out = Tensor()
