@@ -257,6 +257,14 @@ DIOPI_API diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTens
                                              diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                              diopiConstTensorHandle_t attention_mask, double p_dropout, double softmax_scale, int64_t head_num);
 
+// This interface is temporarily designed for ascend, please do not use it with other devices.
+DIOPI_API diopiError_t diopiScaledMaskedSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
+                                                diopiConstTensorHandle_t mask, double scale, bool fixed_triu_mask);
+
+// This interface is temporarily designed for ascend, please do not use it with other devices.
+DIOPI_API diopiError_t diopiScaledMaskedSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                                        diopiConstTensorHandle_t out, diopiConstTensorHandle_t mask, double scale, bool fixed_triu_mask);
+
 // ============================================lightllm begin========================================
 
 /**
