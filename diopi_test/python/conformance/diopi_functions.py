@@ -480,7 +480,7 @@ def equal(input, other) -> Tensor:
     capsule = PyCapsule_New(ctypes.c_void_p(ctypes.addressof(out)), None, PyCapsule_Destructor(0))
     ret = func(input.context(), capsule, input, other)
     check_returncode(ret)
-    return Tensor.from_numpy(np.array(out.value))
+    return np.array(out.value)
 
 
 def mul(input, other, inplace=False) -> Tensor:
@@ -5371,7 +5371,7 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
         dropout_mask = None
         generator = None
     else:
-        assert 0, "The p_dropout value must be in range of [0, 1]"    
+        assert 0, "The p_dropout value must be in range of [0, 1]"
     softmax_max = Tensor()
     softmax_sum = Tensor()
     softmax_out = Tensor()
