@@ -1790,14 +1790,14 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((), (12,), (2, 2), (12, 22)),
-                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool,
-                              np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool,],
+                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool_,
+                              np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool_,],
                 },
                 {
                     "ins": ['other'],
                     "shape": ((), (12,), (2, 2), (12, 21)),
-                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool,
-                              np.bool, np.int8, np.int16, np.int32, np.int64, np.float16, np.float32, np.float64,]
+                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool_,
+                              np.bool_, np.int8, np.int16, np.int32, np.int64, np.float16, np.float32, np.float64,]
                 }
             ]
         ),
