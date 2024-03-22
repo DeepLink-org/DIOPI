@@ -468,6 +468,15 @@ def lt(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, inplace, "diopiLt", dtype=Dtype.bool)
 
 
+def equal(input, other) -> bool:
+    call = "diopiEqual"
+    func = check_function(call)
+    out = Tensor(Sizes(list([1])), Dtype.bool)
+    ret = eval(f"func(input.context(), out, input, other)")
+    check_returncode(ret)
+    return out.numpy().item()
+
+
 def mul(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(
         input,
@@ -5101,6 +5110,16 @@ def amax(input, dim, keepdim) -> Tensor:
     check_returncode(ret)
     return out
 
+def vector_norm(input, ord=2, dim=None, keepdim=False, dtype=None):
+    call = "diopiLinalgVecNorm"
+    func = check_function(call)
+
+    dim, out = reduce_op_process(input, dim, keepdim)
+    dimout = Sizes(list(dim))
+    ord = Scalar(ord)
+    ret = func(input.context(), out, input, ord, dimout, keepdim)
+    check_returncode(ret)
+    return out
 
 def linalgqr(input, mode):
     call = "diopiLinalgQR"
@@ -5327,6 +5346,7 @@ def multihead_attention_varlen_backward(
         check_returncode(ret)
         return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
+# todo: impl for diopiFlashAttentionV2
 def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
     call = "diopiFlashAttention"
     func = check_function(call)
