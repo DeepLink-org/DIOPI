@@ -1780,6 +1780,29 @@ diopi_configs = {
         ),
     ),
 
+    "equal" : dict(
+        name=["equal"],
+        interface=['torch'],
+        is_inplace=False,
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (12,), (2, 2), (12, 22)),
+                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool_,
+                              np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool_,],
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((), (12,), (2, 2), (12, 21)),
+                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool_,
+                              np.bool_, np.int8, np.int16, np.int32, np.int64, np.float16, np.float32, np.float64,]
+                }
+            ]
+        ),
+    ),
+
     # FIXME sub输入int8、uint8结果不一致
     'pointwise_binary_diff_dtype_without_bool': dict(
         # name=['sub', 'div'],
