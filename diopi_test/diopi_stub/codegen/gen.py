@@ -13,7 +13,8 @@ tensor_ptr = ['diopiTensorHandle_t*', 'diopiConstTensorHandle_t*']
 
 type_convert_dict = {
     'int64_t*': 'void*',
-    'double*': 'void*'
+    'double*': 'void*',
+    'bool*': 'void*'
 }
 
 can_be_none = ['const int64_t*', 'const double*', 'const bool*']

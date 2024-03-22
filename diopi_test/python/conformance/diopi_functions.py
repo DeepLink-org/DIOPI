@@ -468,12 +468,17 @@ def lt(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, inplace, "diopiLt", dtype=Dtype.bool)
 
 
-def equal(input, other) -> Tensor:        
+def equal(input, other) -> Tensor:
     call = "diopiEqual"
     func = check_function(call)
-    out = ctypes.c_bool()
-    out_capsule = ctypes.pointer(out)
-    ret = func(input.context(), out_capsule, input, other)
+
+    out = ctypes.c_bool(True)
+    PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
+    PyCapsule_New = ctypes.pythonapi.PyCapsule_New
+    PyCapsule_New.restype = ctypes.py_object
+    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor,)
+    capsule = PyCapsule_New(ctypes.c_void_p(ctypes.addressof(out)), None, PyCapsule_Destructor(0))
+    ret = func(input.context(), capsule, input, other)
     check_returncode(ret)
     return Tensor.from_numpy(np.array(out.value))
 
