@@ -19,7 +19,7 @@ diopiError_t diopiZeros(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
 
 diopiError_t diopiZeroInp(diopiContextHandle_t ctx, diopiTensorHandle_t self) {
     BEGIN_CALL_ACL_OP(self);
-    EXEC_NPU_CMD(aclnnInplaceZero, self);
+    EXEC_NPU_CMD(aclnnInplaceZero, selfAt);
     END_CALL_ACL_OP();
 }
 
