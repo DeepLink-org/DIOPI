@@ -8042,6 +8042,24 @@ diopi_configs = {
         ),
     ),
 
+    'zero_inp': dict(
+        name=['zero_'],
+        interface=["torch.Tensor"],
+        tensor_para=dict(
+            # gen_fn='Genfunc.rand',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40), (0,), (16, 0)),
+                    "dtype": [np.float32, np.float64, np.float16],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+
     'lerp': dict(
         name=['lerp'],
         interface=['torch'],

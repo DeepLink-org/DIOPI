@@ -252,7 +252,6 @@ def ones(default_context, size):
     size = Sizes(list(size))
     out = Tensor(size=size, dtype=Dtype.float32)
     ret = func(default_context, out, size)
-
     check_returncode(ret)
     return out
 
@@ -261,9 +260,14 @@ def zeros(default_context, size):
     size = Sizes(list(size))
     out = Tensor(size=size, dtype=Dtype.float32)
     ret = func(default_context, out, size)
-
     check_returncode(ret)
     return out
+
+def zero_(input):
+    func = check_function("diopiZeroInp")
+    ret = func(input.context(), input)
+    check_returncode(ret)
+    return input
 
 def unary_op(input, inplace, call, dtype=None) -> Tensor:
     if inplace:

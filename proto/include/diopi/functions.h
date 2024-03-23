@@ -3438,18 +3438,25 @@ DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_
 /**
  * @brief Create a tensor filled with one.
  * @param[in] ctx Context environment.
- * @param[in] size out tensor size.
- * @param[out] out the output tensor.
+ * @param[in] size Out tensor size.
+ * @param[out] out The output tensor.
  */
 DIOPI_API diopiError_t diopiOnes(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
 
 /**
  * @brief Create a tensor filled with zero.
  * @param[in] ctx Context environment.
- * @param[in] size out tensor size.
- * @param[out] out the output tensor.
+ * @param[in] size Out tensor size.
+ * @param[out] out The output tensor.
  */
 DIOPI_API diopiError_t diopiZeros(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
+
+/**
+ * @brief Set all elements of a tensor to zero.
+ * @param[in] ctx Context environment.
+ * @param[in] self Input and output tensor.
+ */
+DIOPI_API diopiError_t diopiZeroInp(diopiContextHandle_t ctx, diopiTensorHandle_t self);
 
 /**
  * @brief This function is an extension of torch.sign() to complex tensors.
