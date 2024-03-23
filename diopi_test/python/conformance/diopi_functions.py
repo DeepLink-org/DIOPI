@@ -480,7 +480,7 @@ def equal(input, other) -> Tensor:
     capsule = PyCapsule_New(ctypes.c_void_p(ctypes.addressof(out)), None, PyCapsule_Destructor(0))
     ret = func(input.context(), capsule, input, other)
     check_returncode(ret)
-    return np.array(out.value)
+    return Tensor.from_numpy(np.array(out.value))
 
 
 def mul(input, other, inplace=False) -> Tensor:
