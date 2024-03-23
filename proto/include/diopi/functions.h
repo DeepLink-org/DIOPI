@@ -1664,6 +1664,14 @@ DIOPI_API diopiError_t diopiEq(diopiContextHandle_t ctx, diopiTensorHandle_t out
 DIOPI_API diopiError_t diopiEqInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other);
 
 /**
+ * @brief True if two tensors have the same size and elements, False otherwise.
+ * @param[in] input the input tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] other the other tensor to be compared. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[out] out the output value. type = [bool].
+ */
+DIOPI_API diopiError_t diopiEqual(diopiContextHandle_t ctx, bool* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other);
+
+/**
  * @brief Computes not equal element-wise comparison with a scalar, "!=".
  * @param[in] ctx Context environment.
  * @param[in] input the first tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
@@ -2913,6 +2921,15 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                               diopiConstTensorHandle_t weight, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd,
                                               int64_t num_groups);
+
+/**
+ * \brief Applies Group Normalization over a mini-batch of inputs.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type=[float32, float64, float16].
+ * @param[out] out the output tensor. type=[float32, float64, float16].
+ */
+DIOPI_API diopiError_t diopiLinalgVecNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiScalar_t* ord,
+                                          diopiSize_t dim, bool keepdim);
 
 /**
  * @brief Returns the unique elements of the input tensor.
