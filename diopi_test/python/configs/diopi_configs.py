@@ -7974,6 +7974,28 @@ diopi_configs = {
     #     ),
     # ),
 
+    'ones': dict(
+        name=['ones'],
+        need_context=True,
+        interface=["torch"],
+        para=dict(
+            size=[(), (128,), (3, 64), (3, 16, 64),
+                  (4, 16, 8, 64), (2, 16, 1, 64, 5),
+                  (0,), (0, 16), (8, 0, 12)],
+        ),
+    ),
+
+    'zeros': dict(
+        name=['zeros'],
+        need_context=True,
+        interface=["torch"],
+        para=dict(
+            size=[(), (128,), (3, 64), (3, 16, 64),
+                  (4, 16, 8, 64), (2, 16, 1, 64, 5),
+                  (0,), (0, 16), (8, 0, 12)],
+        ),
+    ),
+
     'lerp': dict(
         name=['lerp'],
         interface=['torch'],
