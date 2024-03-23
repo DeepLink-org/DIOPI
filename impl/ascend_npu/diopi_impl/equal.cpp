@@ -9,9 +9,11 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace OP_IMPL_NS {
-diopiError_t diopiEqual(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    BEGIN_CALL_ACL_OP(out, input, other);
+diopiError_t diopiEqual(diopiContextHandle_t ctx, bool* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
+    BEGIN_CALL_ACL_OP(input, other);
+    at::Tensor outAt = at_npu::native::empty_npu({1}, inputAt.options().dtype(at::kBool));
     EXEC_NPU_CMD(aclnnEqual, inputAt, otherAt, outAt);
+    *out = outAt.item().toBool();
     END_CALL_ACL_OP();
 }
 
