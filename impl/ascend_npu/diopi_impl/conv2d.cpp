@@ -33,8 +33,7 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     if (c10::multiply_integers(inputAt.sizes()) <= 0) {
         return diopiSuccess;
     }
-    at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
-    outAt = acl_op::npu_conv2d(inputAt, weightAt, biasAt, strideAt, paddingAt, dilationAt, groups);
+    acl_op::npu_conv2d_out(inputAt, weightAt, biasAt, strideAt, paddingAt, dilationAt, groups, outAt);
     END_CALL_ACL_OP();
 }
 
