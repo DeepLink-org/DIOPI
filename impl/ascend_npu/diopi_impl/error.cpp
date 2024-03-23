@@ -9,7 +9,6 @@
 #include <mutex>
 
 extern "C" {
-
 static char strLastError[4096] = {0};
 static char strLastErrorOther[2048] = {0};
 static std::mutex mtxLastError;
