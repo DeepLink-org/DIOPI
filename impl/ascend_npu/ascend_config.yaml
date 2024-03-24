@@ -258,3 +258,4 @@ ascend_npu:
 - diopiFlashAttention
 - diopiFlashAttentionBackward
 - diopiFlashAttentionV2
+- diopiAmpForeachNonFiniteCheckAndUnscaleInp
