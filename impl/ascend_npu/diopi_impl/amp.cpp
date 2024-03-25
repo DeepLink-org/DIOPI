@@ -27,13 +27,9 @@ diopiError_t diopiAmpForeachNonFiniteCheckAndUnscaleInp(diopiContextHandle_t ctx
     for (const auto& scaledGrad : scaledGradsList) {
         if (!op_api::all(op_api::isfinite(scaledGrad)).item<bool>()) {
             isFinite = false;
+            op_api::ones_out(1, foundInfAt);
             break;
         }
-    }
-
-    if (!isFinite) {
-        op_api::ones_out(1, foundInfAt);
-        return diopiSuccess;
     }
 
     for (auto& scaledGrad : scaledGradsList) {
