@@ -9,8 +9,8 @@ device_configs = {
         name=["batch_norm"],
         atol_half=1e-1,
         rtol_half=1e-1,
-        atol=1e-1,
-        rtol=1e-4,
+        atol=2e-3,
+        rtol=1e-2,
      ),
 
     'batch_norm_no_contiguous': dict(
