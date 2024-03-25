@@ -34,8 +34,20 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     if (nullptr == gradBias) {
         gradInputMask[2] = false;
     }
-    EXEC_NPU_CMD(aclnnBatchNormBackward, gradOutputAt, inputAt, weightAt, runningMeanAt, runningVarAt,
-                    saveMeanAt, saveInvstdAt, training, eps, gradInputMask, gradInputAt, gradWeightAt, gradBiasAt);
+    EXEC_NPU_CMD(aclnnBatchNormBackward,
+                 gradOutputAt,
+                 inputAt,
+                 weightAt,
+                 runningMeanAt,
+                 runningVarAt,
+                 saveMeanAt,
+                 saveInvstdAt,
+                 training,
+                 eps,
+                 gradInputMask,
+                 gradInputAt,
+                 gradWeightAt,
+                 gradBiasAt);
     END_CALL_ACL_OP();
 }
 
