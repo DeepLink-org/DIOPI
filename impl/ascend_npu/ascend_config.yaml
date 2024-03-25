@@ -15,8 +15,6 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiBatchNorm
-- diopiBatchNormBackward
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiRMSNorm
@@ -44,6 +42,8 @@ ascend_npu:
 - diopiAtanInp
 - diopiBaddbmm
 - diopiBaddbmmInp
+- diopiBatchNorm
+- diopiBatchNormBackward
 - diopiCos
 - diopiCosInp
 - diopiErf
