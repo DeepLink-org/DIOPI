@@ -450,6 +450,15 @@
 # - diopiIndex:
 #     layout: ND
 
+- diopiOnes:
+    layout: ND
+
+- diopiZeros:
+    layout: ND
+
+- diopiZeroInp:
+    layout: ND
+
 - diopiSum:
     layout: ND
 - diopiLerpTensor:
