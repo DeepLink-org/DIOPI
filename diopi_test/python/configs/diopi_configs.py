@@ -8020,25 +8020,21 @@ diopi_configs = {
     #     ),
     # ),
 
-    'ones': dict(
-        name=['ones'],
+    'ones_zeros': dict(
+        name=['ones', 'zeros'],
         need_context=True,
         interface=["torch"],
-        para=dict(
-            size=[(), (128,), (3, 64), (3, 16, 64),
-                  (4, 16, 8, 64), (2, 16, 1, 64, 5),
-                  (0,), (0, 16), (8, 0, 12)],
-        ),
-    ),
-
-    'zeros': dict(
-        name=['zeros'],
-        need_context=True,
-        interface=["torch"],
-        para=dict(
-            size=[(), (128,), (3, 64), (3, 16, 64),
-                  (4, 16, 8, 64), (2, 16, 1, 64, 5),
-                  (0,), (0, 16), (8, 0, 12)],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726), (2, 31, 6, 40, 1),
+                              (1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726),
+                              (0,), (0, 5), (3, 0, 6)),
+                    "dtype": [np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint8],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
         ),
     ),
 
@@ -8053,7 +8049,7 @@ diopi_configs = {
                     "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
                               (256, 128, 3, 3),
                               (2, 31, 512, 6, 40), (0,), (16, 0)),
-                    "dtype": [np.float32, np.float64, np.float16],
+                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.uint8],
                     "gen_fn": 'Genfunc.randn',
                 },
             ],

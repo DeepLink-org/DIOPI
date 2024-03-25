@@ -3439,7 +3439,7 @@ DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_
  * @brief Create a tensor filled with one.
  * @param[in] ctx Context environment.
  * @param[in] size Out tensor size.
- * @param[out] out The output tensor.
+ * @param[out] out The output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
  */
 DIOPI_API diopiError_t diopiOnes(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
 
@@ -3447,14 +3447,14 @@ DIOPI_API diopiError_t diopiOnes(diopiContextHandle_t ctx, diopiTensorHandle_t o
  * @brief Create a tensor filled with zero.
  * @param[in] ctx Context environment.
  * @param[in] size Out tensor size.
- * @param[out] out The output tensor.
+ * @param[out] out The output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
  */
 DIOPI_API diopiError_t diopiZeros(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
 
 /**
  * @brief Set all elements of a tensor to zero.
  * @param[in] ctx Context environment.
- * @param[in] self Input and output tensor.
+ * @param[in] self Input and output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
  */
 DIOPI_API diopiError_t diopiZeroInp(diopiContextHandle_t ctx, diopiTensorHandle_t self);
 
