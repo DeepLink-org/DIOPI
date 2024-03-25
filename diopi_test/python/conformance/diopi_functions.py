@@ -468,7 +468,7 @@ def lt(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, inplace, "diopiLt", dtype=Dtype.bool)
 
 
-def equal(input, other) -> Tensor:
+def equal(input, other) -> bool:
     call = "diopiEqual"
     func = check_function(call)
 
@@ -480,7 +480,7 @@ def equal(input, other) -> Tensor:
     capsule = PyCapsule_New(ctypes.c_void_p(ctypes.addressof(out)), None, PyCapsule_Destructor(0))
     ret = func(input.context(), capsule, input, other)
     check_returncode(ret)
-    return Tensor.from_numpy(np.array(out.value))
+    return out.value
 
 
 def mul(input, other, inplace=False) -> Tensor:
