@@ -17,7 +17,28 @@ diopiError_t diopiAmpForeachNonFiniteCheckAndUnscaleInp(diopiContextHandle_t ctx
     for (int i = 0; i < numScaledGrads; ++i) {
         scaledGradsList.emplace_back(impl::aten::buildATen(scaledGrads[i]));
     }
-    op_api::_amp_foreach_non_finite_check_and_unscale_(scaledGradsList, foundInfAt, invScaleAt);
+
+    DIOPI_CHECK(invScaleAt.numel() == 1, "inv_scale must be a 1-element tensor");
+    DIOPI_CHECK(foundInfAt.numel() == 1, "found_inf must be a 1-element tensor");
+    DIOPI_CHECK(invScaleAt.scalar_type() == at::ScalarType::Float, "inv_scale must be a float tensor");
+    DIOPI_CHECK(foundInfAt.scalar_type() == at::ScalarType::Float, "found_inf must be a float tensor");
+
+    bool isFinite = true;
+    for (const auto& scaledGrad : scaledGradsList) {
+        if (!op_api::all(op_api::isfinite(scaledGrad)).item<bool>()) {
+            isFinite = false;
+            break;
+        }
+    }
+
+    if (!isFinite) {
+        op_api::ones_out(1, foundInfAt);
+        return diopiSuccess;
+    }
+
+    for (auto& scaledGrad : scaledGradsList) {
+        op_api::mul_(scaledGrad, invScaleAt);
+    }
     END_CALL_ACL_OP();
 }
 
