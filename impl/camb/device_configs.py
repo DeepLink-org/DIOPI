@@ -1956,6 +1956,14 @@ device_configs = {
         para=dict(
             interleaved = [Skip(True)],
         ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((3, 5, 12))],
+                },
+            ],
+        ),
     ),
 
     'rms_norm': dict(
