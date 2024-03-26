@@ -239,6 +239,9 @@ ascend_npu:
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
+- diopiOnes
+- diopiZeros
+- diopiZeroInp
 - diopiIsNan
 - diopiRelu
 - diopiReluInp
