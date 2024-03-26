@@ -28,6 +28,7 @@ from .diopi_runtime import raw_like, int_types, float_types, get_last_error
 from .utils import logger
 from conformance.global_settings import glob_vars
 from typing import List, Optional, Union
+from diopilib import build_generator_state
 
 
 GLOBAL_STATE = {}
@@ -465,6 +466,15 @@ def le(input, other, inplace=False) -> Tensor:
 
 def lt(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, inplace, "diopiLt", dtype=Dtype.bool)
+
+
+def equal(input, other) -> bool:
+    call = "diopiEqual"
+    func = check_function(call)
+    out = Tensor(Sizes(list([1])), Dtype.bool)
+    ret = eval(f"func(input.context(), out, input, other)")
+    check_returncode(ret)
+    return out.numpy().item()
 
 
 def mul(input, other, inplace=False) -> Tensor:
@@ -2022,7 +2032,7 @@ def all(input, dim=None, keepdim=False) -> Tensor:
     check_returncode(ret)
     return out
 
-
+# todo: impl for diopiNLLLossV2
 def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
     assert reduction in [
         "mean",
@@ -2051,7 +2061,6 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
     )
     check_returncode(ret)
     return out
-
 
 def sigmoid_focal_loss(
     inputs, targets, alpha=0.25, gamma=2, reduction="none"
@@ -2833,7 +2842,7 @@ def binary_cross_entropy_with_logits_backward(
     check_returncode(ret)
     return {"input": grad_input}
 
-
+# todo: impl for diopiNLLLossV2Backward
 def nll_loss_backward(
     input,
     grad_outputs,
@@ -2864,7 +2873,6 @@ def nll_loss_backward(
     )
     check_returncode(ret)
     return {"input": grad_input}
-
 
 def max_pool2d_backward(
     input,
@@ -5102,6 +5110,16 @@ def amax(input, dim, keepdim) -> Tensor:
     check_returncode(ret)
     return out
 
+def vector_norm(input, ord=2, dim=None, keepdim=False, dtype=None):
+    call = "diopiLinalgVecNorm"
+    func = check_function(call)
+
+    dim, out = reduce_op_process(input, dim, keepdim)
+    dimout = Sizes(list(dim))
+    ord = Scalar(ord)
+    ret = func(input.context(), out, input, ord, dimout, keepdim)
+    check_returncode(ret)
+    return out
 
 def linalgqr(input, mode):
     call = "diopiLinalgQR"
@@ -5328,6 +5346,78 @@ def multihead_attention_varlen_backward(
         check_returncode(ret)
         return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
+# todo: impl for diopiFlashAttentionV2
+def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
+    call = "diopiFlashAttention"
+    func = check_function(call)
+    q_size = list(q.size().data)
+    head_num = q_size[2]
+    out = Tensor(q_size, q.get_dtype())
+    if is_causal:
+        attention_mask = Tensor()
+    else:
+        attention_mask = None
+    if p_dropout > 0 and p_dropout <= 1:
+        dropout_mask = Tensor()
+        state = build_generator_state(q.context())
+        generator = Generator(state)
+    elif p_dropout == 0:
+        dropout_mask = None
+        generator = None
+    else:
+        assert 0, "The p_dropout value must be in range of [0, 1]"    
+    softmax_max = Tensor()
+    softmax_sum = Tensor()
+    softmax_out = Tensor()
+    attention_mask_ptr = TensorP(attention_mask)
+    dropout_mask_ptr = TensorP(dropout_mask)
+    softmax_max_ptr = TensorP(softmax_max)
+    softmax_sum_ptr = TensorP(softmax_sum)
+    softmax_out_ptr = TensorP(softmax_out)
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not softmax_scale else softmax_scale
+    ret = func(
+        q.context(),
+        out,
+        attention_mask_ptr,
+        dropout_mask_ptr,
+        softmax_max_ptr,
+        softmax_sum_ptr,
+        softmax_out_ptr,
+        generator,
+        q,
+        k,
+        v,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+        head_num,
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["flash_attention_attention_mask"] = attention_mask
+    GLOBAL_STATE["flash_attention_dropout_mask"] = dropout_mask
+    GLOBAL_STATE["flash_attention_softmax_max"] = softmax_max
+    GLOBAL_STATE["flash_attention_softmax_sum"] = softmax_sum
+    GLOBAL_STATE["flash_attention_softmax_out"] = softmax_out
+    return out
+
+def flash_attention_backward(q, k, v, out, grad_outputs, p_dropout, softmax_scale, is_causal):
+    call = "diopiFlashAttentionBackward"
+    func = check_function(call)
+    assert p_dropout >=0 and p_dropout <=1, "The p_dropout value must be in range of [0, 1]"
+    q_size = list(q.size().data)
+    head_num = q_size[2]
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    attention_mask = GLOBAL_STATE.pop('flash_attention_attention_mask')
+    dropout_mask = GLOBAL_STATE.pop('flash_attention_dropout_mask')
+    softmax_max = GLOBAL_STATE.pop('flash_attention_softmax_max')
+    softmax_sum = GLOBAL_STATE.pop('flash_attention_softmax_sum')
+    softmax_out = GLOBAL_STATE.pop('flash_attention_softmax_out')
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not softmax_scale else softmax_scale
+    ret = func(q.context(), grad_q, grad_k, grad_v, grad_outputs[0], q, k, v, out, attention_mask, dropout_mask, softmax_max, softmax_sum, softmax_out, p_dropout, softmax_scale, head_num)
+    check_returncode(ret)
+    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 def apply_penalty(
     logits,

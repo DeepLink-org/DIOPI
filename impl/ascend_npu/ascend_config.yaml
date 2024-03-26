@@ -1,9 +1,5 @@
 ascend:
-- diopiBaddbmm
-- diopiBaddbmmInp
 - diopiContiguous
-- diopiCos
-- diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
 - diopiGather
@@ -14,15 +10,11 @@ ascend:
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
-- diopiSin
-- diopiSinInp
 - diopiSlice
 - diopiSliceBackward
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
-- diopiTriu
-- diopiTriuInp
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiConvolution2d
@@ -50,6 +42,10 @@ ascend_npu:
 - diopiArange
 - diopiAtan
 - diopiAtanInp
+- diopiBaddbmm
+- diopiBaddbmmInp
+- diopiCos
+- diopiCosInp
 - diopiErf
 - diopiErfInp
 - diopiNonzero
@@ -71,6 +67,7 @@ ascend_npu:
 - diopiCopyInp
 - diopiEmbedding
 - diopiEmbeddingBackward
+- diopiEqual
 - diopiExpand
 - diopiFlip
 - diopiFloor
@@ -95,6 +92,8 @@ ascend_npu:
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
+- diopiSin
+- diopiSinInp
 - diopiStack
 - diopiMSELoss
 - diopiMSELossBackward
@@ -156,6 +155,7 @@ ascend_npu:
 - diopiLeInp
 - diopiLeInpScalar
 - diopiLeScalar
+- diopiLinalgVecNorm
 - diopiLt
 - diopiLtInp
 - diopiLtInpScalar
@@ -181,6 +181,8 @@ ascend_npu:
 - diopiMm
 - diopiNLLLoss
 - diopiNLLLossBackward
+- diopiNLLLossV2
+- diopiNLLLossV2Backward
 - diopiArgmax
 - diopiLogicalAnd
 - diopiLogicalOr
@@ -218,6 +220,8 @@ ascend_npu:
 - diopiTranspose
 - diopiTopk
 - diopiTril
+- diopiTriu
+- diopiTriuInp
 - diopiUniformInp
 - diopiClamp
 - diopiClampInp
@@ -251,3 +255,6 @@ ascend_npu:
 - diopiPowTensor
 - diopiLerpTensor
 - diopiLerpScalar
+- diopiFlashAttention
+- diopiFlashAttentionBackward
+- diopiFlashAttentionV2

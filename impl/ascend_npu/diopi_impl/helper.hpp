@@ -32,8 +32,6 @@
 
 #define CREATE_VAR_NAME(x) x##At
 
-#define BUILD_ATEN_ARG1(x) auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x);
-
 inline int debugLevel() {
     static int level = []() {
         const char* env = std::getenv("DIOPI_DEBUG_OP");
@@ -53,6 +51,8 @@ inline int debugLevel() {
 #define BUILD_ATEN_ARGS_BODY(x)                         \
     auto CREATE_VAR_NAME(x) = impl::aten::buildATen(x); \
     DEBUG_ARGS(x##At)
+
+#define BUILD_ATEN_ARG1(x) BUILD_ATEN_ARGS_BODY(x);
 
 #define BUILD_ATEN_ARG2(x, y) \
     BUILD_ATEN_ARGS_BODY(x);  \
@@ -89,6 +89,18 @@ inline int debugLevel() {
 #define BUILD_ATEN_ARG10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) \
     BUILD_ATEN_ARG9(x1, x2, x3, x4, x5, x6, x7, x8, x9)           \
     BUILD_ATEN_ARGS_BODY(x10);
+
+#define BUILD_ATEN_ARG11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11) \
+    BUILD_ATEN_ARG10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)          \
+    BUILD_ATEN_ARGS_BODY(x11);
+
+#define BUILD_ATEN_ARG12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12) \
+    BUILD_ATEN_ARG11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11)          \
+    BUILD_ATEN_ARGS_BODY(x12);
+
+#define BUILD_ATEN_ARG13(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13) \
+    BUILD_ATEN_ARG12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)          \
+    BUILD_ATEN_ARGS_BODY(x13);
 
 #define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, N, ...) N
 #define PRIVATE_MACRO_VAR_ARGS_IMPL(args) PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT args
@@ -444,16 +456,7 @@ inline void invokeATenFuncInp(diopiContextHandle_t ctx, Func func, Args&&... arg
     func(std::forward<Args>(args)...);
 }
 
-inline void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
-    at::IntArrayRef atSize = input.sizes();
-    at::IntArrayRef atStride = input.strides();
-    diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
-    diopiSize_t stride{atStride.data(), static_cast<int64_t>(atStride.size())};
-    diopiDtype_t dtype = getDIOPITensorType(input);
-    diopiDevice_t device = getDIOPIDevice(input.device().type());
-    diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
-    updateATen2Tensor(ctx, input, *out);
-}
+void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out);
 
 // new cuda generator and pass dipu generator state into cuda generator state
 inline at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {

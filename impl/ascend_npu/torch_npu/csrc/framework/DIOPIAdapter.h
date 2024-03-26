@@ -476,7 +476,7 @@ public:
     aclFormat npu_format_ = ACL_FORMAT_ND;
     // used to make CANN GE tensor from storagImpl
     caffe2::TypeMeta data_type_;
-    diopiConstTensorHandle_t diopi_tensor_;
+    diopiTensorHandle_t diopi_tensor_ = nullptr;
 };  // struct NPUStorageDesc
 
 struct NPUStorageImpl : public c10::StorageImpl {
@@ -658,7 +658,7 @@ public:
     static at::Tensor cast_to_ori_format(const at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
     static at::Tensor& cast_to_ori_format(at::Tensor& tensor) { INTERFACE_NOT_IMPL; }
 
-    static int8_t get_cube_math_type(bool allowHf32) { INTERFACE_NOT_IMPL; }
+    static int8_t get_cube_math_type(bool allowHf32) { return CalcuOpUtil::GetCubeMathType(allowHf32); }
     static void markAsOutputForApplyTensor(at::Tensor& src);
     // used to apply output tensor
     static at::Tensor apply_tensor(const at::Tensor& src);
@@ -1094,9 +1094,9 @@ private:
     // Set Part
     static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype);
     static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
-                                             diopiConstTensorHandle_t tensor = nullptr);
+                                             diopiTensorHandle_t tensor = nullptr);
     static torch_npu::NPUStorageDesc SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format,
-                                             diopiConstTensorHandle_t tensor = nullptr);
+                                             diopiTensorHandle_t tensor = nullptr);
 };  // class StorageDescHelper
 
 bool can_use_memcpy(at::Tensor& dst, const at::Tensor& src);
