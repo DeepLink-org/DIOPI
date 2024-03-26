@@ -59,6 +59,7 @@ dtype_out_op = {'max_pool2d': ['indices'],  # out using int32/float32 type
 ops_with_states = {"batch_norm": {"running_mean", "running_var"},
                    "sgd": {"buf", "param"},
                    "fill_": {"input"},
+                   "zero_": {"input"},
                    "embedding": {"weight"},
                    "adam": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
                    "adamw": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},

@@ -39,9 +39,17 @@ endif()
 find_package(Torch REQUIRED
     PATHS  ${PYTORCH_DIR}
 )
+
+execute_process(
+    COMMAND python -c "import torch;import re;version_tuple=re.search('[0-9\.]+', torch.__version__).group().split('.');factor=[10000,100, 1];DIOPI_TORCH_VERSION=sum([factor[i] * int(version_tuple[i]) for i in range(len(version_tuple))]);print(DIOPI_TORCH_VERSION)"
+    OUTPUT_VARIABLE DIOPI_TORCH_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+add_compile_definitions(DIOPI_TORCH_VERSION=${DIOPI_TORCH_VERSION})
 message(STATUS "TORCH_INSTALL_PREFIX:" ${TORCH_INSTALL_PREFIX})
 message(STATUS "TORCH_CXX_FLAGS:" ${TORCH_CXX_FLAGS})   # include -D_GLIBCXX_USE_CXX11_ABI
 message(STATUS "TORCH_INCLUDE_DIRS:" ${TORCH_INCLUDE_DIRS})
+message(STATUS "DIOPI_TORCH_VERSION:" ${DIOPI_TORCH_VERSION})
 
 include_directories(SYSTEM ${TORCH_INCLUDE_DIRS})
 link_directories(${TORCH_INSTALL_PREFIX}/lib)
@@ -68,9 +76,8 @@ list(REMOVE_ITEM OP_PLUGIN_SRC
   ${OP_PLUGIN_BASE_OPS_DIR}/aclops/LstmCellKernelNpu.cpp
   ${OP_PLUGIN_BASE_OPS_DIR}/aclops/CtcLossKernelNpu.cpp
   ${OP_PLUGIN_BASE_OPS_DIR}/opapi/LstmCellKernelNpuApi.cpp
+  ${OP_PLUGIN_BASE_OPS_DIR}/aclops/TriangularSolveKernelNpu.cpp
   ${OP_PLUGIN_SRC_V_DIR}/aclops/EmbeddingBagBackwardKernelNpu.cpp
-  ${OP_PLUGIN_SRC_V_DIR}/aclops/LinalgNormKernelNpu.cpp
-  ${OP_PLUGIN_SRC_V_DIR}/opapi/LinalgNormKernelNpuOpApi.cpp
   ${OP_PLUGIN_SRC_V_DIR}/opapi/StdKernelNpuOpApi.cpp
   ${OP_PLUGIN_SRC_V_DIR}/opapi/StdMeanKernelNpuOpApi.cpp
   ${OP_PLUGIN_SRC_V_DIR}/opapi/VarKernelNpuOpApi.cpp
@@ -84,6 +91,8 @@ list(REMOVE_ITEM OP_PLUGIN_SRC
   ${OP_PLUGIN_SRC_V_DIR}/opapi/ScatterUpdateKernelNpuOpApi.cpp
   ${OP_PLUGIN_BASE_OPS_DIR}/opapi/CtcLossKernelNpuOpApi.cpp
   ${OP_PLUGIN_UTILS_DIR}/AdvancedIndex.cpp
+  ${OP_PLUGIN_UTILS_DIR}/custom_functions/aclops/TriangularSolveKernelNpu.cpp
+  ${OP_PLUGIN_UTILS_DIR}/custom_functions/opapi/TriangularSolveKernelNpuOpApi.cpp
 )
 
 set(ASCEND_IMPL_DIR

@@ -6,7 +6,7 @@ import os
 import pickle
 
 
-from conformance.check_result import CheckResult, glob_vars, Tensor
+from conformance.check_result import CheckResult, glob_vars, Tensor, CheckOutput, CheckInput
 from conformance.exception import InputChangedException, OutputCheckFailedException
 
 
@@ -16,39 +16,39 @@ glob_vars.cur_test_func = "diopiTestOp"
 case_input = {
     "test check input": [
         {"input": Tensor.from_numpy(np.array([1, 2, 3]))},
-        {"input": np.array([1, 2, 3])},
-        [],
+        {"input": Tensor.from_numpy(np.array([1, 2, 3]))},
+        {},{},
     ],
     "test check input multi args": [
         {"input": Tensor.from_numpy(np.array([1, 2, 3])), "other": Tensor.from_numpy(np.array([[1, 2, 3], [4, 5, 6]]))},
-        {"input": np.array([1, 2, 3]), "other": np.array([[1, 2, 3], [4, 5, 6]])},
-        [],
+        {"input": Tensor.from_numpy(np.array([1, 2, 3])), "other": Tensor.from_numpy(np.array([[1, 2, 3], [4, 5, 6]]))},
+        {},{},
     ],
     "test ignore_paras_for_input_check": [
         {"input": Tensor.from_numpy(np.array([1, 2, 3])), "other": Tensor.from_numpy(np.array([[1, 2, 3], [4, 5, 6]]))},
         {
-            "input": np.array([4, 5, 6]),
-            "other": np.array([[1, 2, 3 + 1e-5], [4, 5, 6]]),
+            "input": Tensor.from_numpy(np.array([4, 5, 6])),
+            "other": Tensor.from_numpy(np.array([[1, 2, 3 + 1e-5], [4, 5, 6]])),
         },
-        ["input"],
+        {'input'},{},
     ],
 }
 
 case_input_xfail = {
     "test input key": [
         {"input": Tensor.from_numpy(np.array([1, 2, 3]))},
-        {"other": np.array([1, 2, 3])},
-        [],
+        {"other": Tensor.from_numpy(np.array([1, 2, 3]))},
+        {},{},
     ],
     "test input value": [
         {"input": Tensor.from_numpy(np.array([1, 2, 3]))},
-        {"input": np.array([4, 5, 6])},
-        [],
+        {"input": Tensor.from_numpy(np.array([4, 5, 6]))},
+        {},{},
     ],
     "test input shape": [
         {"input": Tensor.from_numpy(np.array([1, 2, 3]))},
-        {"input": np.array([[4, 5, 6]])},
-        [],
+        {"input": Tensor.from_numpy(np.array([[4, 5, 6]]))},
+        {},{},
     ],
 }
 
@@ -240,21 +240,25 @@ case_output_xfail = {
 
 class TestCompareInput(object):
     @pytest.mark.parametrize(
-        "input1,input2,ignore_paras_for_input_check",
+        "input1,input2,ignore_paras_for_input_check,kwargs",
         case_input.values(),
         ids=case_input.keys(),
     )
-    def test_compare_input(self, input1, input2, ignore_paras_for_input_check):
-        CheckResult.compare_input(input1, input2, ignore_paras_for_input_check)
+    def test_compare_input(self, input1, input2, ignore_paras_for_input_check, kwargs):
+        input1_np = CheckResult.to_numpy(input1)
+        input2_np = CheckResult.to_numpy(input2)
+        CheckInput.deep_compare(input1_np, input2_np, ignore_paras_for_input_check, **kwargs)
 
     @pytest.mark.parametrize(
-        "input1,input2,ignore_paras_for_input_check",
+        "input1,input2,ignore_paras_for_input_check,kwargs",
         case_input_xfail.values(),
         ids=case_input_xfail.keys(),
     )
-    @pytest.mark.xfail(raises=InputChangedException, strict=True)
-    def test_compare_input_xfail(self, input1, input2, ignore_paras_for_input_check):
-        CheckResult.compare_input(input1, input2, ignore_paras_for_input_check)
+    @pytest.mark.xfail(raises=(InputChangedException), strict=True)
+    def test_compare_input_xfail(self, input1, input2, ignore_paras_for_input_check, kwargs):
+        input1_np = CheckResult.to_numpy(input1)
+        input2_np = CheckResult.to_numpy(input2)
+        CheckInput.deep_compare(input1_np, input2_np, ignore_paras_for_input_check, **kwargs)
 
 
 class TestCompareOutput(object):
@@ -262,11 +266,13 @@ class TestCompareOutput(object):
         "out1,out2,kwargs", case_output.values(), ids=case_output.keys()
     )
     def test_compare_output(self, out1, out2, kwargs):
-        CheckResult.compare_output(out1, out2, **kwargs)
+        output1_np = CheckResult.to_numpy(out1)
+        CheckOutput.deep_compare(output1_np, out2, **kwargs)
 
     @pytest.mark.parametrize(
         "out1,out2,kwargs", case_output_xfail.values(), ids=case_output_xfail.keys()
     )
-    @pytest.mark.xfail(raises=(OutputCheckFailedException, TypeError), strict=True)
+    @pytest.mark.xfail(raises=(OutputCheckFailedException), strict=True)
     def test_compare_output_xfail(self, out1, out2, kwargs):
-        CheckResult.compare_output(out1, out2, **kwargs)
+        output1_np = CheckResult.to_numpy(out1)
+        CheckOutput.deep_compare(output1_np, out2, **kwargs)

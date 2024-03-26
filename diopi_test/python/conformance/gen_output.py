@@ -218,7 +218,10 @@ class CustomizedTest(object):
 
     def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g):
         sum_dy, sum_dy_xmu, grad_weight, grad_bias = torch.batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
-        out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
+        if input_g:
+            out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
+        else:
+            out = (None, None, grad_weight, grad_bias)
         return out
 
     def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count):
@@ -256,6 +259,15 @@ class CustomizedTest(object):
 
         return (out, inv_rms)
 
+    def sort(input, dim, descending, stable=False):
+        # Skip compare while stable==False
+        sizeI = input.size()
+        sorted, indices = torch.sort(input, dim=dim, descending=descending, stable=stable)
+        if len(sizeI) > 0 and not stable:
+            return sorted
+        else:
+            return sorted, indices
+
     def multihead_attention(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
         output = multihead_attention_inside(q, k, v, scale, is_causal)
@@ -290,6 +302,21 @@ class CustomizedTest(object):
             start_idx = cu_seqlens[i - 1]
             end_idx = cu_seqlens[i]
             output[start_idx:end_idx, :, :] = qkv_result[i - 1, :end_idx - start_idx, :, :]
+        return output
+
+    def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
+        # 为了与基准值对比精度，测试时不使用dropout
+        import math
+        _, seqlen = q.shape[0], q.shape[1]
+        softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
+        scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
+        if is_causal:
+            causal_mask = torch.triu(
+                torch.full((seqlen, seqlen), float('-inf'), device=scores.device), 1
+            )
+            scores = scores + causal_mask.to(dtype=scores.dtype)
+        attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
+        output = torch.einsum("bhts,bshd->bthd", attention, v)
         return output
 
     def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):

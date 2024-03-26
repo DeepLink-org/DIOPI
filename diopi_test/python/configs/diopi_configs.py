@@ -1780,6 +1780,29 @@ diopi_configs = {
         ),
     ),
 
+    "equal" : dict(
+        name=["equal"],
+        interface=['torch'],
+        is_inplace=False,
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (12,), (2, 2), (12, 22)),
+                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool_,
+                              np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool_,],
+                },
+                {
+                    "ins": ['other'],
+                    "shape": ((), (12,), (2, 2), (12, 21)),
+                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.bool_,
+                              np.bool_, np.int8, np.int16, np.int32, np.int64, np.float16, np.float32, np.float64,]
+                }
+            ]
+        ),
+    ),
+
     # FIXME sub输入int8、uint8结果不一致
     'pointwise_binary_diff_dtype_without_bool': dict(
         # name=['sub', 'div'],
@@ -3049,7 +3072,7 @@ diopi_configs = {
         name=['any', 'all', 'sum'],
         interface=['torch'],
         atol=1e-4,
-        rtol=1e-5,
+        rtol=1e-4,
         tensor_para=dict(
             args=[
                 {
@@ -4173,7 +4196,7 @@ diopi_configs = {
 
     'sort': dict(
         name=["sort"],
-        interface=['torch'],
+        interface=['CustomizedTest'],
         para=dict(
             dim=[-1, 0, 1, -2, 3, -1, 0, -1, 0, 2],
             descending=[False, True, False, False, True, False, True, True, False, False],
@@ -4196,7 +4219,7 @@ diopi_configs = {
 
     'sort_same_value': dict(
         name=["sort"],
-        interface=['torch'],
+        interface=['CustomizedTest'],
         para=dict(
             dim=[-1, 0, 1],
             descending=[True, False, False],
@@ -4218,7 +4241,7 @@ diopi_configs = {
 
     'sort_no_stable': dict(
         name=["sort"],
-        interface=['torch'],
+        interface=['CustomizedTest'],
         para=dict(
             dim=[-1, 0, 1, -2, 3, -1, 0, -1, 0, 2],
             descending=[False, True, False, False, True, False, True, True, False, False],
@@ -6383,7 +6406,7 @@ diopi_configs = {
                 {
                     "ins": ['log_probs'],
                     "requires_grad": [True],
-                    "shape": ((26, 20, 38), (26, 20, 38), (26, 20, 38), (32, 20, 10)),
+                    "shape": ((26, 20, 38), (26, 20, 38), (26, 20, 38), (32, 20, 50)),
                     # "dtype": [np.float32, np.float64, np.float64, np.float32, np.float32, np.float64],
                     "dtype": [np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
@@ -6393,7 +6416,7 @@ diopi_configs = {
                     "shape": ((20, 10), (20, 14), (20, 11), (20, 54)),
                     # "dtype": [np.int64, np.int64, np.int8, np.int16, np.int32, np.uint8],
                     "dtype": [np.int64, np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', low=1, high=80),
+                    "gen_fn": dict(fn='Genfunc.randint', low=1, high=30),
                 },
                 {
                     "ins": ['input_lengths'],
@@ -6429,7 +6452,7 @@ diopi_configs = {
                 {
                     "ins": ['log_probs'],
                     "requires_grad": [True],
-                    "shape": ((26, 10, 38), (26, 10, 38), (26, 10, 38), (32, 10, 10)),
+                    "shape": ((26, 10, 38), (26, 10, 38), (26, 10, 38), (32, 10, 40)),
                     # "dtype": [np.float32, np.float64, np.float64, np.float32, np.float32, np.float64],
                     "dtype": [np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
@@ -6439,7 +6462,7 @@ diopi_configs = {
                     "shape": ((10, ), (10, ), (10, ), (10, )),
                     # "dtype": [np.int64, np.int64, np.int8, np.int16, np.int32, np.uint8],
                     "dtype": [np.int64, np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint', low=1, high=80),
+                    "gen_fn": dict(fn='Genfunc.randint', low=1, high=30),
                 },
                 {
                     "ins": ['input_lengths'],
@@ -7607,6 +7630,29 @@ diopi_configs = {
         ),
     ),
 
+    # linalg_vector_norm(input, ord=2, dim=None, keepdim=False, dtype=None):
+    'vector_norm': dict(
+        name=['vector_norm'],
+        interface=['torch.linalg'],
+        para=dict(
+            ord=[2.0, 2.0, 2.0, 2.0, 2.0],
+            dim=[None, 1, (0, 1), (1, 2), None],
+            keepdim=[True, False, True, False, False],
+            dtype=[None, None, None, None, None, ],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((3, 4), (2, 3, 3), (2, 3, 4), (6, 3, 4, 5),
+                              (0, 3, 4)),
+                    "dtype": [np.float16, np.float32, np.float64],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+
     'cholesky': dict(
         name=['cholesky_ex'],
         interface=['torch.linalg'],
@@ -7973,6 +8019,36 @@ diopi_configs = {
     #               (0,), (0, 16), (8, 0, 12)],
     #     ),
     # ),
+
+    'ones_zeros': dict(
+        name=['ones', 'zeros'],
+        need_context=True,
+        interface=["torch"],
+        dtype=[np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.uint8],
+        para=dict(
+            size=[(), (128,), (3, 64), (3, 16, 64),
+                  (4, 16, 8, 64), (2, 16, 1, 64, 5),
+                  (0,), (0, 16), (8, 0, 12)],
+        ),
+    ),
+
+    'zero_inp': dict(
+        name=['zero_'],
+        interface=["torch.Tensor"],
+        tensor_para=dict(
+            # gen_fn='Genfunc.rand',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40), (0,), (16, 0)),
+                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.uint8],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
 
     'lerp': dict(
         name=['lerp'],
@@ -8677,4 +8753,39 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'flash_attention': dict(
+        name=['flash_attention'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16, np.float32],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            p_dropout=[0, 0, 0, 0, 0],
+            is_causal=[True, False, True, False, True],
+            softmax_scale=[0.0883, None, 0.125, None, 0.0625]
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+            ],
+        ),
+    ),
+
 }

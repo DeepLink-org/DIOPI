@@ -6,6 +6,7 @@
 
 #include "helper.hpp"
 #include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace {
 
@@ -22,6 +23,13 @@ float calculateP(c10::optional<at::Scalar> p) {
     } else {
         return static_cast<float>(2.0);  // default: p = 2.0
     }
+}
+
+inline bool checkUseAclop(float pfloat) {
+    if (pfloat != 0.0 && pfloat != 1.0 && pfloat != 2.0 && pfloat != 3.0) {
+        return true;
+    }
+    return false;
 }
 
 }  // namespace
@@ -45,7 +53,13 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
         op_api::fill_(outAt, inputAt.numel());
         return diopiSuccess;
     }
-    op_api::norm_out(inputAt, pAt, dimAt, false, outAt);
+    bool useAclop = checkUseAclop(pvalue);
+    if (useAclop) {
+        op_api::norm_out(inputAt, pAt, dimAt, keepdim, outAt);
+    } else {
+        EXEC_NPU_CMD(aclnnNorm, inputAt, pAt, dimAt, keepdim, outAt);
+    }
+
     END_CALL_ACL_OP();
 }
 

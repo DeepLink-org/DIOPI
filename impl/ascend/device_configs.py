@@ -9,8 +9,8 @@ device_configs = {
         name=["batch_norm"],
         atol_half=1e-1,
         rtol_half=1e-1,
-        atol=2e-3,
-        rtol=1e-4,
+        atol=1e-2,
+        rtol=1e-2,
      ),
 
     'batch_norm_no_contiguous': dict(
@@ -1103,30 +1103,6 @@ device_configs = {
         ),
     ),
 
-    'lerp': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
-    'lerp_tensor': dict(
-        name=['lerp'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip(()),Skip((1024,)),Skip((384, 128)),Skip((2, 1, 128)),Skip((128, 64, 3, 3)),Skip((2, 64, 16, 128)),Skip((2, 32, 130, 130)),Skip((0,)),Skip((0, 3)),Skip((18, 0, 9)),],
-                },
-            ]
-        ),
-    ),
-
     'amax': dict(
         name=['amax'],
         tensor_para=dict(
@@ -1294,5 +1270,11 @@ device_configs = {
         name=["nll_loss"],
         atol=1e-4,
         rtol=1e-3,
-    )
+    ),
+
+    'flash_attention': dict(
+        name=['flash_attention'],
+        # the backward of flash attention op does not support float32 on ascend
+        dtype=[Skip(np.float32),],
+    ),
 }

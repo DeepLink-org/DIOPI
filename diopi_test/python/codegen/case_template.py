@@ -11,11 +11,10 @@ import pickle
 import pytest
 #import psutil
 import numpy as np
-from copy import deepcopy
 
 from conformance.diopi_runtime import Tensor, from_numpy_dtype, default_context
 from conformance.diopi_functions import ones_like, FunctionNotImplementedError, FunctionNotDefinedError
-from conformance.check_result import CheckResult
+from conformance.check_result import CheckResult, CheckInput, CheckOutput
 ${test_diopi_head_import}
 
 data_path = './cache'
@@ -96,7 +95,6 @@ function_paras = data_in['function_paras']
 function_kwargs = function_paras['kwargs']
 function_config = data_in['cfg']
 ignore_paras_for_input_check = ${ignore_paras_for_input_check}
-np_inputs_orign = deepcopy(function_kwargs)
 
 ${preprocess_parameters}
 
@@ -181,8 +179,15 @@ tol = ${test_compare_tol}
 # sum_to_compare
 sum_to_compare = True if 'sorted' in function_kwargs and ~function_kwargs['sorted'] else False
 tol['sum_to_compare'] = sum_to_compare
+
+inputs_origin_np = CheckResult.to_numpy(function_kwargs)
+need_context = ${need_context}
+
 try:
-    dev_foward_out = ${test_diopi_func_name}(**function_kwargs)
+    if need_context:
+        dev_foward_out = ${test_diopi_func_name}(default_context, **function_kwargs)
+    else:
+        dev_foward_out = ${test_diopi_func_name}(**function_kwargs)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
@@ -193,9 +198,9 @@ with open(f_out, 'rb') as f:
 
 try:
     function_kwargs_np = CheckResult.to_numpy(function_kwargs)
-    CheckResult.compare_input_dict(function_kwargs_np, np_inputs_orign, ignore_paras_for_input_check, **tol)
+    CheckInput.deep_compare(function_kwargs_np, inputs_origin_np, ignore_paras_for_input_check=ignore_paras_for_input_check, **tol)
     dev_foward_out_np = CheckResult.to_numpy(dev_foward_out)
-    CheckResult.compare_output(dev_foward_out_np, ref_foward_out, **tol)
+    CheckOutput.deep_compare(dev_foward_out_np, ref_foward_out, **tol)
 except Exception as e:
     default_context.clear_tensors()
     assert False, f'Test {function_config["name"]}: {function_config} traceback: {e}'
@@ -206,6 +211,8 @@ except Exception as e:
         r"""
 # inplace call for the function
 ${test_diopi_func_inp_remove_grad_args}
+inputs_origin_np = CheckResult.to_numpy(function_kwargs)
+
 try:
     dev_inp_forward_out = ${test_diopi_func_name}(inplace=True, **function_kwargs)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
@@ -215,9 +222,9 @@ except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
 try:
     ignore_paras_for_input_check.add('input')
     function_kwargs_np = CheckResult.to_numpy(function_kwargs)
-    CheckResult.compare_input_dict(function_kwargs_np, np_inputs_orign, ignore_paras_for_input_check, **tol)
+    CheckInput.deep_compare(function_kwargs_np, inputs_origin_np, ignore_paras_for_input_check=ignore_paras_for_input_check, **tol)
     dev_inp_forward_out_np = CheckResult.to_numpy(dev_inp_forward_out)
-    CheckResult.compare_output(dev_inp_forward_out_np, ref_foward_out, **tol)
+    CheckOutput.deep_compare(dev_inp_forward_out_np, ref_foward_out, **tol)
 except Exception as e:
     default_context.clear_tensors()
     assert False, f'Test {function_config["name"]}  inplace: {function_config} traceback: {e}'
@@ -231,10 +238,13 @@ function_kwargs = {key: value for key, value in function_kwargs.items() if key n
 
     test_manual_function_forward_call = CodeTemplate(
         r"""
+
+inputs_origin_np = CheckResult.to_numpy(function_kwargs)
+
 try:
     ManualTest.test_${test_diopi_func_name}(**function_kwargs)
     function_kwargs_np = CheckResult.to_numpy(function_kwargs)
-    CheckResult.compare_input_dict(function_kwargs_np, np_inputs_orign, ignore_paras_for_input_check)
+    CheckInput.deep_compare(function_kwargs_np, inputs_origin_np, ignore_paras_for_input_check)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
@@ -244,6 +254,7 @@ except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
         r"""
 ${test_diopi_func_inp_remove_grad_args}
 function_kwargs.update({'inplace': True})
+inputs_origin_np = CheckResult.to_numpy(function_kwargs)
 try:
     ManualTest.test_${test_diopi_func_name}(**function_kwargs)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
@@ -269,8 +280,8 @@ backward_para["grad_outputs"] = grad_outputs
 for k, v in function_config['saved_args'].items():
     backward_para[k] = dev_foward_out[v]
 
-backward_para_compare = [item for value in backward_para.values() for item in (value if isinstance(value, list) else [value])]
-backward_para_origin = deepcopy([item.numpy() for item in backward_para_compare])
+backward_para_origin = CheckResult.to_numpy(backward_para)
+inputs_origin_np = CheckResult.to_numpy(function_kwargs)
 try:
     dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs, **backward_para)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
@@ -281,13 +292,14 @@ with open(f_bp_out, 'rb') as f:
     ref_bp_out = pickle.load(f)
 
 # checkout
+
 try:
     function_kwargs_np = CheckResult.to_numpy(function_kwargs)
-    CheckResult.compare_input_dict(function_kwargs_np, np_inputs_orign, ignore_paras_for_input_check, **tol)
-    backward_para_compare_np = CheckResult.to_numpy(backward_para_compare)
-    CheckResult.compare_input_list(backward_para_compare_np, backward_para_origin, **tol)
+    CheckInput.deep_compare(function_kwargs_np, inputs_origin_np, ignore_paras_for_input_check, **tol)
+    backward_para_compare_np = CheckResult.to_numpy(backward_para)
+    CheckInput.deep_compare(backward_para_compare_np, backward_para_origin, {}, **tol)
     dev_bp_out_np = CheckResult.to_numpy(dev_bp_out)
-    CheckResult.compare_output(dev_bp_out_np, ref_bp_out, **tol)
+    CheckOutput.deep_compare(dev_bp_out_np, ref_bp_out, **tol)
 except Exception as e:
     default_context.clear_tensors()
     assert False, f'Test {function_config["name"]} backward: {function_config} traceback: {e}'

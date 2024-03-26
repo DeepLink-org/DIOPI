@@ -575,7 +575,6 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
  *        - (N,d1,d2,...,dK) with K≥1 if reduction is 'none' for K-dimensional loss.
  *        - Scalar if reduction is 'sum' or 'mean'.
  *        Type = [float32, float64].
- * todo: 训练时需要返回totalWeight给diopiNLLLossBackward
  */
 DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                     diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
@@ -611,11 +610,78 @@ DIOPI_API diopiError_t diopiNLLLoss(diopiContextHandle_t ctx, diopiTensorHandle_
  *        Shape:
  *        - Matches the shape of 'input' tensor.
  *        Type = [float32, float64].
- * todo: 需要传totalWeight避免重复计算
  */
 DIOPI_API diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                             diopiReduction_t reduction, int64_t ignore_index);
+
+/**
+ * @brief Measures the NLL loss between the target and input probabilities.
+ * @param[in] ctx Context environment.
+ * @param[in] input Input tensor, usually representing log probabilities.
+ *        Shape:
+ *        - (N,C) where N is the batch size and C is the number of classes.
+ *        - Or for K-dimensional loss: (N,C,d1,d2,...,dK) with K≥1.
+ *        Type = [float32, float64]
+ * @param[in] target Target tensor representing class indices, with values in the range of [0, C-1].
+ *        Shape:
+ *        - (N) for single dimensional target.
+ *        - Or for K-dimensional loss: (N,d1,d2,...,dK) with K≥1.
+ *        Type = [int64]
+ * @param[in] weight Optional tensor representing weights manually assigned to each class.
+ *        Shape:
+ *        - (C) where C is the number of classes.
+ *        Type = [float32, float64]
+ * @param[in] reduction  Loss reduction mode, which can be none, sum, or mean.
+ * @param[in] ignore_index  Specifies a target value that should be ignored and does not contribute to the input gradient.
+ * This parameter can be used only when the target contains class indices. Type = [int64].
+ * @param[out] out Output tensor.
+ * @param[out] totalWeight TotalWeight tensor.
+ *        Shape:
+ *        - (N) if reduction is 'none' for single dimensional target.
+ *        - (N,d1,d2,...,dK) with K≥1 if reduction is 'none' for K-dimensional loss.
+ *        - Scalar if reduction is 'sum' or 'mean'.
+ *        Type = [float32, float64].
+ */
+DIOPI_API diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
+                                      diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
+
+/**
+ * @brief Compute the backward pass of diopiNLLLoss().
+ * @param[in] ctx Context environment.
+ * @param[in] grad_output The gradient tensor with respect to the output of the forward pass.
+ *        Shape:
+ *        - (N) if reduction was 'none' for single dimensional target.
+ *        - (N,d1,d2,...,dK) with K≥1 if reduction was 'none' for K-dimensional loss.
+ *        - Scalar if reduction was 'sum' or 'mean'.
+ *        Type = [float32, float64]
+ * @param[in] input Input tensor, usually representing log probabilities.
+ *        Shape:
+ *        - (N,C) where N is the batch size and C is the number of classes.
+ *        - Or for K-dimensional loss: (N,C,d1,d2,...,dK) with K≥1.
+ *        Type = [float32, float64]
+ * @param[in] target Target tensor representing class indices, with values in the range of [0, C-1].
+ *        Shape:
+ *        - (N) for single dimensional target.
+ *        - Or for K-dimensional loss: (N,d1,d2,...,dK) with K≥1.
+ *        Type = [int64]
+ *
+ * @param[in] weight Optional tensor representing weights manually assigned to each class.
+ *        Shape:
+ *        - (C) where C is the number of classes.
+ *        Type = [float32, float64]
+ * @param[in] totalWeight totalWeight tensor.
+ * @param[in] reduction  Loss reduction mode, which can be none, sum, or mean.
+ * @param[in] ignore_index  Specifies a target value that should be ignored and does not contribute to the input gradient.
+ * This parameter can be used only when the target contains class indices. Type = [int64].
+ * @param[out] grad_input Gradient tensor with respect to the input of the forward pass.
+ *        Shape:
+ *        - Matches the shape of 'input' tensor.
+ *        Type = [float32, float64].
+ */
+DIOPI_API diopiError_t diopiNLLLossV2Backward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                              diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
+                                              diopiConstTensorHandle_t totalWeight, diopiReduction_t reduction, int64_t ignore_index);
 
 /**
  * @brief Measures the Binary Cross Entropy between the target and input probabilities.
@@ -1596,6 +1662,14 @@ DIOPI_API diopiError_t diopiEq(diopiContextHandle_t ctx, diopiTensorHandle_t out
  * @sa Other parameters refer to diopiEq().
  */
 DIOPI_API diopiError_t diopiEqInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other);
+
+/**
+ * @brief True if two tensors have the same size and elements, False otherwise.
+ * @param[in] input the input tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] other the other tensor to be compared. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[out] out the output value. type = [bool].
+ */
+DIOPI_API diopiError_t diopiEqual(diopiContextHandle_t ctx, bool* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other);
 
 /**
  * @brief Computes not equal element-wise comparison with a scalar, "!=".
@@ -2849,6 +2923,15 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
                                               int64_t num_groups);
 
 /**
+ * \brief Applies Group Normalization over a mini-batch of inputs.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type=[float32, float64, float16].
+ * @param[out] out the output tensor. type=[float32, float64, float16].
+ */
+DIOPI_API diopiError_t diopiLinalgVecNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiScalar_t* ord,
+                                          diopiSize_t dim, bool keepdim);
+
+/**
  * @brief Returns the unique elements of the input tensor.
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor,type = [int64, float32, float64, float16, int16, int32, uint8, int8, bool]
@@ -3351,6 +3434,29 @@ DIOPI_API diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t o
  * @param[in] diagonal the diagonal to consider.
  */
 DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal);
+
+/**
+ * @brief Create a tensor filled with one.
+ * @param[in] ctx Context environment.
+ * @param[in] size Out tensor size.
+ * @param[out] out The output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiOnes(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
+
+/**
+ * @brief Create a tensor filled with zero.
+ * @param[in] ctx Context environment.
+ * @param[in] size Out tensor size.
+ * @param[out] out The output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiZeros(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
+
+/**
+ * @brief Set all elements of a tensor to zero.
+ * @param[in] ctx Context environment.
+ * @param[in] self Input and output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiZeroInp(diopiContextHandle_t ctx, diopiTensorHandle_t self);
 
 /**
  * @brief This function is an extension of torch.sign() to complex tensors.

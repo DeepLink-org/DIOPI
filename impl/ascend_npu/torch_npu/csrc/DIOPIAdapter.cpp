@@ -37,6 +37,36 @@ inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; 
 AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
 #undef ENUM_PAIR_FUNC
 
+#if DIOPI_TORCH_VERSION >= 20100
+#define AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(_)    \
+    _(at::ScalarType::Byte, ACL_UINT8)                 \
+    _(at::ScalarType::Char, ACL_INT8)                  \
+    _(at::ScalarType::Short, ACL_INT16)                \
+    _(at::ScalarType::Int, ACL_INT32)                  \
+    _(at::ScalarType::Long, ACL_INT64)                 \
+    _(at::ScalarType::Half, ACL_FLOAT16)               \
+    _(at::ScalarType::Float, ACL_FLOAT)                \
+    _(at::ScalarType::Double, ACL_DOUBLE)              \
+    _(at::ScalarType::ComplexHalf, ACL_COMPLEX32)      \
+    _(at::ScalarType::ComplexFloat, ACL_COMPLEX64)     \
+    _(at::ScalarType::ComplexDouble, ACL_COMPLEX128)   \
+    _(at::ScalarType::Bool, ACL_BOOL)                  \
+    _(at::ScalarType::QInt8, ACL_DT_UNDEFINED)         \
+    _(at::ScalarType::QUInt8, ACL_DT_UNDEFINED)        \
+    _(at::ScalarType::QInt32, ACL_DT_UNDEFINED)        \
+    _(at::ScalarType::BFloat16, ACL_BF16)              \
+    _(at::ScalarType::QUInt4x2, ACL_DT_UNDEFINED)      \
+    _(at::ScalarType::QUInt2x4, ACL_DT_UNDEFINED)      \
+    _(at::ScalarType::Bits1x8, ACL_DT_UNDEFINED)       \
+    _(at::ScalarType::Bits2x4, ACL_DT_UNDEFINED)       \
+    _(at::ScalarType::Bits4x2, ACL_DT_UNDEFINED)       \
+    _(at::ScalarType::Bits8, ACL_DT_UNDEFINED)         \
+    _(at::ScalarType::Bits16, ACL_DT_UNDEFINED)        \
+    _(at::ScalarType::Float8_e5m2, ACL_DT_UNDEFINED)   \
+    _(at::ScalarType::Float8_e4m3fn, ACL_DT_UNDEFINED) \
+    _(at::ScalarType::Undefined, ACL_DT_UNDEFINED)     \
+    _(at::ScalarType::NumOptions, ACL_DT_UNDEFINED)
+#else
 #define AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(_)  \
     _(at::ScalarType::Byte, ACL_UINT8)               \
     _(at::ScalarType::Char, ACL_INT8)                \
@@ -58,6 +88,7 @@ AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
     _(at::ScalarType::QUInt2x4, ACL_DT_UNDEFINED)    \
     _(at::ScalarType::Undefined, ACL_DT_UNDEFINED)   \
     _(at::ScalarType::NumOptions, ACL_DT_UNDEFINED)
+#endif
 
 constexpr aclDataType kATenScalarTypeToAclDataTypeTable[static_cast<int64_t>(at::ScalarType::NumOptions) + 1] = {
 #define DEFINE_ENUM(_1, n) n,
@@ -1149,9 +1180,9 @@ void assert_no_partial_overlap(const at::Tensor& tensora, const at::Tensor& tens
         return;
     }
     if (a->storage().data() == b->storage().data()) {
-        const auto a_begin = static_cast<char*>(a->data());
+        const auto a_begin = static_cast<const char*>(a->data());
         const auto a_end = a_begin + a->numel() * static_cast<int64_t>(a->itemsize());
-        const auto b_begin = static_cast<char*>(b->data());
+        const auto b_begin = static_cast<const char*>(b->data());
         const auto b_end = b_begin + b->numel() * static_cast<int64_t>(b->itemsize());
         if (a_begin == b_begin && a_end == b_end) {
             return;
@@ -1180,25 +1211,25 @@ NPUStatus CalcuOpUtil::AclrtMemcpyAsync(const std::pair<at::Tensor, int64_t>& ds
                                         aclrtMemcpyKind kind) {
     void* dst_ptr = reinterpret_cast<uint8_t*>(dst.first.data_ptr()) + dst.second * dst.first.itemsize();
     void* src_ptr = reinterpret_cast<uint8_t*>(src.first.data_ptr()) + src.second * src.first.itemsize();
-    c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
-    NPU_CHECK_ERROR(aclrtMemcpyAsync(dst_ptr, dst_size, src_ptr, src_size, kind, stream));
+    NPU_CHECK_ERROR(c10_npu::queue::LaunchAsyncCopyTask(dst_ptr, dst_size, const_cast<void*>(src_ptr), src_size, kind));
+
     return "SUCCESS";
 }
 
 aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count,
                                                 aclrtMemcpyKind kind) {
-    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(dst.first->data()) + dst.second);
-    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(src.first->data()) + src.second);
+    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(const_cast<void*>(dst.first->data())) + dst.second);
+    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(const_cast<void*>(src.first->data())) + src.second);
     return AclrtMemcpyParamCheck(dst_ptr, dstMax, const_cast<void*>(src_ptr), count, kind);
 }
 
 aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(const StorageAndOffsetMemSizePair& dst, size_t dstMax, const void* src, size_t count, aclrtMemcpyKind kind) {
-    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(dst.first->data()) + dst.second);
+    void* dst_ptr = static_cast<void*>(static_cast<uint8_t*>(const_cast<void*>(dst.first->data())) + dst.second);
     return AclrtMemcpyParamCheck(dst_ptr, dstMax, src, count, kind);
 }
 
 aclError CalcuOpUtil::AclrtMemcpyWithModeSwitch(void* dst, size_t dstMax, const StorageAndOffsetMemSizePair& src, size_t count, aclrtMemcpyKind kind) {
-    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(src.first->data()) + src.second);
+    void* src_ptr = static_cast<void*>(static_cast<uint8_t*>(const_cast<void*>(src.first->data())) + src.second);
     return AclrtMemcpyParamCheck(dst, dstMax, const_cast<void*>(src_ptr), count, kind);
 }
 
@@ -1786,12 +1817,12 @@ int64_t StorageDescHelper::GetValidMemorySize(const at::Tensor& tensor) {
 void StorageDescHelper::SetDesc(at::Tensor& dst) { torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype()); }
 
 void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides) {
-    diopiConstTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
+    diopiTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
     torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, tmp_tensor);
 }
 
 void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format) {
-    diopiConstTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
+    diopiTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
     torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, format, tmp_tensor);
 }
 
@@ -1816,12 +1847,12 @@ void StorageDescHelper::ReflushDescBySelf(const at::Tensor& src) {
 torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype) { return SetDesc(dtype, {0}, {}); }
 
 torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
-                                                     diopiConstTensorHandle_t tensor) {
+                                                     diopiTensorHandle_t tensor) {
     return SetDesc(dtype, size, strides, InferFormat::GuessBaseFormat(size), tensor);
 }
 
 torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
-                                                     aclFormat format, diopiConstTensorHandle_t tensor) {
+                                                     aclFormat format, diopiTensorHandle_t tensor) {
     struct torch_npu::NPUStorageDesc npu_desc;
     npu_desc.data_type_ = dtype;
     npu_desc.base_sizes_ = size;
@@ -3057,7 +3088,7 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 
     auto options = at::TensorOptions(c10::Device(atDevice, devId_)).dtype(atType);
     at::Tensor out = fromPreAllocated(data, atDims, atStrides, options);
-    torch_npu::NPUBridge::GetNpuStorageImpl(out)->npu_desc_.diopi_tensor_ = tensor;
+    torch_npu::NPUBridge::GetNpuStorageImpl(out)->npu_desc_.diopi_tensor_ = const_cast<diopiTensorHandle_t>(tensor);
     return out;
 }
 
@@ -3082,6 +3113,26 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
     auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
     impl->generator_ = generator;
     return gen;
+}
+
+void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
+    TORCH_CHECK(out != nullptr);
+    diopiTensorHandle_t diopiHandle = torch_npu::NPUBridge::GetNpuStorageImpl(input)->npu_desc_.diopi_tensor_;
+    if (diopiHandle != nullptr) {
+        at::Tensor outAt = buildATen(diopiHandle);
+        if (outAt.sizes() == input.sizes() && outAt.strides() == input.strides() && outAt.data_ptr() == input.data_ptr()) {
+            *out = diopiHandle;
+            return;
+        }
+    }
+    at::IntArrayRef atSize = input.sizes();
+    at::IntArrayRef atStride = input.strides();
+    diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
+    diopiSize_t stride{atStride.data(), static_cast<int64_t>(atStride.size())};
+    diopiDtype_t dtype = getDIOPITensorType(input);
+    diopiDevice_t device = getDIOPIDevice(input.device().type());
+    diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
+    updateATen2Tensor(ctx, input, *out);
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
@@ -3116,7 +3167,9 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
         int count = std::accumulate(sizeVec.begin() + 1, sizeVec.end(), 1, std::multiplies<int>());
         sizeVec[0] = input.numel() / count;
     }
-    return fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizeVec, stridesVec, input.options());
+    auto out = fromPreAllocated(input.data_ptr() + storageOffset * input.itemsize(), sizeVec, stridesVec, input.options());
+    torch_npu::NPUBridge::GetNpuStorageImpl(out)->npu_desc_.diopi_tensor_ = nullptr;
+    return out;
 }
 
 c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices) {
@@ -3175,6 +3228,7 @@ const at::Tensor& wrapper__resize_(const at::Tensor& self, at::IntArrayRef size,
         auto storage = selfImpl->unsafe_storage();
         auto storageImpl = storage.unsafeGetStorageImpl();
         storageImpl->set_data_ptr_noswap(std::move(c10::InefficientStdFunctionContext::makeDataPtr(out.data_ptr(), c10::detail::deleteNothing, self.device())));
+        torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_.diopi_tensor_ = torch_npu::NPUBridge::GetNpuStorageImpl(out)->npu_desc_.diopi_tensor_;
     }
     selfImpl->set_sizes_contiguous(size);
     return self;
@@ -3208,7 +3262,13 @@ at::Tensor& wrapper_source_Storage_set_(at::Tensor& self, at::Storage src) {
     auto* selfImpl = self.unsafeGetTensorImpl();
     auto storage = selfImpl->unsafe_storage();
     auto storageImpl = storage.unsafeGetStorageImpl();
+#if DIOPI_TORCH_VERSION >= 20100
+    storageImpl->set_data_ptr(std::move(src.mutable_data_ptr()));
+#else
     storageImpl->set_data_ptr(std::move(src.data_ptr()));
+#endif
+    torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_.diopi_tensor_ =
+        torch_npu::NPUBridge::GetNpuStorageImpl(src.unsafeGetStorageImpl())->npu_desc_.diopi_tensor_;
     return self;
 }
 
@@ -3217,14 +3277,19 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     auto* selfImpl = self.unsafeGetTensorImpl();
     auto storage = selfImpl->unsafe_storage();
     auto storageImpl = storage.unsafeGetStorageImpl();
+#if DIOPI_TORCH_VERSION >= 20100
+    storageImpl->set_data_ptr(std::move(source.mutable_data_ptr()));
+#else
     storageImpl->set_data_ptr(std::move(source.data_ptr()));
+#endif
     selfImpl->set_storage_offset(storage_offset);
     if (stride.size() > 0) {
         selfImpl->set_sizes_and_strides(size, stride);
     } else {
         selfImpl->set_sizes_contiguous(size);
     }
-
+    torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_.diopi_tensor_ =
+        torch_npu::NPUBridge::GetNpuStorageImpl(source.unsafeGetStorageImpl())->npu_desc_.diopi_tensor_;
     return self;
 }
 

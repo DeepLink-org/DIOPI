@@ -13,7 +13,8 @@ tensor_ptr = ['diopiTensorHandle_t*', 'diopiConstTensorHandle_t*']
 
 type_convert_dict = {
     'int64_t*': 'void*',
-    'double*': 'void*'
+    'double*': 'void*',
+    'bool*': 'void*'
 }
 
 can_be_none = ['const int64_t*', 'const double*', 'const bool*']
@@ -138,7 +139,7 @@ def get_export(content, ft, exports):
                     call_args[vector] = call_args[vector] + 'DIOPI'
                 for out in out_ptr:
                     convert += "diopiTensorHandle_t {param}Handle = nullptr;\n".format(param=call_args[out])
-                    out_copy += "if ({param}.get() != nullptr)\n \
+                    out_copy += "if ({param}.get() != nullptr && {param}Handle != nullptr)\n \
     *{param} = *{param}Handle;\n".format(param=call_args[out])
                     call_args[out] = '&' + call_args[out] + 'Handle'
                 call_func = func_name + '(' + ', '.join(call_args) + ')'
