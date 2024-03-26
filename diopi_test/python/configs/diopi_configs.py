@@ -8024,17 +8024,11 @@ diopi_configs = {
         name=['ones', 'zeros'],
         need_context=True,
         interface=["torch"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((), (1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726), (2, 31, 6, 40, 1),
-                              (1,), (64,), (4, 49), (1276, 49, 49), (2, 8, 726, 726),
-                              (0,), (0, 5), (3, 0, 6)),
-                    "dtype": [np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint8],
-                    "gen_fn": 'Genfunc.randn',
-                },
-            ],
+        dtype=[np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.uint8],
+        para=dict(
+            size=[(), (128,), (3, 64), (3, 16, 64),
+                  (4, 16, 8, 64), (2, 16, 1, 64, 5),
+                  (0,), (0, 16), (8, 0, 12)],
         ),
     ),
 
