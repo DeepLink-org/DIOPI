@@ -5,7 +5,7 @@
  */
 
 #include "helper.hpp"
-#include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/AclOpsInterface.h"
 
 extern "C" {
 diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeatSize) {
@@ -20,7 +20,8 @@ diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         inputAt = impl::aten::viewStorage(inputAt, inputShape);
     }
 
-    EXEC_NPU_CMD(aclnnRepeat, inputAt, repeatSizeAt, outAt);
+    at_npu::native::OpPreparation::markAsOutputForApplyTensor(outAt);
+    outAt = acl_op::repeat(inputAt, repeatSizeAt);
     END_CALL_ACL_OP();
 }
 
