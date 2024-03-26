@@ -33,7 +33,7 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     }
 
     // change input data type, (in the camb first input method, support half, bfloat16 and float)
-    std::vector<DiopiTensor*> pTensors{&inputTensor,&cosTensor, &sinTensor};
+    std::vector<DiopiTensor*> pTensors{&inputTensor, &cosTensor, &sinTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_float16, diopi_dtype_bfloat16};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
@@ -62,13 +62,13 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     }
     void* input2Ptr;
     void* output2Ptr;
-    if(inputTensor.dtype() == diopi_dtype_float32){
+    if (inputTensor.dtype() == diopi_dtype_float32) {
         input2Ptr = static_cast<void*>((static_cast<float*>(inputTensor.data())) + storageOffset);
-        output2Ptr = static_cast<void*>((static_cast<float*>(outTmpTr.data())) + storageOffset);        
+        output2Ptr = static_cast<void*>((static_cast<float*>(outTmpTr.data())) + storageOffset);
     } else {
-        //short 和bfloat和float都是16位，内存移动相同
+        // short 和bfloat和float都是16位，内存移动相同
         input2Ptr = static_cast<void*>((static_cast<short*>(inputTensor.data())) + storageOffset);
-        output2Ptr = static_cast<void*>((static_cast<short*>(outTmpTr.data())) + storageOffset);   
+        output2Ptr = static_cast<void*>((static_cast<short*>(outTmpTr.data())) + storageOffset);
     }
 
     // set Tensors' decriptor
