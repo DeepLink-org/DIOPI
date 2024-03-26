@@ -12,9 +12,6 @@ ascend:
 - diopiNormalTensorScalar
 - diopiSlice
 - diopiSliceBackward
-- diopiThreshold
-- diopiThresholdBackward
-- diopiThresholdInp
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiRMSNorm
@@ -261,3 +258,6 @@ ascend_npu:
 - diopiFlashAttention
 - diopiFlashAttentionBackward
 - diopiFlashAttentionV2
+- diopiThreshold
+- diopiThresholdBackward
+- diopiThresholdInp
