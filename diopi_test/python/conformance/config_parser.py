@@ -6,6 +6,7 @@ import itertools
 import numpy as np
 from enum import Enum
 from conformance.global_settings import default_cfg_dict
+from conformance.utils import GenPolicy
 
 
 def diopi_config_parse(case_item_path="./cache/diopi_case_items.cfg"):
@@ -372,8 +373,10 @@ class ConfigItem(object):
                     [k for k in arg.keys() if k not in ["gen_fn", "gen_policy"]],
                 )
                 # should design gen policy: map
+                # XXX delete for diff dtype tensor list, dtype must be nested type
+                gen_policy = arg.get('gen_policy', 'default')
                 for k, v in arg.items():
-                    if k == "dtype":
+                    if k == "dtype" and gen_policy != GenPolicy.gen_tensor_list_diff_dtype:
                         _assert_unnested_type(args_name + f"{k}.dtype", v)
 
         if "para" in self._orig.keys():

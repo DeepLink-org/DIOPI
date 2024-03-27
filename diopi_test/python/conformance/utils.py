@@ -233,3 +233,13 @@ def gen_pytest_case_nodeid(dir, file, class_, func):
     ->
     gencases/diopi_case/test_diopi_adadelta_adadelta.py::TestMdiopiSadadeltaFadadelta::test_adadelta_0"""
     return f'{os.path.join(os.path.normpath(dir), file)}::{class_}::{func}'
+
+
+class GenPolicy:
+    default = "default"
+    gen_tensor_by_value = "gen_tensor_by_value"
+    gen_tensor_list = "gen_tensor_list"
+    gen_tensor_list_diff_shape = "gen_tensor_list_diff_shape"
+    gen_tensor_list_diff_dtype = "gen_tensor_list_diff_dtype"
+
+    gen_list_policy = [gen_tensor_list, gen_tensor_list_diff_shape, gen_tensor_list_diff_dtype]

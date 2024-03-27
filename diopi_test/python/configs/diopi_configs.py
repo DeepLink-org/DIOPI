@@ -8723,7 +8723,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'flash_attention': dict(
         name=['flash_attention'],
         interface=['CustomizedTest'],
@@ -8758,4 +8758,189 @@ diopi_configs = {
         ),
     ),
 
+    '_amp_foreach_non_finite_check_and_unscale_': dict(
+        name=["_amp_foreach_non_finite_check_and_unscale_"],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["scaled_grads"],
+                    "shape": ((), (10,), (10, 2, 5), (2, 1, 3, 5),
+                              (0,), (4, 0), (3, 0, 5)),
+                    "gen_fn": dict(fn='Genfunc.randn_set_value', low=-10, high=10, value=float('inf')),
+                    "dtype": [np.float32, np.float16, np.float64],
+                    "gen_policy": 'gen_tensor_list',
+                    "gen_num_range": [1, 5]
+                },
+                {
+                    "ins": ["found_inf"],
+                    "shape": ((), (1,), ((1,)), (((1,))),
+                              (), (1,), ((1,))),
+                    "dtype": [np.float32],
+                    "gen_fn": 'Genfunc.zeros',
+                },
+                {
+                    "ins": ["inv_scale"],
+                    "shape": ((), (1,), ((1,)), (((1,))),
+                              (((1,))), (), ((1,))),
+                    "dtype": [np.float32],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                },
+            ]
+        ),
+    ),
+
+    '_amp_foreach_non_finite_check_and_unscale__diff_shape': dict(
+        name=["_amp_foreach_non_finite_check_and_unscale_"],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["scaled_grads"],
+                    "shape": ((), ((),), ((10,), (10, 2, 5)), ((), (9, 10, 4, 2)),
+                              ((2, 9), (0, 19), (2, 3, 1), (3, 5, 8, 9))),
+                    "gen_fn": dict(fn='Genfunc.randn_set_value', low=-10, high=10, value=float('nan')),
+                    "dtype": [np.float32, np.float16, np.float64],
+                    "gen_policy": 'gen_tensor_list_diff_shape',
+                },
+                {
+                    "ins": ["found_inf"],
+                    "shape": ((), (1,), ((1,)), (((1,))),
+                              (), (1,), ((1,))),
+                    "dtype": [np.float32],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                },
+                {
+                    "ins": ["inv_scale"],
+                    "shape": ((), (1,), ((1,)), (((1,))),
+                              (((1,))), (), ((1,))),
+                    "dtype": [np.float32],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                },
+            ]
+        ),
+    ),
+
+    '_amp_foreach_non_finite_check_and_unscale__diff_dtype': dict(
+        name=["_amp_foreach_non_finite_check_and_unscale_"],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["scaled_grads"],
+                    "shape": ((), (10,), (10, 2, 5), (2, 1, 3, 5)),
+                    "gen_fn": dict(fn='Genfunc.randn_set_value', low=-10, high=10, value=float('-inf')),
+                    "dtype": [(np.float32, np.float16, np.float64)],
+                    "gen_policy": 'gen_tensor_list_diff_dtype',
+                },
+                {
+                    "ins": ["found_inf"],
+                    "shape": ((), (1,), ((1,)), (((1,))),
+                              (), (1,), ((1,))),
+                    "dtype": [np.float32],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                },
+                {
+                    "ins": ["inv_scale"],
+                    "shape": ((), (1,), ((1,)), (((1,))),
+                              (((1,))), (), ((1,))),
+                    "dtype": [np.float32],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                },
+            ]
+        ),
+    ),
+
+    '_amp_foreach_non_finite_check_and_unscale__not_include_inf': dict(
+        name=["_amp_foreach_non_finite_check_and_unscale_"],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["scaled_grads"],
+                    "shape": ((10, 2, 5), (10,), (5,)),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                    "dtype": [np.float32, np.float16, np.float64],
+                    "gen_policy": 'gen_tensor_list',
+                    "gen_num_range": [1, 5]
+                },
+                {
+                    "ins": ["found_inf"],
+                    "shape": ((), (), ()),
+                    "dtype": [np.float32],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-1, high=1),
+                },
+                {
+                    "ins": ["inv_scale"],
+                    "shape": ((1,), (1,), (1,),),
+                    "dtype": [np.float32],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                },
+            ]
+        ),
+    ),
+
+    '_amp_update_scale_': dict(
+        name=["_amp_update_scale_"],
+        interface=['CustomizedTest'],
+        para=dict(
+            growth_factor=[-2, 0, 3, 2.5, -0.6, True],
+            backoff_factor=[0.5, 0, -1.2, 2, -3, False],
+            growth_interval=[0, 3, -2, 12, -20, 1]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["scale"],
+                    "shape": ((), (1,), ((1,)), (((1,))), (), ((1,))),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-10, high=10),
+                    "dtype": [np.float32],
+                },
+                {
+                    "ins": ["growth_tracker"],
+                    "shape": ((), (1,), ((1,)), (((1,))), ((1,)), ()),
+                    "dtype": [np.int32],
+                    "gen_fn": dict(fn='Genfunc.randint', low=-10, high=10),
+                },
+                {
+                    "ins": ["found_inf"],
+                    "shape": ((), (1,), ((1,)), (((1,))), ((1,)), (((1,))),),
+                    "dtype": [np.float32],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                },
+            ]
+        ),
+    ),
+
+    '_amp_update_scale__specific': dict(
+        name=["_amp_update_scale_"],
+        interface=['CustomizedTest'],
+        para=dict(
+            growth_factor=[-2, 0, 3, 2.5, False, -0.6, 2],
+            backoff_factor=[0.5, 0, -1.2, 2, -3, True, -0.3],
+            growth_interval=[13, 5, 5, 5, -3, -3, -3]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["scale"],
+                    "shape": ((), (1,), ((1,)), (((1,))), (), ((1,)), ()),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=-10, high=10),
+                    "dtype": [np.float32],
+                },
+                {
+                    "ins": ["growth_tracker"],
+                    "value": ([12,], [[3,],], [4,], [[[5,]]], [-5,], [-4,], [[-3,]]),
+                    "gen_policy": "gen_tensor_by_value",
+                    "dtype": [np.int32],
+                },
+                {
+                    "ins": ["found_inf"],
+                    "value": ([1,], [[0,],], [0,], [[[0,]]], [0,], [0,], [[0,]]),
+                    "gen_policy": "gen_tensor_by_value",
+                    "dtype": [np.float32],
+                },
+            ]
+        ),
+    ),
 }
