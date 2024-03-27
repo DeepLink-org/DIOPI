@@ -7,15 +7,7 @@ from generator import Genfunc
 from conformance.utils import logger
 from conformance.db_operation import db_conn
 from conformance.exception import GenDataFailedException
-
-
-class GenPolicy:
-    default = "default"
-    gen_tensor_by_value = "gen_tensor_by_value"
-    gen_tensor_list = "gen_tensor_list"
-    gen_tensor_list_diff_shape = "gen_tensor_list_diff_shape"
-
-    gen_list_policy = [gen_tensor_list, gen_tensor_list_diff_shape]
+from conformance.utils import GenPolicy
 
 
 class GenInputData(object):
@@ -134,6 +126,8 @@ class GenParas(object):
                 value, requires_grad = gen_tensor_obj.gen_tensor_list()
             elif gen_policy == GenPolicy.gen_tensor_list_diff_shape:
                 value, requires_grad = gen_tensor_obj.gen_tensor_list_diff_shape()
+            elif gen_policy == GenPolicy.gen_tensor_list_diff_dtype:
+                value, requires_grad = gen_tensor_obj.gen_tensor_list_diff_dtype()
             else:
                 raise Exception(
                     f"gen_policy {gen_policy} do not exist, only support default,gen_tensor_by_value,gen_tensor_list,gen_tensor_diff_shape"
@@ -177,8 +171,8 @@ class GenTensor(object):
         if isinstance(self.arg["gen_fn"], dict):
             gen_fn = eval(self.arg["gen_fn"]["fn"])
             assert (
-                gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform or Genfunc.randn_int
-            ), "only randint & uniform & randn_int needs args"
+                gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform or Genfunc.randn_int or Genfunc.randn_set_value
+            ), "only randint & uniform & randn_int & randn_set_value needs args"
 
     def gen_tensor_list(self):
         tensor_list = []
@@ -196,6 +190,13 @@ class GenTensor(object):
         tensor_list = []
         for each_shape in self.shape:
             value = self.gen_tensor(each_shape, self.dtype)
+            tensor_list.append(value)
+        return tensor_list, self.requires_grad
+
+    def gen_tensor_list_diff_dtype(self):
+        tensor_list = []
+        for each_dtype in self.dtype:
+            value = self.gen_tensor(self.shape, each_dtype)
             tensor_list.append(value)
         return tensor_list, self.requires_grad
 
