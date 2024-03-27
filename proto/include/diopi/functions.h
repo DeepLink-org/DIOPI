@@ -1664,6 +1664,14 @@ DIOPI_API diopiError_t diopiEq(diopiContextHandle_t ctx, diopiTensorHandle_t out
 DIOPI_API diopiError_t diopiEqInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other);
 
 /**
+ * @brief True if two tensors have the same size and elements, False otherwise.
+ * @param[in] input the input tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] other the other tensor to be compared. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[out] out the output value. type = [bool].
+ */
+DIOPI_API diopiError_t diopiEqual(diopiContextHandle_t ctx, bool* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other);
+
+/**
  * @brief Computes not equal element-wise comparison with a scalar, "!=".
  * @param[in] ctx Context environment.
  * @param[in] input the first tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
@@ -2915,6 +2923,15 @@ DIOPI_API diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTen
                                               int64_t num_groups);
 
 /**
+ * \brief Applies Group Normalization over a mini-batch of inputs.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type=[float32, float64, float16].
+ * @param[out] out the output tensor. type=[float32, float64, float16].
+ */
+DIOPI_API diopiError_t diopiLinalgVecNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiScalar_t* ord,
+                                          diopiSize_t dim, bool keepdim);
+
+/**
  * @brief Returns the unique elements of the input tensor.
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor,type = [int64, float32, float64, float16, int16, int32, uint8, int8, bool]
@@ -3417,6 +3434,29 @@ DIOPI_API diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t o
  * @param[in] diagonal the diagonal to consider.
  */
 DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal);
+
+/**
+ * @brief Create a tensor filled with one.
+ * @param[in] ctx Context environment.
+ * @param[in] size Out tensor size.
+ * @param[out] out The output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiOnes(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
+
+/**
+ * @brief Create a tensor filled with zero.
+ * @param[in] ctx Context environment.
+ * @param[in] size Out tensor size.
+ * @param[out] out The output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiZeros(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
+
+/**
+ * @brief Set all elements of a tensor to zero.
+ * @param[in] ctx Context environment.
+ * @param[in] self Input and output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiZeroInp(diopiContextHandle_t ctx, diopiTensorHandle_t self);
 
 /**
  * @brief This function is an extension of torch.sign() to complex tensors.
