@@ -283,7 +283,7 @@ DIOPI_API diopiError_t diopiScaledMaskedSoftmax(diopiContextHandle_t ctx, diopiT
  * @param[out] grad_input The gradient of input tensor. type = [bfloat16, float16, float32].
  */
 DIOPI_API diopiError_t diopiScaledMaskedSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                                        diopiConstTensorHandle_t out, diopiConstTensorHandle_t mask, double scale, bool fixed_triu_mask);
+                                                        diopiConstTensorHandle_t output, diopiConstTensorHandle_t mask, double scale, bool fixed_triu_mask);
 
 // ============================================lightllm begin========================================
 
