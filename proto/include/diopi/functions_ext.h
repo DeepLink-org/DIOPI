@@ -258,10 +258,30 @@ DIOPI_API diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTens
                                              diopiConstTensorHandle_t attention_mask, double p_dropout, double softmax_scale, int64_t head_num);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
-DIOPI_API diopiError_t diopiScaledMaskedSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input,
+/**
+ * @brief Compute the forward pass for scaled masked softmax op.
+ * @param[in] ctx The diopi context.
+ * @param[in] input Input tensor. shape = [batch_size, seq_len, head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] mask Mask tensor. shape = [batch_size, seq_len, head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] scale Scale for softmax op.
+ * @param[in] fixed_triu_mask Whether to use a fixed triu mask.
+ * @param[out] output Output tensor storing the calculation result of scaled masked softmax op. type = [bfloat16, float16, float32].
+ */
+DIOPI_API diopiError_t diopiScaledMaskedSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input,
                                                 diopiConstTensorHandle_t mask, double scale, bool fixed_triu_mask);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
+/**
+ * @brief Compute the backward pass for scaled masked softmax op.
+ * @param[in] ctx The diopi context.
+ * @param[in] grad_output The gradient of output tensor. shape = [batch_size, seq_len, head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] output Tensor representing the result of scaled masked softmax op. shape = [batch_size, seq_len, head_num, head_dim]. type =
+ * [bfloat16, float16, float32].
+ * @param[in] mask Mask tensor. shape = [batch_size, seq_len, head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] scale Scale for softmax op.
+ * @param[in] fixed_triu_mask Whether to use a fixed triu mask.
+ * @param[out] grad_input The gradient of input tensor. type = [bfloat16, float16, float32].
+ */
 DIOPI_API diopiError_t diopiScaledMaskedSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                                         diopiConstTensorHandle_t out, diopiConstTensorHandle_t mask, double scale, bool fixed_triu_mask);
 

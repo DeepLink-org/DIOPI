@@ -5400,6 +5400,39 @@ def flash_attention_backward(q, k, v, out, grad_outputs, p_dropout, softmax_scal
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
+def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
+    call = "diopiScaledMaskedSoftmax"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    ret = func(
+        input.context(),
+        out,
+        input,
+        mask,
+        scale,
+        fixed_triu_mask,
+    )
+    check_returncode(ret)
+    return out
+
+def scaled_masked_softmax_backward(grad_outputs, out, input, mask, scale, fixed_triu_mask):
+    call = "diopiScaledMaskedSoftmaxBackward"
+    func = check_function(call)
+    size = list(out.size().data)
+    grad_input = Tensor(size, out.get_dtype())
+    ret = func(
+        out.context(),
+        grad_input,
+        grad_outputs[0],
+        out,
+        mask,
+        scale,
+        fixed_triu_mask,
+    )
+    check_returncode(ret)
+    return {"input": grad_input}
+
 def apply_penalty(
     logits,
     presence_penalty,

@@ -8712,4 +8712,33 @@ diopi_configs = {
         ),
     ),
 
+    'scaled_masked_softmax': dict(
+        name=['scaled_masked_softmax'],
+        interface=['CustomizedTest'],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-3,
+        para=dict(
+            scale=[0.0883, 0.125, 0.334],
+            fixed_triu_mask=[True, False, True],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 256, 64), (16, 6, 128, 128)),
+                    "dtype": [np.float16, np.float32],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['mask'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 256, 64), (16, 6, 128, 128)),
+                    "dtype": [np.bool_],
+                    "gen_fn": 'Genfunc.mask'
+                },
+            ],
+        ),
+    ),
+
 }
