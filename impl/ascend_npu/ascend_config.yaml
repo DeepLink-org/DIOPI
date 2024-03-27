@@ -12,11 +12,6 @@ ascend:
 - diopiNormalTensorScalar
 - diopiSlice
 - diopiSliceBackward
-- diopiThreshold
-- diopiThresholdBackward
-- diopiThresholdInp
-- diopiBatchNorm
-- diopiBatchNormBackward
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiRMSNorm
@@ -45,6 +40,8 @@ ascend_npu:
 - diopiAtanInp
 - diopiBaddbmm
 - diopiBaddbmmInp
+- diopiBatchNorm
+- diopiBatchNormBackward
 - diopiCos
 - diopiCosInp
 - diopiErf
@@ -240,6 +237,9 @@ ascend_npu:
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
+- diopiOnes
+- diopiZeros
+- diopiZeroInp
 - diopiIsNan
 - diopiRelu
 - diopiReluInp
@@ -261,3 +261,6 @@ ascend_npu:
 - diopiFlashAttentionV2
 - diopiScaledMaskedSoftmax
 - diopiScaledMaskedSoftmaxBackward
+- diopiThreshold
+- diopiThresholdBackward
+- diopiThresholdInp

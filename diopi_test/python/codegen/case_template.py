@@ -181,9 +181,13 @@ sum_to_compare = True if 'sorted' in function_kwargs and ~function_kwargs['sorte
 tol['sum_to_compare'] = sum_to_compare
 
 inputs_origin_np = CheckResult.to_numpy(function_kwargs)
+need_context = ${need_context}
 
 try:
-    dev_foward_out = ${test_diopi_func_name}(**function_kwargs)
+    if need_context:
+        dev_foward_out = ${test_diopi_func_name}(default_context, **function_kwargs)
+    else:
+        dev_foward_out = ${test_diopi_func_name}(**function_kwargs)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))

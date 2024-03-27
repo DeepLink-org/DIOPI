@@ -3436,6 +3436,29 @@ DIOPI_API diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t o
 DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal);
 
 /**
+ * @brief Create a tensor filled with one.
+ * @param[in] ctx Context environment.
+ * @param[in] size Out tensor size.
+ * @param[out] out The output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiOnes(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
+
+/**
+ * @brief Create a tensor filled with zero.
+ * @param[in] ctx Context environment.
+ * @param[in] size Out tensor size.
+ * @param[out] out The output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiZeros(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiSize_t size);
+
+/**
+ * @brief Set all elements of a tensor to zero.
+ * @param[in] ctx Context environment.
+ * @param[in] self Input and output tensor, type = [float32, float64, float16, int16, int32, int64, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiZeroInp(diopiContextHandle_t ctx, diopiTensorHandle_t self);
+
+/**
  * @brief This function is an extension of torch.sign() to complex tensors.
  * It computes a new tensor whose elements have the same angles as the corresponding elements
  * of input and absolute values (i.e. magnitudes) of one for complex tensors

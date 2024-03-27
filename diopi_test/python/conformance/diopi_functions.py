@@ -247,6 +247,28 @@ def zeros_like(tensor):
     return new_tensor
 
 
+def ones(default_context, size):
+    func = check_function("diopiOnes")
+    size = Sizes(list(size))
+    out = Tensor(size=size, dtype=Dtype.float32)
+    ret = func(default_context, out, size)
+    check_returncode(ret)
+    return out
+
+def zeros(default_context, size):
+    func = check_function("diopiZeros")
+    size = Sizes(list(size))
+    out = Tensor(size=size, dtype=Dtype.float32)
+    ret = func(default_context, out, size)
+    check_returncode(ret)
+    return out
+
+def zero_(input):
+    func = check_function("diopiZeroInp")
+    ret = func(input.context(), input)
+    check_returncode(ret)
+    return input
+
 def unary_op(input, inplace, call, dtype=None) -> Tensor:
     if inplace:
         out = input
@@ -468,7 +490,7 @@ def lt(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, inplace, "diopiLt", dtype=Dtype.bool)
 
 
-def equal(input, other) -> Tensor:
+def equal(input, other) -> bool:
     call = "diopiEqual"
     func = check_function(call)
 
@@ -480,7 +502,7 @@ def equal(input, other) -> Tensor:
     capsule = PyCapsule_New(ctypes.c_void_p(ctypes.addressof(out)), None, PyCapsule_Destructor(0))
     ret = func(input.context(), capsule, input, other)
     check_returncode(ret)
-    return np.array(out.value)
+    return out.value
 
 
 def mul(input, other, inplace=False) -> Tensor:
