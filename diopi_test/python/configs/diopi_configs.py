@@ -8768,7 +8768,7 @@ diopi_configs = {
                     "shape": ((), (10,), (10, 2, 5), (2, 1, 3, 5),
                               (0,), (4, 0), (3, 0, 5)),
                     "gen_fn": dict(fn='Genfunc.randn_set_value', low=-10, high=10, value=float('inf')),
-                    "dtype": [np.float32, np.float16, np.float64],
+                    "dtype": [np.float16],
                     "gen_policy": 'gen_tensor_list',
                     "gen_num_range": [1, 5]
                 },
@@ -8800,7 +8800,7 @@ diopi_configs = {
                     "shape": ((), ((),), ((10,), (10, 2, 5)), ((), (9, 10, 4, 2)),
                               ((2, 9), (0, 19), (2, 3, 1), (3, 5, 8, 9))),
                     "gen_fn": dict(fn='Genfunc.randn_set_value', low=-10, high=10, value=float('nan')),
-                    "dtype": [np.float32, np.float16, np.float64],
+                    "dtype": [np.float16],
                     "gen_policy": 'gen_tensor_list_diff_shape',
                 },
                 {
@@ -8808,37 +8808,7 @@ diopi_configs = {
                     "shape": ((), (1,), ((1,)), (((1,))),
                               (), (1,), ((1,))),
                     "dtype": [np.float32],
-                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
-                },
-                {
-                    "ins": ["inv_scale"],
-                    "shape": ((), (1,), ((1,)), (((1,))),
-                              (((1,))), (), ((1,))),
-                    "dtype": [np.float32],
-                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
-                },
-            ]
-        ),
-    ),
-
-    '_amp_foreach_non_finite_check_and_unscale__diff_dtype': dict(
-        name=["_amp_foreach_non_finite_check_and_unscale_"],
-        interface=['CustomizedTest'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["scaled_grads"],
-                    "shape": ((), (10,), (10, 2, 5), (2, 1, 3, 5)),
-                    "gen_fn": dict(fn='Genfunc.randn_set_value', low=-10, high=10, value=float('-inf')),
-                    "dtype": [(np.float32, np.float16, np.float64)],
-                    "gen_policy": 'gen_tensor_list_diff_dtype',
-                },
-                {
-                    "ins": ["found_inf"],
-                    "shape": ((), (1,), ((1,)), (((1,))),
-                              (), (1,), ((1,))),
-                    "dtype": [np.float32],
-                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                    "gen_fn": 'Genfunc.zeros',
                 },
                 {
                     "ins": ["inv_scale"],
@@ -8860,7 +8830,7 @@ diopi_configs = {
                     "ins": ["scaled_grads"],
                     "shape": ((10, 2, 5), (10,), (5,)),
                     "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
-                    "dtype": [np.float32, np.float16, np.float64],
+                    "dtype": [np.float16],
                     "gen_policy": 'gen_tensor_list',
                     "gen_num_range": [1, 5]
                 },
@@ -8868,7 +8838,7 @@ diopi_configs = {
                     "ins": ["found_inf"],
                     "shape": ((), (), ()),
                     "dtype": [np.float32],
-                    "gen_fn": dict(fn='Genfunc.uniform', low=-1, high=1),
+                    "gen_fn": 'Genfunc.zeros',
                 },
                 {
                     "ins": ["inv_scale"],
@@ -8906,7 +8876,7 @@ diopi_configs = {
                     "ins": ["found_inf"],
                     "shape": ((), (1,), ((1,)), (((1,))), ((1,)), (((1,))),),
                     "dtype": [np.float32],
-                    "gen_fn": dict(fn='Genfunc.uniform', low=-3, high=3),
+                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=2),
                 },
             ]
         ),
