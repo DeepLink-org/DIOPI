@@ -321,7 +321,7 @@ class CustomizedTest(object):
 
     def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
         if fixed_triu_mask:
-            mask_tri = torch.triu(torch.ones(mask.shape), diagonal=1).bool()
+            mask_tri = torch.triu(torch.ones(mask.shape, device=input.device), diagonal=1).bool()
             mask_data = (input * scale).masked_fill(mask_tri, value=-1e4)
         else:
             mask_data = (input * scale).masked_fill(mask, value=-1e4)
