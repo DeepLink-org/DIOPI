@@ -27,7 +27,7 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     DiopiTensor sinTensor(sin);
     DiopiTensor outputTensor(out);
 
-    if (shapeHasZero(inputTensor.shape())) {
+    if (inputTensor.numel() == 0) {
         // zero shape protection
         return diopiSuccess;
     }
@@ -77,55 +77,56 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     CnnlTensorDesc sinDesc;
     CnnlTensorDesc outTmpDesc;
 
+    std::vector<int64_t> inputShape;
+    std::vector<int64_t> inputStride;
+    std::vector<int64_t> cosShape;
+    std::vector<int64_t> cosStride;
+
     if (shape.size() == 1) {
         // input:[head_dim]
-        std::vector<int64_t> inputShape = {1, 1, 1, shape[0]};
-        std::vector<int64_t> inputStride = {stride[0], stride[0], stride[0], stride[0]};
-        inputDesc.set(inputTensor.dtype(), inputShape, inputStride, CNNL_LAYOUT_ARRAY);
-        outTmpDesc.set(inputTensor.dtype(), inputShape, inputStride, CNNL_LAYOUT_ARRAY);
+        inputShape = {1, 1, 1, shape[0]};
+        inputStride = {stride[0], stride[0], stride[0], stride[0]};
+
     } else if (shape.size() == 2) {
         // input:[seqLen,head_dim]
-        std::vector<int64_t> inputShape = {1, shape[0], 1, shape[1]};
-        std::vector<int64_t> inputStride = {stride[0], stride[0], stride[1], stride[1]};
-        inputDesc.set(inputTensor.dtype(), inputShape, inputStride, CNNL_LAYOUT_ARRAY);
-        outTmpDesc.set(inputTensor.dtype(), inputShape, inputStride, CNNL_LAYOUT_ARRAY);
+        inputShape = {1, shape[0], 1, shape[1]};
+        inputStride = {stride[0], stride[0], stride[1], stride[1]};
+
     } else if (shape.size() == 3) {
         // input:[seqLen,head_num,head_dim]
-        std::vector<int64_t> inputShape = {1, shape[0], shape[1], shape[2]};
-        std::vector<int64_t> inputStride = {stride[0], stride[0], stride[1], stride[2]};
-        inputDesc.set(inputTensor.dtype(), inputShape, inputStride, CNNL_LAYOUT_ARRAY);
-        outTmpDesc.set(inputTensor.dtype(), inputShape, inputStride, CNNL_LAYOUT_ARRAY);
+        inputShape = {1, shape[0], shape[1], shape[2]};
+        inputStride = {stride[0], stride[0], stride[1], stride[2]};
     } else if (shape.size() == 4) {
-        inputDesc.set(inputTensor.dtype(), shape, stride, CNNL_LAYOUT_ARRAY);
-        outTmpDesc.set(inputTensor.dtype(), shape, stride, CNNL_LAYOUT_ARRAY);
+        inputShape = shape;
+        inputStride = stride;
     } else {
         DIOPI_CHECK(true, "camb currently only support 1<= input.dim() <= 4");
     }
 
     if (cosTensor.dim() == 1) {
-        std::vector<int64_t> cosShape = {1, 1, cosTensor.shape()[0]};
-        std::vector<int64_t> cosStride = calContiguousStride(cosShape);
-        cosDesc.set(cosTensor.dtype(), cosShape, cosStride, CNNL_LAYOUT_ARRAY);
-        sinDesc.set(sinTensor.dtype(), cosShape, cosStride, CNNL_LAYOUT_ARRAY);
+        cosShape = {1, 1, cosTensor.shape()[0]};
+        cosStride = calContiguousStride(cosShape);
     } else if (cosTensor.dim() == 2) {
-        std::vector<int64_t> cosShape = {cosTensor.shape()[0], 1, cosTensor.shape()[1]};
-        std::vector<int64_t> cosStride = calContiguousStride(cosShape);
-        cosDesc.set(cosTensor.dtype(), cosShape, cosStride, CNNL_LAYOUT_ARRAY);
-        sinDesc.set(sinTensor.dtype(), cosShape, cosStride, CNNL_LAYOUT_ARRAY);
+        cosShape = {cosTensor.shape()[0], 1, cosTensor.shape()[1]};
+        cosStride = calContiguousStride(cosShape);
     } else if (cosTensor.dim() == 3) {
-        std::vector<int64_t> cosShape = {cosTensor.shape()[0], 1, cosTensor.shape()[2]};
-        std::vector<int64_t> cosStride = calContiguousStride(cosShape);
-        cosDesc.set(cosTensor.dtype(), cosShape, cosStride, CNNL_LAYOUT_ARRAY);
-        sinDesc.set(sinTensor.dtype(), cosShape, cosStride, CNNL_LAYOUT_ARRAY);
+        cosShape = {cosTensor.shape()[0], 1, cosTensor.shape()[2]};
+        cosStride = calContiguousStride(cosShape);
     } else {
         DIOPI_CHECK(true, "camb currently only support 1<= cos.dim() <= 3");
     }
+
+    inputDesc.set(inputTensor.dtype(), inputShape, inputStride, CNNL_LAYOUT_ARRAY);
+    outTmpDesc.set(inputTensor.dtype(), inputShape, inputStride, CNNL_LAYOUT_ARRAY);
+    cosDesc.set(cosTensor.dtype(), cosShape, cosStride, CNNL_LAYOUT_ARRAY);
+    sinDesc.set(sinTensor.dtype(), cosShape, cosStride, CNNL_LAYOUT_ARRAY);
 
     // set embedding Descriptor
     CnnlResourceGuard<cnnlRotaryEmbeddingDescriptor_t, cnnlCreateRotaryEmbeddingDescriptor, cnnlDestroyRotaryEmbeddingDescriptor> embeddingDesc;
     cnnlSeqDataLayout_t seqLayout = CNNL_SEQDATA_NTBC;
     DIOPI_CALL_CNNL(cnnlSetRotaryEmbeddingDescriptor(embeddingDesc.get(), conj, seqLayout));
 
+    // currently workspace is not used, set as nullptr
     size_t workspaceSize = 0;
     void* workspace = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
