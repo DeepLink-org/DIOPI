@@ -49,8 +49,14 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     at::Tensor outView = viewAs4D(outAt);
     at::Tensor cosView = viewAs4D(cosAt);
     at::Tensor sinView = viewAs4D(sinAt);
-    at::Tensor cosRepeated = op_api::repeat(cosView, {1, 1, 1, 2});
-    at::Tensor sinRepeated = op_api::repeat(sinView, {1, 1, 1, 2});
+    at::Tensor cosRepeated = cosView;
+    at::Tensor sinRepeated = sinView;
+    TORCH_CHECK((cosRepeated.sizes()[3] * 2 == xView.sizes()[3] || cosRepeated.sizes()[3] == xView.sizes()[3]),
+                "thd -1 dim of cos|sin must be half or same of input's");
+    if (cosRepeated.sizes()[3] * 2 == xView.sizes()[3]) {
+        cosRepeated = op_api::repeat(cosView, {1, 1, 1, 2});
+        sinRepeated = op_api::repeat(sinView, {1, 1, 1, 2});
+    }
     if (conj) {
         op_api::neg_(sinRepeated);
     }
