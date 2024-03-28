@@ -9,16 +9,15 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace OP_IMPL_NS {
-
-diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal) {
+diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input, out);
-    EXEC_NPU_CMD(aclnnTriu, inputAt, diagonal, outAt);
+    EXEC_NPU_CMD(aclnnCos, inputAt, outAt);
     END_CALL_ACL_OP();
 }
 
-diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal) {
+diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     BEGIN_CALL_ACL_OP(input);
-    EXEC_NPU_CMD(aclnnInplaceTriu, inputAt, diagonal);
+    EXEC_NPU_CMD(aclnnCos, inputAt, inputAt);
     END_CALL_ACL_OP();
 }
 

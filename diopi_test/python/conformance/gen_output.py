@@ -350,6 +350,15 @@ class CustomizedTest(object):
             output[start_idx:end_idx, :, :] = qkv_result[i - 1, :end_idx - start_idx, :, :]
         return output
 
+    def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
+        if fixed_triu_mask:
+            mask_tri = torch.triu(torch.ones(mask.shape, device=input.device), diagonal=1).bool()
+            mask_data = (input * scale).masked_fill(mask_tri, value=-1e4)
+        else:
+            mask_data = (input * scale).masked_fill(mask, value=-1e4)
+        output = torch.nn.functional.softmax(mask_data, dim=-1)
+        return output
+
     def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
         batch = logits.shape[0]
         for i in range(batch):

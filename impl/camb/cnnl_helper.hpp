@@ -8,6 +8,7 @@
 #define IMPL_CAMB_CNNL_HELPER_HPP_
 
 #include <cnnl.h>
+#include <cnnl_extra.h>
 
 #include <cassert>
 #include <map>

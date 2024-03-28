@@ -402,6 +402,8 @@ aclDataType getAclDataType(diopiDtype_t type) {
             return ACL_COMPLEX64;
         case diopi_dtype_complex128:
             return ACL_COMPLEX128;
+        case diopi_dtype_bfloat16:
+            return ACL_BF16;
         default:
             ASCEND_CHECK_ABORT(false, "acl not support dioptDtype_t:%d", type);
             return ACL_DT_UNDEFINED;
