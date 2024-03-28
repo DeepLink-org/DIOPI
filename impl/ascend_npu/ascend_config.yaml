@@ -262,3 +262,4 @@ ascend_npu:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
+- diopiAmpForeachNonFiniteCheckAndUnscaleInp
