@@ -18,6 +18,7 @@ ascend:
 - diopiRMSNormBackward
 - diopiSplitWithSizes
 ascend_npu:
+- diopiAdamW
 - diopiWhere
 - diopiAdd
 - diopiAddInp
