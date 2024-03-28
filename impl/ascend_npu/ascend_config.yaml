@@ -14,8 +14,6 @@ ascend:
 - diopiSliceBackward
 - diopiConvolution2d
 - diopiConvolution2dBackward
-- diopiRMSNorm
-- diopiRMSNormBackward
 - diopiSplitWithSizes
 ascend_npu:
 - diopiWhere
