@@ -364,8 +364,8 @@ DIOPI_RT_API diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diop
 }
 
 DIOPI_RT_API diopiError_t diopiGeneratorGetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t& seed, uint64_t& offset) {
-    seed = th->seed_;
-    offset = th->offset_;
+    seed = th->getSeed();
+    offset = th->getOffset();
     return diopiSuccess;
 }
 

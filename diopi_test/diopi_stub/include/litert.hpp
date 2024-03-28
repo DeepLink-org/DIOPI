@@ -152,6 +152,10 @@ public:
 
     const diopiTensor& state() const { return state_; }
 
+    size_t getSeed() { return seed_; }
+
+    size_t getOffset() { return offset_; }
+
     void set_state(diopiConstTensorHandle_t new_state) { state_ = *new_state; }
 };
 
