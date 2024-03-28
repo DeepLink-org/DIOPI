@@ -34,14 +34,14 @@ diopi_configs = {
                     # "shape": ((8, ), (64, ), None, (16, ),
                     #           (7, ), (15, ), None, (16, )),
                     "shape": ((8, ), (64, ), None, (16, )),
-                    "gen_fn": 'Genfunc.zeros',
+                    "gen_fn": 'Genfunc.randn',
                 },
                 {
                     "ins": ["running_var"],
                     # "shape": ((8, ), (64, ), None, (16, ),
                     #           (7, ), (15, ), None, (16, )),
                     "shape": ((8, ), (64, ), None, (16, )),
-                    "gen_fn": 'Genfunc.ones',
+                    "gen_fn": "Genfunc.positive",
                 },
                 {
                     "ins": ["weight", "bias"],
@@ -57,6 +57,7 @@ diopi_configs = {
 
     'batch_norm_nan': dict(
         name=["batch_norm"],
+        priority='P2',
         dtype=[np.float32],
         atol=1e-3,
         rtol=1e-4,
@@ -560,6 +561,7 @@ diopi_configs = {
 
     'hardtanh_int': dict(
         name=["hardtanh"],
+        priority='P2',
         is_inplace=True,
         para=dict(
             min_val=[0, -1, 0.0, 0.0, -4.5, 2, -2, 1, -2.1],
@@ -582,6 +584,7 @@ diopi_configs = {
 
     'hardtanh_uint': dict(
         name=["hardtanh"],
+        priority='P2',
         is_inplace=True,
         para=dict(
             min_val=[0, 1, 20, 0.0, 20, 20, 2, 1, False],
@@ -603,6 +606,7 @@ diopi_configs = {
 
     'hardswish': dict(
         name=["hardswish"],
+        priority='P2',
         is_inplace=True,
         tensor_para=dict(
             args=[
@@ -727,6 +731,7 @@ diopi_configs = {
 
     'gelu_specific': dict(
         name=['gelu'],
+        priority='P1',
         atol=1e-4,
         rtol=1e-5,
         approximate=['none', 'tanh'],
@@ -869,6 +874,7 @@ diopi_configs = {
 
     'adaptive_avg_pool2d_zero_size': dict(
         name=["adaptive_avg_pool2d"],
+        priority='P2',
         atol=1e-5,
         rtol=1e-4,
         atol_half=1e-2,
@@ -1155,6 +1161,7 @@ diopi_configs = {
 
     'log_zero_input': dict(
         name=['log', 'log2', 'log10'],
+        priority='P2',
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
@@ -1174,12 +1181,13 @@ diopi_configs = {
 
     'log_neg_input': dict(
         name=['log', 'log2', 'log10'],
+        priority='P2',
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
                np.uint8, np.int8],
         tensor_para=dict(
-            gen_fn='Genfunc.randn',
+            gen_fn=dict(fn='Genfunc.randn_int', low=-10, high=0),
             args=[
                 {
                     "ins": ['input'],
@@ -1489,6 +1497,7 @@ diopi_configs = {
 
     'pow_broadcast': dict(
         name=['pow'],
+        priority='P1',
         interface=['torch'],
         dtype=[np.float32, np.float64, np.float16],
         tensor_para=dict(
@@ -1510,6 +1519,7 @@ diopi_configs = {
 
     'pow_broadcast_inplace': dict(
         name=['pow'],
+        priority='P1',
         interface=['torch'],
         dtype=[np.float32, np.float64, np.float16],
         is_inplace=True,
@@ -1537,6 +1547,7 @@ diopi_configs = {
     # int zero to negative int exp powers are not defined.
     'pow_diff_dtype_cast': dict(
         name=['pow'],
+        priority='P1',
         interface=['torch'],
         tensor_para=dict(
             args=[
@@ -1563,6 +1574,7 @@ diopi_configs = {
     # int zero to negative int exp powers are not defined.
     'pow_diff_dtype': dict(
         name=['pow'],
+        priority='P1',
         interface=['torch'],
         is_inplace=True,
         tensor_para=dict(
@@ -1680,6 +1692,7 @@ diopi_configs = {
     'pointwise_binary_broadcast': dict(
         name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        priority='P1',
         interface=['torch'],
         dtype=[np.float32],
         tensor_para=dict(
@@ -1704,6 +1717,7 @@ diopi_configs = {
     'pointwise_binary_broadcast_inplace': dict(
         name=['add', 'sub', 'mul', 'div', 'eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        priority='P1',
         interface=['torch'],
         dtype=[np.float32],
         is_inplace=True,
@@ -1729,6 +1743,7 @@ diopi_configs = {
     'pointwise_binary_diff_dtype': dict(
         name=['add', 'mul', 'eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        priority='P1',
         interface=['torch'],
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -1757,6 +1772,7 @@ diopi_configs = {
         #       'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
         name=['eq', 'ne', 'le',
               'lt', 'gt', 'ge', 'logical_and', 'logical_or'],
+        priority='P1',
         interface=['torch'],
         is_inplace=True,
         tensor_para=dict(
@@ -1807,6 +1823,7 @@ diopi_configs = {
     'pointwise_binary_diff_dtype_without_bool': dict(
         # name=['sub', 'div'],
         name=['div'],
+        priority='P1',
         interface=['torch'],
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -1832,6 +1849,7 @@ diopi_configs = {
     # FIXME sub输入int8、uint8结果不一致
     # 'pointwise_binary_diff_dtype_without_bool_inplace': dict(
     #     name=['sub'],
+    #     priority='P1',
     #     interface=['torch'],
     #     is_inplace=True,
     #     tensor_para=dict(
@@ -1902,6 +1920,7 @@ diopi_configs = {
     # FIXME bitwise_or输入uint8结果不一致
     'bitwise_op_diff_dtype': dict(
         name=['bitwise_and', 'bitwise_or'],
+        priority='P1',
         interface=['torch'],
         is_inplace=True,
         tensor_para=dict(
@@ -1933,6 +1952,7 @@ diopi_configs = {
     # FIXME bitwise_or输入uint8结果不一致
     'bitwise_op_broadcast': dict(
         name=['bitwise_and', 'bitwise_or'],
+        priority='P1',
         interface=['torch'],
         tensor_para=dict(
             gen_fn=dict(fn='Genfunc.randint', low=-4, high=4),
@@ -2052,6 +2072,7 @@ diopi_configs = {
 
     'div_broadcast': dict(
         name=['div'],
+        priority='P1',
         interface=['torch'],
         dtype=[np.float32],
         tensor_para=dict(
@@ -2075,6 +2096,7 @@ diopi_configs = {
 
     'div_diff_dtype_inplace': dict(
         name=['div'],
+        priority='P1',
         interface=['torch'],
         is_inplace=True,
         tensor_para=dict(
@@ -2096,6 +2118,7 @@ diopi_configs = {
 
     'div_rounding_mode': dict(
         name=['div'],
+        priority='P1',
         interface=['torch'],
         is_inplace=True,
         para=dict(
@@ -2189,6 +2212,7 @@ diopi_configs = {
 
     'div_zero': dict(
         name=['div'],
+        priority='P2',
         interface=['torch'],
         is_inplace=True,
         dtype=[np.float32],
@@ -2213,6 +2237,7 @@ diopi_configs = {
 
     'pointwise_binary_scalar_div_zero': dict(
         name=['div'],
+        priority='P2',
         interface=['torch'],
         is_inplace=True,
         dtype=[np.float32],
@@ -2255,6 +2280,7 @@ diopi_configs = {
 
     'sub_constant_with_alpha_and_no_contiguous': dict(
         name=['sub'],
+        priority='P1',
         para=dict(
             alpha=[0, -2, 2.0, 4, 1, 0.234, -2.123],
             other=[3.5, -2, 2.0, 4, 1, -0.231, 3],
@@ -2278,6 +2304,7 @@ diopi_configs = {
 
     'pointwise_binary_constant_with_alpha_and_no_contiguous': dict(
         name=['add'],
+        priority='P1',
         para=dict(
             alpha=[0, -2, 2.0, 4, 1, 0.234, -2.123],
             other=[3.5, -2, 2.0, 4, 1, True, False],
@@ -2474,6 +2501,7 @@ diopi_configs = {
 
     'addcdiv_specific': dict(
         name=["addcdiv"],
+        priority='P2',
         interface=['torch'],
         is_inplace=True,
         atol=1e-4,
@@ -2508,6 +2536,7 @@ diopi_configs = {
 
     'addcdiv_addcmul_broadcast_inplace': dict(
         name=["addcdiv", "addcmul"],
+        priority='P1',
         interface=['torch'],
         is_inplace=True,
         atol=1e-4,
@@ -2779,6 +2808,7 @@ diopi_configs = {
     # FIXME clamp broadcast报错
     # 'clamp_tensor_broadcast': dict(
     #     name=['clamp'],
+    #     priority='P1',
     #     interface=['torch'],
     #     atol=1e-4,
     #     rtol=1e-5,
@@ -2811,6 +2841,7 @@ diopi_configs = {
     # FIXME clamp输入不同dtype结果不一致
     # 'clamp_tensor_diff_dtype': dict(
     #     name=['clamp'],
+    #     priority='P1',
     #     interface=['torch'],
     #     is_inplace=True,
     #     atol=1e-4,
@@ -2875,6 +2906,7 @@ diopi_configs = {
     # FIXME clamp_max broadcast报错
     # 'clamp_max_broadcast': dict(
     #     name=['clamp_max'],
+    #     priority='P1',
     #     interface=['torch'],
     #     atol=1e-4,
     #     rtol=1e-5,
@@ -2901,6 +2933,7 @@ diopi_configs = {
     # FIXME clamp_max输入不同dtype结果不一致
     # 'clamp_max_tensor_diff_dtype': dict(
     #     name=['clamp_max'],
+    #     priority='P1',
     #     interface=['torch'],
     #     is_inplace=True,
     #     atol=1e-4,
@@ -2957,6 +2990,7 @@ diopi_configs = {
     # FIXME clamp_min broadcast报错
     # 'clamp_min_broadcast': dict(
     #     name=['clamp_min'],
+    #     priority='P1',
     #     interface=['torch'],
     #     atol=1e-4,
     #     rtol=1e-5,
@@ -2983,6 +3017,7 @@ diopi_configs = {
     # FIXME clamp_min输入不同dtype结果不一致
     # 'clamp_min_tensor_diff_dtype': dict(
     #     name=['clamp_min'],
+    #     priority='P1',
     #     interface=['torch'],
     #     is_inplace=True,
     #     atol=1e-4,
@@ -3384,6 +3419,7 @@ diopi_configs = {
 
     'nll_loss_empty_tensor': dict(
         name=["nll_loss"],
+        priority='P2',
         atol=1e-4,
         rtol=1e-5,
         para=dict(
@@ -3479,6 +3515,7 @@ diopi_configs = {
 
     'cross_entropy_empty_tensor': dict(
         name=["cross_entropy"],
+        priority='P2',
         atol=1e-1,
         rtol=1e-2,
         para=dict(
@@ -4356,6 +4393,7 @@ diopi_configs = {
 
     'where_broadcast': dict(
         name=['where'],
+        priority='P1',
         interface=['torch'],
         tensor_para=dict(
             args=[
@@ -4387,6 +4425,7 @@ diopi_configs = {
     # FIXME where输入不同dtype，计算结果不一致
     # 'where_diff_dtype': dict(
     #     name=['where'],
+    #     priority='P1',
     #     interface=['torch'],
     #     tensor_para=dict(
     #         args=[
@@ -4792,6 +4831,7 @@ diopi_configs = {
 
     'index_empty_tensor': dict(
         name=["index"],
+        priority='P2',
         interface=["CustomizedTest"],
         # input[idx1,idx2,idx3] input[...,idx3] input[idx,...,idx3]
         tensor_para=dict(
@@ -5103,6 +5143,7 @@ diopi_configs = {
 
     'reciprocal_zero': dict(
         name=["reciprocal"],
+        priority='P2',
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
@@ -5544,6 +5585,7 @@ diopi_configs = {
     # FIXME smooth_l1_loss input输入int报错
     # 'smooth_l1_loss_int': dict(
     #     name=["smooth_l1_loss"],
+    #     priority='P2',
     #     para=dict(
     #         reduction=['mean', 'none', 'sum'],
     #         beta=[0.5, 0.1, 0.1]
@@ -5826,6 +5868,7 @@ diopi_configs = {
 
     'imum_input_nan': dict(
         name=['maximum', 'minimum'],
+        priority='P2',
         interface=['torch'],
         tensor_para=dict(
             dtype=[np.float32, np.float64, np.float16],
@@ -5846,6 +5889,7 @@ diopi_configs = {
 
     'imum_other_nan': dict(
         name=['maximum', 'minimum'],
+        priority='P2',
         interface=['torch'],
         tensor_para=dict(
             dtype=[np.float32, np.float64, np.float16],
@@ -5867,6 +5911,7 @@ diopi_configs = {
     # FIXME maximum,minimum input与other输入不同dtype，输出精度不一致
     'imum_broadcast': dict(
         name=['maximum', 'minimum'],
+        priority='P1',
         interface=['torch'],
         tensor_para=dict(
             args=[
@@ -5936,6 +5981,7 @@ diopi_configs = {
 
     'mm_diff_dtype': dict(
         name=['mm'],
+        priority='P1',
         interface=['torch'],
         tensor_para=dict(
             args=[
@@ -6558,6 +6604,7 @@ diopi_configs = {
 
     'remainder_tensor_zero': dict(
         name=['remainder'],
+        priority='P2',
         interface=['torch'],
         atol=1e-4,
         rtol=1e-5,
