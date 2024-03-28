@@ -939,7 +939,7 @@ inline bool CheckMmBmmNDDisable() {
 }
 inline bool CheckForbidInternalFormat() { return false; }
 inline bool IsAllowFP32ToFP16() {
-    INTERFACE_NOT_IMPL;
+    // INTERFACE_NOT_IMPL;
     return false;
 }
 inline bool IsAllowConvHF32() {
