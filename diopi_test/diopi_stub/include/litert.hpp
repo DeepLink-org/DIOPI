@@ -156,6 +156,10 @@ public:
 
     size_t getOffset() { return offset_; }
 
+    void setSeed(size_t seed) { seed_ = seed; }
+
+    void setOffset(size_t offset) { offset_ = offset; }
+
     void set_state(diopiConstTensorHandle_t new_state) { state_ = *new_state; }
 };
 
