@@ -1,4 +1,5 @@
 ascend:
+- diopiAdamW
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
