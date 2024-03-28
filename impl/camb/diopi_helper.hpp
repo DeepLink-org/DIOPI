@@ -8,6 +8,7 @@
 #define IMPL_CAMB_DIOPI_HELPER_HPP_
 
 #include <cnnl.h>
+#include <cnnl_extra.h>
 #include <cnrt.h>
 #include <diopi/diopirt.h>
 
