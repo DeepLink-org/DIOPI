@@ -261,3 +261,5 @@ ascend_npu:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
+- diopiScaledMaskedSoftmax
+- diopiScaledMaskedSoftmaxBackward
