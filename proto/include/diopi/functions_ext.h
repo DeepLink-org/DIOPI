@@ -283,8 +283,8 @@ DIOPI_API diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTens
  * @param[inout] attention_mask [optional] The pointer to the Casual attention mask tensor handle, if is_causal is nullptr, attention_mask is input, otherwise it's output. if is_causal is not nullpter, this param must be nullpter. shape = [q_seq_len,
  * k_seq_len]. type = [bool].
  * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}. type = [float]
- * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
- * batch_size, hidden_size]. type = [bfloat16, float16, float32].
+ * @param[inout] args_ptr_arr [optional] This parameter is self-defined. which can be reused as input and output.
+ * @param[inout] args_len [optional] This parameter is self-defined. if args_ptr_arr is nullptr, args_len must be nullpter, otherwise, *args_len is the length of args_ptr_arr.
  */
 
 DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out,
@@ -299,7 +299,7 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
                                              diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                              float softmax_scale,
                                              void*[] args_ptr_arr,
-                                             int64_t args_len);
+                                             int64_t* args_len);
 
 
 // DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
