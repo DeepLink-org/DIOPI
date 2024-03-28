@@ -166,27 +166,10 @@ if __name__ == "__main__":
         db_case_items = gen_case(cache_path, cur_dir, args.model_name, args.fname, args.impl_folder, args.case_output_dir)
         db_conn.insert_device_case(db_case_items)
     elif args.mode == "run_test":
-        if args.test_cases_path == "":
-            model_name = args.model_name.lower() if args.model_name else "diopi"
-            test_cases_path = os.path.join(args.case_output_dir, model_name + "_case")
-        else:
-            test_cases_path = args.test_cases_path
-        pytest_args = [test_cases_path]
-        if args.filter_dtype:
-            filter_dtype_str = " and ".join(
-                [f"not {dtype}" for dtype in args.filter_dtype]
-            )
-            pytest_args.append(f"-m {filter_dtype_str}")
-        if args.html_report:
-            pytest_args.extend(
-                ["--report=report.html", "--title=DIOPI Test", "--template=2"]
-            )
-        if args.test_result_path:
-            pytest_args.append(f"--test_result_path={args.test_result_path}")
-        if args.pytest_args is not None:
-            pytest_args.extend(args.pytest_args.split())
-        pytest_args = ['--cache-clear', '--disable-warnings'] + pytest_args
-        exit_code = pytest.main(pytest_args)
+        from conformance.run_test import run_test
+        exit_code = run_test(args.test_cases_path, args.case_output_dir, args.model_name,
+                             args.fname, args.test_result_path, args.filter_dtype,
+                             args.html_report, args.pytest_args)
         if exit_code != 0:
             raise SystemExit(exit_code)
     elif args.mode == "utest":
