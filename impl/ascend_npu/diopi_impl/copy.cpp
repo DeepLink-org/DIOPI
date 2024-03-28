@@ -15,7 +15,11 @@ diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHandle_t src
     if (src == nullptr || dest == nullptr || !srcAt.defined() || !destAt.defined() || srcAt.numel() <= 0 || destAt.numel() <= 0) {
         return diopiSuccess;
     }
-    at_npu::native::NPUNativeOpApiFunctions::copy_(destAt, srcAt, false);
+    if (at_npu::native::FormatHelper::IsOpInputBaseFormat(destAt) && at_npu::native::FormatHelper::IsOpInputBaseFormat(srcAt)) {
+        at_npu::native::NPUNativeFunctions::copy_(destAt, srcAt, false);
+    } else {
+        at_npu::native::NPUNativeOpApiFunctions::copy_(destAt, srcAt, false);
+    }
     END_CALL_ACL_OP();
 }
 #if 0
