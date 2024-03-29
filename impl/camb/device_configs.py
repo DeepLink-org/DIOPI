@@ -1984,7 +1984,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['q'],
-                    "shape": (Skip((2, 10, 28, 16))),
+                    "shape": [Skip((2, 10, 28, 16))],
                               
                 },
             ],
@@ -1997,7 +1997,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['q'],
-                    "shape": (Skip((2, 5, 7, 16)),),
+                    "shape": [Skip((2, 5, 7, 16)),],
                 },
             ],
         ),
@@ -2009,7 +2009,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['q'],
-                    "shape": (Skip((2, 10, 28, 16))),
+                    "shape": [Skip((2, 10, 28, 16)),],
                               
                 },
             ],
@@ -2022,7 +2022,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['q'],
-                    "shape": (Skip((512, 16, 128)),),
+                    "shape": [Skip((512, 16, 128)),],
                 },
             ],
         ),
@@ -2034,7 +2034,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['q'],
-                    "shape": (Skip((512, 16, 128)),),
+                    "shape": [Skip((512, 16, 128)),],
                 },
             ],
         ),
