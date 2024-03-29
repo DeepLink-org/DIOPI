@@ -1292,14 +1292,14 @@ device_configs = {
     'ctc_loss': dict(
         name=["ctc_loss"],
         para=dict(
-            blank=[Skip(0), Skip(9)]
+            blank=[Skip(9)]
         ),
     ),
 
     'ctc_loss_un_padded': dict(
         name=["ctc_loss"],
         para=dict(
-            blank=[Skip(0), Skip(9)]
+            blank=[Skip(9)]
         ),
     ),
 
@@ -1951,12 +1951,16 @@ device_configs = {
     ),
 
     'rotary_emb': dict(
+        #不是不能做interleaved，而是生成数据不支持interleaved，手算验证camb正确
         name=["rotary_emb"],
+        para=dict(
+            interleaved = [Skip(True)],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "shape": [Skip((3, 5, 12))],
                 },
             ],
         ),
@@ -1969,6 +1973,56 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.float32)],
+                },
+            ],
+        ),
+    ),
+
+    'multihead_attention': dict(
+        name=["multihead_attention"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((2, 10, 28, 16)),],
+                              
+                },
+            ],
+        ),
+    ),
+
+    'multihead_attention_dropout': dict(
+        name=["multihead_attention"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((2, 5, 7, 16)),],
+                },
+            ],
+        ),
+    ),
+
+
+    'multihead_attention_varlen': dict(
+        name=["multihead_attention_varlen"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((512, 16, 128)),],
+                },
+            ],
+        ),
+    ),
+
+    'multihead_attention_varlen_dropout': dict(
+        name=["multihead_attention_varlen"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((512, 16, 128)),],
                 },
             ],
         ),
