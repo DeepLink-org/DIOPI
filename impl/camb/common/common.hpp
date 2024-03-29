@@ -82,6 +82,8 @@ diopiError_t sliceToDense(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTenso
 
 diopiError_t toDense(diopiContextHandle_t ctx, DiopiTensor& src, DiopiTensor& dst);
 
+diopiError_t expandTensor(diopiContextHandle_t ctx,  DiopiTensor& trOut, DiopiTensor& trInput);
+
 }  // namespace camb
 }  // namespace impl
 

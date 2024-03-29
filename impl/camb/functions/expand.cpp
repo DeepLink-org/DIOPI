@@ -14,7 +14,6 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
-
 namespace impl {
 namespace camb {
 
@@ -25,6 +24,30 @@ diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     diopiSize_t size;
     diopiGetTensorShape(out, &size);
 
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    cnnlTensorLayout_t layout = CNNL_LAYOUT_ARRAY;
+    cnnlDataType_t dtype;
+    DIOPI_CALL(CnnlDataType::convertToCnnlType(&dtype, trInput.dtype()));
+
+    CnnlTensorDesc descInput(trInput, layout);
+    CnnlTensorDesc descOut(trOut, layout);
+    DiopiTensor trOutTmp;
+    if (trInput.dtype() == trOut.dtype()) {
+        trOutTmp = trOut;
+        descOut.set(trOut, layout);
+    } else {
+        trOutTmp = requiresTensor(ctx, vec2diopiSizeT(trOut.shape()), trInput.dtype());
+        descOut.set(trOutTmp, CNNL_LAYOUT_ARRAY);
+    }
+
+    DIOPI_CALL_CNNL(cnnlExpand(handle, descInput.get(), trInput.data(), descOut.get(), trOutTmp.data()));
+    if (trOutTmp.dtype() != trOut.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, trOut, trOutTmp));
+    }
+    return diopiSuccess;
+}
+
+diopiError_t expandTensor(diopiContextHandle_t ctx,  DiopiTensor& trOut, DiopiTensor& trInput) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     cnnlTensorLayout_t layout = CNNL_LAYOUT_ARRAY;
     cnnlDataType_t dtype;

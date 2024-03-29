@@ -5,6 +5,7 @@
  */
 
 #include <cnnl.h>
+#include <cnnl_extra.h>
 #include <cnrt.h>
 
 #include <cstdio>

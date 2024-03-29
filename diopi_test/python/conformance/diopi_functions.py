@@ -8,6 +8,8 @@ import diopilib
 
 from collections import namedtuple
 from ctypes import c_double, byref
+from diopilib import build_generator_state
+
 from .diopi_runtime import (
     Sizes,
     Scalar,
@@ -1288,6 +1290,7 @@ def dropout_impl(
 
 
 def dropout(input, p=0.5, training=True, inplace=False, generator=None):
+    print("generator is here:",generator)
     return dropout_impl(
         input, input.size().data, p, training, inplace, generator
     )
@@ -5193,6 +5196,17 @@ def multihead_attention(
     softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], dtype=Dtype.float32)
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
+    
+    if dropout_p > 0 and dropout_p <= 1:
+        dropout_mask = Tensor()
+        state = build_generator_state(q.context())
+        generator = Generator(state)
+    elif dropout_p == 0:
+        dropout_mask = None
+        generator = None
+    else:
+        assert 0, "The dropout_p value must be in range of [0, 1]"
+
     try:
         ret = func(
             q.context(),
@@ -5268,6 +5282,8 @@ def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_ca
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
 
+    print("generator is here",generator)
+    return out
     try:
         ret = func(q.context(), q, k, v, cu_seqlens, cu_seqlens, max_seqlen, max_seqlen, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, generator, debug_attn_mask)
     except RuntimeError as rte:

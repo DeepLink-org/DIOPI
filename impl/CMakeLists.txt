@@ -31,7 +31,7 @@ message(STATUS ENABLE_COVERAGE=${ENABLE_COVERAGE})
 
 # the default is Release
 if(CMAKE_BUILD_TYPE STREQUAL "")
-    set(CMAKE_BUILD_TYPE "Release")
+    set(CMAKE_BUILD_TYPE "release")
 endif()
 
 if (ENABLE_COVERAGE)

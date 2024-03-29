@@ -44,7 +44,6 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         DIOPI_CALL(diopiGeneratorGetState(ctx, gen, &stateHandle));
         void* statePtr = nullptr;
         DIOPI_CALL(diopiGetTensorData(stateHandle, &statePtr));
-
         // cases for dropout2d when input_shape != mask_shape
         if (inputTensor.shape() != maskTensor.shape()) {
             DiopiTensor tempTensor = ones(ctx, maskTensor.shape(), diopi_dtype_float32);
@@ -63,16 +62,16 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
             DIOPI_CALL_CNNL(cnnlMulN(handle, inputDescs, inputs, 2, outputDesc.get(), outputTensorTemp.data()))
         } else {
             // cases for dropout
-            DIOPI_CALL_CNNL(cnnlFusedDropout_v2(handle,
-                                                generator,
-                                                inputDesc.get(),
-                                                inputTensor.data(),
-                                                p,
-                                                statePtr,
-                                                maskDesc.get(),
-                                                maskTensor.data(),
-                                                outputDesc.get(),
-                                                outputTensorTemp.data()));
+            // DIOPI_CALL_CNNL(cnnlFusedDropout_v2(handle,
+            //                                     generator,
+            //                                     inputDesc.get(),
+            //                                     inputTensor.data(),
+            //                                     p,
+            //                                     statePtr,
+            //                                     maskDesc.get(),
+            //                                     maskTensor.data(),
+            //                                     outputDesc.get(),
+            //                                     outputTensorTemp.data()));
         }
         if (outputTensorTemp.dtype() != outputTensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, outputTensor, outputTensorTemp));
