@@ -142,8 +142,8 @@ public:
 struct diopiGenerator {
 private:
     diopiTensor state_;
-    size_t seed_;
-    size_t offset_;
+    size_t seed_ = 0;
+    size_t offset_ = 0;
 
 public:
     diopiGenerator() = default;
