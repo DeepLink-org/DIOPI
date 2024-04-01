@@ -5401,9 +5401,9 @@ def flash_attention_v1(q, k, v, p_dropout, softmax_scale, is_causal, head_num, i
     softmax_sum_ptr = TensorP(softmax_sum)
     softmax_out_ptr = TensorP(softmax_out)
     if input_layout == "SBH":
-        head_dim = q.shape().data[-1]/head_num
+        head_dim = q.shape().data[-1] / head_num
     elif input_layout == "BSH":
-        head_dim = q.shape().data[-1]/head_num
+        head_dim = q.shape().data[-1] / head_num
     elif input_layout == "BNSD":
         head_dim = q.shape().data[-1]
     elif input_layout == "BSND":
@@ -5448,9 +5448,9 @@ def flash_attention_v1_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     softmax_sum = GLOBAL_STATE.pop('flash_attention_softmax_sum')
     softmax_out = GLOBAL_STATE.pop('flash_attention_softmax_out')
     if input_layout == "SBH":
-        head_dim = q.shape().data[-1]/head_num
+        head_dim = q.shape().data[-1] / head_num
     elif input_layout == "BSH":
-        head_dim = q.shape().data[-1]/head_num
+        head_dim = q.shape().data[-1] / head_num
     elif input_layout == "BNSD":
         head_dim = q.shape().data[-1]
     elif input_layout == "BSND":
