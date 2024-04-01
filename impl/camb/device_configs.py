@@ -1978,6 +1978,56 @@ device_configs = {
         ),
     ),
 
+    'multihead_attention': dict(
+        name=["multihead_attention"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((2, 10, 28, 16)),],
+                              
+                },
+            ],
+        ),
+    ),
+
+    'multihead_attention_dropout': dict(
+        name=["multihead_attention"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((2, 5, 7, 16)),],
+                },
+            ],
+        ),
+    ),
+
+
+    'multihead_attention_varlen': dict(
+        name=["multihead_attention_varlen"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((512, 16, 128)),],
+                },
+            ],
+        ),
+    ),
+
+    'multihead_attention_varlen_dropout': dict(
+        name=["multihead_attention_varlen"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((512, 16, 128)),],
+                },
+            ],
+        ),
+    ),
+
     'copy': dict(
         name=["copy_"],
         tensor_para=dict(
