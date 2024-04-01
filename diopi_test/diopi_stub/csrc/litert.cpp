@@ -363,6 +363,18 @@ DIOPI_RT_API diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diop
     return diopiSuccess;
 }
 
+DIOPI_RT_API diopiError_t diopiGeneratorGetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t& seed, uint64_t& offset) {
+    seed = th->getSeed();
+    offset = th->getOffset();
+    return diopiSuccess;
+}
+
+DIOPI_RT_API diopiError_t diopiGeneratorSetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t seed, uint64_t offset) {
+    th->setSeed(seed);
+    th->setOffset(offset);
+    return diopiSuccess;
+}
+
 DIOPI_RT_API diopiError_t diopiRecordStart(const char* recordName, void** record) { return diopiSuccess; }
 
 DIOPI_RT_API diopiError_t diopiRecordEnd(void** record) { return diopiSuccess; }
