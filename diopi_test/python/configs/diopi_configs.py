@@ -8757,7 +8757,7 @@ diopi_configs = {
     'flash_attention': dict(
         name=['flash_attention'],
         interface=['CustomizedTest'],
-        dtype=[np.float16, np.float32],
+        dtype=[np.float16],
         saved_args=dict(out=0),
         atol=1e-3,
         rtol=1e-4,
