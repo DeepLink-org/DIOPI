@@ -1951,12 +1951,16 @@ device_configs = {
     ),
 
     'rotary_emb': dict(
+        #不是不能做interleaved，而是生成数据不支持interleaved，手算验证camb正确
         name=["rotary_emb"],
+        para=dict(
+            interleaved = [Skip(True)],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float64), Skip(np.float32), Skip(np.float16)],
+                    "shape": [Skip((3, 5, 12))],
                 },
             ],
         ),

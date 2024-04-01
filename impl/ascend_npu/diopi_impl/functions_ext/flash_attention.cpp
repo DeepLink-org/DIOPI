@@ -22,17 +22,13 @@ const int64_t uInt8BitNumber = 8;
 diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* attentionMask,
                                  diopiTensorHandle_t* dropoutMask, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
                                  diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                 diopiConstTensorHandle_t v, double pDropout, double softmaxScale, bool isCausal, int64_t headNum) {
+                                 diopiConstTensorHandle_t v, double pDropout, double softmaxScale, bool isCausal, int64_t headNum, const char* inputLayout) {
     BEGIN_CALL_ACL_OP(q, k, v, gen, attentionOut);
-    // qAt.dim() == 3 && inputLayout == "SBH" is specially adapted for Ascend Speed on ascend. And it will not be tested in diopi for now.
-    // Please ignore this modification for other devices.
+
     DIOPI_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
-
-    std::string inputLayout = (qAt.dim() == 3 ? "SBH" : "BSND");
-    const char* inputLayoutPtr = inputLayout.data();
 
     int64_t b = 0;
     int64_t s0 = 0;
@@ -41,18 +37,32 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     int64_t d = 0;
     int64_t h = 0;
 
-    if (inputLayout == "SBH") {
+    if (strcmp(inputLayout, "SBH") == 0) {
         b = qAt.size(1);
         s0 = qAt.size(0);  // S for query
         s1 = kAt.size(0);  // S for key & value
         n = headNum;
         h = qAt.size(2);
-    } else {
+    } else if (strcmp(inputLayout, "BSH") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(1);  // S for query
+        s1 = kAt.size(1);  // S for key & value
+        n = headNum;
+        h = qAt.size(2);
+    } else if (strcmp(inputLayout, "BSND") == 0) {
         b = qAt.size(0);
         s0 = qAt.size(1);  // S for query
         s1 = kAt.size(1);  // S for key & value
         n = qAt.size(2);
         d = qAt.size(3);
+    } else if (strcmp(inputLayout, "BNSD") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(2);  // S for query
+        s1 = kAt.size(2);  // S for key & value
+        n = qAt.size(1);
+        d = qAt.size(3);
+    } else {
+        DIOPI_CHECK(false, "The input layout should be BSH/SBH/BNSD/BSND");
     }
 
     double keepProb = 1 - pDropout;
@@ -70,7 +80,7 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
         if (pDropout == 1) {
             op_api::zero_(dropoutMaskAt);
         } else {
-            std::vector<int64_t> shapeVector{b, n, s0, s1};
+            std::vector<int64_t> shapeVector{numels};
             at::IntArrayRef shapeArray(shapeVector);
             auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genAt)->philox_engine_inputs(10);
             const uint64_t seed = pair.first;
@@ -119,7 +129,7 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
                                  preTokens,
                                  nextTokens,
                                  n,
-                                 inputLayoutPtr,
+                                 inputLayout,
                                  innerPrecise,
                                  sparseMode,
                                  softmaxMaxAt,
@@ -143,18 +153,13 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                          diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
                                          diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum, diopiConstTensorHandle_t softmaxOut,
-                                         double pDropout, double softmaxScale, int64_t headNum) {
+                                         double pDropout, double softmaxScale, int64_t headNum, const char* inputLayout) {
     BEGIN_CALL_ACL_OP(q, k, v, attentionOut, attentionMask, dropoutMask, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
-    // qAt.dim() == 3 && inputLayout == "SBH" is specially adapted for Ascend Speed on ascend. And it will not be tested in diopi for now.
-    // Please ignore this modification for other devices.
     DIOPI_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
-
-    std::string inputLayout = (qAt.dim() == 3 ? "SBH" : "BSND");
-    const char* inputLayoutPtr = inputLayout.data();
 
     int64_t b = 0;
     int64_t s0 = 0;
@@ -163,18 +168,32 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
     int64_t d = 0;
     int64_t h = 0;
 
-    if (inputLayout == "SBH") {
+    if (strcmp(inputLayout, "SBH") == 0) {
         b = qAt.size(1);
         s0 = qAt.size(0);  // S for query
         s1 = kAt.size(0);  // S for key & value
         n = headNum;
         h = qAt.size(2);
-    } else {
+    } else if (strcmp(inputLayout, "BSH") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(1);  // S for query
+        s1 = kAt.size(1);  // S for key & value
+        n = headNum;
+        h = qAt.size(2);
+    } else if (strcmp(inputLayout, "BSND") == 0) {
         b = qAt.size(0);
         s0 = qAt.size(1);  // S for query
         s1 = kAt.size(1);  // S for key & value
         n = qAt.size(2);
         d = qAt.size(3);
+    } else if (strcmp(inputLayout, "BNSD") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(2);  // S for query
+        s1 = kAt.size(2);  // S for key & value
+        n = qAt.size(1);
+        d = qAt.size(3);
+    } else {
+        DIOPI_CHECK(false, "The input layout should be BSH/SBH/BNSD/BSND");
     }
 
     double keepProb = 1 - pDropout;
@@ -209,7 +228,7 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
                                  preTokens,
                                  nextTokens,
                                  n,
-                                 inputLayoutPtr,
+                                 inputLayout,
                                  innerPrecise,
                                  sparseMode,
                                  gradQAt,
