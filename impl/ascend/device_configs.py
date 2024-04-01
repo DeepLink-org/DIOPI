@@ -1272,8 +1272,6 @@ device_configs = {
         rtol=1e-3,
     ),
 
-
-    
     'adam': dict(
         name=['adamw'],
         tensor_para=dict(
