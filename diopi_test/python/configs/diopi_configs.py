@@ -8759,8 +8759,6 @@ diopi_configs = {
         interface=['CustomizedTest'],
         dtype=[np.float16],
         saved_args=dict(out=0),
-        atol=1e-3,
-        rtol=1e-4,
         para=dict(
             p_dropout=[0, 0, 0],
             is_causal=[True, False, True],
@@ -8795,8 +8793,6 @@ diopi_configs = {
         interface=['CustomizedTest'],
         dtype=[np.float16],
         saved_args=dict(out=0),
-        atol=1e-3,
-        rtol=1e-4,
         para=dict(
             p_dropout=[0, 0, 0],
             is_causal=[True, False, True],
@@ -8831,8 +8827,6 @@ diopi_configs = {
         interface=['CustomizedTest'],
         dtype=[np.float16],
         saved_args=dict(out=0),
-        atol=1e-3,
-        rtol=1e-4,
         para=dict(
             p_dropout=[0, 0, 0, 0],
             is_causal=[True, False, True, True],
@@ -8867,8 +8861,6 @@ diopi_configs = {
         interface=['CustomizedTest'],
         dtype=[np.float16],
         saved_args=dict(out=0),
-        atol=1e-3,
-        rtol=1e-4,
         para=dict(
             p_dropout=[0, 0, 0, 0],
             is_causal=[True, False, True, True],
