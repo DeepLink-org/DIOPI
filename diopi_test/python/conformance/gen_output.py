@@ -314,7 +314,7 @@ class CustomizedTest(object):
             q, k, v = [rearrange(x, "b s (n d) -> b s n d", n=head_num) for x in [q, k, v]]
         elif input_layout == "BNSD":
             q, k, v = [rearrange(x, "b n s d-> b s n d") for x in [q, k, v]]
-        _, seqlen = q.shape[0], q.shape[1]
+        seqlen = q.shape[1]
         softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
         scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
         if is_causal:
