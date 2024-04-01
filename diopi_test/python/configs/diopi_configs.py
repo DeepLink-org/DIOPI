@@ -8764,7 +8764,7 @@ diopi_configs = {
             is_causal=[True, False, True],
             softmax_scale=[0.0883, 0.125, None],
             head_num=[64, 32, 8],
-            input_layout=['SBH']
+            input_layout=['SBH', 'SBH', 'SBH']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -8798,7 +8798,7 @@ diopi_configs = {
             is_causal=[True, False, True],
             softmax_scale=[0.0883, 0.125, None],
             head_num=[64, 32, 8],
-            input_layout=['BSH']
+            input_layout=['BSH', 'BSH', 'BSH']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -8832,7 +8832,7 @@ diopi_configs = {
             is_causal=[True, False, True, True],
             softmax_scale=[0.0883, None, 0.125, 0.0625],
             head_num=[64, 16, 32, 8],
-            input_layout=['BSND']
+            input_layout=['BSND', 'BSND', 'BSND', 'BSND']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -8866,7 +8866,7 @@ diopi_configs = {
             is_causal=[True, False, True, True],
             softmax_scale=[0.0883, None, 0.125, 0.0625],
             head_num=[64, 16, 32, 8],
-            input_layout=['BNSD']
+            input_layout=['BNSD', 'BNSD', 'BNSD', 'BNSD']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',

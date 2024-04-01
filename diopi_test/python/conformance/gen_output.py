@@ -309,9 +309,9 @@ class CustomizedTest(object):
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         # For calculation convenience, convert to BSND.
         if input_layout == "SBH":
-            q, k, v = [rearrange(x, "s b h -> b s n ...)", n=head_num) for x in [q, k, v]]
+            q, k, v = [rearrange(x, "s b (n d) -> b s n d", n=head_num) for x in [q, k, v]]
         elif input_layout == "BSH":
-            q, k, v = [rearrange(x, "b s h -> b s n ...)", n=head_num) for x in [q, k, v]]
+            q, k, v = [rearrange(x, "b s (n d) -> b s n d", n=head_num) for x in [q, k, v]]
         elif input_layout == "BNSD":
             q, k, v = [rearrange(x, "b n s d-> b s n d") for x in [q, k, v]]
         _, seqlen = q.shape[0], q.shape[1]
