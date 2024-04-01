@@ -18,9 +18,9 @@
 namespace impl {
 namespace camb {
 
-DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v,
-                                               double dropoutP, bool isCausal, bool returnDebugMask, double scale, diopiTensorHandle_t out,
-                                               diopiTensorHandle_t softmaxLse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debugAttnMask) {
+DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v, double dropoutP,
+                                               bool isCausal, bool returnDebugMask, double scale, diopiTensorHandle_t out, diopiTensorHandle_t softmaxLse,
+                                               diopiGeneratorHandle_t gen, diopiTensorHandle_t debugAttnMask) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor qTensor(q);
     DiopiTensor kTensor(k);
