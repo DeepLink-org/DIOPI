@@ -173,7 +173,6 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
                                                              diopiGeneratorHandle_t gen, double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                              diopiTensorHandle_t grad_v);
 
-// This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
  * @brief Compute the forward pass for Flash Attention.
  * @param[in] ctx The diopi context.
@@ -185,6 +184,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
  * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] is_causal Whether to apply causal attention mask.
  * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
+ * @param[in] input_layout The layout of input tensor.
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_seq_len, head_num, head_dim] or [q_seq_len,
  * batch_size, hidden_size]. type = [bfloat16, float16, float32].
  * @param[out] attention_mask Tensor storing the causal attention mask for back propagation. shape = [q_seq_len, k_seq_len]. type = [bool].
@@ -196,9 +196,9 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
 DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* attention_mask,
                                            diopiTensorHandle_t* dropout_mask, diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum,
                                            diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                           diopiConstTensorHandle_t v, double p_dropout, double softmax_scale, bool is_causal, int64_t head_num);
+                                           diopiConstTensorHandle_t v, double p_dropout, double softmax_scale, bool is_causal, int64_t head_num,
+                                           const char* input_layout);
 
-// This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
  * @brief Compute the backward pass for Flash Attention.
  * @param[in] ctx The diopi context.
@@ -217,6 +217,7 @@ DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensor
  * @param[in] p_dropout The probability of dropout op.
  * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
+ * @param[in] input_layout The layout of input tensor. type = [char*], "BSH", "SBH", "BSND", "BNSD".
  * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, q_seq_len, head_num, head_dim] or [q_seq_len, batch_size, hidden_size]. type =
  * [bfloat16, float16, float32].
  * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, k_seq_len, head_num, head_dim] or [k_seq_len, batch_size, hidden_size]. type =
@@ -229,7 +230,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
                                                    diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
                                                    diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, double p_dropout,
-                                                   double softmax_scale, int64_t head_num);
+                                                   double softmax_scale, int64_t head_num, const char* input_layout);
 
 // The difference between this interface and the original diopiFlashAttention definition is that the passed input attention mask can be used directly. This
 // prevents the attention mask from being recalculated inside the op. This helps reduce a lot of useless overhead when training large language models.
