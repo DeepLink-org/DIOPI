@@ -246,6 +246,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  * @param[in] p_dropout The probability of dropout op.
  * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
+ * @param[in] input_layout The layout of input tensor. type = [char*], "BSH", "SBH", "BSND", "BNSD".
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_seq_len, head_num, head_dim] or [q_seq_len,
  * batch_size, hidden_size]. type = [bfloat16, float16, float32].
  * @param[out] dropout_mask Tensor storing the dropout mask for back propagation.
@@ -256,7 +257,8 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
 DIOPI_API diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* dropout_mask,
                                              diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum, diopiTensorHandle_t* softmax_out,
                                              diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                             diopiConstTensorHandle_t attention_mask, double p_dropout, double softmax_scale, int64_t head_num);
+                                             diopiConstTensorHandle_t attention_mask, double p_dropout, double softmax_scale, int64_t head_num,
+                                             const char* input_layout);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
