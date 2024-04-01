@@ -4,7 +4,6 @@
  * @copyright  (c) 2023, DeepLink.
  */
 #include <cnmlrt.h>
-#include <diopi/diopirt.h>
 #include <diopi/functions_ext.h>
 
 #include <cstring>
@@ -19,7 +18,7 @@
 namespace impl {
 namespace camb {
 
-DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v,
                                                double dropoutP, bool isCausal, bool returnDebugMask, double scale, diopiTensorHandle_t out,
                                                diopiTensorHandle_t softmaxLse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debugAttnMask) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
