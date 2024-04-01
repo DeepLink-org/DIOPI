@@ -10,6 +10,7 @@ import torchvision
 from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
 from conformance.db_operation import db_conn
+from einops import rearrange
 
 
 def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
@@ -304,10 +305,16 @@ class CustomizedTest(object):
             output[start_idx:end_idx, :, :] = qkv_result[i - 1, :end_idx - start_idx, :, :]
         return output
 
-    def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
-        # 为了与基准值对比精度，测试时不使用dropout
-        import math
-        _, seqlen = q.shape[0], q.shape[1]
+    def flash_attention_v1(q, k, v, p_dropout, softmax_scale, is_causal, head_num, input_layout):
+        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # For calculation convenience, convert to BSND.
+        if input_layout == "SBH":
+            q, k, v = [rearrange(x, "s b (n d) -> b s n d", n=head_num) for x in [q, k, v]]
+        elif input_layout == "BSH":
+            q, k, v = [rearrange(x, "b s (n d) -> b s n d", n=head_num) for x in [q, k, v]]
+        elif input_layout == "BNSD":
+            q, k, v = [rearrange(x, "b n s d-> b s n d") for x in [q, k, v]]
+        seqlen = q.shape[1]
         softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
         scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
         if is_causal:
@@ -317,6 +324,12 @@ class CustomizedTest(object):
             scores = scores + causal_mask.to(dtype=scores.dtype)
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
         output = torch.einsum("bhts,bshd->bthd", attention, v)
+        if input_layout == "SBH":
+            output = rearrange(output, "b s n d -> s b (n d)")
+        elif input_layout == "BSH":
+            output = rearrange(output, "b s n d -> b s (n d)")
+        elif input_layout == "BNSD":
+            output = rearrange(output, "b s n d -> b n s d")
         return output
 
     def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
