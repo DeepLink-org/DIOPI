@@ -8754,7 +8754,7 @@ diopi_configs = {
         ),
     ),
     
-    'flash_attention_SBH': dict(
+    'flash_attention_v1_SBH': dict(
         name=['flash_attention_v1'],
         interface=['CustomizedTest'],
         dtype=[np.float16],
@@ -8788,7 +8788,7 @@ diopi_configs = {
         ),
     ),
     
-    'flash_attention_BSH': dict(
+    'flash_attention_v1_BSH': dict(
         name=['flash_attention_v1'],
         interface=['CustomizedTest'],
         dtype=[np.float16],
@@ -8822,7 +8822,7 @@ diopi_configs = {
         ),
     ),
 
-    'flash_attention_BSND': dict(
+    'flash_attention_v1_BSND': dict(
         name=['flash_attention_v1'],
         interface=['CustomizedTest'],
         dtype=[np.float16],
@@ -8856,7 +8856,7 @@ diopi_configs = {
         ),
     ),
     
-    'flash_attention_BNSD': dict(
+    'flash_attention_v1_BNSD': dict(
         name=['flash_attention_v1'],
         interface=['CustomizedTest'],
         dtype=[np.float16],
