@@ -8020,6 +8020,36 @@ diopi_configs = {
     #     ),
     # ),
 
+    'ones_zeros': dict(
+        name=['ones', 'zeros'],
+        need_context=True,
+        interface=["torch"],
+        dtype=[np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.uint8],
+        para=dict(
+            size=[(), (128,), (3, 64), (3, 16, 64),
+                  (4, 16, 8, 64), (2, 16, 1, 64, 5),
+                  (0,), (0, 16), (8, 0, 12)],
+        ),
+    ),
+
+    'zero_inp': dict(
+        name=['zero_'],
+        interface=["torch.Tensor"],
+        tensor_para=dict(
+            # gen_fn='Genfunc.rand',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40), (0,), (16, 0)),
+                    "dtype": [np.float64, np.float32, np.float16, np.int64, np.int32, np.int16, np.int8, np.uint8],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+
     'lerp': dict(
         name=['lerp'],
         interface=['torch'],
@@ -8723,36 +8753,167 @@ diopi_configs = {
             ],
         ),
     ),
-
-    'flash_attention': dict(
-        name=['flash_attention'],
+    
+    'flash_attention_v1_SBH': dict(
+        name=['flash_attention_v1'],
         interface=['CustomizedTest'],
-        dtype=[np.float16, np.float32],
+        dtype=[np.float16],
         saved_args=dict(out=0),
-        atol=1e-3,
-        rtol=1e-4,
         para=dict(
-            p_dropout=[0, 0, 0, 0, 0],
-            is_causal=[True, False, True, False, True],
-            softmax_scale=[0.0883, None, 0.125, None, 0.0625]
+            p_dropout=[0, 0, 0],
+            is_causal=[True, False, True],
+            softmax_scale=[0.0883, 0.125, None],
+            head_num=[64, 32, 8],
+            input_layout=['SBH', 'SBH', 'SBH']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['q'],
-                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                    "shape": ((64, 1, 8192), (64, 1, 4096), (16, 1, 512)),
                     "requires_grad": [True],
                 },
                 {
                     "ins": ['k'],
-                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                    "shape": ((64, 1, 8192), (64, 1, 4096), (16, 1, 512)),
                     "requires_grad": [True],
                 },
                 {
                     "ins": ['v'],
-                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 256, 256, 64), (1, 16, 8, 64)),
+                    "shape": ((64, 1, 8192), (64, 1, 4096), (16, 1, 512)),
                     "requires_grad": [True],
+                },
+            ],
+        ),
+    ),
+    
+    'flash_attention_v1_BSH': dict(
+        name=['flash_attention_v1'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        para=dict(
+            p_dropout=[0, 0, 0],
+            is_causal=[True, False, True],
+            softmax_scale=[0.0883, 0.125, None],
+            head_num=[64, 32, 8],
+            input_layout=['BSH', 'BSH', 'BSH']
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((1, 64, 8192), (1, 64, 4096), (1, 16, 512)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((1, 64, 8192), (1, 64, 4096), (1, 16, 512)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((1, 64, 8192), (1, 64, 4096), (1, 16, 512)),
+                    "requires_grad": [True],
+                },
+            ],
+        ),
+    ),
+
+    'flash_attention_v1_BSND': dict(
+        name=['flash_attention_v1'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        para=dict(
+            p_dropout=[0, 0, 0, 0],
+            is_causal=[True, False, True, True],
+            softmax_scale=[0.0883, None, 0.125, 0.0625],
+            head_num=[64, 16, 32, 8],
+            input_layout=['BSND', 'BSND', 'BSND', 'BSND']
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+            ],
+        ),
+    ),
+    
+    'flash_attention_v1_BNSD': dict(
+        name=['flash_attention_v1'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        para=dict(
+            p_dropout=[0, 0, 0, 0],
+            is_causal=[True, False, True, True],
+            softmax_scale=[0.0883, None, 0.125, 0.0625],
+            head_num=[64, 16, 32, 8],
+            input_layout=['BNSD', 'BNSD', 'BNSD', 'BNSD']
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64)),
+                    "requires_grad": [True],
+                },
+            ],
+        ),
+    ),
+
+    'scaled_masked_softmax': dict(
+        name=['scaled_masked_softmax'],
+        interface=['CustomizedTest'],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-3,
+        para=dict(
+            scale=[0.0883, 0.125, 0.334],
+            fixed_triu_mask=[True, False, True],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 256, 64), (16, 6, 128, 128)),
+                    "dtype": [np.float16, np.float32],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['mask'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 256, 64), (16, 6, 128, 128)),
+                    "dtype": [np.bool_],
+                    "gen_fn": 'Genfunc.mask'
                 },
             ],
         ),

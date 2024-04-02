@@ -99,6 +99,11 @@ class GenTestCase(object):
             input_data_path = ck
             output_data_path = ck
 
+            if "need_context" in cv.keys() and cv["need_context"] is True:
+                need_context = True
+            else:
+                need_context = False
+
             # get tol
             test_compare_tol = dict(atol=cv["atol"], rtol=cv["rtol"], mismatch_ratio_threshold=cv["mismatch_ratio_threshold"])
             for tensor in cv["tensor_para"]["args"]:
@@ -132,6 +137,7 @@ class GenTestCase(object):
                             test_rtol_half=cv["rtol_half"],
                             test_compare_tol=test_compare_tol,
                             test_diopi_func_name=test_diopi_func_name,
+                            need_context=need_context,
                         )
                     )
                 )
