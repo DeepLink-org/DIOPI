@@ -4,10 +4,6 @@
  * @copyright  (c) 2024, DeepLink.
  */
 
-#include <ATen/core/TensorBody.h>
-#include <c10/core/Device.h>
-#include <c10/util/Optional.h>
-
 #include "../helper.hpp"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -160,8 +156,8 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
                                          double pDropout, double softmaxScale, int64_t headNum, const char* inputLayout) {
     BEGIN_CALL_ACL_OP(q, k, v, attentionOut, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
-    c10::optional<at::Tensor> dropoutMaskAt;
-    c10::optional<at::Tensor> attentionMaskAt;
+    at::Tensor dropoutMaskAt;
+    at::Tensor attentionMaskAt;
     if (dropoutMask) {
         dropoutMaskAt = impl::aten::buildATen(dropoutMask);
     }
