@@ -247,6 +247,28 @@ def zeros_like(tensor):
     return new_tensor
 
 
+def ones(default_context, size):
+    func = check_function("diopiOnes")
+    size = Sizes(list(size))
+    out = Tensor(size=size, dtype=Dtype.float32)
+    ret = func(default_context, out, size)
+    check_returncode(ret)
+    return out
+
+def zeros(default_context, size):
+    func = check_function("diopiZeros")
+    size = Sizes(list(size))
+    out = Tensor(size=size, dtype=Dtype.float32)
+    ret = func(default_context, out, size)
+    check_returncode(ret)
+    return out
+
+def zero_(input):
+    func = check_function("diopiZeroInp")
+    ret = func(input.context(), input)
+    check_returncode(ret)
+    return input
+
 def unary_op(input, inplace, call, dtype=None) -> Tensor:
     if inplace:
         out = input
@@ -468,7 +490,7 @@ def lt(input, other, inplace=False) -> Tensor:
     return binary_op_scalar(input, other, inplace, "diopiLt", dtype=Dtype.bool)
 
 
-def equal(input, other) -> Tensor:
+def equal(input, other) -> bool:
     call = "diopiEqual"
     func = check_function(call)
 
@@ -480,7 +502,7 @@ def equal(input, other) -> Tensor:
     capsule = PyCapsule_New(ctypes.c_void_p(ctypes.addressof(out)), None, PyCapsule_Destructor(0))
     ret = func(input.context(), capsule, input, other)
     check_returncode(ret)
-    return np.array(out.value)
+    return out.value
 
 
 def mul(input, other, inplace=False) -> Tensor:
@@ -5353,12 +5375,10 @@ def multihead_attention_varlen_backward(
         return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 # todo: impl for diopiFlashAttentionV2
-def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
+def flash_attention_v1(q, k, v, p_dropout, softmax_scale, is_causal, head_num, input_layout):
     call = "diopiFlashAttention"
     func = check_function(call)
-    q_size = list(q.size().data)
-    head_num = q_size[2]
-    out = Tensor(q_size, q.get_dtype())
+    out = raw_like(q)
     if is_causal:
         attention_mask = Tensor()
     else:
@@ -5380,7 +5400,15 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
     softmax_max_ptr = TensorP(softmax_max)
     softmax_sum_ptr = TensorP(softmax_sum)
     softmax_out_ptr = TensorP(softmax_out)
-    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not softmax_scale else softmax_scale
+    if input_layout == "SBH":
+        head_dim = q.shape().data[-1] / head_num
+    elif input_layout == "BSH":
+        head_dim = q.shape().data[-1] / head_num
+    elif input_layout == "BNSD":
+        head_dim = q.shape().data[-1]
+    elif input_layout == "BSND":
+        head_dim = q.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
     ret = func(
         q.context(),
         out,
@@ -5397,6 +5425,7 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
         softmax_scale,
         is_causal,
         head_num,
+        input_layout,
     )
     check_returncode(ret)
     GLOBAL_STATE["flash_attention_attention_mask"] = attention_mask
@@ -5406,12 +5435,10 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
     GLOBAL_STATE["flash_attention_softmax_out"] = softmax_out
     return out
 
-def flash_attention_backward(q, k, v, out, grad_outputs, p_dropout, softmax_scale, is_causal):
+def flash_attention_v1_backward(q, k, v, out, grad_outputs, p_dropout, softmax_scale, is_causal, head_num, input_layout):
     call = "diopiFlashAttentionBackward"
     func = check_function(call)
     assert p_dropout >=0 and p_dropout <=1, "The p_dropout value must be in range of [0, 1]"
-    q_size = list(q.size().data)
-    head_num = q_size[2]
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
@@ -5420,10 +5447,51 @@ def flash_attention_backward(q, k, v, out, grad_outputs, p_dropout, softmax_scal
     softmax_max = GLOBAL_STATE.pop('flash_attention_softmax_max')
     softmax_sum = GLOBAL_STATE.pop('flash_attention_softmax_sum')
     softmax_out = GLOBAL_STATE.pop('flash_attention_softmax_out')
-    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not softmax_scale else softmax_scale
-    ret = func(q.context(), grad_q, grad_k, grad_v, grad_outputs[0], q, k, v, out, attention_mask, dropout_mask, softmax_max, softmax_sum, softmax_out, p_dropout, softmax_scale, head_num)
+    if input_layout == "SBH":
+        head_dim = q.shape().data[-1] / head_num
+    elif input_layout == "BSH":
+        head_dim = q.shape().data[-1] / head_num
+    elif input_layout == "BNSD":
+        head_dim = q.shape().data[-1]
+    elif input_layout == "BSND":
+        head_dim = q.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
+    ret = func(q.context(), grad_q, grad_k, grad_v, grad_outputs[0], q, k, v, out, attention_mask, dropout_mask, softmax_max, softmax_sum, softmax_out, p_dropout, softmax_scale, head_num, input_layout)
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
+
+def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
+    call = "diopiScaledMaskedSoftmax"
+    func = check_function(call)
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    ret = func(
+        input.context(),
+        out,
+        input,
+        mask,
+        scale,
+        fixed_triu_mask,
+    )
+    check_returncode(ret)
+    return out
+
+def scaled_masked_softmax_backward(grad_outputs, out, input, mask, scale, fixed_triu_mask):
+    call = "diopiScaledMaskedSoftmaxBackward"
+    func = check_function(call)
+    size = list(out.size().data)
+    grad_input = Tensor(size, out.get_dtype())
+    ret = func(
+        out.context(),
+        grad_input,
+        grad_outputs[0],
+        out,
+        mask,
+        scale,
+        fixed_triu_mask,
+    )
+    check_returncode(ret)
+    return {"input": grad_input}
 
 def apply_penalty(
     logits,
