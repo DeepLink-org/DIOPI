@@ -1272,4 +1272,21 @@ device_configs = {
         rtol=1e-3,
     ),
 
+    'adam': dict(
+        name=['adamw'],
+        para = dict (
+            # amsgrad not supported yet
+            amsgrad=[Skip(True),]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['param'],
+                    # float64 not supported yet on ascend
+                    "dtype": [Skip(np.float64)],
+                },
+            ]
+        ),
+    ),
+
 }
