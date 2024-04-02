@@ -4,6 +4,10 @@
  * @copyright  (c) 2024, DeepLink.
  */
 
+#include <ATen/core/TensorBody.h>
+#include <c10/core/Device.h>
+#include <c10/util/Optional.h>
+
 #include "../helper.hpp"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -154,8 +158,16 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
                                          diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum, diopiConstTensorHandle_t softmaxOut,
                                          double pDropout, double softmaxScale, int64_t headNum, const char* inputLayout) {
-    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, attentionMask, dropoutMask, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
+    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
+    c10::optional<at::Tensor> dropoutMaskAt;
+    c10::optional<at::Tensor> attentionMaskAt;
+    if (dropoutMask) {
+        dropoutMaskAt = impl::aten::buildATen(dropoutMask);
+    }
+    if (attentionMask) {
+        attentionMaskAt = impl::aten::buildATen(attentionMask);
+    }
     DIOPI_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3-dimensional or 4-dimensional");
