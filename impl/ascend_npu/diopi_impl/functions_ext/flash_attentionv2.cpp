@@ -23,12 +23,17 @@ diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t
                                    diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum, diopiTensorHandle_t* softmaxOut,
                                    diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                    diopiConstTensorHandle_t attentionMask, double pDropout, double softmaxScale, int64_t headNum, const char* inputLayout) {
-    BEGIN_CALL_ACL_OP(q, k, v, attentionMask, gen, attentionOut);
+    BEGIN_CALL_ACL_OP(q, k, v, gen, attentionOut);
 
     DIOPI_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
+
+    at::Tensor attentionMaskAt;
+    if (attentionMask) {
+        attentionMaskAt = impl::aten::buildATen(attentionMask);
+    }
 
     int64_t b = 0;
     int64_t s0 = 0;
