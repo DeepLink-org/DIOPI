@@ -118,6 +118,9 @@ ascend_npu:
 - diopiDestIndexCopyKV
 - diopiTokenAttentionInference
 - diopiTokenSoftmaxReduceVInference
+- diopiTokenDecodeAttentionInference
+- diopiTokenDecodeAttentionInferenceBatchOne
+- diopiIncreFlashAttention
 - diopiApplyPenalty
 - diopiContextAttentionInference
 - diopiPromptFlashAttention
