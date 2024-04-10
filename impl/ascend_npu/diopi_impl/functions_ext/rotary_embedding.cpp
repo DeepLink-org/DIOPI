@@ -24,7 +24,7 @@ at::Tensor viewAs4D(const at::Tensor& input) {
     for (int i = 0; i < dim; ++i) {
         viewShape[i + n - dim] = inputShape[i];
     }
-    return input.view(viewShape);
+    return impl::aten::viewStorage(input, viewShape);
 }
 
 DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,

@@ -2932,7 +2932,12 @@ thread_local static at::Generator gDiopiGenerator[16];
 
 namespace detail {
 
-const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { return gDiopiGenerator[device_index]; }
+const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) {
+    if (device_index == -1) {
+        device_index = current_device();
+    }
+    return gDiopiGenerator[device_index];
+}
 
 }  // namespace detail
 
