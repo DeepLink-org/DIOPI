@@ -183,7 +183,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
  * hidden_size] or [k_seq_len, batch_size, hidden_size]. type = [bfloat16, float16].
  * @param[in] v Value tensor. shape = [batch_size, v_seq_len, head_num, head_dim] or [batch_size, head_num, v_seq_len, head_dim] or [batch_size, v_seq_len,
  * hidden_size] or [v_seq_len, batch_size, hidden_size]. type = [bfloat16, float16].
- * @param[in] p_dropout The probability of dropout op.
+ * @param[in] p_dropout Dropout probability.
  * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] is_causal Whether to apply causal attention mask.
  * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
@@ -220,7 +220,7 @@ DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensor
  * @param[in] softmax_max Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
  * @param[in] softmax_sum Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
  * @param[in] softmax_out Tensor representing the intermediate calculation result of softmax op from the forward pass. type =[float32].
- * @param[in] p_dropout The probability of dropout op.
+ * @param[in] p_dropout Dropout probability.
  * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
  * @param[in] input_layout The layout of input tensor. type = [char*], "BSND", "BNSD", "BSH", "SBH".
@@ -252,7 +252,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  * hidden_size] or [v_seq_len, batch_size, hidden_size]. type = [bfloat16, float16].
  * @param[in] attention_mask Casual attention mask tensor. When the tensor is empty, it means that the casual mask is not applied. shape = [q_seq_len,
  * k_seq_len]. type = [bool].
- * @param[in] p_dropout The probability of dropout op.
+ * @param[in] p_dropout Dropout probability.
  * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
  * @param[in] input_layout The layout of input tensor. type = [char*], "BSND", "BNSD", "BSH", "SBH".
@@ -307,10 +307,7 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
 DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                      diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                                      diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
-                                                     diopiConstTensorHandle_t attention_mask, diopiConstTensorHandle_t dropout_mask,
-                                                     diopiConstTensorHandle_t softmax_max, diopiConstTensorHandle_t softmax_sum,
-                                                     diopiConstTensorHandle_t softmax_out, double p_dropout, double softmax_scale, int64_t head_num,
-                                                     const char* input_layout);
+                                                     diopiConstTensorHandle_t softmax_lse, double p_dropout, double softmax_scale);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
