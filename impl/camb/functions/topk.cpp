@@ -20,8 +20,7 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     DiopiTensor valuesTensorTemp = valuesTensor;
     DiopiTensor inputTensorTemp = inputTensor;
 
-    if (inputTensor.numel() == 0)
-    {
+    if (inputTensor.numel() == 0) {
         return diopiSuccess;
     }
 
