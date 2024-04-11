@@ -306,6 +306,7 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
  * q_seq_len]. type = [float32].
  * @param[in] p_dropout Dropout probability.
  * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[in] is_causal Whether to apply causal attention mask.
  * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [bfloat16, float16].
@@ -313,7 +314,7 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
 DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                      diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                                      diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
-                                                     diopiConstTensorHandle_t softmax_lse, double p_dropout, double softmax_scale);
+                                                     diopiConstTensorHandle_t softmax_lse, double p_dropout, double softmax_scale, bool is_causal);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
