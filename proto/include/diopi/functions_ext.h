@@ -62,6 +62,7 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
                                             diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t inv_rms,
                                             diopiSize_t normalized_shape, double eps);
 
+// This interface has been deprecated, please use a more suitable diopiFlashAttention series interface.
 /**
  * @brief Compute the forward pass for MultiheadAttention.
  * @param[in] ctx The diopi context.
@@ -90,6 +91,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTe
                                                bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse,
                                                diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
 
+// This interface has been deprecated, please use a more suitable diopiFlashAttention series interface.
 /**
  * @brief Compute the forward pass for MultiheadAttention.
  * @param[in] ctx The diopi context.
@@ -113,6 +115,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx,
                                                        diopiConstTensorHandle_t softmax_lse, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen,
                                                        double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v);
 
+// This interface has been deprecated, please use a more suitable diopiFlashAttention series interface.
 /**
  * @brief Compute the forward pass for MultiheadAttentionVarLen.
  * @param[in] ctx The diopi context.
@@ -144,6 +147,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, d
                                                      double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
                                                      diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
 
+// This interface has been deprecated, please use a more suitable diopiFlashAttention series interface.
 /**
  * @brief Compute the forward pass for MultiheadAttentionVarLen.
  * @param[in] ctx The diopi context.
@@ -269,6 +273,8 @@ DIOPI_API diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTens
                                              diopiConstTensorHandle_t attention_mask, double p_dropout, double softmax_scale, int64_t head_num,
                                              const char* input_layout);
 
+// The difference between this interface and v1 v2 is that it is more suitable for devices integrating dropout mask and casual attention mask into the flash
+// attention kernel.
 /**
  * @brief Compute the forward pass for Flash Attention.
  * @param[in] ctx The diopi context.
