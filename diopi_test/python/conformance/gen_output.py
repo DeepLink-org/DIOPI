@@ -332,6 +332,20 @@ class CustomizedTest(object):
             output = rearrange(output, "b s n d -> b n s d")
         return output
 
+    def flash_attention_v3(q, k, v, p_dropout, softmax_scale, is_causal):
+        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        seqlen = q.shape[1]
+        softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
+        scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
+        if is_causal:
+            causal_mask = torch.triu(
+                torch.full((seqlen, seqlen), float('-inf'), device=scores.device), 1
+            )
+            scores = scores + causal_mask.to(dtype=scores.dtype)
+        attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
+        output = torch.einsum("bhts,bshd->bthd", attention, v)
+        return output
+
     def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
         if fixed_triu_mask:
             mask_tri = torch.triu(torch.ones(mask.shape, device=input.device), diagonal=1).bool()
