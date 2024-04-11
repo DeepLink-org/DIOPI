@@ -1973,7 +1973,7 @@ device_configs = {
                 {
                     "ins": ['input'],
                     # 寒武纪计算正确，gen-data生成的没考虑bias，暂时屏蔽
-                    "dtype": [Skip(np.float16),Skip(np.float32)，Skip(np.float64)],
+                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64)],
                 },
             ],
         ),
