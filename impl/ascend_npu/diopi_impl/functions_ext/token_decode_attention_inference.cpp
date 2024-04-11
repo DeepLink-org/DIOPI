@@ -18,7 +18,7 @@ diopiError_t diopiTokenDecodeAttentionInference(diopiContextHandle_t ctx, diopiT
                                                 diopiConstTensorHandle_t b_loc, diopiConstTensorHandle_t b_start_loc, diopiConstTensorHandle_t b_seq_len,
                                                 int max_input_len, int other_kv_index) {
     BEGIN_CALL_ACL_OP(out, q, k, v, b_loc, b_start_loc, b_seq_len);
-    int batch = b_locAt.size(0);
+    int batch = qAt.size(0);
     int head_num_q = qAt.size(1);
     int dim = qAt.size(2);
     int hidden_size_q = head_num_q * dim;
@@ -48,7 +48,7 @@ diopiError_t diopiTokenDecodeAttentionInferenceBatchOne(diopiContextHandle_t ctx
                                                         diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                                         diopiConstTensorHandle_t b_loc, diopiConstTensorHandle_t b_start_loc, diopiConstTensorHandle_t b_seq_len,
                                                         int max_input_len, int other_kv_index) {
-    BEGIN_CALL_ACL_OP(out, q, k, v, b_loc, b_start_loc, b_seq_len);
+    BEGIN_CALL_ACL_OP(out, q, k, v, b_seq_len);
     int head_num_q = qAt.size(1);
     int dim = qAt.size(2);
     int hidden_size_q = head_num_q * dim;
