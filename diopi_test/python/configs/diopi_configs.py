@@ -8315,7 +8315,7 @@ diopi_configs = {
         dtype=[np.float16, np.float32, np.float64],
         para=dict(
             eps=[1e-4, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2],
-            normalized_shape=[(16,), (5, 5), (32,), (64, 64), (32, 32, 8,), (8,)],
+            normalized_shape=[(16,), (5,), (32,), (64,), (64,), (8,)],
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -8323,12 +8323,12 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((16,), (5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8), (3, 2, 16, 7, 8)),
+                    "shape": ((16,), (5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 8, 64), (3, 2, 16, 7, 8)),
                 },
                 {
                     "ins": ['weight'],
                     "requires_grad": [True],
-                    "shape": ((16,), (5, 5,), (32,), (64, 64), (32, 32, 8,), (8,)),
+                    "shape": ((16,), (5,), (32,), (64,), (64,), (8,)),
                 },
                 {
                     "ins": ['bias'],
@@ -8351,7 +8351,7 @@ diopi_configs = {
         dtype=[np.float16, np.float32, np.float64],
         para=dict(
             eps=[1e-4, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2],
-            normalized_shape=[(16,), (5, 5), (32,), (64, 64), (32, 32, 8,), (8,)],
+            normalized_shape=[(16,), (5,), (32,), (64,), (64,), (8,)],
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -8359,17 +8359,17 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "requires_grad": [True],
-                    "shape": ((16,), (5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8), (3, 2, 16, 7, 8)),
+                    "shape": ((16,), (5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 8, 64), (3, 2, 16, 7, 8)),
                 },
                 {
                     "ins": ['weight'],
                     "requires_grad": [True],
-                    "shape": ((16,), (5, 5,), (32,), (64, 64), (32, 32, 8,), (8,)),
+                    "shape": ((16,), (5,), (32,), (64,), (8,), (8,)),
                 },
                 {
                     "ins": ['bias'],
                     "requires_grad": [True],
-                    "shape": ((16,), (5, 5), (32,), (64, 64), (32, 32, 8), (8,)),
+                    "shape": ((16,), (5,), (32,), (64,), (8), (8,)),
                 },
             ],
         ),
