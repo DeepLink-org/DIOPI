@@ -5193,6 +5193,8 @@ def rotary_emb(input, cos, sin, conj, interleaved):
 
 
 def rms_norm(input, normalized_shape, weight, bias, eps):
+    if bias is not None:
+        assert isinstance(bias, Tensor), "bias must be a Tensor"
     call = "diopiRMSNorm"
     func = check_function(call)
     size = list(input.size().data)
@@ -5224,13 +5226,19 @@ def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_sha
     func = check_function(call)
     grad_input = Tensor(list(input.size().data), input.get_dtype())
     grad_weight = Tensor(list(weight.size().data), weight.get_dtype())
-    grad_bias = Tensor(list(bias.size().data), bias.get_dtype())
+    if bias is not None:
+        assert isinstance(bias, Tensor), "bias must be a Tensor"
+        grad_bias = raw_like(bias)
+    else:
+        grad_bias = None
     normalized_shape = Sizes(list(normalized_shape))
 
     ret = func(input.context(), grad_input, grad_weight, grad_bias, grad_outputs[0], input, weight, bias, inv_rms,
                normalized_shape, eps)
     check_returncode(ret)
-    return {'input': grad_input, 'weight': grad_weight}
+    if bias is None:
+        return {"input": grad_input, "weight": grad_weight}
+    return {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
 
 
 def multihead_attention(
