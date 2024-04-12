@@ -11,7 +11,7 @@ from gen_input import GenPolicy
 from conformance.utils import logger, get_data_from_file
 from conformance.db_operation import db_conn
 from einops import rearrange
-from conformance.customized_test import CustomizedTest
+from customized_test import CustomizedTest
 
 class GenOutputData(object):
     r'''
