@@ -1966,6 +1966,13 @@ device_configs = {
         ),
     ),
 
+    # default is currently skipped on camb
+    # The implementation does not handle the bias, which is None.
+    'rms_norm_default': dict(
+        name=['rms_norm'],
+        dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+    ),
+
     # multi-dimensional normalized_shape is currently skipped on camb
     'rms_norm_with_normalized_shape': dict(
         name=['rms_norm'],
