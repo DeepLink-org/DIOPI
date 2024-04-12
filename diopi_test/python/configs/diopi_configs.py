@@ -8332,48 +8332,50 @@ diopi_configs = {
                 },
                 {
                     "ins": ['bias'],
-                    "requires_grad": [False],
-                    "shape": ((16,), (5, 5), (32,), (64, 64), (32, 32, 8), (8,)),
+                    "requires_grad": [True],
+                    "shape": (None, None, None, None, None, None),
                 },
             ],
         ),
-        # saved_args=dict(grad_outputs=0, inv_rms=1),
         saved_args=dict(inv_rms=1),
         requires_backward=[0],
     ),
 
-    # # FIXME 空张量报错
-    # 'rms_norm_empty_tensor': dict(
-    #     name=['rms_norm'],
-    #     interface=['CustomizedTest'],
-    #     # FIXME fp16报错
-    #     # dtype=[np.float16, np.float32, np.float64],
-    #     dtype=[np.float32, np.float64],
-    #     para=dict(
-    #         eps=[-1e-2, 0, 1e-6,],
-    #         normalized_shape=[(0,), (5, 0), (0, 32,),],
-    #     ),
-    #     tensor_para=dict(
-    #         gen_fn='Genfunc.randn',
-    #         args=[
-    #             {
-    #                 "ins": ['input'],
-    #                 "requires_grad": [True],
-    #                 "shape": ((0,), (5, 0), (35, 0, 32),),
-    #             },
-    #             {
-    #                 "ins": ['weight'],
-    #                 "requires_grad": [True],
-    #                 "shape": ((0,), (5, 0,), (0, 32,),),
-    #             },
-    #             {
-    #                 "ins": ['bias'],
-    #                 "requires_grad": [False],
-    #                 "shape": ((0,), (5, 0), (0, 32,),),
-    #             },
-    #         ],
-    #     ),
-    # ),
+    'rms_norm_with_bias': dict(
+        name=['rms_norm'],
+        atol=1e-4,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-1,
+        interface=['CustomizedTest'],
+        dtype=[np.float16, np.float32, np.float64],
+        para=dict(
+            eps=[1e-4, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2],
+            normalized_shape=[(16,), (5, 5), (32,), (64, 64), (32, 32, 8,), (8,)],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((16,), (5, 5), (35, 125, 32), (16, 64, 64), (1, 32, 32, 8), (3, 2, 16, 7, 8)),
+                },
+                {
+                    "ins": ['weight'],
+                    "requires_grad": [True],
+                    "shape": ((16,), (5, 5,), (32,), (64, 64), (32, 32, 8,), (8,)),
+                },
+                {
+                    "ins": ['bias'],
+                    "requires_grad": [True],
+                    "shape": ((16,), (5, 5), (32,), (64, 64), (32, 32, 8), (8,)),
+                },
+            ],
+        ),
+        saved_args=dict(inv_rms=1),
+        requires_backward=[0],
+    ),
 
     'apply_penalty': dict(
         name=['apply_penalty'],
