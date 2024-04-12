@@ -65,8 +65,11 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto atInput = impl::aten::buildATen(input);
     auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
     auto atWeight = impl::aten::buildATen(weight);
-    // NOTE: bias在这里实际上没有使用
     ext::ops::rms_norm_forward(atInput, atNormalizedShape, atWeight, eps, atOut, atInvRMS);
+    if (bias) {
+        auto atBias = impl::aten::buildATen(bias);
+        atOut.add_(atBias);
+    }
 
     return diopiSuccess;
 }
@@ -77,15 +80,21 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     impl::aten::setCurStream(ctx);
     auto atGradInput = impl::aten::buildATen(gradInput);
     auto atGradWeight = impl::aten::buildATen(gradWeight);
-    auto atGradBias = impl::aten::buildATen(gradBias);
     auto atGradOutput = impl::aten::buildATen(gradOutput);
     auto atInvRMS = impl::aten::buildATen(invRMS);
     auto atInput = impl::aten::buildATen(input);
     auto atNormalizedShape = impl::aten::buildAtIntArray(normalized_shape);
     auto atWeight = impl::aten::buildATen(weight);
-    // NOTE: bias在这里实际上没有使用
     ext::ops::rms_norm_backward(atGradOutput, atInvRMS, atInput, atNormalizedShape, atWeight, eps, atGradInput, atGradWeight);
-
+    if (gradBias) {
+        int64_t dims = atInput.dim();
+        auto atGradBias = impl::aten::buildATen(gradBias);
+        std::vector<int64_t> sumDim;
+        for (int i = 0; i < dims - 1; ++i) {
+            sumDim.push_back(i);
+        }
+        at::sum_out(atGradBias, atGradOutput, sumDim);
+    }
     return diopiSuccess;
 }
 
