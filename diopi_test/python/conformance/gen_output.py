@@ -141,7 +141,6 @@ class GenTensor(object):
             del kwargs['input']
         if 'dtype' in kwargs.keys():
             kwargs['dtype'] = self.change_np_dtype_to_torch(kwargs['dtype'])
-        print("self_module = ", self.module)
         func_call = f"{self.module}.{self.func_name}(**kwargs)"
         self.output = eval(func_call)
         self.if_forward_success = True
