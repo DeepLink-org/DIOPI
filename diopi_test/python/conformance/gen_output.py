@@ -253,7 +253,10 @@ class CustomizedTest(object):
         return out
 
     def rms_norm(input, normalized_shape, weight, bias, eps):
-        dims = tuple(i for i in range(-1, -len(normalized_shape) - 1, -1))
+        if normalized_shape is not None:
+            dims = tuple(i for i in range(-1, -len(normalized_shape) - 1, -1))
+        else:
+            dims = -1
         variance = input.to(torch.float32).pow(2).mean(dims, keepdim=True)
         inv_rms = torch.rsqrt(variance + eps)
         input = input * inv_rms
