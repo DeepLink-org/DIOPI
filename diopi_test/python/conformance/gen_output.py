@@ -257,7 +257,7 @@ class CustomizedTest(object):
         variance = input.to(torch.float32).pow(2).mean(dims, keepdim=True)
         inv_rms = torch.rsqrt(variance + eps)
         input = input * inv_rms
-        out = weight * input + bias
+        out = weight * input + bias if bias is not None else weight * input
         return (out, inv_rms)
 
     def sort(input, dim, descending, stable=False):
