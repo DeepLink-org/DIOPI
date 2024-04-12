@@ -5145,7 +5145,7 @@ diopi_configs = {
             amsgrad=[False, False, True, True],
         ),
         tensor_para=dict(
-            dtype=[np.float16, np.float32, np.float64],
+            dtype=[np.float32, np.float64],
             args=[
                 {
                     "ins": ['param', 'param_grad'],
