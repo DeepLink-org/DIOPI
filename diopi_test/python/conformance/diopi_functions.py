@@ -145,9 +145,7 @@ def get_dtype(input: Union[Tensor, int, float]) -> Dtype:
         assert 0, "not supported type of input"
 
 
-def infer_tensor_scalar_common_dtype(
-    input: Tensor, other: Union[float, int]
-) -> Dtype:
+def infer_tensor_scalar_common_dtype(input: Tensor, other: Union[float, int]) -> Dtype:
     dtype1, dtype2 = get_dtype(input), get_dtype(other)
     if dtype1 in float_types:
         return dtype1
@@ -255,6 +253,7 @@ def ones(default_context, size):
     check_returncode(ret)
     return out
 
+
 def zeros(default_context, size):
     func = check_function("diopiZeros")
     size = Sizes(list(size))
@@ -263,11 +262,13 @@ def zeros(default_context, size):
     check_returncode(ret)
     return out
 
+
 def zero_(input):
     func = check_function("diopiZeroInp")
     ret = func(input.context(), input)
     check_returncode(ret)
     return input
+
 
 def unary_op(input, inplace, call, dtype=None) -> Tensor:
     if inplace:
@@ -303,9 +304,7 @@ def binary_op(input, other, inplace, call) -> Tensor:
     return out
 
 
-def binary_op_scalar(
-    input, other, inplace, call, alpha=None, dtype=None
-) -> Tensor:
+def binary_op_scalar(input, other, inplace, call, alpha=None, dtype=None) -> Tensor:
     args = "input.context(), "
     if dtype is None:
         dtype = common_dtype(input, other)
@@ -345,9 +344,7 @@ def softmax(input, dim, dtype=None):
         dim = 0
     if input.numel() == 0:
         return input
-    out = (
-        raw_like(input) if dtype is None else Tensor(input.size().data, dtype)
-    )
+    out = raw_like(input) if dtype is None else Tensor(input.size().data, dtype)
 
     func = check_function("diopiSoftmax")
     ret = func(input.context(), out, input, dim)
@@ -389,15 +386,11 @@ def silu_backward(input, grad_outputs, **kwargs) -> Tensor:
 
 
 def sqrt(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiSqrt", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiSqrt", promote_type(input, Dtype.float32))
 
 
 def rsqrt(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiRsqrt", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiRsqrt", promote_type(input, Dtype.float32))
 
 
 def neg(input, inplace=False) -> Tensor:
@@ -405,57 +398,39 @@ def neg(input, inplace=False) -> Tensor:
 
 
 def sin(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiSin", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiSin", promote_type(input, Dtype.float32))
 
 
 def cos(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiCos", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiCos", promote_type(input, Dtype.float32))
 
 
 def tanh(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiTanh", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiTanh", promote_type(input, Dtype.float32))
 
 
 def atan(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiAtan", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiAtan", promote_type(input, Dtype.float32))
 
 
 def exp(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiExp", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiExp", promote_type(input, Dtype.float32))
 
 
 def log(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiLog", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiLog", promote_type(input, Dtype.float32))
 
 
 def log2(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiLog2", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiLog2", promote_type(input, Dtype.float32))
 
 
 def log10(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiLog10", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiLog10", promote_type(input, Dtype.float32))
 
 
 def erf(input, inplace=False) -> Tensor:
-    return unary_op(
-        input, inplace, "diopiErf", promote_type(input, Dtype.float32)
-    )
+    return unary_op(input, inplace, "diopiErf", promote_type(input, Dtype.float32))
 
 
 def add(input, other, inplace=False, alpha=1) -> Tensor:
@@ -498,8 +473,14 @@ def equal(input, other) -> bool:
     PyCapsule_Destructor = ctypes.CFUNCTYPE(None, ctypes.py_object)
     PyCapsule_New = ctypes.pythonapi.PyCapsule_New
     PyCapsule_New.restype = ctypes.py_object
-    PyCapsule_New.argtypes = (ctypes.c_void_p, ctypes.c_char_p, PyCapsule_Destructor,)
-    capsule = PyCapsule_New(ctypes.c_void_p(ctypes.addressof(out)), None, PyCapsule_Destructor(0))
+    PyCapsule_New.argtypes = (
+        ctypes.c_void_p,
+        ctypes.c_char_p,
+        PyCapsule_Destructor,
+    )
+    capsule = PyCapsule_New(
+        ctypes.c_void_p(ctypes.addressof(out)), None, PyCapsule_Destructor(0)
+    )
     ret = func(input.context(), capsule, input, other)
     check_returncode(ret)
     return out.value
@@ -548,15 +529,11 @@ def div(input, other, inplace=False, rounding_mode=None) -> Tensor:
 
 
 def logical_and(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(
-        input, other, inplace, "diopiLogicalAnd", dtype=Dtype.bool
-    )
+    return binary_op_scalar(input, other, inplace, "diopiLogicalAnd", dtype=Dtype.bool)
 
 
 def logical_or(input, other, inplace=False) -> Tensor:
-    return binary_op_scalar(
-        input, other, inplace, "diopiLogicalOr", dtype=Dtype.bool
-    )
+    return binary_op_scalar(input, other, inplace, "diopiLogicalOr", dtype=Dtype.bool)
 
 
 def logical_not(input, inplace=False) -> Tensor:
@@ -612,9 +589,7 @@ def baddbmm(input, batch1, batch2, beta, alpha, inplace=False) -> Tensor:
             and size1[0] == size3[0]
             or size1[0] == 1
         ), "invalid args"
-        assert (
-            size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1
-        ), "invalid args"
+        assert size1[2] == size3[2] or size1[2] == 1 or size3[2] == 1, "invalid args"
     elif input_len == 2:
         assert (size1[1] == size3[2] or size1[1] == 1) and (
             size1[0] == size2[1] or size1[0] == 1
@@ -688,8 +663,7 @@ def matmul(input, other) -> Tensor:
         sizeI = [1] * (max_dim - len(sizeI)) + sizeI
         sizeO = [1] * (max_dim - len(sizeO)) + sizeO
         out_size = [
-            sizeI[i] if sizeI[i] > sizeO[i] else sizeO[i]
-            for i in range(max_dim - 2)
+            sizeI[i] if sizeI[i] > sizeO[i] else sizeO[i] for i in range(max_dim - 2)
         ] + [sizeI[-2], sizeO[-1]]
         out = Tensor(out_size, input.get_dtype())
     func = check_function("diopiMatmul")
@@ -716,9 +690,7 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
             args += "input, min, max"
         else:
             assert isinstance(min, (int, float)), "min must be Tensor or Value"
-            assert isinstance(
-                max, (int, float)
-            ), "min and max must have same type"
+            assert isinstance(max, (int, float)), "min and max must have same type"
             if isinstance(min, float) and input.get_dtype() in int_types:
                 convert_float = True
             call = call + "Scalar"
@@ -749,9 +721,7 @@ def clamp(input, min=None, max=None, inplace=False) -> Tensor:
     if inplace:
         if convert_float:
             input_np = input.numpy()
-            input = Tensor.from_numpy(
-                input_np.astype(to_numpy_dtype(Dtype.float32))
-            )
+            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
     else:
         if convert_float:
@@ -771,9 +741,7 @@ def clamp_min(input, min, inplace=False) -> Tensor:
     if inplace:
         if isinstance(min, float) and input.get_dtype() in int_types:
             input_np = input.numpy()
-            input = Tensor.from_numpy(
-                input_np.astype(to_numpy_dtype(Dtype.float32))
-            )
+            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
         call = call + "Inp"
     else:
@@ -803,9 +771,7 @@ def clamp_max(input, max, inplace=False) -> Tensor:
     if inplace:
         if isinstance(max, float) and input.get_dtype() in int_types:
             input_np = input.numpy()
-            input = Tensor.from_numpy(
-                input_np.astype(to_numpy_dtype(Dtype.float32))
-            )
+            input = Tensor.from_numpy(input_np.astype(to_numpy_dtype(Dtype.float32)))
         out = input
         call = call + "Inp"
     else:
@@ -957,9 +923,7 @@ def binary_cross_entropy_with_logits(
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiBCEWithLogits")
-    ret = func(
-        input.context(), out, input, target, weight, pos_weight, reduction_mode
-    )
+    ret = func(input.context(), out, input, target, weight, pos_weight, reduction_mode)
     check_returncode(ret)
     return out
 
@@ -1037,9 +1001,7 @@ def conv2d(
 
     sizeI = input.size().data
     sizeW = weight.size().data
-    assert (
-        len(sizeI) == 4 and len(sizeW) == 4
-    ), "input and weight must be 4d tensors"
+    assert len(sizeI) == 4 and len(sizeW) == 4, "input and weight must be 4d tensors"
 
     sizeO = []
     sizeO.append(sizeI[0])
@@ -1054,9 +1016,7 @@ def conv2d(
     for i in range(-2, 0):
         # equivalent kernel size
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
-        sizeO.append(
-            int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1
-        )
+        sizeO.append(int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
 
     stride = Sizes(list(stride))
     padding = Sizes(list(padding))
@@ -1109,17 +1069,11 @@ def avg_pool2d(
     for i in range(-2, 0):
         if ceil_mode:
             sizeO.append(
-                math.ceil(
-                    (sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]
-                )
-                + 1
+                math.ceil((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1
             )
         else:
             sizeO.append(
-                math.floor(
-                    (sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]
-                )
-                + 1
+                math.floor((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1
             )
 
     stride = Sizes(list(stride))
@@ -1185,9 +1139,7 @@ def max_pool2d(
         dilation = (dilation, dilation)
 
     for i in range(-2, 0):
-        tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (
-            dilation[i] - 1
-        )
+        tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
         tmp_size = (sizeI[i] - tmp_ker_size + 2 * padding[i]) / stride[i] + 1
         tmp_size = tmp_size if tmp_size > 1 else 1
         if ceil_mode:
@@ -1326,9 +1278,7 @@ def dropout_impl(
 
 
 def dropout(input, p=0.5, training=True, inplace=False, generator=None):
-    return dropout_impl(
-        input, input.size().data, p, training, inplace, generator
-    )
+    return dropout_impl(input, input.size().data, p, training, inplace, generator)
 
 
 def dropout2d(input, p=0.5, training=True, inplace=False, generator=None):
@@ -1410,13 +1360,9 @@ def embedding(
     assert len(sizeW) == 2, "Shape of Weight should be 2"
     if padding_idx is not None:
         if padding_idx > 0:
-            assert (
-                padding_idx < sizeW[0]
-            ), "Padding_idx must be within num_embeddings"
+            assert padding_idx < sizeW[0], "Padding_idx must be within num_embeddings"
         elif padding_idx < 0:
-            assert (
-                padding_idx >= -sizeW[0]
-            ), "Padding_idx must be within num_embeddings"
+            assert padding_idx >= -sizeW[0], "Padding_idx must be within num_embeddings"
             padding_idx = sizeW[0] + padding_idx
     else:
         padding_idx = -1
@@ -1454,9 +1400,7 @@ def tril(input, diagonal=0) -> Tensor:
 
 
 def cat(tensors, dim=0) -> Tensor:
-    assert isinstance(
-        tensors, (list, tuple)
-    ), "tensors must be a list or tuple"
+    assert isinstance(tensors, (list, tuple)), "tensors must be a list or tuple"
     insNum = len(tensors)
     sum = 0
     c_tensors = []
@@ -1474,9 +1418,7 @@ def cat(tensors, dim=0) -> Tensor:
 
 
 def stack(tensors, dim=0) -> Tensor:
-    assert isinstance(
-        tensors, (list, tuple)
-    ), "tensors must be a list or tuple"
+    assert isinstance(tensors, (list, tuple)), "tensors must be a list or tuple"
     insNum = len(tensors)
     outNum = insNum + 1
     sizeI = tensors[0].size().data
@@ -1502,9 +1444,7 @@ def sort(input, dim=-1, descending=False, stable=None):
     ret = (
         func(input.context(), vals, indices, input, dim, descending)
         if stable is None
-        else func(
-            input.context(), vals, indices, input, dim, descending, stable
-        )
+        else func(input.context(), vals, indices, input, dim, descending, stable)
     )
     check_returncode(ret)
     # if not stable, need to reconstruct indices and use "input[indices]" to check
@@ -1541,9 +1481,7 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
     indices = Tensor(sizeI, from_numpy_dtype(glob_vars.int_type))
 
     func = check_function("diopiTopk")
-    ret = func(
-        input.context(), values, indices, input, k, dim, largest, sorted
-    )
+    ret = func(input.context(), values, indices, input, k, dim, largest, sorted)
     check_returncode(ret)
     return values, indices
 
@@ -1588,9 +1526,7 @@ def split(tensor, split_size_or_sections, dim=0):
     is_int = isinstance(split_size_or_sections, int)
 
     while sum > 0:
-        sizeI[dim] = (
-            split_size_or_sections if is_int else split_size_or_sections[idx]
-        )
+        sizeI[dim] = split_size_or_sections if is_int else split_size_or_sections[idx]
         sizeI[dim] = sizeI[dim] if sum > sizeI[dim] else sum
         idx += 1
         sum -= sizeI[dim]
@@ -1603,9 +1539,7 @@ def split(tensor, split_size_or_sections, dim=0):
         c_outs.append(TensorP(outs[i]))
 
     splitSizes = Sizes(list(splitSizes))
-    assert (
-        sum == 0
-    ), "split_size_or_sections should be compatible with tensor shape"
+    assert sum == 0, "split_size_or_sections should be compatible with tensor shape"
     func = check_function("diopiSplitWithSizes")
     ret = func(tensor.context(), list(c_outs), idx, tensor, splitSizes, dim)
     check_returncode(ret)
@@ -1630,9 +1564,7 @@ def pow(input=None, self=None, exponent=None, inplace=False) -> Tensor:
         self = Scalar(self)
         ret = func(exponent.context(), out, self, exponent)
     elif not isinstance(exponent, Tensor):
-        assert isinstance(
-            input, Tensor
-        ), "input must be tensor when exponent is scalar"
+        assert isinstance(input, Tensor), "input must be tensor when exponent is scalar"
         temp_exponent = Scalar(exponent)
         if inplace:
             out_dtype = pow_dtype(input, exponent)
@@ -1683,15 +1615,9 @@ def where(condition, input, other) -> Tensor:
     return out
 
 
-def clip_grad_norm_(
-    tensors, max_norm, norm_type=2.0, error_if_nonfinite=False
-):
-    assert isinstance(
-        max_norm, (int, float)
-    ), "max_norm must be a int or float"
-    assert isinstance(
-        norm_type, (int, float)
-    ), "norm_type must be a int or float"
+def clip_grad_norm_(tensors, max_norm, norm_type=2.0, error_if_nonfinite=False):
+    assert isinstance(max_norm, (int, float)), "max_norm must be a int or float"
+    assert isinstance(norm_type, (int, float)), "norm_type must be a int or float"
 
     if isinstance(tensors, Tensor):
         ctx = tensors.context()
@@ -1765,11 +1691,7 @@ def batch_norm(
 def batch_norm_stats(input, eps):
     func = check_function("diopiBatchNormStats")
     # cuda accumulate dtype mapping
-    dtype = (
-        Dtype.float32
-        if input.get_dtype() == Dtype.float16
-        else input.get_dtype()
-    )
+    dtype = Dtype.float32 if input.get_dtype() == Dtype.float16 else input.get_dtype()
     mean = Tensor(Sizes(list([input.size().data[1]])), dtype)
     invstd = Tensor(Sizes(list([input.size().data[1]])), dtype)
     ret = func(input.context(), mean, invstd, input, eps)
@@ -1815,22 +1737,16 @@ def batch_norm_backward_reduce(
     func = check_function("diopiBatchNormBackwardReduce")
     if input_g:
         sum_dy = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
-        sum_dy_xmu = Tensor(
-            Sizes(list([input.size().data[1]])), input.get_dtype()
-        )
+        sum_dy_xmu = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
     else:
         sum_dy = None
         sum_dy_xmu = None
     if weight_g:
-        grad_weight = Tensor(
-            Sizes(list([input.size().data[1]])), input.get_dtype()
-        )
+        grad_weight = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
     else:
         grad_weight = None
     if weight_g:
-        grad_bias = Tensor(
-            Sizes(list([input.size().data[1]])), input.get_dtype()
-        )
+        grad_bias = Tensor(Sizes(list([input.size().data[1]])), input.get_dtype())
     else:
         grad_bias = None
     ret = func(
@@ -1888,9 +1804,7 @@ def log_softmax(input, dim=None, dtype=None):
         dim = 0
     if input.numel() == 0:
         return input
-    out = (
-        raw_like(input) if dtype is None else Tensor(input.size().data, dtype)
-    )
+    out = raw_like(input) if dtype is None else Tensor(input.size().data, dtype)
 
     func = check_function("diopiLogSoftmax")
     ret = func(input.context(), out, input, dim)
@@ -1991,9 +1905,7 @@ def sum(input, dim=None, keepdim=False, dtype=None) -> Tensor:
         isinstance(dim, (int, list, tuple)) or dim is None
     ), "dim should be int or list"
     func = check_function("diopiSum")
-    out_dtype = (
-        dtype if dtype is not None else promote_type(input, Dtype.int64)
-    )
+    out_dtype = dtype if dtype is not None else promote_type(input, Dtype.int64)
     dim, out = reduce_op_process(input, dim, keepdim, out_dtype)
     dim1 = Sizes(list(dim))
     ret = func(input.context(), out, input, dim1)
@@ -2060,6 +1972,7 @@ def all(input, dim=None, keepdim=False) -> Tensor:
     check_returncode(ret)
     return out
 
+
 # todo: impl for diopiNLLLossV2
 def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
     assert reduction in [
@@ -2090,6 +2003,7 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
     check_returncode(ret)
     return out
 
+
 def sigmoid_focal_loss(
     inputs, targets, alpha=0.25, gamma=2, reduction="none"
 ) -> Tensor:
@@ -2109,9 +2023,7 @@ def sigmoid_focal_loss(
 
     reduction_mode = convert_reduction(reduction)
     func = check_function("diopiSigmoidFocalLoss")
-    ret = func(
-        inputs.context(), out, inputs, targets, alpha, gamma, reduction_mode
-    )
+    ret = func(inputs.context(), out, inputs, targets, alpha, gamma, reduction_mode)
     check_returncode(ret)
     return out
 
@@ -2186,9 +2098,7 @@ def slice_op(input, dim, index) -> Tensor:
     out = Tensor(sizeI, input.get_dtype())
 
     func = check_function("diopiSlice")
-    ret = func(
-        input.context(), out, input, dim, index.start, index.stop, index.step
-    )
+    ret = func(input.context(), out, input, dim, index.start, index.stop, index.step)
 
     check_returncode(ret)
     return out
@@ -2234,7 +2144,6 @@ def sgd(
     weight_decay=0,
     nesterov=False,
 ):
-    # note: buf, param_grad are mutable
     func = check_function("diopiSgd")
 
     arg_buf = buf if buf is None else buf
@@ -2253,9 +2162,7 @@ def sgd(
     return param, buf
 
 
-def adaptive_max_pool2d_backward(
-    input, grad_outputs, output_size, **kwargs
-) -> Tensor:
+def adaptive_max_pool2d_backward(input, grad_outputs, output_size, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     _, indices = adaptive_max_pool2d(input, output_size, return_indices=True)
@@ -2449,9 +2356,7 @@ def conv2d_backward(
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     sizeI = input.size().data
     sizeW = weight.size().data
-    assert (
-        len(sizeI) == 4 and len(sizeW) == 4
-    ), "input and weight must be 4d tensors"
+    assert len(sizeI) == 4 and len(sizeW) == 4, "input and weight must be 4d tensors"
 
     if isinstance(stride, int):
         stride = (stride, stride)
@@ -2510,9 +2415,7 @@ def conv_transpose2d_backward(
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     sizeI = input.size().data
     sizeW = weight.size().data
-    assert (
-        len(sizeI) == 4 and len(sizeW) == 4
-    ), "input and weight must be 4d tensors"
+    assert len(sizeI) == 4 and len(sizeW) == 4, "input and weight must be 4d tensors"
 
     if isinstance(stride, int):
         stride = (stride, stride)
@@ -2569,9 +2472,7 @@ def hardtanh_backward(
     max_val = Scalar(max_val)
 
     func = check_function("diopiHardtanhBackward")
-    ret = func(
-        input.context(), grad_input, grad_outputs[0], input, min_val, max_val
-    )
+    ret = func(input.context(), grad_input, grad_outputs[0], input, min_val, max_val)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -2674,9 +2575,7 @@ def embedding_backward(
     grad_weight = Tensor(grad_weight_shape, grad_output.get_dtype())
     if padding_idx is not None:
         if padding_idx > 0:
-            assert (
-                padding_idx < num_weight
-            ), "Padding_idx must be within num_embeddings"
+            assert padding_idx < num_weight, "Padding_idx must be within num_embeddings"
         elif padding_idx < 0:
             assert (
                 padding_idx >= -num_weight
@@ -2736,9 +2635,7 @@ def index_select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     inputSize = input.size()
 
     func = check_function("diopiIndexSelectBackward")
-    ret = func(
-        input.context(), grad_input, grad_outputs[0], inputSize, dim, index
-    )
+    ret = func(input.context(), grad_input, grad_outputs[0], inputSize, dim, index)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -2749,9 +2646,7 @@ def select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     inputSize = input.size()
 
     func = check_function("diopiSelectBackward")
-    ret = func(
-        input.context(), grad_input, grad_outputs[0], inputSize, dim, index
-    )
+    ret = func(input.context(), grad_input, grad_outputs[0], inputSize, dim, index)
     check_returncode(ret)
     return {"input": grad_input}
 
@@ -2870,6 +2765,7 @@ def binary_cross_entropy_with_logits_backward(
     check_returncode(ret)
     return {"input": grad_input}
 
+
 # todo: impl for diopiNLLLossV2Backward
 def nll_loss_backward(
     input,
@@ -2901,6 +2797,7 @@ def nll_loss_backward(
     )
     check_returncode(ret)
     return {"input": grad_input}
+
 
 def max_pool2d_backward(
     input,
@@ -3012,8 +2909,7 @@ def arange(end, start=0, step=1, dtype=None) -> Tensor:
             dtype = from_numpy_dtype(glob_vars.int_type)
 
     numel = int(
-        (end - start) / step
-        + (((end - start) / step) > int((end - start) / step))
+        (end - start) / step + (((end - start) / step) > int((end - start) / step))
     )
     out = Tensor((numel,), dtype)
 
@@ -3034,8 +2930,7 @@ def randperm(n: int, dtype=None, generator=None) -> Tensor:
     return out
 
 
-def uniform(input, start=0, end=1, generator=None,
-            inplace=True) -> Tensor:
+def uniform(input, start=0, end=1, generator=None, inplace=True) -> Tensor:
     assert inplace, "DIOPI now doesn't support uniform without inplace"
     func = check_function("diopiUniformInp")
     ret = func(input.context(), input, start, end, generator)
@@ -3118,7 +3013,6 @@ def adamw(
     step,
     amsgrad=False,
 ):
-    # note: buf, param_grad are mutable
     func = check_function("diopiAdamW")
     ret = func(
         param.context(),
@@ -3136,7 +3030,7 @@ def adamw(
         amsgrad,
     )
     check_returncode(ret)
-    return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
+    return param, exp_avg, exp_avg_sq, max_exp_avg_sq
 
 
 def adam(
@@ -3153,7 +3047,6 @@ def adam(
     step,
     amsgrad=False,
 ):
-    # note: buf, param_grad are mutable
     func = check_function("diopiAdam")
     ret = func(
         param.context(),
@@ -3171,13 +3064,10 @@ def adam(
         amsgrad,
     )
     check_returncode(ret)
-    return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
+    return param, exp_avg, exp_avg_sq, max_exp_avg_sq
 
 
-def adadelta(
-    param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_decay
-):
-    # note: buf, param_grad are mutable
+def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_decay):
     func = check_function("diopiAdadelta")
     ret = func(
         param.context(),
@@ -3191,7 +3081,7 @@ def adadelta(
         weight_decay,
     )
     check_returncode(ret)
-    return param, param_grad, square_avg, acc_delta
+    return param, square_avg, acc_delta
 
 
 def rmsprop(
@@ -3223,7 +3113,7 @@ def rmsprop(
         centered,
     )
     check_returncode(ret)
-    return param, param_grad, square_avg, grad_avg, momentum_buffer
+    return param, square_avg, grad_avg, momentum_buffer
 
 
 def conv_transpose2d(
@@ -3241,9 +3131,7 @@ def conv_transpose2d(
 
     sizeI = input.size().data
     sizeW = list(weight.size().data)
-    assert (
-        len(sizeI) == 4 and len(sizeW) == 4
-    ), "input and weight must be 4d tensors"
+    assert len(sizeI) == 4 and len(sizeW) == 4, "input and weight must be 4d tensors"
 
     sizeO = []
     sizeO.append(sizeI[0])
@@ -3453,9 +3341,7 @@ def bitwise_and(input, other, inplace=False):
     else:
         assert isinstance(other, int), "other must be of integral or boolean"
     out_dtype = common_dtype(input, other)
-    return binary_op_scalar(
-        input, other, inplace, "diopiBitwiseAnd", dtype=out_dtype
-    )
+    return binary_op_scalar(input, other, inplace, "diopiBitwiseAnd", dtype=out_dtype)
 
 
 def bitwise_or(input, other, inplace=False):
@@ -3479,9 +3365,7 @@ def bitwise_or(input, other, inplace=False):
     else:
         assert isinstance(other, int), "other must be of integral or boolean"
     out_dtype = common_dtype(input, other)
-    return binary_op_scalar(
-        input, other, inplace, "diopiBitwiseOr", dtype=out_dtype
-    )
+    return binary_op_scalar(input, other, inplace, "diopiBitwiseOr", dtype=out_dtype)
 
 
 def argmax(input, dim=None, keepdim=False):
@@ -3491,7 +3375,7 @@ def argmax(input, dim=None, keepdim=False):
         if keepdim:
             sizeO[dim] = 1
         else:
-            sizeO = sizeO[:dim] + sizeO[dim + 1:]
+            sizeO = sizeO[:dim] + sizeO[dim + 1 :]
     else:
         sizeO = [1]
 
@@ -3596,9 +3480,7 @@ def conv3d(
 
     sizeI = input.size().data
     sizeW = list(weight.size().data)
-    assert (
-        len(sizeI) == 5 and len(sizeW) == 5
-    ), "input and weight must be 4d tensors"
+    assert len(sizeI) == 5 and len(sizeW) == 5, "input and weight must be 4d tensors"
 
     sizeO = []
     sizeO.append(sizeI[0])
@@ -3613,9 +3495,7 @@ def conv3d(
     for i in range(-3, 0):
         # equivalent kernel size
         sizeW[i] += (sizeW[i] - 1) * (dilation[i] - 1)
-        sizeO.append(
-            int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1
-        )
+        sizeO.append(int((sizeI[i] - sizeW[i] + 2 * padding[i]) / stride[i]) + 1)
 
     stride = Sizes(list(stride))
     padding = Sizes(list(padding))
@@ -3653,9 +3533,7 @@ def conv3d_backward(
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     sizeI = input.size().data
     sizeW = weight.size().data
-    assert (
-        len(sizeI) == 5 and len(sizeW) == 5
-    ), "input and weight must be 5d tensors"
+    assert len(sizeI) == 5 and len(sizeW) == 5, "input and weight must be 5d tensors"
 
     if isinstance(stride, int):
         stride = (stride, stride, stride)
@@ -4070,9 +3948,7 @@ def adaptive_max_pool3d(input, output_size, return_indices=False):
     return out
 
 
-def adaptive_max_pool3d_backward(
-    input, grad_outputs, output_size, **kwargs
-) -> Tensor:
+def adaptive_max_pool3d_backward(input, grad_outputs, output_size, **kwargs) -> Tensor:
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
     grad_input = raw_like(input)
     _, indices = adaptive_max_pool3d(input, output_size, return_indices=True)
@@ -4112,9 +3988,7 @@ def max_pool3d(
         dilation = (dilation, dilation, dilation)
 
     for i in range(-3, 0):
-        tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (
-            dilation[i] - 1
-        )
+        tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
         tmp_size = (sizeI[i] - tmp_ker_size + 2 * padding[i]) / stride[i] + 1
         tmp_size = tmp_size if tmp_size > 1 else 1
         if ceil_mode:
@@ -4315,9 +4189,7 @@ def ctc_loss(
     if reduction == "none":
         sizeO = (sizeI[1],)
     neg_log_likelihood = Tensor((sizeI[1],), log_probs.get_dtype())
-    log_alpha = Tensor(
-        (sizeI[1], sizeI[0], max_target_length), log_probs.get_dtype()
-    )
+    log_alpha = Tensor((sizeI[1], sizeI[0], max_target_length), log_probs.get_dtype())
     out = Tensor(sizeO, log_probs.get_dtype())
 
     func = check_function("diopiCTCLoss")
@@ -4374,9 +4246,9 @@ def ctc_loss_backward(
     )
     check_returncode(ret)
     return {
-        "log_probs": log_softmax_backward(
-            log_probs, [grad_input], log_probs_, 2
-        )["input"]
+        "log_probs": log_softmax_backward(log_probs, [grad_input], log_probs_, 2)[
+            "input"
+        ]
     }
 
 
@@ -4425,9 +4297,7 @@ def index_put(
     return out
 
 
-def scatter(
-    input, dim, index, src=None, value=None, reduce=None, inplace=False
-):
+def scatter(input, dim, index, src=None, value=None, reduce=None, inplace=False):
     assert isinstance(dim, int), "dim must be int"
     # if input.size().len != 0 and index.size().len != 0:
     #     assert input.size().len == index.size().len, \
@@ -4460,9 +4330,7 @@ def scatter(
         if call_scalar:
             call = call + "Scalar"
         func = check_function(call)
-        ret = func(
-            input.context(), input, dim, src, index, reduce.encode("UTF-8")
-        )
+        ret = func(input.context(), input, dim, src, index, reduce.encode("UTF-8"))
     else:
         out = raw_like(input)
         if call_scalar:
@@ -4532,9 +4400,7 @@ def interpolate_backward(
 
     if mode == "nearest":
         func = check_function("diopiUpsampleNearestBackward")
-        ret = func(
-            input.context(), grad_input, grad_outputs[0], out_size, in_size
-        )
+        ret = func(input.context(), grad_input, grad_outputs[0], out_size, in_size)
     else:
         func = check_function("diopiUpsampleLinearBackward")
         ret = func(
@@ -4583,9 +4449,7 @@ def pad(input, pad, mode="constant", value=None):
     return out
 
 
-def unique(
-    input, sorted=True, return_inverse=False, return_counts=False, dim=None
-):
+def unique(input, sorted=True, return_inverse=False, return_counts=False, dim=None):
     out_tensor = Tensor()
     out_ptr = TensorP(out_tensor)
     if return_inverse:
@@ -4642,9 +4506,7 @@ def unique(
 
 def prod(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     assert isinstance(dim, (int)) or dim is None, "dim should be int"
-    out_dtype = (
-        dtype if dtype is not None else promote_type(input, Dtype.int64)
-    )
+    out_dtype = dtype if dtype is not None else promote_type(input, Dtype.int64)
 
     _, out = reduce_op_process(input, dim, keepdim, out_dtype)
 
@@ -4747,12 +4609,7 @@ def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
     for i in range(2):
         num_blocks *= (
             int(
-                (
-                    sizeI[i + 2]
-                    + 2 * padding[i]
-                    - dilation[i] * (kernel_size[i] - 1)
-                    - 1
-                )
+                (sizeI[i + 2] + 2 * padding[i] - dilation[i] * (kernel_size[i] - 1) - 1)
                 / stride[i]
             )
             + 1
@@ -4769,16 +4626,12 @@ def im2col(input, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
 
     out = Tensor(sizeO, input.get_dtype())
     func = check_function("diopiIm2Col")
-    ret = func(
-        input.context(), out, input, kernel_size, dilation, padding, stride
-    )
+    ret = func(input.context(), out, input, kernel_size, dilation, padding, stride)
     check_returncode(ret)
     return out
 
 
-def col2im(
-    input, output_size, kernel_size, dilation=1, padding=0, stride=1
-) -> Tensor:
+def col2im(input, output_size, kernel_size, dilation=1, padding=0, stride=1) -> Tensor:
     sizeI = input.size().data
     assert len(sizeI) == 3, "only support 3d tensor"
     if isinstance(output_size, int):
@@ -4848,9 +4701,7 @@ def cholesky_ex_backward(input, grad_outputs, output, upper=False, **kwargs):
     return {"input": grad_input}
 
 
-def triangular_solve(
-    input, A, upper=True, transpose=False, unitriangular=False
-):
+def triangular_solve(input, A, upper=True, transpose=False, unitriangular=False):
     sizeA = list(A.size().data)
     sizeI = list(input.size().data)
     sizeO = sizeA if len(sizeA) > len(sizeI) else sizeI
@@ -4972,9 +4823,7 @@ def normal_(input, mean, std, shape=None, generator=None) -> Tensor:
 
 
 def meshgrid(tensors, shape=None):
-    assert isinstance(
-        tensors, (list, tuple)
-    ), "tensors must be a list or tuple"
+    assert isinstance(tensors, (list, tuple)), "tensors must be a list or tuple"
     inputsNum = len(tensors)
     c_tensors = []
     co_tensors = []
@@ -5006,14 +4855,10 @@ def multinomial(input, num_samples, replacement, generator=None) -> Tensor:
     call = "diopiMultinomial"
     func = check_function(call)
     if len(input.size().data) == 2:
-        out = Tensor(
-            size=(input.size().data[0], num_samples), dtype=Dtype.int64
-        )
+        out = Tensor(size=(input.size().data[0], num_samples), dtype=Dtype.int64)
     if len(input.size().data) == 1:
         out = Tensor(size=(num_samples,), dtype=Dtype.int64)
-    ret = func(
-        input.context(), out, input, num_samples, replacement, generator
-    )
+    ret = func(input.context(), out, input, num_samples, replacement, generator)
     check_returncode(ret)
     return out
 
@@ -5138,6 +4983,7 @@ def amax(input, dim, keepdim) -> Tensor:
     check_returncode(ret)
     return out
 
+
 def vector_norm(input, ord=2, dim=None, keepdim=False, dtype=None):
     call = "diopiLinalgVecNorm"
     func = check_function(call)
@@ -5148,6 +4994,7 @@ def vector_norm(input, ord=2, dim=None, keepdim=False, dtype=None):
     ret = func(input.context(), out, input, ord, dimout, keepdim)
     check_returncode(ret)
     return out
+
 
 def linalgqr(input, mode):
     call = "diopiLinalgQR"
@@ -5201,7 +5048,7 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     inv_rms_size[-1] = 1
     inv_dtype = input.get_dtype()
     # float32 for float16
-    if (inv_dtype == Dtype.float16):
+    if inv_dtype == Dtype.float16:
         inv_dtype = Dtype.float32
     inv_rms = Tensor(inv_rms_size, inv_dtype)
     normalized_shape = Sizes(list(normalized_shape))
@@ -5219,7 +5066,9 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     return (out, inv_rms)
 
 
-def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_shape, eps):
+def rms_norm_backward(
+    grad_outputs, input, weight, bias, inv_rms, normalized_shape, eps
+):
     call = "diopiRMSNormBackward"
     func = check_function(call)
     grad_input = Tensor(list(input.size().data), input.get_dtype())
@@ -5227,10 +5076,21 @@ def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_sha
     grad_bias = Tensor(list(bias.size().data), bias.get_dtype())
     normalized_shape = Sizes(list(normalized_shape))
 
-    ret = func(input.context(), grad_input, grad_weight, grad_bias, grad_outputs[0], input, weight, bias, inv_rms,
-               normalized_shape, eps)
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_weight,
+        grad_bias,
+        grad_outputs[0],
+        input,
+        weight,
+        bias,
+        inv_rms,
+        normalized_shape,
+        eps,
+    )
     check_returncode(ret)
-    return {'input': grad_input, 'weight': grad_weight}
+    return {"input": grad_input, "weight": grad_weight}
 
 
 def multihead_attention(
@@ -5259,7 +5119,10 @@ def multihead_attention(
             debug_attn_mask,
         )
     except RuntimeError as rte:
-        if "unable to call flash mha_fwd: DIOPI is built without flash-attention" == rte.args[0]:
+        if (
+            "unable to call flash mha_fwd: DIOPI is built without flash-attention"
+            == rte.args[0]
+        ):
             raise FunctionNotImplementedError
         else:
             raise RuntimeError("execute diopiMultiHeadAttention failed!")
@@ -5278,8 +5141,8 @@ def multihead_attention_backward(
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
-    softmax_lse = GLOBAL_STATE.pop('multihead_attention_softmax_lse')
-    generator = GLOBAL_STATE.pop('multihead_attention_generator')
+    softmax_lse = GLOBAL_STATE.pop("multihead_attention_softmax_lse")
+    generator = GLOBAL_STATE.pop("multihead_attention_generator")
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
     try:
         ret = func(
@@ -5296,32 +5159,68 @@ def multihead_attention_backward(
             softmax_scale,
             grad_q,
             grad_k,
-            grad_v
+            grad_v,
         )
     except RuntimeError as rte:
-        if "unable to call flash mha_bwd: DIOPI is built without flash-attention" == rte.args[0]:
+        if (
+            "unable to call flash mha_bwd: DIOPI is built without flash-attention"
+            == rte.args[0]
+        ):
             raise FunctionNotImplementedError
         else:
             raise RuntimeError("execute diopiMultiHeadAttentionBackward failed!")
     else:
         check_returncode(ret)
-        return {'q': grad_q, 'k': grad_k, 'v': grad_v}
+        return {"q": grad_q, "k": grad_k, "v": grad_v}
 
 
-def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale, generator=None):
+def multihead_attention_varlen(
+    q,
+    k,
+    v,
+    cu_seqlens,
+    max_seqlen,
+    dropout_p,
+    is_causal,
+    return_debug_mask,
+    scale,
+    generator=None,
+):
     call = "diopiMultiHeadAttentionVarLen"
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    softmax_lse = Tensor([len(cu_seqlens) - 1, q_size[1], max_seqlen], dtype=Dtype.float32)
+    softmax_lse = Tensor(
+        [len(cu_seqlens) - 1, q_size[1], max_seqlen], dtype=Dtype.float32
+    )
     cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
     debug_attn_mask = Tensor([0], q.get_dtype())
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
 
     try:
-        ret = func(q.context(), q, k, v, cu_seqlens, cu_seqlens, max_seqlen, max_seqlen, dropout_p, is_causal, return_debug_mask, softmax_scale, out, softmax_lse, generator, debug_attn_mask)
+        ret = func(
+            q.context(),
+            q,
+            k,
+            v,
+            cu_seqlens,
+            cu_seqlens,
+            max_seqlen,
+            max_seqlen,
+            dropout_p,
+            is_causal,
+            return_debug_mask,
+            softmax_scale,
+            out,
+            softmax_lse,
+            generator,
+            debug_attn_mask,
+        )
     except RuntimeError as rte:
-        if "unable to call flash mha_varlen_fwd: DIOPI is built without flash-attention" == rte.args[0]:
+        if (
+            "unable to call flash mha_varlen_fwd: DIOPI is built without flash-attention"
+            == rte.args[0]
+        ):
             raise FunctionNotImplementedError
         else:
             raise RuntimeError("execute diopiMultiHeadAttentionVarLen failed!")
@@ -5333,16 +5232,26 @@ def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_ca
 
 
 def multihead_attention_varlen_backward(
-    q, k, v, cu_seqlens, max_seqlen, out, grad_outputs, dropout_p, is_causal, scale, **kwargs
+    q,
+    k,
+    v,
+    cu_seqlens,
+    max_seqlen,
+    out,
+    grad_outputs,
+    dropout_p,
+    is_causal,
+    scale,
+    **kwargs,
 ):
     call = "diopiMultiHeadAttentionVarLenBackward"
     func = check_function(call)
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
-    softmax_lse = GLOBAL_STATE.pop('multihead_attention_varlen_softmax_lse')
+    softmax_lse = GLOBAL_STATE.pop("multihead_attention_varlen_softmax_lse")
     cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens, dtype=np.int32))
-    generator = GLOBAL_STATE.pop('multihead_attention_varlen_generator')
+    generator = GLOBAL_STATE.pop("multihead_attention_varlen_generator")
     softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not scale else scale
     try:
         ret = func(
@@ -5363,19 +5272,25 @@ def multihead_attention_varlen_backward(
             softmax_scale,
             grad_q,
             grad_k,
-            grad_v
+            grad_v,
         )
     except RuntimeError as rte:
-        if "unable to call flash mha_varlen_bwd: DIOPI is built without flash-attention" == rte.args[0]:
+        if (
+            "unable to call flash mha_varlen_bwd: DIOPI is built without flash-attention"
+            == rte.args[0]
+        ):
             raise FunctionNotImplementedError
         else:
             raise RuntimeError("execute diopiMultiHeadAttentionVarLenBackward failed!")
     else:
         check_returncode(ret)
-        return {'q': grad_q, 'k': grad_k, 'v': grad_v}
+        return {"q": grad_q, "k": grad_k, "v": grad_v}
+
 
 # todo: impl for diopiFlashAttentionV2
-def flash_attention_v1(q, k, v, p_dropout, softmax_scale, is_causal, head_num, input_layout):
+def flash_attention_v1(
+    q, k, v, p_dropout, softmax_scale, is_causal, head_num, input_layout
+):
     call = "diopiFlashAttention"
     func = check_function(call)
     out = raw_like(q)
@@ -5435,18 +5350,32 @@ def flash_attention_v1(q, k, v, p_dropout, softmax_scale, is_causal, head_num, i
     GLOBAL_STATE["flash_attention_softmax_out"] = softmax_out
     return out
 
-def flash_attention_v1_backward(q, k, v, out, grad_outputs, p_dropout, softmax_scale, is_causal, head_num, input_layout):
+
+def flash_attention_v1_backward(
+    q,
+    k,
+    v,
+    out,
+    grad_outputs,
+    p_dropout,
+    softmax_scale,
+    is_causal,
+    head_num,
+    input_layout,
+):
     call = "diopiFlashAttentionBackward"
     func = check_function(call)
-    assert p_dropout >=0 and p_dropout <=1, "The p_dropout value must be in range of [0, 1]"
+    assert (
+        p_dropout >= 0 and p_dropout <= 1
+    ), "The p_dropout value must be in range of [0, 1]"
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
-    attention_mask = GLOBAL_STATE.pop('flash_attention_attention_mask')
-    dropout_mask = GLOBAL_STATE.pop('flash_attention_dropout_mask')
-    softmax_max = GLOBAL_STATE.pop('flash_attention_softmax_max')
-    softmax_sum = GLOBAL_STATE.pop('flash_attention_softmax_sum')
-    softmax_out = GLOBAL_STATE.pop('flash_attention_softmax_out')
+    attention_mask = GLOBAL_STATE.pop("flash_attention_attention_mask")
+    dropout_mask = GLOBAL_STATE.pop("flash_attention_dropout_mask")
+    softmax_max = GLOBAL_STATE.pop("flash_attention_softmax_max")
+    softmax_sum = GLOBAL_STATE.pop("flash_attention_softmax_sum")
+    softmax_out = GLOBAL_STATE.pop("flash_attention_softmax_out")
     if input_layout == "SBH":
         head_dim = q.shape().data[-1] / head_num
     elif input_layout == "BSH":
@@ -5456,9 +5385,29 @@ def flash_attention_v1_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     elif input_layout == "BSND":
         head_dim = q.shape().data[-1]
     softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
-    ret = func(q.context(), grad_q, grad_k, grad_v, grad_outputs[0], q, k, v, out, attention_mask, dropout_mask, softmax_max, softmax_sum, softmax_out, p_dropout, softmax_scale, head_num, input_layout)
+    ret = func(
+        q.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        out,
+        attention_mask,
+        dropout_mask,
+        softmax_max,
+        softmax_sum,
+        softmax_out,
+        p_dropout,
+        softmax_scale,
+        head_num,
+        input_layout,
+    )
     check_returncode(ret)
-    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
+    return {"q": grad_q, "k": grad_k, "v": grad_v}
+
 
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
@@ -5476,7 +5425,10 @@ def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     check_returncode(ret)
     return out
 
-def scaled_masked_softmax_backward(grad_outputs, out, input, mask, scale, fixed_triu_mask):
+
+def scaled_masked_softmax_backward(
+    grad_outputs, out, input, mask, scale, fixed_triu_mask
+):
     call = "diopiScaledMaskedSoftmaxBackward"
     func = check_function(call)
     size = list(out.size().data)
@@ -5492,6 +5444,7 @@ def scaled_masked_softmax_backward(grad_outputs, out, input, mask, scale, fixed_
     )
     check_returncode(ret)
     return {"input": grad_input}
+
 
 def apply_penalty(
     logits,
@@ -5551,9 +5504,7 @@ def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
     call = "diopiTokenAttentionInference"
     func = check_function(call)
 
-    ret = func(
-        q.context(), out, q, k, b_loc, b_start_loc, b_seq_len, max_input_len
-    )
+    ret = func(q.context(), out, q, k, b_loc, b_start_loc, b_seq_len, max_input_len)
     check_returncode(ret)
     return out
 
@@ -5590,8 +5541,6 @@ def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
     call = "diopiContextAttentionInference"
     func = check_function(call)
 
-    ret = func(
-        q.context(), out, q, k, v, b_start_loc, b_seq_len, max_input_len
-    )
+    ret = func(q.context(), out, q, k, v, b_start_loc, b_seq_len, max_input_len)
     check_returncode(ret)
     return out

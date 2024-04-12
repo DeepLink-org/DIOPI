@@ -111,7 +111,7 @@ class CustomizedTest(object):
                                      weight_decay=weight_decay,
                                      eps=eps,
                                      maximize=False)
-        return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
+        return param, exp_avg, exp_avg_sq, max_exp_avg_sq
 
     def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, beta1, beta2, eps, step, weight_decay, amsgrad):
         params_with_grad = [param]
@@ -134,7 +134,7 @@ class CustomizedTest(object):
                                       weight_decay=weight_decay,
                                       eps=eps,
                                       maximize=False)
-        return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
+        return param, exp_avg, exp_avg_sq, max_exp_avg_sq
 
     def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_decay):
         params_with_grad = [param]
@@ -151,7 +151,7 @@ class CustomizedTest(object):
                                          eps=eps,
                                          weight_decay=weight_decay,
                                          maximize=False)
-        return param, param_grad, square_avg, acc_delta
+        return param, square_avg, acc_delta
 
     def rmsprop(param, param_grad, square_avg, grad_avg, momentum_buffer, lr, alpha, eps, weight_decay, momentum, centered):
         params = [param]
@@ -171,7 +171,7 @@ class CustomizedTest(object):
                                         weight_decay=weight_decay,
                                         momentum=momentum,
                                         centered=centered)
-        return param, param_grad, square_avg, grad_avg, momentum_buffer
+        return param, square_avg, grad_avg, momentum_buffer
 
     def index_put(input, values, indices1, indices2=None, indices3=None, accumulate=False):
         indices = [indices1]
