@@ -2178,8 +2178,8 @@ DIOPI_API diopiError_t diopiRoiAlignBackward(diopiContextHandle_t ctx, diopiTens
  * @param[in] weight_decay weight_decay factor. type = [float32, float64].
  * @param[in] nesterov boolean, whether to use Nesterov momentum.
  */
-DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double lr, double momentum,
-                                double dampening, double weight_decay, bool nesterov);
+DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double lr,
+                                double momentum, double dampening, double weight_decay, bool nesterov);
 
 /**
  * @brief Clips gradient norm of an iterable of parameters.
@@ -2391,8 +2391,8 @@ DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorH
  * @param[in] ctx Context environment.
  * @param[inout] param the param tensor. type=[float16, float32, float64].
  * @param[in] grad the grad tensor. type=[float16, float32, float64].
- * @param[inout] exp_avg the first momentum is related to the number of iterations, that is, the gradient mean value of the i th iteration. type=[float16, float32,
- * float64].
+ * @param[inout] exp_avg the first momentum is related to the number of iterations, that is, the gradient mean value of the i th iteration. type=[float16,
+ * float32, float64].
  * @param[inout] exp_avg_sq the second momentum is related to the number of iterations, that is, the mean value of the gradient square of the i iteration.
  * type=[float16, float32, float64].
  * @param[inout] max_exp_avg_sq the maximum second momentum. When the parameter 'amsgrad' is true, it will replace the second momentum to participate in the
