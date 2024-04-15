@@ -15,7 +15,9 @@ namespace OP_IMPL_NS {
 diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t invRms, diopiConstTensorHandle_t input,
                           diopiSize_t normalizedShape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps) {
     BEGIN_CALL_ACL_OP(out, invRms, input, weight);
-    TORCH_CHECK(1 == normalizedShape.len && normalizedShape.data[0] == inputAt.size(inputAt.dim() - 1), "normalized shape error!");
+    TORCH_CHECK(
+        1 == normalizedShape.len && normalizedShape.data[0] == inputAt.size(inputAt.dim() - 1) || normalizedShape.len == 0 || normalizedShape.data == nullptr,
+        "normalized shape is not supported on ascend!");
 
     std::tuple<at::Tensor, at::Tensor> result;
     if (false) {
@@ -39,8 +41,9 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                   diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRms, diopiSize_t normalizedShape, double eps) {
     BEGIN_CALL_ACL_OP(gradInput, gradWeight, gradOutput, input, weight, invRms);
-    TORCH_CHECK(1 == normalizedShape.len && normalizedShape.data[0] == inputAt.size(inputAt.dim() - 1), "normalized shape error!");
-
+    TORCH_CHECK(
+        1 == normalizedShape.len && normalizedShape.data[0] == inputAt.size(inputAt.dim() - 1) || normalizedShape.len == 0 || normalizedShape.data == nullptr,
+        "normalized shape is not supported on ascend!");
     at::Tensor invRmsTempAt = invRmsAt;
     if (invRmsAt.scalar_type() != at::kFloat) {
         invRmsTempAt = invRmsAt.to(at::kFloat);

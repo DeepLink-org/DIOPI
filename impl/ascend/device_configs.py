@@ -1272,9 +1272,21 @@ device_configs = {
         rtol=1e-3,
     ),
 
-    'flash_attention': dict(
-        name=['flash_attention'],
-        # the backward of flash attention op does not support float32 on ascend
-        dtype=[Skip(np.float32),],
+    'adam': dict(
+        name=['adamw'],
+        para = dict (
+            # amsgrad not supported yet
+            amsgrad=[Skip(True),]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['param'],
+                    # float64 not supported yet on ascend
+                    "dtype": [Skip(np.float64)],
+                },
+            ]
+        ),
     ),
+
 }

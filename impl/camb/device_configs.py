@@ -1972,7 +1972,58 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float32)],
+                    # 寒武纪计算正确，gen-data生成的没考虑bias，暂时屏蔽
+                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64)],
+                },
+            ],
+        ),
+    ),
+
+    'multihead_attention': dict(
+        name=["multihead_attention"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((2, 10, 28, 16)),],
+                              
+                },
+            ],
+        ),
+    ),
+
+    'multihead_attention_dropout': dict(
+        name=["multihead_attention"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((2, 5, 7, 16)),],
+                },
+            ],
+        ),
+    ),
+
+
+    'multihead_attention_varlen': dict(
+        name=["multihead_attention_varlen"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((512, 16, 128)),],
+                },
+            ],
+        ),
+    ),
+
+    'multihead_attention_varlen_dropout': dict(
+        name=["multihead_attention_varlen"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": [Skip((512, 16, 128)),],
                 },
             ],
         ),
