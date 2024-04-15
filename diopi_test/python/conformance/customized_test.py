@@ -6,8 +6,13 @@ def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
     xq = xq.view(bs, seqlen, num_head, head_dim)
     xk = xk.view(bs, seqlen, num_head, head_dim)
     xv = xv.view(bs, seqlen, num_head, head_dim)
-    mask = torch.tril(torch.ones(seqlen, seqlen), diagonal=0).unsqueeze(0).unsqueeze(0).cuda()
-    mask[mask == 0.] = -100000000.0
+    mask = (
+        torch.tril(torch.ones(seqlen, seqlen), diagonal=0)
+        .unsqueeze(0)
+        .unsqueeze(0)
+        .cuda()
+    )
+    mask[mask == 0.0] = -100000000.0
     mask = mask.repeat(bs, num_head, 1, 1)
     keys = xk
     values = xv
@@ -16,14 +21,22 @@ def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
     values = values.transpose(1, 2)
     scores = torch.matmul(xq, keys.transpose(2, 3)) / math.sqrt(head_dim)
     scores = F.softmax(scores.float() + mask, dim=-1).type_as(xq)
-    output = torch.matmul(scores, values).transpose(1, 2).contiguous().reshape(-1, num_head, head_dim)
+    output = (
+        torch.matmul(scores, values)
+        .transpose(1, 2)
+        .contiguous()
+        .reshape(-1, num_head, head_dim)
+    )
     return output
 
 
-def multihead_attention_inside(q, k, v, softmax_scale, causal=None, key_padding_mask=None):
+def multihead_attention_inside(
+    q, k, v, softmax_scale, causal=None, key_padding_mask=None
+):
     # using for multiheadattention & varlen multiheadattention test
     from einops import rearrange
     import math
+
     batch_size, seqlen = q.shape[0], q.shape[1]
     causal = causal if causal is None else causal
     softmax_scale = softmax_scale or 1.0 / math.sqrt(q.shape[-1])
@@ -71,15 +84,46 @@ class CustomizedTest(object):
                 new_args.append(ele)
         return torch.Tensor.__getitem__(input, new_args)
 
-    def sgd(param, param_grad, lr, buf=None, momentum=0, dampening=0, weight_decay=0, nesterov=False):
+    def sgd(
+        param,
+        param_grad,
+        lr,
+        buf=None,
+        momentum=0,
+        dampening=0,
+        weight_decay=0,
+        nesterov=False,
+    ):
         param.requires_grad = True
         param.grad = param_grad
-        optimizer = torch.optim.SGD([param, ], lr, momentum, dampening, weight_decay, nesterov)
-        optimizer.state[param]['momentum_buffer'] = buf
+        optimizer = torch.optim.SGD(
+            [
+                param,
+            ],
+            lr,
+            momentum,
+            dampening,
+            weight_decay,
+            nesterov,
+        )
+        optimizer.state[param]["momentum_buffer"] = buf
         optimizer.step()
         return param, buf
 
-    def adam(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, beta1, beta2, eps, weight_decay, step, amsgrad):
+    def adam(
+        param,
+        param_grad,
+        exp_avg,
+        exp_avg_sq,
+        max_exp_avg_sq,
+        lr,
+        beta1,
+        beta2,
+        eps,
+        weight_decay,
+        step,
+        amsgrad,
+    ):
         params_with_grad = [param]
         grads = [param_grad]
         exp_avgs = [exp_avg]
@@ -87,22 +131,37 @@ class CustomizedTest(object):
         max_exp_avg_sqs = [max_exp_avg_sq]
         state_steps = [torch.tensor(float(step))]
 
-        torch.optim._functional.adam(params_with_grad,
-                                     grads,
-                                     exp_avgs,
-                                     exp_avg_sqs,
-                                     max_exp_avg_sqs,
-                                     state_steps,
-                                     amsgrad=amsgrad,
-                                     beta1=beta1,
-                                     beta2=beta2,
-                                     lr=lr,
-                                     weight_decay=weight_decay,
-                                     eps=eps,
-                                     maximize=False)
+        torch.optim._functional.adam(
+            params_with_grad,
+            grads,
+            exp_avgs,
+            exp_avg_sqs,
+            max_exp_avg_sqs,
+            state_steps,
+            amsgrad=amsgrad,
+            beta1=beta1,
+            beta2=beta2,
+            lr=lr,
+            weight_decay=weight_decay,
+            eps=eps,
+            maximize=False,
+        )
         return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
 
-    def adamw(param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq, lr, beta1, beta2, eps, step, weight_decay, amsgrad):
+    def adamw(
+        param,
+        param_grad,
+        exp_avg,
+        exp_avg_sq,
+        max_exp_avg_sq,
+        lr,
+        beta1,
+        beta2,
+        eps,
+        step,
+        weight_decay,
+        amsgrad,
+    ):
         params_with_grad = [param]
         grads = [param_grad]
         exp_avgs = [exp_avg]
@@ -110,20 +169,22 @@ class CustomizedTest(object):
         max_exp_avg_sqs = [max_exp_avg_sq]
         state_steps = [torch.tensor(float(step))]
 
-        torch.optim._functional.adamw(params_with_grad,
-                                      grads,
-                                      exp_avgs,
-                                      exp_avg_sqs,
-                                      max_exp_avg_sqs,
-                                      state_steps,
-                                      amsgrad=amsgrad,
-                                      beta1=beta1,
-                                      beta2=beta2,
-                                      lr=lr,
-                                      weight_decay=weight_decay,
-                                      eps=eps,
-                                      maximize=False)
-        return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
+        torch.optim._functional.adamw(
+            params_with_grad,
+            grads,
+            exp_avgs,
+            exp_avg_sqs,
+            max_exp_avg_sqs,
+            state_steps,
+            amsgrad=amsgrad,
+            beta1=beta1,
+            beta2=beta2,
+            lr=lr,
+            weight_decay=weight_decay,
+            eps=eps,
+            maximize=False,
+        )
+        return param, exp_avg, exp_avg_sq, max_exp_avg_sq
 
     def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_decay):
         params_with_grad = [param]
@@ -131,38 +192,56 @@ class CustomizedTest(object):
         square_avgs = [square_avg]
         acc_deltas = [acc_delta]
 
-        torch.optim._functional.adadelta(params_with_grad,
-                                         grads,
-                                         square_avgs,
-                                         acc_deltas,
-                                         lr=lr,
-                                         rho=rho,
-                                         eps=eps,
-                                         weight_decay=weight_decay,
-                                         maximize=False)
-        return param, param_grad, square_avg, acc_delta
+        torch.optim._functional.adadelta(
+            params_with_grad,
+            grads,
+            square_avgs,
+            acc_deltas,
+            lr=lr,
+            rho=rho,
+            eps=eps,
+            weight_decay=weight_decay,
+            maximize=False,
+        )
+        return param, square_avg, acc_delta
 
-    def rmsprop(param, param_grad, square_avg, grad_avg, momentum_buffer, lr, alpha, eps, weight_decay, momentum, centered):
+    def rmsprop(
+        param,
+        param_grad,
+        square_avg,
+        grad_avg,
+        momentum_buffer,
+        lr,
+        alpha,
+        eps,
+        weight_decay,
+        momentum,
+        centered,
+    ):
         params = [param]
         grads = [param_grad]
         square_avgs = [square_avg]
         grad_avgs = [grad_avg]
         momentum_buffer_list = [momentum_buffer]
 
-        torch.optim._functional.rmsprop(params,
-                                        grads,
-                                        square_avgs,
-                                        grad_avgs,
-                                        momentum_buffer_list,
-                                        lr=lr,
-                                        alpha=alpha,
-                                        eps=eps,
-                                        weight_decay=weight_decay,
-                                        momentum=momentum,
-                                        centered=centered)
-        return param, param_grad, square_avg, grad_avg, momentum_buffer
+        torch.optim._functional.rmsprop(
+            params,
+            grads,
+            square_avgs,
+            grad_avgs,
+            momentum_buffer_list,
+            lr=lr,
+            alpha=alpha,
+            eps=eps,
+            weight_decay=weight_decay,
+            momentum=momentum,
+            centered=centered,
+        )
+        return param, square_avg, grad_avg, momentum_buffer
 
-    def index_put(input, values, indices1, indices2=None, indices3=None, accumulate=False):
+    def index_put(
+        input, values, indices1, indices2=None, indices3=None, accumulate=False
+    ):
         indices = [indices1]
         if indices2 is not None:
             indices.append(indices2)
@@ -184,11 +263,29 @@ class CustomizedTest(object):
             tensor = torch.empty_like(grad)
             tensor.grad = grad
             parameters.append(tensor)
-        return torch.nn.utils.clip_grad_norm_(parameters, max_norm, norm_type, error_if_nonfinite)
+        return torch.nn.utils.clip_grad_norm_(
+            parameters, max_norm, norm_type, error_if_nonfinite
+        )
 
-    def ctc_loss(log_probs, targets, input_lengths, target_lengths, blank=0, reduction='mean', zero_infinity=False):
+    def ctc_loss(
+        log_probs,
+        targets,
+        input_lengths,
+        target_lengths,
+        blank=0,
+        reduction="mean",
+        zero_infinity=False,
+    ):
         log_probs_ = log_probs.log_softmax(2)
-        loss = torch.nn.functional.ctc_loss(log_probs_, targets, input_lengths, target_lengths, blank=blank, reduction=reduction, zero_infinity=zero_infinity)
+        loss = torch.nn.functional.ctc_loss(
+            log_probs_,
+            targets,
+            input_lengths,
+            target_lengths,
+            blank=blank,
+            reduction=reduction,
+            zero_infinity=zero_infinity,
+        )
         return loss
 
     def linalgqr(input, mode):
@@ -201,21 +298,40 @@ class CustomizedTest(object):
         out = (mean, invstd)
         return out
 
-    def batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all):
-        mean, invstd = torch.batch_norm_gather_stats_with_counts(input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all)
+    def batch_norm_gather_stats_with_counts(
+        input, mean_all, invstd_all, running_mean, running_var, momentum, eps, count_all
+    ):
+        mean, invstd = torch.batch_norm_gather_stats_with_counts(
+            input,
+            mean_all,
+            invstd_all,
+            running_mean,
+            running_var,
+            momentum,
+            eps,
+            count_all,
+        )
         out = (mean, invstd)
         return out
 
-    def batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g):
-        sum_dy, sum_dy_xmu, grad_weight, grad_bias = torch.batch_norm_backward_reduce(grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g)
+    def batch_norm_backward_reduce(
+        grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g
+    ):
+        sum_dy, sum_dy_xmu, grad_weight, grad_bias = torch.batch_norm_backward_reduce(
+            grad_output, input, mean, invstd, weight, input_g, weight_g, bias_g
+        )
         if input_g:
             out = (sum_dy, sum_dy_xmu, grad_weight, grad_bias)
         else:
             out = (None, None, grad_weight, grad_bias)
         return out
 
-    def batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count):
-        grad_input = torch.batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count)
+    def batch_norm_backward_elemt(
+        grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count
+    ):
+        grad_input = torch.batch_norm_backward_elemt(
+            grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count
+        )
         out = grad_input
         return out
 
@@ -252,7 +368,9 @@ class CustomizedTest(object):
     def sort(input, dim, descending, stable=False):
         # Skip compare while stable==False
         sizeI = input.size()
-        sorted, indices = torch.sort(input, dim=dim, descending=descending, stable=stable)
+        sorted, indices = torch.sort(
+            input, dim=dim, descending=descending, stable=stable
+        )
         if len(sizeI) > 0 and not stable:
             return sorted
         else:
@@ -263,15 +381,20 @@ class CustomizedTest(object):
         output = multihead_attention_inside(q, k, v, scale, is_causal)
         return output
 
-    def multihead_attention_varlen(q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale):
+    def multihead_attention_varlen(
+        q, k, v, cu_seqlens, max_seqlen, dropout_p, is_causal, return_debug_mask, scale
+    ):
         # 为了保证精度，因此在test的时候不使用dropout
         from einops import rearrange
         import math
+
         batch_size = len(cu_seqlens) - 1
         seq_len = max_seqlen
         _, num_heads, feature_size = q.size()
         # Initialize the key_padding_mask as a Boolean mask with False values
-        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device="cuda")
+        key_padding_mask = torch.zeros(
+            (batch_size, max_seqlen), dtype=torch.bool, device="cuda"
+        )
 
         # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
         for i in range(batch_size):
@@ -283,32 +406,44 @@ class CustomizedTest(object):
         v_padded = torch.zeros(padded_q_shape, dtype=torch.float16, device="cuda")
         for i in range(batch_size):
             seq_len = cu_seqlens[i + 1] - cu_seqlens[i]
-            q_padded[i, :seq_len, :, :] = q[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
-            k_padded[i, :seq_len, :, :] = k[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
-            v_padded[i, :seq_len, :, :] = v[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
-        qkv_result = multihead_attention_inside(q_padded, k_padded, v_padded, scale, is_causal, key_padding_mask)
+            q_padded[i, :seq_len, :, :] = q[cu_seqlens[i] : cu_seqlens[i + 1], :, :]
+            k_padded[i, :seq_len, :, :] = k[cu_seqlens[i] : cu_seqlens[i + 1], :, :]
+            v_padded[i, :seq_len, :, :] = v[cu_seqlens[i] : cu_seqlens[i + 1], :, :]
+        qkv_result = multihead_attention_inside(
+            q_padded, k_padded, v_padded, scale, is_causal, key_padding_mask
+        )
         output = torch.zeros(q.shape, dtype=torch.float16).cuda()
         for i in range(1, len(cu_seqlens)):
             start_idx = cu_seqlens[i - 1]
             end_idx = cu_seqlens[i]
-            output[start_idx:end_idx, :, :] = qkv_result[i - 1, :end_idx - start_idx, :, :]
+            output[start_idx:end_idx, :, :] = qkv_result[
+                i - 1, : end_idx - start_idx, :, :
+            ]
         return output
 
-    def flash_attention_v1(q, k, v, p_dropout, softmax_scale, is_causal, head_num, input_layout):
+    def flash_attention_v1(
+        q, k, v, p_dropout, softmax_scale, is_causal, head_num, input_layout
+    ):
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         # For calculation convenience, convert to BSND.
         if input_layout == "SBH":
-            q, k, v = [rearrange(x, "s b (n d) -> b s n d", n=head_num) for x in [q, k, v]]
+            q, k, v = [
+                rearrange(x, "s b (n d) -> b s n d", n=head_num) for x in [q, k, v]
+            ]
         elif input_layout == "BSH":
-            q, k, v = [rearrange(x, "b s (n d) -> b s n d", n=head_num) for x in [q, k, v]]
+            q, k, v = [
+                rearrange(x, "b s (n d) -> b s n d", n=head_num) for x in [q, k, v]
+            ]
         elif input_layout == "BNSD":
             q, k, v = [rearrange(x, "b n s d-> b s n d") for x in [q, k, v]]
         seqlen = q.shape[1]
-        softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
+        softmax_scale = (
+            1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
+        )
         scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
         if is_causal:
             causal_mask = torch.triu(
-                torch.full((seqlen, seqlen), float('-inf'), device=scores.device), 1
+                torch.full((seqlen, seqlen), float("-inf"), device=scores.device), 1
             )
             scores = scores + causal_mask.to(dtype=scores.dtype)
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
@@ -324,11 +459,13 @@ class CustomizedTest(object):
     def flash_attention_v3(q, k, v, p_dropout, softmax_scale, is_causal):
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         seqlen = q.shape[1]
-        softmax_scale = 1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
+        softmax_scale = (
+            1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
+        )
         scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
         if is_causal:
             causal_mask = torch.triu(
-                torch.full((seqlen, seqlen), float('-inf'), device=scores.device), 1
+                torch.full((seqlen, seqlen), float("-inf"), device=scores.device), 1
             )
             scores = scores + causal_mask.to(dtype=scores.dtype)
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
@@ -337,21 +474,40 @@ class CustomizedTest(object):
 
     def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
         if fixed_triu_mask:
-            mask_tri = torch.triu(torch.ones(mask.shape, device=input.device), diagonal=1).bool()
+            mask_tri = torch.triu(
+                torch.ones(mask.shape, device=input.device), diagonal=1
+            ).bool()
             mask_data = (input * scale).masked_fill(mask_tri, value=-1e4)
         else:
             mask_data = (input * scale).masked_fill(mask, value=-1e4)
         output = torch.nn.functional.softmax(mask_data, dim=-1)
         return output
 
-    def apply_penalty(logits, presence_penalty, frequency_penalty, p_token_ids, p_token_counts, p_cumsum_seq_len, p_max_len_in_batch):
+    def apply_penalty(
+        logits,
+        presence_penalty,
+        frequency_penalty,
+        p_token_ids,
+        p_token_counts,
+        p_cumsum_seq_len,
+        p_max_len_in_batch,
+    ):
         batch = logits.shape[0]
         for i in range(batch):
             cur_batch_start_index = p_cumsum_seq_len[i]
             cur_batch_end_index = p_cumsum_seq_len[i + 1]
-            cur_logits = logits[i, p_token_ids[cur_batch_start_index:cur_batch_end_index]]
-            cur_logits = cur_logits - p_token_counts[cur_batch_start_index:cur_batch_end_index] * frequency_penalty[i] - presence_penalty[i]
-            logits[i, p_token_ids[cur_batch_start_index:cur_batch_end_index]] = cur_logits
+            cur_logits = logits[
+                i, p_token_ids[cur_batch_start_index:cur_batch_end_index]
+            ]
+            cur_logits = (
+                cur_logits
+                - p_token_counts[cur_batch_start_index:cur_batch_end_index]
+                * frequency_penalty[i]
+                - presence_penalty[i]
+            )
+            logits[i, p_token_ids[cur_batch_start_index:cur_batch_end_index]] = (
+                cur_logits
+            )
         return logits
 
     def destindex_copy_kv(k, dest_loc, out):
@@ -363,17 +519,34 @@ class CustomizedTest(object):
         q_device = q.device
         xq = q.view(batch, 1, head, dim).transpose(1, 2)
         for i in range(batch):
-            k_loc = b_loc[i][max_input_len - b_seq_len[i] + torch.arange(0, b_seq_len[i], device=q_device)]
+            k_loc = b_loc[i][
+                max_input_len
+                - b_seq_len[i]
+                + torch.arange(0, b_seq_len[i], device=q_device)
+            ]
             key = k[k_loc, :].view(1, b_seq_len[i], head, dim).transpose(1, 2)
             out_loc = b_start_loc[i] + torch.arange(0, b_seq_len[i], device=q_device)
-            out[:, out_loc] = (torch.matmul(xq[i, :], key.transpose(2, 3)) / math.sqrt(dim)).reshape(head, b_seq_len[i])
+            out[:, out_loc] = (
+                torch.matmul(xq[i, :], key.transpose(2, 3)) / math.sqrt(dim)
+            ).reshape(head, b_seq_len[i])
         return out
 
-    def token_softmax_reducev(logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index):
+    def token_softmax_reducev(
+        logics, v, out, b_loc, b_start_loc, b_seq_len, max_input_len, other_kv_index
+    ):
         batch, head, dim = b_loc.shape[0], v.shape[1], v.shape[2]
         for i in range(batch):
-            v_loc = b_loc[i][max_input_len - b_seq_len[i] + torch.arange(0, b_seq_len[i], device=logics.device)]
-            P = logics[:, b_start_loc[i]:b_start_loc[i] + b_seq_len[i]].softmax(-1).reshape(head, 1, 1, b_seq_len[i]).transpose(0, 1)
+            v_loc = b_loc[i][
+                max_input_len
+                - b_seq_len[i]
+                + torch.arange(0, b_seq_len[i], device=logics.device)
+            ]
+            P = (
+                logics[:, b_start_loc[i] : b_start_loc[i] + b_seq_len[i]]
+                .softmax(-1)
+                .reshape(head, 1, 1, b_seq_len[i])
+                .transpose(0, 1)
+            )
             V = v[v_loc, :].view(1, b_seq_len[i], head, dim).transpose(1, 2)
             out[i, :] = torch.matmul(P, V).view(1, head, dim)
         return out
@@ -383,6 +556,13 @@ class CustomizedTest(object):
         for i in range(batch):
             start = b_start_loc[i]
             end = start + b_seq_len[i]
-            out[start:end, :] = _torch_context_attention(q[start:end], k[start:end], v[start:end], 1, int(b_seq_len[i]), head, dim)
+            out[start:end, :] = _torch_context_attention(
+                q[start:end],
+                k[start:end],
+                v[start:end],
+                1,
+                int(b_seq_len[i]),
+                head,
+                dim,
+            )
         return out
-
