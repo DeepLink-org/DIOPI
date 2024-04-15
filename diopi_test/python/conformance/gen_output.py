@@ -257,10 +257,12 @@ class CustomizedTest(object):
             dims = tuple(i for i in range(-1, -len(normalized_shape) - 1, -1))
         else:
             dims = -1
-        variance = input.pow(2).mean(dims, keepdim=True)
+        ori_dtype = input.dtype
+        variance = input.to(torch.float32).pow(2).mean(dims, keepdim=True)
         inv_rms = torch.rsqrt(variance + eps)
         input = input * inv_rms
         out = weight * input + bias if bias is not None else weight * input
+        out = out.to(ori_dtype)
         return out
 
     def sort(input, dim, descending, stable=False):
