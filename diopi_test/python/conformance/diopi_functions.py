@@ -5460,6 +5460,50 @@ def flash_attention_v1_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
+def flash_attention_v3(q, k, v, p_dropout, softmax_scale, is_causal):
+    call = "diopiFlashAttentionV3"
+    func = check_function(call)
+    out = raw_like(q)
+    if p_dropout >= 0 and p_dropout <= 1:
+        state = build_generator_state(q.context())
+        generator = Generator(state)
+    else:
+        assert 0, "The p_dropout value must be in range of [0, 1]"
+    q_size = list(q.size().data)
+    head_dim = q_size[-1]
+    softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], dtype=Dtype.float32)
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
+    ret = func(
+        q.context(),
+        out,
+        softmax_lse,
+        generator,
+        q,
+        k,
+        v,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["flash_attention_v3_softmax_lse"] = softmax_lse
+    return out
+
+def flash_attention_v3_backward(q, k, v, out, grad_outputs, p_dropout, softmax_scale, is_causal):
+    call = "diopiFlashAttentionV3Backward"
+    func = check_function(call)
+    assert p_dropout >=0 and p_dropout <=1, "The p_dropout value must be in range of [0, 1]"
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    q_size = list(q.size().data)
+    head_dim = q_size[-1]
+    softmax_lse = GLOBAL_STATE.pop('flash_attention_v3_softmax_lse')
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
+    ret = func(q.context(), grad_q, grad_k, grad_v, grad_outputs[0], q, k, v, out, softmax_lse, p_dropout, softmax_scale, is_causal)
+    check_returncode(ret)
+    return {'q': grad_q, 'k': grad_k, 'v': grad_v}
+
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
     func = check_function(call)
