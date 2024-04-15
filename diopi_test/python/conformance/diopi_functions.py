@@ -5487,6 +5487,7 @@ def flash_attention_v3(q, k, v, p_dropout, softmax_scale, is_causal):
     )
     check_returncode(ret)
     GLOBAL_STATE["flash_attention_v3_softmax_lse"] = softmax_lse
+    GLOBAL_STATE["flash_attention_v3_generator"] = generator
     return out
 
 def flash_attention_v3_backward(q, k, v, out, grad_outputs, p_dropout, softmax_scale, is_causal):
@@ -5499,8 +5500,9 @@ def flash_attention_v3_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     q_size = list(q.size().data)
     head_dim = q_size[-1]
     softmax_lse = GLOBAL_STATE.pop('flash_attention_v3_softmax_lse')
+    generator = GLOBAL_STATE.pop('flash_attention_v3_generator')
     softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
-    ret = func(q.context(), grad_q, grad_k, grad_v, grad_outputs[0], q, k, v, out, softmax_lse, p_dropout, softmax_scale, is_causal)
+    ret = func(q.context(), grad_q, grad_k, grad_v, grad_outputs[0], generator, q, k, v, out, softmax_lse, p_dropout, softmax_scale, is_causal)
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
