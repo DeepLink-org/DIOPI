@@ -173,9 +173,9 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
 }
 
 DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
-                                                     diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                                     diopiConstTensorHandle_t v, diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t softmaxLse,
-                                                     double dropoutP, double softmaxScale, bool isCausal) {
+                                                     diopiConstTensorHandle_t gradOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q,
+                                                     diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attentionOut,
+                                                     diopiConstTensorHandle_t softmaxLse, double dropoutP, double softmaxScale, bool isCausal) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor qTensor(q);
     DiopiTensor kTensor(k);
@@ -308,6 +308,10 @@ DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, d
     size_t randomNum[2];
     randomNum[0] = 0;
     randomNum[1] = 0;
+
+    if (dropoutP > 0.0) {
+        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, randomNum[0], randomNum[1]));
+    }
 
     DIOPI_CALL_CNNL(cnnlFlashAttentionBackward(handle,
                                                flashAttBckDesc.get(),
