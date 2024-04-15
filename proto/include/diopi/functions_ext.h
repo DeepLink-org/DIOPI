@@ -299,6 +299,7 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
  * @brief Compute the backward pass for Flash Attention.
  * @param[in] ctx The diopi context.
  * @param[in] grad_out The gradient of the output tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [bfloat16, float16].
+ * @param[in] gen Handle for the random number generator used in dropout op.
  * @param[in] q Query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[in] k Key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[in] v Value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [bfloat16, float16].
@@ -313,9 +314,10 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
  * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  */
 DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
-                                                     diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
-                                                     diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
-                                                     diopiConstTensorHandle_t softmax_lse, double p_dropout, double softmax_scale, bool is_causal);
+                                                     diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiGeneratorHandle_t gen,
+                                                     diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                                     diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t softmax_lse, double p_dropout,
+                                                     double softmax_scale, bool is_causal);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
