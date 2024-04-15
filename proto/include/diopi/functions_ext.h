@@ -324,8 +324,8 @@ DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, d
  * @param[in] q Query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type = [bfloat16, float16].
  * @param[in] k Key tensor. shape = [total_k, head_num, head_dim], where total_k = total number of key tokens in the batch. type = [bfloat16, float16].
  * @param[in] v Value tensor. shape = [total_v, head_num, head_dim, where total_v = total number of value tokens in the batch. type = [bfloat16, float16].
- * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size]. type = [int64].
- * @param[in] cum_seq_k The cumulative sequence lengths of the sequences in the batch for key. shape = [batch_size]. type = [int64].
+ * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size+1]. type = [int64].
+ * @param[in] cum_seq_k The cumulative sequence lengths of the sequences in the batch for key. shape = [batch_size+1]. type = [int64].
  * @param[in] p_dropout Dropout probability.
  * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] is_causal Whether to apply causal attention mask.
@@ -350,8 +350,8 @@ DIOPI_API diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopi
  * @param[in] q Query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type = [bfloat16, float16].
  * @param[in] k Key tensor. shape = [total_k, head_num, head_dim], where total_k = total number of key tokens in the batch. type = [bfloat16, float16].
  * @param[in] v Value tensor. shape = [total_v, head_num, head_dim, where total_v = total number of value tokens in the batch. type = [bfloat16, float16].
- * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size]. type = [int64].
- * @param[in] cum_seq_k The cumulative sequence lengths of the sequences in the batch for key. shape = [batch_size]. type = [int64].
+ * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size+1]. type = [int64].
+ * @param[in] cum_seq_k The cumulative sequence lengths of the sequences in the batch for key. shape = [batch_size+1]. type = [int64].
  * @param[in] attention_out Tensor representing the forward calculation result. shape = [total, head_num, head_dim]. type = [bfloat16, float16].
  * @param[in] attention_mask Tensor representing the causal attention mask from the forward pass. shape = [total_q, total_k]. type = [bool].
  * @param[in] dropout_mask Tensor representing the generated dropout mask from the forward pass.
