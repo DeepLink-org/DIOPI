@@ -8356,7 +8356,7 @@ diopi_configs = {
                 {
                     "ins": ['weight'],
                     "requires_grad": [True],
-                    "shape": ((5, 5), (64, 64), (8, 64,), (7, 8)),
+                    "shape": ((5, 5), (64, 64), (8, 64), (7, 8)),
                 },
                 {
                     "ins": ['bias'],

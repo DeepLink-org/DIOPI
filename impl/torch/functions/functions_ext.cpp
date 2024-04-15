@@ -87,14 +87,16 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto atWeight = impl::aten::buildATen(weight);
     ext::ops::rms_norm_backward(atGradOutput, atInvRMS, atInput, atNormalizedShape, atWeight, eps, atGradInput, atGradWeight);
     if (gradBias) {
-        int64_t outDims = atGradOutput.dim();
         auto atGradBias = impl::aten::buildATen(gradBias);
-        int64_t biasDims = atGradBias.dim();
-        std::vector<int64_t> sumDim;
-        for (auto i = 0; i < outDims - biasDims; ++i) {
-            sumDim.emplace_back(i);
+        auto outDims = atGradOutput.dim();
+        auto biasDims = atGradBias.dim();
+        if (outDims > biasDims) {
+            std::vector<int64_t> sumDims(outDims - biasDims);
+            std::iota(sumDims.begin(), sumDims.end(), 0);
+            at::sum_out(atGradBias, atGradOutput, sumDims);
+        } else {
+            atGradBias.copy_(atGradOutput);
         }
-        at::sum_out(atGradBias, atGradOutput, sumDim);
     }
     return diopiSuccess;
 }
