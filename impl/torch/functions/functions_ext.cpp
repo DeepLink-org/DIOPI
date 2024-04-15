@@ -58,7 +58,7 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
 }
 
 diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t invRMS, diopiConstTensorHandle_t input,
-                          diopiSize_t normalized_shape, diopiConstTensorHandle_t weight, [[maybe_unused]] diopiConstTensorHandle_t bias, double eps) {
+                          diopiSize_t normalized_shape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps) {
     impl::aten::setCurStream(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atInvRMS = impl::aten::buildATen(invRMS);
@@ -76,7 +76,7 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
 diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                   diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
-                                  [[maybe_unused]] diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRMS, diopiSize_t normalized_shape, double eps) {
+                                  diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRMS, diopiSize_t normalized_shape, double eps) {
     impl::aten::setCurStream(ctx);
     auto atGradInput = impl::aten::buildATen(gradInput);
     auto atGradWeight = impl::aten::buildATen(gradWeight);
@@ -88,10 +88,10 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     ext::ops::rms_norm_backward(atGradOutput, atInvRMS, atInput, atNormalizedShape, atWeight, eps, atGradInput, atGradWeight);
     if (gradBias) {
         auto atGradBias = impl::aten::buildATen(gradBias);
-        auto outDims = atGradOutput.dim();
-        auto biasDims = atGradBias.dim();
-        if (outDims > biasDims) {
-            std::vector<int64_t> sumDims(outDims - biasDims);
+        auto outDim = atGradOutput.dim();
+        auto biasDim = atGradBias.dim();
+        if (outDim > biasDim) {
+            std::vector<int64_t> sumDims(outDim - biasDim);
             std::iota(sumDims.begin(), sumDims.end(), 0);
             at::sum_out(atGradBias, atGradOutput, sumDims);
         } else {
