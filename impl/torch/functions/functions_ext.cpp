@@ -70,7 +70,6 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         auto atBias = impl::aten::buildATen(bias);
         atOut.add_(atBias);
     }
-
     return diopiSuccess;
 }
 
