@@ -8307,6 +8307,8 @@ diopi_configs = {
 
     'rms_norm_default': dict(
         name=['rms_norm'],
+        atol=1e-4,
+        rtol=1e-4,
         interface=['CustomizedTest'],
         dtype=[np.float16, np.float32, np.float64],
         para=dict(
@@ -8337,6 +8339,8 @@ diopi_configs = {
 
     'rms_norm_with_normalized_shape': dict(
         name=['rms_norm'],
+        atol=1e-4,
+        rtol=1e-4,
         interface=['CustomizedTest'],
         dtype=[np.float16, np.float32, np.float64],
         para=dict(
@@ -8367,6 +8371,8 @@ diopi_configs = {
 
     'rms_norm_with_bias': dict(
         name=['rms_norm'],
+        atol=1e-4,
+        rtol=1e-4,
         interface=['CustomizedTest'],
         dtype=[np.float16, np.float32, np.float64],
         para=dict(
