@@ -13,19 +13,22 @@ from conformance.db_operation import db_conn
 from einops import rearrange
 from customized_test import CustomizedTest
 
+
 class GenOutputData(object):
-    r'''
+    r"""
     Generate output data for all functions by using numpy and input data
-    '''
+    """
     db_case_items = {}
     err_case_counter = 0
 
     @staticmethod
-    def run(diopi_item_config_path='diopi_case_items.cfg',
-            input_path='data/inputs/',
-            output_path='data/outputs/',
-            fname='all_ops',
-            model_name='diopi'):
+    def run(
+        diopi_item_config_path="diopi_case_items.cfg",
+        input_path="data/inputs/",
+        output_path="data/outputs/",
+        fname="all_ops",
+        model_name="diopi",
+    ):
         if not os.path.exists(input_path):
             logger.error("Input data is not generated!")
             sys.exit(0)
@@ -33,7 +36,7 @@ class GenOutputData(object):
         if not os.path.exists(output_path):
             os.makedirs(output_path)
 
-        with open(diopi_item_config_path, 'rb') as f:
+        with open(diopi_item_config_path, "rb") as f:
             all_cfg_dict = pickle.load(f)
 
         # XXX save case number in glob_var
@@ -43,23 +46,27 @@ class GenOutputData(object):
         for case_name in all_cfg_dict:
             each_cfg_dict = all_cfg_dict[case_name]
             func_name = each_cfg_dict["name"]
-            item = {'case_name': case_name, 'model_name': model_name}
+            item = {"case_name": case_name, "model_name": model_name}
             if "all_ops" not in fname and func_name not in fname:
                 continue
             data_path = os.path.join(input_path, case_name)
-            input_ = get_data_from_file(data_path, case_name, 'input')
+            input_ = get_data_from_file(data_path, case_name, "input")
             if "no_output_ref" in each_cfg_dict:
-                logger.info(f'diopi_functions.{func_name} [{case_name}] is set to no_output_ref, skip generate output')
+                logger.info(
+                    f"diopi_functions.{func_name} [{case_name}] is set to no_output_ref, skip generate output"
+                )
                 continue
 
             gen_tensor_obj = GenTensor(case_name, each_cfg_dict)
 
             try:
                 output, saved_grads = gen_tensor_obj.gen_data(input_)
-                item['result'] = 'passed'
+                item["result"] = "passed"
             except Exception as err_msg:
-                logger.error(f'Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}')
-                item.update({'result': 'failed', 'err_msg': err_msg})
+                logger.error(
+                    f"Generate output data for diopi_functions.{func_name} [{case_name}] failed, cause by \n{err_msg}"
+                )
+                item.update({"result": "failed", "err_msg": err_msg})
                 GenOutputData.err_case_counter += 1
                 continue
             finally:
@@ -77,7 +84,9 @@ class GenOutputData(object):
 
                 if func_name not in func_name_list:
                     func_signature = f"diopi_functions.{func_name}"
-                    logger.info(f"Generate benchmark {logger_str} data for {func_signature}")
+                    logger.info(
+                        f"Generate benchmark {logger_str} data for {func_signature}"
+                    )
                     func_name_list.append(func_name)
 
         logger.info(f"Generate test cases number for output data: {case_counter}")
@@ -129,18 +138,18 @@ class GenTensor(object):
         return output, saved_grads
 
     def gen_forward_data(self, input_data):
-        if self.case_cfg['interface']:
+        if self.case_cfg["interface"]:
             self.module = self.case_cfg["interface"][0]
         function_paras = input_data["function_paras"]
         self.transfer_tensor_to_device(function_paras)
-        kwargs = function_paras['kwargs']
+        kwargs = function_paras["kwargs"]
         if self.module == "torch.Tensor":
-            input = kwargs['input']
+            input = kwargs["input"]
             self.input = input
             self.module = "input"
-            del kwargs['input']
-        if 'dtype' in kwargs.keys():
-            kwargs['dtype'] = self.change_np_dtype_to_torch(kwargs['dtype'])
+            del kwargs["input"]
+        if "dtype" in kwargs.keys():
+            kwargs["dtype"] = self.change_np_dtype_to_torch(kwargs["dtype"])
         func_call = f"{self.module}.{self.func_name}(**kwargs)"
         self.output = eval(func_call)
         self.if_forward_success = True
@@ -150,46 +159,61 @@ class GenTensor(object):
         if not self.if_forward_success:
             return None
         function_paras = input_data["function_paras"]
-        kwargs = function_paras['kwargs']
+        kwargs = function_paras["kwargs"]
         saved_grads = None
         if function_paras["requires_grad"]:
             if self.module == "input":
-                kwargs['input'] = self.input
+                kwargs["input"] = self.input
             outputs = self.output
             if not isinstance(self.output, (list, tuple)):
                 outputs = [self.output]
 
             requires_backward = self.case_cfg["requires_backward"]
-            outputs_for_backward = outputs if len(requires_backward) == 0 \
+            outputs_for_backward = (
+                outputs
+                if len(requires_backward) == 0
                 else [outputs[i] for i in requires_backward]
+            )
 
-            inputs_name_for_grad, inputs_for_grad = self.get_name_and_data_for_grad(function_paras)
+            inputs_name_for_grad, inputs_for_grad = self.get_name_and_data_for_grad(
+                function_paras
+            )
             if len(inputs_for_grad) != 0:
                 grad_outputs = [torch.ones_like(i) for i in outputs_for_backward]
                 grads = torch.autograd.grad(
-                    outputs_for_backward, inputs_for_grad, grad_outputs, allow_unused=True)
+                    outputs_for_backward,
+                    inputs_for_grad,
+                    grad_outputs,
+                    allow_unused=True,
+                )
                 saved_grads = {k: v for k, v in zip(inputs_name_for_grad, grads)}
         return saved_grads
 
     def transfer_tensor_to_device(self, function_paras: dict):
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        device = "cuda" if torch.cuda.is_available() else "cpu"
         for para in function_paras["kwargs"].keys():
-            if isinstance(function_paras['kwargs'][para], np.ndarray):
-                tensor = torch.from_numpy(function_paras['kwargs'][para])
+            if isinstance(function_paras["kwargs"][para], np.ndarray):
+                tensor = torch.from_numpy(function_paras["kwargs"][para])
                 if function_paras["requires_grad"].get(para, []) == [True]:
                     tensor.requires_grad = True
-                function_paras['kwargs'][para] = tensor.to(device=device)
+                function_paras["kwargs"][para] = tensor.to(device=device)
 
-            gen_policy = [i.get('gen_policy', None) for i in self.case_cfg['tensor_para']['args'] if i['ins'] == para]
-            if_gen_list = len(gen_policy) > 0 and gen_policy[0] in GenPolicy.gen_list_policy
+            gen_policy = [
+                i.get("gen_policy", None)
+                for i in self.case_cfg["tensor_para"]["args"]
+                if i["ins"] == para
+            ]
+            if_gen_list = (
+                len(gen_policy) > 0 and gen_policy[0] in GenPolicy.gen_list_policy
+            )
             if if_gen_list:
-                if isinstance(function_paras['kwargs'][para], (list, tuple)):
-                    tensors = function_paras['kwargs'][para]
+                if isinstance(function_paras["kwargs"][para], (list, tuple)):
+                    tensors = function_paras["kwargs"][para]
                     for idx, ele in enumerate(tensors):
                         tensors[idx] = torch.from_numpy(ele).to(device=device)
                         if function_paras["requires_grad"].get(para, []) == [True]:
                             tensors[idx].requires_grad = True
-                    function_paras['kwargs'][para] = tensors
+                    function_paras["kwargs"][para] = tensors
 
     def get_name_and_data_for_grad(self, function_paras):
         inputs_for_grad_value = []
@@ -209,7 +233,9 @@ class GenTensor(object):
         return eval(str(dtype).replace("<class 'numpy.", "torch.").replace("'>", ""))
 
 
-if __name__ == '__main__':
-    GenOutputData.run(os.path.join(os.path.dirname(__file__), '../cache/diopi_case_items.cfg'),
-                      os.path.join(os.path.dirname(__file__), '../cache/data/inputs/'),
-                      os.path.join(os.path.dirname(__file__), '../cache/data/outputs/'))
+if __name__ == "__main__":
+    GenOutputData.run(
+        os.path.join(os.path.dirname(__file__), "../cache/diopi_case_items.cfg"),
+        os.path.join(os.path.dirname(__file__), "../cache/data/inputs/"),
+        os.path.join(os.path.dirname(__file__), "../cache/data/outputs/"),
+    )

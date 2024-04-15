@@ -27,6 +27,10 @@ namespace camb {
  */
 
 static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor input, DiopiTensor batch1, DiopiTensor batch2, float beta, float alpha) {
+    if (input.numel() == 0 || batch1.numel() == 0 || batch2.numel() == 0) {
+        return diopiSuccess;
+    }
+
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     CnnlTensorDesc batch1Desc(batch1, CNNL_LAYOUT_ARRAY);
@@ -68,7 +72,7 @@ static diopiError_t batchAddBatchMatmul(diopiContextHandle_t ctx, DiopiTensor in
                                                     &returnAlgoCount));
     DIOPI_CALL_CNNL(cnnlGetBatchMatMulHeuristicResult(matmulHr, matmulAlgo, &workspaceSize));
 
-    void *workspace = nullptr;
+    void* workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
         DIOPI_CHECK(workspace != nullptr, "[diopiBaddbmm] require buffers: size = %d, for workspace failed.", workspaceSize);
@@ -96,7 +100,7 @@ DIOPI_API diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHand
     DiopiTensor batch1Tensor(batch1);
     DiopiTensor batch2Tensor(batch2);
 
-    std::vector<DiopiTensor *> tensorsVecPtr{&batch1Tensor, &batch2Tensor, &inputTensor};
+    std::vector<DiopiTensor*> tensorsVecPtr{&batch1Tensor, &batch2Tensor, &inputTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};
     DIOPI_CALL(autoCastTensorType(ctx, tensorsVecPtr, supportedDtypes));
 
@@ -118,7 +122,7 @@ DIOPI_API diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_
 
     DIOPI_CALL(broadcastContiguous(ctx, outTensor, inputTensor));
 
-    std::vector<DiopiTensor *> tensorsVecPtr{&batch1Tensor, &batch2Tensor, &outTensor};
+    std::vector<DiopiTensor*> tensorsVecPtr{&batch1Tensor, &batch2Tensor, &outTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};
     DIOPI_CALL(autoCastTensorType(ctx, tensorsVecPtr, supportedDtypes));
 
