@@ -8333,8 +8333,6 @@ diopi_configs = {
                 },
             ],
         ),
-        saved_args=dict(inv_rms=1),
-        requires_backward=[0],
     ),
 
     'rms_norm_with_normalized_shape': dict(
@@ -8365,8 +8363,6 @@ diopi_configs = {
                 },
             ],
         ),
-        saved_args=dict(inv_rms=1),
-        requires_backward=[0],
     ),
 
     'rms_norm_with_bias': dict(
@@ -8397,8 +8393,6 @@ diopi_configs = {
                 },
             ],
         ),
-        saved_args=dict(inv_rms=1),
-        requires_backward=[0],
     ),
     
     'rms_norm': dict(
@@ -8429,8 +8423,6 @@ diopi_configs = {
                 },
             ],
         ),
-        saved_args=dict(inv_rms=1),
-        requires_backward=[0],
     ),
 
     'apply_penalty': dict(

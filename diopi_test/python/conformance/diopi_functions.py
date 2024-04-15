@@ -5223,10 +5223,11 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
         eps,
     )
     check_returncode(ret)
-    return (out, inv_rms)
+    GLOBAL_STATE["rms_norm_inv_rms"] = inv_rms
+    return out
 
 
-def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_shape, eps):
+def rms_norm_backward(grad_outputs, input, weight, bias, normalized_shape, eps):
     call = "diopiRMSNormBackward"
     func = check_function(call)
     grad_input = Tensor(list(input.size().data), input.get_dtype())
@@ -5243,6 +5244,7 @@ def rms_norm_backward(grad_outputs, input, weight, bias, inv_rms, normalized_sha
         normalized_shape = [input.shape().data[-1]]
     normalized_shape = Sizes(normalized_shape)
 
+    inv_rms = GLOBAL_STATE.pop('rms_norm_inv_rms')
     ret = func(input.context(), grad_input, grad_weight, grad_bias, grad_outputs[0], input, weight, bias, inv_rms,
                normalized_shape, eps)
     check_returncode(ret)
