@@ -150,7 +150,7 @@ class CustomizedTest(object):
             eps=eps,
             maximize=False,
         )
-        return param, param_grad, exp_avg, exp_avg_sq, max_exp_avg_sq
+        return param, exp_avg, exp_avg_sq, max_exp_avg_sq
 
     def adamw(
         param,
