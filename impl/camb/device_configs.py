@@ -1118,7 +1118,7 @@ device_configs = {
                 {
                     # can't get correct result
                     "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(np.float16)],
+                    "dtype": [Skip(np.float64)],
                 },
             ]
         ),
