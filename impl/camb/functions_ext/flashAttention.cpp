@@ -28,7 +28,6 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
     DiopiTensor outTensor(attentionOut);
     DiopiTensor softmaxLseTensor(softmaxLse);
 
-
     if (qTensor.numel() == 0) {
         return diopiSuccess;
     }
@@ -79,7 +78,7 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
 
     // change input,output data type
     std::vector<DiopiTensor*> qkvTensors{&qTensor, &kTensor, &vTensor};
-    std::set<diopiDtype_t> supportedQKVDtypes{diopi_dtype_float16,diopi_dtype_bfloat16};
+    std::set<diopiDtype_t> supportedQKVDtypes{diopi_dtype_float16, diopi_dtype_bfloat16};
     DIOPI_CALL(autoCastTensorType(ctx, qkvTensors, supportedQKVDtypes));
 
     DiopiTensor outTmpTr = outTensor;
