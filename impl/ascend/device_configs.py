@@ -538,7 +538,7 @@ device_configs = {
     ),
 
     # multi-dimensional normalized_shape is currently not supported on ascend
-    'rms_norm_with_normalized_shape': dict(
+    'rms_norm_with_multi_dimensional_normalized_shape': dict(
         name=['rms_norm'],
         dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
     ),
