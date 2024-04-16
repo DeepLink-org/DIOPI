@@ -5208,9 +5208,6 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     inv_rms = Tensor(inv_rms_size, inv_dtype)
     # When weight and bias exist, its shape is equal to normalized_shape.
     # If not specified, normalized_shape generally defaults to the size of the last dimension of the input tensor.
-    # This is convenient for testing multi-dimensional normalized_shape on some devices.
-    if normalized_shape is None:
-        normalized_shape = [input.shape().data[-1]]
     normalized_shape = Sizes(normalized_shape)
     ret = func(
         input.context(),

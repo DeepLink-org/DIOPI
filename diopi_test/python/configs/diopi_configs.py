@@ -8313,7 +8313,7 @@ diopi_configs = {
         dtype=[np.float16, np.float32, np.float64],
         para=dict(
             eps=[1e-4, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2],
-            normalized_shape=[None, None, None, None, None, None],
+            normalized_shape=[(16,), (5,), (32,), (64,), (64,), (8,)],
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -8337,7 +8337,7 @@ diopi_configs = {
         ),
     ),
 
-    'rms_norm_with_normalized_shape': dict(
+    'rms_norm_with_multi_dimensional_normalized_shape': dict(
         name=['rms_norm'],
         atol=1e-4,
         rtol=1e-4,
