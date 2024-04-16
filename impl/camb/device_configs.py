@@ -1107,22 +1107,22 @@ device_configs = {
         name=['argmax'],
     ),
 
-    'adadelta': dict(
-        name=["adadelta"],
-        atol_half=1e-1,
-        rtol_half=1e-1,
-        atol=1e-1,
-        rtol=1e-3,
-        tensor_para=dict(
-            args=[
-                {
-                    # can't get correct result
-                    "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
+    # 'adadelta': dict(
+    #     name=["adadelta"],
+    #     atol_half=1e-1,
+    #     rtol_half=1e-1,
+    #     atol=1e-1,
+    #     rtol=1e-3,
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 # can't get correct result
+    #                 "ins": ['param', 'param_grad'],
+    #                 "dtype": [Skip(np.float64)],
+    #             },
+    #         ]
+    #     ),
+    # ),
 
     'rmsprop': dict(
         name=["rmsprop"],
