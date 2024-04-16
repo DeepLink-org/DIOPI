@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <c10/core/ScalarType.h>
+
 #include "../helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
@@ -17,6 +19,9 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     BEGIN_CALL_ACL_OP(out, invRms, input, weight);
     TORCH_CHECK(1 == normalizedShape.len && normalizedShape.data[0] == inputAt.size(inputAt.dim() - 1),
                 "normalized shape currently must be the size of the last dimension on ascend!");
+    if (inputAt.scalar_type() == at::kHalf || inputAt.scalar_type() == at::kBFloat16) {
+        TORCH_CHECK(invRmsAt.scalar_type() == at::kFloat, "When the dtype of input is float16 or bfloat16, the dtype of invRms must be float32!");
+    }
 
     if (false) {
         std::tuple<at::Tensor, at::Tensor> result;
@@ -35,6 +40,9 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     BEGIN_CALL_ACL_OP(gradInput, gradWeight, gradOutput, input, weight, invRms);
     TORCH_CHECK(1 == normalizedShape.len && normalizedShape.data[0] == inputAt.size(inputAt.dim() - 1),
                 "normalized shape currently must be the size of the last dimension on ascend!");
+    if (inputAt.scalar_type() == at::kHalf || inputAt.scalar_type() == at::kBFloat16) {
+        TORCH_CHECK(invRmsAt.scalar_type() == at::kFloat, "When the dtype of input is float16 or bfloat16, the dtype of invRms must be float32!");
+    }
 
     if (false) {
         std::tuple<at::Tensor, at::Tensor> result;
