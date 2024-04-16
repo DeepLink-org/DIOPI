@@ -28,6 +28,7 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
     DiopiTensor outTensor(attentionOut);
     DiopiTensor softmaxLseTensor(softmaxLse);
 
+
     if (qTensor.numel() == 0) {
         return diopiSuccess;
     }
