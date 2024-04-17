@@ -460,15 +460,15 @@ diopiError_t diopiRoiAlign(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     return diopiSuccess;
 }
 
-diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double learningrate, double momentum,
+diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double learningrate, double momentum,
                       double dampening, double weightDecay, bool nesterov) {
     camb::aten::setCurCtx(ctx);
-    auto atW = camb::aten::buildATen(w);
-    auto atDw = camb::aten::buildATen(dw);
+    auto atParam = camb::aten::buildATen(param);
+    auto atGrad = camb::aten::buildATen(grad);
     auto atBuf = camb::aten::buildATen(buf);
 
-    auto& p = atW;
-    auto& d_p = atDw;
+    auto& p = atParam;
+    auto& d_p = atGrad;
     if (weightDecay != 0) {
         d_p.add_(p, weightDecay);
     }
@@ -482,8 +482,8 @@ diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTens
     }
     p.add_(d_p, -1 * learningrate);
 
-    camb::aten::updateATen2Tensor(ctx, atW, w);
-    camb::aten::updateATen2Tensor(ctx, atDw, dw);
+    camb::aten::updateATen2Tensor(ctx, atParam, param);
+    camb::aten::updateATen2Tensor(ctx, atGrad, grad);
     camb::aten::updateATen2Tensor(ctx, atBuf, buf);
     return diopiSuccess;
 }
@@ -1923,18 +1923,18 @@ diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandl
     return diopiSuccess;
 }
 
-diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
                         diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps, float weight_decay,
                         int64_t step, bool amsgrad) {
     camb::aten::setCurCtx(ctx);
-    auto atInput = camb::aten::buildATen(input);
+    auto atParam = camb::aten::buildATen(param);
     auto atGrad = camb::aten::buildATen(grad);
     auto atExpAvg = camb::aten::buildATen(exp_avg);
     auto atExpAvgSq = camb::aten::buildATen(exp_avg_sq);
     auto atMaxExpAvgSq = camb::aten::buildATen(max_exp_avg_sq);
 
-    atInput = atInput.mul(1 - lr * weight_decay);
-    auto& param = atInput;
+    atParam = atParam.mul(1 - lr * weight_decay);
+    auto& param_ = atParam;
     auto grad_d = atGrad.data();
     auto bias_correction1 = 1 - pow(beta1, step);
     auto bias_correction2 = 1 - pow(beta2, step);
@@ -1949,9 +1949,9 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
         denom = (atExpAvgSq.sqrt() / sqrt(bias_correction2)).add_(eps);
     }
     auto stepSize = lr / bias_correction1;
-    param = param.addcdiv(atExpAvg, denom, -1 * stepSize);
+    param_ = param_.addcdiv(atExpAvg, denom, -1 * stepSize);
 
-    camb::aten::updateATen2Tensor(ctx, atInput, input);
+    camb::aten::updateATen2Tensor(ctx, atParam, param);
     camb::aten::updateATen2Tensor(ctx, atGrad, grad);
     camb::aten::updateATen2Tensor(ctx, atExpAvg, exp_avg);
     camb::aten::updateATen2Tensor(ctx, atExpAvgSq, exp_avg_sq);
@@ -1959,23 +1959,23 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
     return diopiSuccess;
 }
 
-diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
                        diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps, float weight_decay,
                        int64_t step, bool amsgrad) {
     camb::aten::setCurCtx(ctx);
-    auto atInput = camb::aten::buildATen(input);
+    auto atParam = camb::aten::buildATen(param);
     auto atGrad = camb::aten::buildATen(grad);
     auto atExpAvg = camb::aten::buildATen(exp_avg);
     auto atExpAvgSq = camb::aten::buildATen(exp_avg_sq);
     auto atMaxExpAvgSq = camb::aten::buildATen(max_exp_avg_sq);
 
-    auto& param = atInput;
+    auto& param_ = atParam;
     auto grad_d = atGrad.data();
     auto bias_correction1 = 1 - pow(beta1, step);
     auto bias_correction2 = 1 - pow(beta2, step);
 
     if (weight_decay != 0) {
-        grad_d = grad_d.add(param, weight_decay);
+        grad_d = grad_d.add(param_, weight_decay);
     }
     atExpAvg.mul_(beta1).add_(grad_d, 1 - beta1);
     atExpAvgSq.mul_(beta2).addcmul_(grad_d, grad_d.conj(), 1 - beta2);
@@ -1988,7 +1988,7 @@ diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diop
         denom = (atExpAvgSq.sqrt() / sqrt(bias_correction2)).add_(eps);
     }
     auto stepSize = lr / bias_correction1;
-    param = param.addcdiv(atExpAvg, denom, -1 * stepSize);
+    param_ = param_.addcdiv(atExpAvg, denom, -1 * stepSize);
 
     camb::aten::updateATen2Tensor(ctx, atInput, input);
     camb::aten::updateATen2Tensor(ctx, atGrad, grad);
@@ -1998,25 +1998,25 @@ diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diop
     return diopiSuccess;
 }
 
-diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t square_avg,
+diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t square_avg,
                            diopiTensorHandle_t acc_delta, float lr, float rho, float eps, float weight_decay) {
     camb::aten::setCurCtx(ctx);
-    auto atInput = camb::aten::buildATen(input);
+    auto atParam = camb::aten::buildATen(param);
     auto atGrad = camb::aten::buildATen(grad);
     auto atSquareAvg = camb::aten::buildATen(square_avg);
     auto atAccDelta = camb::aten::buildATen(acc_delta);
 
-    auto& param = atInput;
+    auto& param_ = atParam;
     auto grad_d = atGrad.data();
     if (weight_decay != 0) {
-        grad_d = grad_d.add(param, weight_decay);
+        grad_d = grad_d.add(param_, weight_decay);
     }
     atSquareAvg.mul_(rho).addcmul_(grad_d, grad_d, 1 - rho);
     auto std = atSquareAvg.add(eps).sqrt_();
     auto delta = atAccDelta.add(eps).sqrt_().div_(std).mul_(grad_d);
-    param.add_(delta, -lr);
+    param_.add_(delta, -lr);
     atAccDelta.mul_(rho).addcmul_(delta, delta, 1 - rho);
-    camb::aten::updateATen2Tensor(ctx, atInput, input);
+    camb::aten::updateATen2Tensor(ctx, atParam, param);
     camb::aten::updateATen2Tensor(ctx, atGrad, grad);
     camb::aten::updateATen2Tensor(ctx, atSquareAvg, square_avg);
     camb::aten::updateATen2Tensor(ctx, atAccDelta, acc_delta);

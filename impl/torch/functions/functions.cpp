@@ -561,18 +561,18 @@ diopiError_t diopiRoiAlign(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     return diopiSuccess;
 }
 
-diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double learningrate, double momentum,
+diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double learningrate, double momentum,
                       double dampening, double weightDecay, bool nesterov) {
     impl::aten::setCurStream(ctx);
-    auto atW = impl::aten::buildATen(w);
-    auto atDw = impl::aten::buildATen(dw);
+    auto atParam = impl::aten::buildATen(param);
+    auto atGrad = impl::aten::buildATen(grad);
     auto atBuf = impl::aten::buildATen(buf);
 
-    atW.requires_grad_(true);
-    atW.mutable_grad() = atDw;
+    atParam.requires_grad_(true);
+    atParam.mutable_grad() = atGrad;
 
     // Implementation in pytorch v1.10.2 sgd.cpp.
-    auto& p = atW;
+    auto& p = atParam;
     auto d_p = p.grad().data();
     if (weightDecay != 0) {
         d_p = d_p.add(p.data(), weightDecay);
@@ -2730,11 +2730,11 @@ diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, 
     return diopiSuccess;
 }
 
-diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
                         diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps, float weight_decay,
                         int64_t step, bool amsgrad) {
     impl::aten::setCurStream(ctx);
-    auto atParam = impl::aten::buildATen(input);
+    auto atParam = impl::aten::buildATen(param);
     auto atGrad = impl::aten::buildATen(grad);
     auto atExpAvg = impl::aten::buildATen(exp_avg);
     auto atExpAvgSq = impl::aten::buildATen(exp_avg_sq);
@@ -2759,11 +2759,11 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
     return diopiSuccess;
 }
 
-diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
                        diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps, float weight_decay,
                        int64_t step, bool amsgrad) {
     impl::aten::setCurStream(ctx);
-    auto atParam = impl::aten::buildATen(input);
+    auto atParam = impl::aten::buildATen(param);
     auto atGrad = impl::aten::buildATen(grad);
     auto atExpAvg = impl::aten::buildATen(exp_avg);
     auto atExpAvgSq = impl::aten::buildATen(exp_avg_sq);
@@ -2791,40 +2791,40 @@ diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diop
     return diopiSuccess;
 }
 
-diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t square_avg,
+diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t square_avg,
                            diopiTensorHandle_t acc_delta, float lr, float rho, float eps, float weight_decay) {
     impl::aten::setCurStream(ctx);
-    auto atInput = impl::aten::buildATen(input);
+    auto atParam = impl::aten::buildATen(param);
     auto atGrad = impl::aten::buildATen(grad);
     auto atSquareAvg = impl::aten::buildATen(square_avg);
     auto atAccDelta = impl::aten::buildATen(acc_delta);
 
-    auto& param = atInput;
+    auto& param_ = atParam;
     auto grad_d = atGrad.data();
     if (weight_decay != 0) {
-        grad_d = grad_d.add(param, weight_decay);
+        grad_d = grad_d.add(param_, weight_decay);
     }
     atSquareAvg.mul_(rho).addcmul_(grad_d, grad_d, 1 - rho);
     auto std = atSquareAvg.add(eps).sqrt_();
     auto delta = atAccDelta.add(eps).sqrt_().div_(std).mul_(grad_d);
-    param.add_(delta, -lr);
+    param_.add_(delta, -lr);
     atAccDelta.mul_(rho).addcmul_(delta, delta, 1 - rho);
 
     return diopiSuccess;
 }
 
-diopiError_t diopiRmsprop(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t square_avg,
+diopiError_t diopiRmsprop(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t square_avg,
                           diopiTensorHandle_t grad_avg, diopiTensorHandle_t momentum_buf, float lr, float alpha, float eps, float weight_decay, float momentum,
                           bool centered) {
     impl::aten::setCurStream(ctx);
-    auto atInput = impl::aten::buildATen(input);
+    auto atParam = impl::aten::buildATen(param);
     auto atGrad = impl::aten::buildATen(grad);
     auto atSquareAvg = impl::aten::buildATen(square_avg);
     auto atGradAvg = impl::aten::buildATen(grad_avg);
     auto atBuf = impl::aten::buildATen(momentum_buf);
 
     if (weight_decay != 0) {
-        atGrad = atGrad.add(atInput, weight_decay);
+        atGrad = atGrad.add(atParam, weight_decay);
     }
     atSquareAvg.mul_(alpha).addcmul_(atGrad, atGrad, 1 - alpha);
     at::Tensor atAvg;
@@ -2838,9 +2838,9 @@ diopiError_t diopiRmsprop(diopiContextHandle_t ctx, diopiTensorHandle_t input, d
 
     if (momentum > 0) {
         atBuf.mul_(momentum).addcdiv_(atGrad, atAvg);
-        atInput.add_(atBuf, -lr);
+        atParam.add_(atBuf, -lr);
     } else {
-        atInput.addcdiv_(atGrad, atAvg, -lr);
+        atParam.addcdiv_(atGrad, atAvg, -lr);
     }
 
     return diopiSuccess;

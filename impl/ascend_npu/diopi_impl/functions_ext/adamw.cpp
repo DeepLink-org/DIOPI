@@ -12,22 +12,22 @@
 
 namespace OP_IMPL_NS {
 
-diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t expAvg,
+diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t expAvg,
                         diopiTensorHandle_t expAvgSq,
 
                         diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps, float weightDecay, int64_t step, bool amsgrad) {
     DIOPI_CHECK(amsgrad == false, "at present, ApplyAdamW only supports amsgrad false on ascend.");
-    BEGIN_CALL_ACL_OP(input, grad, expAvg, expAvgSq, maxExpAvgSq);
-    if (!inputAt.defined() || inputAt.numel() == 0) {
+    BEGIN_CALL_ACL_OP(param, grad, expAvg, expAvgSq, maxExpAvgSq);
+    if (!paramAt.defined() || paramAt.numel() == 0) {
         return diopiSuccess;
     }
 
     at_npu::native::OpCommand cmd;
     // maximize is not supported in diopi for now
     bool maximize = false;
-    auto dtype = inputAt.scalar_type();
+    auto dtype = paramAt.scalar_type();
     cmd.Name("ApplyAdamW")
-        .Input(inputAt)
+        .Input(paramAt)
         .Input(expAvgAt)
         .Input(expAvgSqAt)
         .Input(at::Scalar(pow(beta1, step)), dtype)
@@ -45,7 +45,7 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
     } else {
         cmd.Input();
     }
-    cmd.Output(inputAt).Output(expAvgAt).Output(expAvgSqAt);
+    cmd.Output(paramAt).Output(expAvgAt).Output(expAvgSqAt);
     cmd.Run();
 
     END_CALL_ACL_OP();
