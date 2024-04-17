@@ -259,7 +259,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  * @param[in] gen_dropout Handle for the random number generator used in dropout op.
  * @param[in] softmax_scale The temperature to use for the softmax attention. if softmax_scale < 0, softmax_scale=\frac{1}{\sqrt{qk_embedding_dimension}}
  * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
- * @param[in] attention_type attention type: "DotProduct".
+ * @param[in] attention_type attention type: default "DotProduct".
  */
 DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t save_for_backward[16],
                                       int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
@@ -296,6 +296,65 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
                                               diopiConstTensorHandle_t saved_for_backward[16], int64_t saved_tensor_num, double p_dropout,
                                               diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type);
+
+/**
+ * @brief Computes scaled dot product attention on query, key and value tensors, using an optional attention mask if passed,
+ and applying dropout if a probability greater than 0.0 is specified.
+ * @param[in] ctx The diopi context.
+ * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, ..., q_seq_len, v_embedding_dimension]. type =
+ [bfloat16, float16, float32].
+ * @param[out] save_for_backward The intermediate variables that need to be saved for backward
+ * @param[out] save_tensor_num The number of the intermediate variables that need to be saved for backward
+ * @param[in] attention_mask (optional Tensor) – Attention mask. shape (batch_size,..., q_seq_len, kv_seq_len). Two types of masks are supported. A boolean mask
+ where a value of True indicates that the element should take part in attention. A float mask of the same type as query, key, value that is added to the
+ attention score. A boolean mask where a value of True indicates that the element should take part in attention. A float mask of the same type as query, key,
+ value that is added to the attention score.
+ * @param[in] q Query tensor. shape = [batch_size, ..., q_seq_len, qk_embedding_dimension]. type = [bfloat16, float16, float32].
+ * @param[in] k Key tensor. shape = [batch_size, ..., kv_seq_len, qk_embedding_dimension]. type = [bfloat16, float16, float32].
+ * @param[in] v Value tensor. shape = [batch_size, kv_seq_len, ..., v_embedding_dimension]. type = [bfloat16, float16, float32].
+ * @param[in] p_dropout Dropout probability; if greater than 0.0, dropout is applied.
+ * @param[in] gen_dropout Handle for the random number generator used in dropout op.
+ * @param[in] softmax_scale The temperature to use for the softmax attention. if softmax_scale < 0, softmax_scale=\frac{1}{\sqrt{qk_embedding_dimension}}
+ * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
+ * @param[in] attention_type attention type: "DotProduct".
+ */
+DIOPI_API diopiError_t diopiAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t save_for_backward[16],
+                                        int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                        diopiConstTensorHandle_t attention_mask, double p_dropout, diopiGeneratorHandle_t gen_dropout,
+                                        diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, double softmax_scale, bool is_causal,
+                                        const char* attention_type);
+
+/**
+ * @brief Compute the backward pass for Flash Attention.
+ * @param[in] ctx The diopi context.
+ * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, q_seq_len, head_num, head_dim] or [batch_size, head_num, q_seq_len, head_dim] or
+ * [batch_size, q_seq_len, hidden_size] or [q_seq_len, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, k_seq_len, head_num, head_dim] or [batch_size, head_num, k_seq_len, head_dim] or
+ * [batch_size, k_seq_len, hidden_size] or [k_seq_len, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, v_seq_len, head_num, head_dim] or [batch_size, head_num, v_seq_len, head_dim] or
+ * [batch_size, v_seq_len, hidden_size] or [v_seq_len, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[in] grad_out The gradient of the output tensor. shape = [batch_size, q_seq_len, head_num, head_dim] or [batch_size, head_num, q_seq_len, head_dim] or
+ * [batch_size, q_seq_len, hidden_size] or [q_seq_len, batch_size, hidden_size]. type = [bfloat16, float16]. type = [bfloat16, float16].
+ * @param[in] q Query tensor. shape = [batch_size, head_num, q_seq_len, qk_embedding_dimension]. type = [bfloat16, float16, float32].
+ * @param[in] k k Key tensor. shape = [batch_size, head_num, kv_seq_len, qk_embedding_dimension]. type = [bfloat16, float16, float32].
+ * @param[in] v Value tensor. shape = [batch_size, kv_seq_len, head_num, v_embedding_dimension]. type = [bfloat16, float16, float32].
+ * @param[in] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, ..., q_seq_len, v_embedding_dimension]. type =
+ * [bfloat16, float16, float32].
+ * @param[in] attention_mask (optional Tensor) – Attention mask. shape (batch_size,..., q_seq_len, kv_seq_len)
+ * @param[in] save_for_backward The intermediate variables saved in forward
+ * @param[out] save_tensor_num The number of the intermediate variables saved in forward
+ * @param[in] p_dropout The probability of dropout op.
+ * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[in] gen_dropout Handle for the random number generator used in dropout op.
+ * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
+ * @param[in] attention_type attention type: "DotProduct".
+ */
+DIOPI_API diopiError_t diopiAttentionBackwardV2(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
+                                                diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+                                                diopiConstTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k,
+                                                diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
+                                                diopiConstTensorHandle_t saved_for_backward[16], int64_t saved_tensor_num, double p_dropout,
+                                                diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type);
 
 // The difference between this interface and the original diopiFlashAttention definition is that the passed input attention mask can be used directly. This
 // prevents the attention mask from being recalculated inside the op. This helps reduce a lot of useless overhead when training large language models.
