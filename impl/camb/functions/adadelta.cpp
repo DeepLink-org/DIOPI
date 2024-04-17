@@ -7,7 +7,7 @@ namespace camb {
 diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t squareAvg,
                            diopiTensorHandle_t accDelta, float lr, float rho, float eps, float weightDecay) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor paramTenso = DiopiTensor(param);
+    DiopiTensor paramTensor = DiopiTensor(param);
     DiopiTensor gradTensor = DiopiTensor(grad);
     DiopiTensor squareAvgTensor = DiopiTensor(squareAvg);
     DiopiTensor accDeltaTensor = DiopiTensor(accDelta);
