@@ -542,12 +542,6 @@ device_configs = {
         name=['rms_norm'],
         dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
     ),
-
-    # bias is currently not supported on ascend
-    'rms_norm_with_bias': dict(
-        name=['rms_norm'],
-        dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
-    ),
     
     # multi-dimensional normalized_shape and bias is currently not supported on ascend
     'rms_norm': dict(

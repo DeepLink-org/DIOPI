@@ -19,17 +19,15 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     BEGIN_CALL_ACL_OP(out, invRms, input, weight);
     TORCH_CHECK(1 == normalizedShape.len && normalizedShape.data[0] == inputAt.size(inputAt.dim() - 1),
                 "normalized shape currently must be the size of the last dimension on ascend!");
+
     if (inputAt.scalar_type() == at::kHalf || inputAt.scalar_type() == at::kBFloat16) {
         TORCH_CHECK(invRmsAt.scalar_type() == at::kFloat, "When the dtype of input is float16 or bfloat16, the dtype of invRms must be float32!");
     }
 
-    if (false) {
-        std::tuple<at::Tensor, at::Tensor> result;
-        result = acl_op::npu_rms_norm(inputAt, weightAt, eps);
-        invRmsAt.copy_(std::get<1>(result));
-        outAt.copy_(std::get<0>(result));
-    } else {
-        EXEC_NPU_CMD(aclnnRmsNorm, inputAt, weightAt, eps, outAt, invRmsAt);
+    EXEC_NPU_CMD(aclnnRmsNorm, inputAt, weightAt, eps, outAt, invRmsAt);
+    if (bias) {
+        auto biasAt = impl::aten::buildATen(bias);
+        op_api::add_(outAt, biasAt, 1.0);
     }
     END_CALL_ACL_OP();
 }
@@ -40,23 +38,29 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     BEGIN_CALL_ACL_OP(gradInput, gradWeight, gradOutput, input, weight, invRms);
     TORCH_CHECK(1 == normalizedShape.len && normalizedShape.data[0] == inputAt.size(inputAt.dim() - 1),
                 "normalized shape currently must be the size of the last dimension on ascend!");
+
     if (inputAt.scalar_type() == at::kHalf || inputAt.scalar_type() == at::kBFloat16) {
         TORCH_CHECK(invRmsAt.scalar_type() == at::kFloat, "When the dtype of input is float16 or bfloat16, the dtype of invRms must be float32!");
     }
 
-    if (false) {
-        std::tuple<at::Tensor, at::Tensor> result;
-        result = acl_op::npu_rms_norm_backward(gradOutputAt, inputAt, weightAt, invRmsAt);
-        gradInputAt.copy_(std::get<0>(result));
-        gradWeightAt.copy_(std::get<1>(result));
+    if (gradWeightAt.scalar_type() != at::kFloat) {
+        at::Tensor gradWeightTempAt = at_npu::native::OpPreparation::apply_tensor_with_format(
+            op_infer::rms_norm_grad_npu_output_size(inputAt, weightAt)[1], gradWeightAt.options().dtype(at::kFloat), ACL_FORMAT_ND);
+        EXEC_NPU_CMD(aclnnRmsNormGrad, gradOutputAt, inputAt, invRmsAt, weightAt, gradInputAt, gradWeightTempAt);
+        gradWeightAt.copy_(gradWeightTempAt);
     } else {
-        if (gradWeightAt.scalar_type() != at::kFloat) {
-            at::Tensor gradWeightTempAt = at_npu::native::OpPreparation::apply_tensor_with_format(
-                op_infer::rms_norm_grad_npu_output_size(inputAt, weightAt)[1], gradWeightAt.options().dtype(at::kFloat), ACL_FORMAT_ND);
-            EXEC_NPU_CMD(aclnnRmsNormGrad, gradOutputAt, inputAt, invRmsAt, weightAt, gradInputAt, gradWeightTempAt);
-            gradWeightAt.copy_(gradWeightTempAt);
+        EXEC_NPU_CMD(aclnnRmsNormGrad, gradOutputAt, inputAt, invRmsAt, weightAt, gradInputAt, gradWeightAt);
+    }
+    if (gradBias) {
+        auto gradBiasAt = impl::aten::buildATen(gradBias);
+        auto outDim = gradOutputAt.dim();
+        auto biasDim = gradBiasAt.dim();
+        if (outDim > biasDim) {
+            std::vector<int64_t> sumDims(outDim - biasDim);
+            std::iota(sumDims.begin(), sumDims.end(), 0);
+            op_api::sum_out(gradOutputAt, sumDims, false, gradBiasAt.scalar_type(), gradBiasAt);
         } else {
-            EXEC_NPU_CMD(aclnnRmsNormGrad, gradOutputAt, inputAt, invRmsAt, weightAt, gradInputAt, gradWeightAt);
+            gradBiasAt.copy_(gradOutputAt);
         }
     }
     END_CALL_ACL_OP();
