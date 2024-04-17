@@ -5050,7 +5050,7 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     inv_rms_size[-1] = 1
     inv_dtype = input.get_dtype()
     # when input_dtype is bfloat16 or float16, inv_dtype is float32
-    if (inv_dtype == Dtype.float16):
+    if inv_dtype == Dtype.float16:
         inv_dtype = Dtype.float32
     inv_rms = Tensor(inv_rms_size, inv_dtype)
     # When weight and bias exist, its shape is equal to normalized_shape.
