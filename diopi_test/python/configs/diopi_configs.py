@@ -8942,6 +8942,38 @@ diopi_configs = {
         ),
     ),
 
+    'flash_attention_v3': dict(
+        name=['flash_attention_v3'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        para=dict(
+            p_dropout=[0, 0, 0, 0],
+            is_causal=[True, False, True, True],
+            softmax_scale=[0.0883, None, 0.125, 0.125],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+            ],
+        ),
+    ),
+
     'scaled_masked_softmax': dict(
         name=['scaled_masked_softmax'],
         interface=['CustomizedTest'],

@@ -4,7 +4,7 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t squareAvg,
+diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t squareAvg,
                            diopiTensorHandle_t accDelta, float lr, float rho, float eps, float weightDecay) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor = DiopiTensor(input);

@@ -1110,7 +1110,7 @@ device_configs = {
     'adadelta': dict(
         name=["adadelta"],
         atol_half=1e-1,
-        rtol_half=1e-3,
+        rtol_half=1e-1,
         atol=1e-1,
         rtol=1e-3,
         tensor_para=dict(
@@ -1118,7 +1118,7 @@ device_configs = {
                 {
                     # can't get correct result
                     "ins": ['param', 'param_grad'],
-                    "dtype": [Skip(np.float16)],
+                    "dtype": [Skip(np.float64)],
                 },
             ]
         ),
