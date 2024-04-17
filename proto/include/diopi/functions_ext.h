@@ -295,7 +295,7 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type);
 
 /**
- * @brief Computes attention on query, key and value tensors, using an optional attention mask if passed,
+ * @brief Computes attention on packed query, key and value tensors, using an optional attention mask if passed,
  and applying dropout if a probability greater than 0.0 is specified.
  * @param[in] ctx The diopi context.
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [total, head_num, v_embedding_dimension]. type =
@@ -324,7 +324,7 @@ DIOPI_API diopiError_t diopiAttentionV2(diopiContextHandle_t ctx, diopiTensorHan
                                         const char* attention_type);
 
 /**
- * @brief Compute the backward pass for Attention.
+ * @brief Compute the backward pass for AttentionV2.
  * @param[in] ctx The diopi context.
  * @param[out] grad_q The gradient of the query tensor. shape = [total, head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
  * @param[out] grad_k The gradient of the key tensor. shape = [total, head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
