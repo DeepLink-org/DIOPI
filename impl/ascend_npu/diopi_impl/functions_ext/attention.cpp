@@ -77,7 +77,6 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     at::Tensor softmaxMaxOptional = impl::aten::buildATen(saved_for_backward[0]);
     at::Tensor softmaxSumOptional = impl::aten::buildATen(saved_for_backward[1]);
     at::Tensor softmaxInOptional = impl::aten::buildATen(saved_for_backward[2]);
-    at::Tensor attentionInOptional = attention_outAt;
     at::Tensor prefixOptional;
     double scaleValueOptional = softmax_scale;
     double keepProbOptional = 1 - p_dropout;
@@ -88,7 +87,6 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     int64_t innerPreciseOptional = 0;
     int64_t sparseModeOptional = 0;
     at::Tensor dpseOut = at_npu::native::empty_npu(vAt.sizes(), vAt.options());
-#if 0
     EXEC_NPU_CMD(aclnnFlashAttentionScoreGrad,
                  qAt,
                  kAt,
@@ -98,7 +96,7 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                  dropMaskOptional,
                  paddingMaskOptional,
                  attention_maskAt,
-                 attentionInOptional,
+                 attention_outAt,
                  prefixOptional,
                  scaleValueOptional,
                  keepProbOptional,
@@ -110,9 +108,7 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                  sparseModeOptional,
                  grad_qAt,
                  grad_kAt,
-                 grad_vAt,
-                );
-#endif
+                 grad_vAt);
     END_CALL_ACL_OP();
 }
 
