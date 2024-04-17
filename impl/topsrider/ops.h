@@ -298,8 +298,8 @@ DIOPI_API diopiError_t topsCrossEntropyLossBackward(diopiContextHandle_t ctx, di
                                                     diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                                     diopiReduction_t reduction, int64_t ignore_index, double label_smoothing);
 
-DIOPI_API diopiError_t topsSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double lr, double momentum,
-                               double dampening, double weight_decay, bool nesterov);
+DIOPI_API diopiError_t topsSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double lr,
+                               double momentum, double dampening, double weight_decay, bool nesterov);
 
 DIOPI_API diopiError_t topsExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 

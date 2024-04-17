@@ -460,8 +460,8 @@ diopiError_t diopiRoiAlign(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     return diopiSuccess;
 }
 
-diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double learningrate, double momentum,
-                      double dampening, double weightDecay, bool nesterov) {
+diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double learningrate,
+                      double momentum, double dampening, double weightDecay, bool nesterov) {
     camb::aten::setCurCtx(ctx);
     auto atParam = camb::aten::buildATen(param);
     auto atGrad = camb::aten::buildATen(grad);

@@ -706,8 +706,8 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
     return impl::tops::topsCrossEntropyLossBackward(ctx, grad_input, grad_output, input, target, weight, reduction, ignore_index, label_smoothing);
 }
 
-DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double lr, double momentum,
-                                double dampening, double weight_decay, bool nesterov) {
+DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double lr,
+                                double momentum, double dampening, double weight_decay, bool nesterov) {
     TOPSOP_LOG();
     return impl::tops::topsSgd(ctx, param, grad, buf, lr, momentum, dampening, weight_decay, nesterov);
 }
