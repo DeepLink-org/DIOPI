@@ -21,9 +21,10 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
                             diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_mask,
                             double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type) {
     BEGIN_CALL_ACL_OP(attention_out, q, k, v, attention_mask, gen_dropout);
-    auto realShiftOptional = at::Tensor();
-    auto dropMaskOptional = at::Tensor();
-    auto paddingMaskOptional = at::Tensor();
+    at::Tensor realShiftOptional;
+    at::Tensor dropMaskOptional;
+    at::Tensor paddingMaskOptional;
+    at::Tensor attentionMaskOptional = attention_maskAt;
     auto prefixOptional = nullptr;
     double scaleValueOptional = softmax_scale;
     double keepProbOptional = 1 - p_dropout;
@@ -36,6 +37,18 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     at::Tensor softmaxMaxOut = at_npu::native::empty_npu({1}, attention_outAt.options().dtype(at::kFloat));
     at::Tensor softmaxSumOut = at_npu::native::empty_npu({1}, attention_outAt.options().dtype(at::kFloat));
     at::Tensor softmaxOutOut = at_npu::native::empty_npu({1}, attention_outAt.options().dtype(at::kFloat));
+    if (is_causal) {
+        int64_t s0 = qAt.size(-2);                                                                    // S for query
+        int64_t s1 = kAt.size(-2);                                                                    // S for key & value
+        attentionMaskOptional = at_npu::native::empty_npu({s0, s1}, qAt.options().dtype(at::kBool));  // [S0, S1]
+        int64_t diagonal = 1;
+        EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskOptional, diagonal);
+    }
+    TORCH_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", qAt.dim(), "-dimensional");
+    TORCH_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", kAt.dim(), "-dimensional");
+    TORCH_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ", vAt.dim(), "-dimensional");
+    TORCH_CHECK(keepProbOptional >= 0 && keepProbOptional <= 1, "The keep_prob value must be in range of [0, 1], but got ", keepProbOptional);
+    TORCH_CHECK(sparseModeOptional >= 0 && sparseModeOptional <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparseModeOptional);
     EXEC_NPU_CMD(aclnnFlashAttentionScore,
                  qAt,
                  kAt,
@@ -43,7 +56,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
                  realShiftOptional,
                  dropMaskOptional,
                  paddingMaskOptional,
-                 attention_maskAt,
+                 attentionMaskOptional,
                  prefixOptional,
                  scaleValueOptional,
                  keepProbOptional,

@@ -5460,6 +5460,54 @@ def flash_attention_v1_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
+
+def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
+    call = "diopiAttention"
+    func = check_function(call)
+    out = raw_like(query)
+    if is_causal:
+        attn_mask = Tensor()
+    else:
+        attn_mask = None
+    if dropout_p > 0 and dropout_p <= 1:
+        dropout_mask = Tensor()
+        state = build_generator_state(query.context())
+        generator = Generator(state)
+    elif dropout_p == 0:
+        generator = None
+    else:
+        assert 0, "The dropout_p value must be in range of [0, 1]"
+    softmax_max = Tensor()
+    softmax_sum = Tensor()
+    softmax_out = Tensor()
+
+    head_dim = query.shape().data[1]
+    save_tensor_num = ctypes.c_long(0)
+    save_for_backward = (ctypes.c_void_p * 16)()
+    #save_for_backward = attention_mask_ptr = TensorP(query)
+    save_for_backward_c_p = ctypes.byref(save_for_backward)
+
+    if attn_mask is None:
+        attn_mask = Tensor()
+
+    ret = func(
+        query.context(),
+        out,
+        save_for_backward_c_p,
+        ctypes.byref(save_tensor_num),
+        query,
+        key,
+        value,
+        value,
+        dropout_p,
+        generator,
+        ctypes.c_double(scale),
+        ctypes.c_bool(is_causal),
+        "DotProduct",
+    )
+    check_returncode(ret)
+    return out
+
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
     func = check_function(call)
