@@ -315,11 +315,11 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
  * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
  * @param[in] attention_type attention type: default "DotProduct".
  */
-DIOPI_API diopiError_t diopiAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward,
-                                        int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                        diopiConstTensorHandle_t attention_mask, double p_dropout, diopiGeneratorHandle_t gen_dropout,
-                                        diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, double softmax_scale, bool is_causal,
-                                        const char* attention_type);
+DIOPI_API diopiError_t diopiAttentionPacked(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward,
+                                            int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                            diopiConstTensorHandle_t attention_mask, double p_dropout, diopiGeneratorHandle_t gen_dropout,
+                                            diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, double softmax_scale, bool is_causal,
+                                            const char* attention_type);
 /**
  * @brief Compute the backward pass for AttentionV2.
  * @param[in] ctx The diopi context.
@@ -344,12 +344,13 @@ DIOPI_API diopiError_t diopiAttentionV2(diopiContextHandle_t ctx, diopiTensorHan
  * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
  * @param[in] attention_type attention type: "DotProduct".
  */
-DIOPI_API diopiError_t diopiAttentionBackwardV2(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
-                                                diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                                diopiConstTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k,
-                                                diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
-                                                diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num, double p_dropout,
-                                                diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type);
+DIOPI_API diopiError_t diopiAttentionPackedBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
+                                                    diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                                    diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q,
+                                                    diopiConstTensorHandle_t cum_seq_k, diopiConstTensorHandle_t attention_out,
+                                                    diopiConstTensorHandle_t attention_mask, diopiConstTensorHandle_t* saved_for_backward,
+                                                    int64_t saved_tensor_num, double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale,
+                                                    bool is_causal, const char* attention_type);
 
 // The difference between this interface and the original diopiFlashAttention definition is that the passed input attention mask can be used directly. This
 // prevents the attention mask from being recalculated inside the op. This helps reduce a lot of useless overhead when training large language models.
