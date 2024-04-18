@@ -5,7 +5,6 @@ from einops import rearrange
 import torch.nn.functional as F
 
 
-
 def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
     xq = xq.view(bs, seqlen, num_head, head_dim)
     xk = xk.view(bs, seqlen, num_head, head_dim)
@@ -34,7 +33,7 @@ def _torch_context_attention(xq, xk, xv, bs, seqlen, num_head, head_dim):
     return output
 
 
-def multihead_attention_inside(
+def multi_head_attention_inside(
     q, k, v, softmax_scale, causal=None, key_padding_mask=None
 ):
     # using for multiheadattention & varlen multiheadattention test
@@ -382,7 +381,7 @@ class CustomizedTest(object):
 
     def multihead_attention(q, k, v, dropout_p, is_causal, return_debug_mask, scale):
         # 为了保证精度，因此在test的时候不使用dropout
-        output = multihead_attention_inside(q, k, v, scale, is_causal)
+        output = multi_head_attention_inside(q, k, v, scale, is_causal)
         return output
 
     def multihead_attention_varlen(
@@ -413,7 +412,7 @@ class CustomizedTest(object):
             q_padded[i, :seq_len, :, :] = q[cu_seqlens[i] : cu_seqlens[i + 1], :, :]
             k_padded[i, :seq_len, :, :] = k[cu_seqlens[i] : cu_seqlens[i + 1], :, :]
             v_padded[i, :seq_len, :, :] = v[cu_seqlens[i] : cu_seqlens[i + 1], :, :]
-        qkv_result = multihead_attention_inside(
+        qkv_result = multi_head_attention_inside(
             q_padded, k_padded, v_padded, scale, is_causal, key_padding_mask
         )
         output = torch.zeros(q.shape, dtype=torch.float16).cuda()
@@ -476,35 +475,42 @@ class CustomizedTest(object):
         output = torch.einsum("bhts,bshd->bthd", attention, v)
         return output
 
-    def flash_attention_varlen(q, k, v, cu_seqlens, max_seqlen, p_dropout, softmax_scale, is_causal):
-        # 为了保证精度，因此在test的时候不使用dropout
-        from einops import rearrange
-        import math
+    def flash_attention_varlen(
+        q, k, v, cu_seqlens, max_seqlen, p_dropout, softmax_scale, is_causal
+    ):
+        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         batch_size = len(cu_seqlens) - 1
-        seq_len = max_seqlen
-        _, num_heads, feature_size = q.size()
+        _, head_num, head_dim = q.size()
+
+        padded_shape = (batch_size, max_seqlen, head_num, head_dim)
+        q_padded = torch.zeros(padded_shape, dtype=q.dtype)
+        k_padded = torch.zeros(padded_shape, dtype=k.dtype)
+        v_padded = torch.zeros(padded_shape, dtype=v.dtype)
+
         # Initialize the key_padding_mask as a Boolean mask with False values
         key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool)
-
         # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
         for i in range(batch_size):
-            seq_len_in = cu_seqlens[i + 1] - cu_seqlens[i]
-            key_padding_mask[i, :seq_len_in] = True
-        padded_q_shape = (batch_size, seq_len, num_heads, feature_size)
-        q_padded = torch.zeros(padded_q_shape, dtype=q.dtype)
-        k_padded = torch.zeros(padded_q_shape, dtype=k.dtype)
-        v_padded = torch.zeros(padded_q_shape, dtype=v.dtype)
-        for i in range(batch_size):
-            seq_len = cu_seqlens[i + 1] - cu_seqlens[i]
-            q_padded[i, :seq_len, :, :] = q[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
-            k_padded[i, :seq_len, :, :] = k[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
-            v_padded[i, :seq_len, :, :] = v[cu_seqlens[i]:cu_seqlens[i + 1], :, :]
-        qkv_result = multihead_attention_inside(q_padded, k_padded, v_padded, softmax_scale, is_causal, key_padding_mask)
+            start_idx = cu_seqlens[i]
+            end_idx = cu_seqlens[i + 1]
+            actual_seq_len = end_idx - start_idx
+            key_padding_mask[i, :actual_seq_len] = True
+            q_padded[i, :actual_seq_len, :, :] = q[start_idx:end_idx, :, :]
+            k_padded[i, :actual_seq_len, :, :] = k[start_idx:end_idx, :, :]
+            v_padded[i, :actual_seq_len, :, :] = v[start_idx:end_idx, :, :]
+
+        qkv_padded_result = multi_head_attention_inside(
+            q_padded, k_padded, v_padded, softmax_scale, is_causal, key_padding_mask
+        )
         output = torch.zeros(q.shape, dtype=q.dtype)
-        for i in range(1, len(cu_seqlens)):
-            start_idx = cu_seqlens[i - 1]
-            end_idx = cu_seqlens[i]
-            output[start_idx:end_idx, :, :] = qkv_result[i - 1, :end_idx - start_idx, :, :]
+
+        for i in range(batch_size):
+            start_idx = cu_seqlens[i]
+            end_idx = cu_seqlens[i + 1]
+            actual_seq_len = end_idx - start_idx
+            output[start_idx:end_idx, :, :] = qkv_padded_result[
+                i, :actual_seq_len, :, :
+            ]
         return output
 
     def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
