@@ -128,7 +128,7 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 diopiError_t diopiAttentionPacked(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward, int64_t* save_tensor_num,
                                   diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_mask,
                                   double p_dropout, diopiGeneratorHandle_t gen_dropout, diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k,
-                                  double softmax_scale, bool is_causal, const char* attention_type) {
+                                  int64_t max_seq_length, double softmax_scale, bool is_causal, const char* attention_type) {
     BEGIN_CALL_ACL_OP(attention_out, q, k, v, attention_mask, gen_dropout);
     at::Tensor realShiftOptional;
     at::Tensor dropMaskOptional;
@@ -190,7 +190,7 @@ diopiError_t diopiAttentionPackedBackward(diopiContextHandle_t ctx, diopiTensorH
                                           diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                           diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, diopiConstTensorHandle_t attention_out,
                                           diopiConstTensorHandle_t attention_mask, diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
-                                          double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal,
+                                          int64_t max_seq_length, double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal,
                                           const char* attention_type) {
     BEGIN_CALL_ACL_OP(attention_out, q, k, v, grad_q, grad_k, grad_v, grad_out, attention_mask, gen_dropout);
     at::Tensor pseShiftOptional;

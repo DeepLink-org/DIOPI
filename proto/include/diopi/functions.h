@@ -445,8 +445,8 @@ DIOPI_API diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, 
  * @param[in] p the probability of an element in the input tensor being zeroed out. type = [float32, float64].
  * @param[in] train boolean, whether the module is in training mode. When set to False, the dropout operation will not be performed.
  * @param[in] generator a pseudorandom number generator for sampling.
- * @param[out] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
- * indicating whether the corresponding neuron at that position is dropped or not. type = [int32].
+ * @param[out] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either true or false,
+ * indicating whether the corresponding neuron at that position is dropped or not. type = [bool].
  * @param[out] out the output tensor. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
@@ -455,8 +455,8 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
  * @brief The in-place version of diopiDropout().
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor and will be stored result tensor. type = [float32, float64].
- * @param[out] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either 0 or 1,
- * indicating whether the corresponding neuron at that position is dropped or not. type = [int32].
+ * @param[out] mask A binary mask tensor of the same shape as the input tensor, where each element's value is either true or false,
+ * indicating whether the corresponding neuron at that position is dropped or not. type = [bool].
  * @param[in] p the probability of an element in the input tensor being zeroed out. type = [float32, float64].
  * @param[in] train boolean, whether the module is in training mode. When set to False, the dropout operation will not be performed.
  * @param[in] generator a pseudorandom number generator for sampling.
@@ -2167,19 +2167,19 @@ DIOPI_API diopiError_t diopiRoiAlignBackward(diopiContextHandle_t ctx, diopiTens
                                              int64_t height, int64_t width, int64_t sampling_ratio, bool aligned);
 
 /**
- * @brief Implements stochastic gradient descent optimizer, type=[float32, float16, float64]
+ * @brief The function is used to implement the SGD optimizer. Its functionality is to perform a single parameter update.
  * @param[in] ctx Context environment.
- * @param[in] w the params tensor. type = [float32, float64].
- * @param[in] dw the grad tensor of the params tensor. type = [float32, float64].
- * @param[in] buf the buffer tensor of Momentum. type = [float32, float64].
+ * @param[inout] param the param tensor. type = [float32, float64].
+ * @param[in] grad the grad tensor of the param tensor. type = [float32, float64].
+ * @param[inout] buf the buffer tensor of Momentum. type = [float32, float64].
  * @param[in] lr leaning rate, type = [float32, float64].
  * @param[in] momentum Momentum factor. type = [float32, float64].
  * @param[in] dampening dampening factor. type = [float32, float64].
  * @param[in] weight_decay weight_decay factor. type = [float32, float64].
  * @param[in] nesterov boolean, whether to use Nesterov momentum.
  */
-DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double lr, double momentum,
-                                double dampening, double weight_decay, bool nesterov);
+DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double lr,
+                                double momentum, double dampening, double weight_decay, bool nesterov);
 
 /**
  * @brief Clips gradient norm of an iterable of parameters.
@@ -2387,15 +2387,15 @@ DIOPI_API diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHand
 DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 
 /**
- * @brief Implements AdamW optimizer.
+ * @brief The function is used to implement the AdamW optimizer. Its functionality is to perform a single parameter update.
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor. type=[float16, float32, float64].
+ * @param[inout] param the param tensor. type=[float16, float32, float64].
  * @param[in] grad the grad tensor. type=[float16, float32, float64].
- * @param[in] exp_avg the first momentum is related to the number of iterations, that is, the gradient mean value of the i th iteration. type=[float16, float32,
- * float64].
- * @param[in] exp_avg_sq the second momentum is related to the number of iterations, that is, the mean value of the gradient square of the i iteration.
+ * @param[inout] exp_avg the first momentum is related to the number of iterations, that is, the gradient mean value of the i th iteration. type=[float16,
+ * float32, float64].
+ * @param[inout] exp_avg_sq the second momentum is related to the number of iterations, that is, the mean value of the gradient square of the i iteration.
  * type=[float16, float32, float64].
- * @param[in] max_exp_avg_sq the maximum second momentum. When the parameter 'amsgrad' is true, it will replace the second momentum to participate in the
+ * @param[inout] max_exp_avg_sq the maximum second momentum. When the parameter 'amsgrad' is true, it will replace the second momentum to participate in the
  * calculation. type=[float16, float32, float64].
  * @param[in] lr learning rate.
  * @param[in] beta1 coefficients used for computing running averages of gradient.
@@ -2405,7 +2405,7 @@ DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorH
  * @param[in] step step. type = [int64].
  * @param[in] amsgrad whether to use the AMSGrad variant of this algorithm from the paper `On the Convergence of Adam and Beyond`_.
  */
-DIOPI_API diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+DIOPI_API diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
                                   diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps,
                                   float weight_decay, int64_t step, bool amsgrad);
 
@@ -2514,29 +2514,29 @@ DIOPI_API diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorH
 DIOPI_API diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim);
 
 /**
- * @brief Implements Adadelta optimizer.
+ * @brief The function is used to implement the Adadelta optimizer. Its functionality is to perform a single parameter update.
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor. type=[float16, float32, float64].
+ * @param[inout] param the param tensor. type=[float16, float32, float64].
  * @param[in] grad the grad tensor. type=[float16, float32, float64].
- * @param[in] square_avg the average of squared gradients. type=[float16, float32, float64].
- * @param[in] acc_delta the accumulated delta. type=[float16, float32, float64].
+ * @param[inout] square_avg the average of squared gradients. type=[float16, float32, float64].
+ * @param[inout] acc_delta the accumulated delta. type=[float16, float32, float64].
  * @param[in] lr coefficient that scale delta before it is applied to the parameters. type=[float32].
  * @param[in] rho coefficient used for computing a moving average of squared gradients. type=[float32].
  * @param[in] eps term added to the denominator to improve numerical stability. type=[float32].
  * @param[in] weight_decay weight decay coefficient. type=[float32].
  */
-DIOPI_API diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t square_avg,
+DIOPI_API diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t square_avg,
                                      diopiTensorHandle_t acc_delta, float lr, float rho, float eps, float weight_decay);
 
 /**
- * @brief Implements Adam optimizer.
+ * @brief The function is used to implement the Adam optimizer. Its functionality is to perform a single parameter update.
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor. type=[float16, float32, float64].
+ * @param[inout] param the param tensor. type=[float16, float32, float64].
  * @param[in] grad the grad tensor. type=[float16, float32, float64].
- * @param[in] exp_avg the exponentially weighted moving average of gradients. type=[float16, float32,
+ * @param[inout] exp_avg the exponentially weighted moving average of gradients. type=[float16, float32,
  * float64].
- * @param[in] exp_avg_sq the exponentially weighted moving average of squared gradients. type=[float16, float32, float64].
- * @param[in] max_exp_avg_sq the maximum values of the exponentially weighted moving average of squared gradients. type=[float16, float32, float64].
+ * @param[inout] exp_avg_sq the exponentially weighted moving average of squared gradients. type=[float16, float32, float64].
+ * @param[inout] max_exp_avg_sq the maximum values of the exponentially weighted moving average of squared gradients. type=[float16, float32, float64].
  * @param[in] lr learning rate. type=[float32].
  * @param[in] beta1 coefficients used for computing moving averages of gradients. type=[float32].
  * @param[in] beta2 coefficients used for computing moving averages of squared gradients. type=[float32].
@@ -2545,18 +2545,18 @@ DIOPI_API diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle
  * @param[in] step step. type = [int64].
  * @param[in] amsgrad whether to use the AMSGrad variant of this algorithm from the paper `On the Convergence of Adam and Beyond`. type=[bool].
  */
-DIOPI_API diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+DIOPI_API diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
                                  diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps,
                                  float weight_decay, int64_t step, bool amsgrad);
 
 /**
- * @brief Implements Rmsprop optimizer.
+ * @brief The function is used to implement the Rmsprop optimizer. Its functionality is to perform a single parameter update.
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor. type=[float16, float32, float64].
+ * @param[inout] param the input tensor. type=[float16, float32, float64].
  * @param[in] grad the grad tensor. type=[float16, float32, float64].
- * @param[in] square_avg the average of squared gradients. type=[float16, float32, float64].
- * @param[in] grad_avg the average of gradients. type=[float16, float32, float64].
- * @param[in] momentum_buf the buffer of momentum. type=[float16, float32, float64].
+ * @param[inout] square_avg the average of squared gradients. type=[float16, float32, float64].
+ * @param[inout] grad_avg the average of gradients. type=[float16, float32, float64].
+ * @param[inout] momentum_buf the buffer of momentum. type=[float16, float32, float64].
  * @param[in] lr learning rate. type=[float32].
  * @param[in] alpha smoothing constant. type=[float32].
  * @param[in] eps term added to the denominator to improve numerical stability. type=[float32].
@@ -2564,7 +2564,7 @@ DIOPI_API diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t i
  * @param[in] momentum momentum factor. type = [float32].
  * @param[in] centered if True, compute the centered RMSProp, the gradient is normalized by an estimation of its variance. type=[bool].
  */
-DIOPI_API diopiError_t diopiRmsprop(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t square_avg,
+DIOPI_API diopiError_t diopiRmsprop(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t square_avg,
                                     diopiTensorHandle_t grad_avg, diopiTensorHandle_t momentum_buf, float lr, float alpha, float eps, float weight_decay,
                                     float momentum, bool centered);
 

@@ -19,6 +19,11 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
 
     DiopiTensor valuesTensorTemp = valuesTensor;
     DiopiTensor inputTensorTemp = inputTensor;
+
+    if (inputTensor.numel() == 0) {
+        return diopiSuccess;
+    }
+
     if (inputTensor.dtype() == diopi_dtype_float64) {
         DIOPI_CALL(dataTypeCast(ctx, inputTensorTemp, diopi_dtype_float32));
         DIOPI_CALL(dataTypeCast(ctx, valuesTensorTemp, diopi_dtype_float32));
@@ -38,7 +43,7 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
 
     size_t workspaceSize = 0;
     DIOPI_CALL_CNNL(cnnlGetTopKTensorWorkspaceSize(handle, inputDesc.get(), k, dim, largest, valuesDesc.get(), indicesDesc.get(), &workspaceSize));
-    void *workspace = nullptr;
+    void* workspace = nullptr;
     if (0 != workspaceSize) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
@@ -57,6 +62,7 @@ diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
                                       valuesTensorTemp.data(),
                                       indicesDesc.get(),
                                       indicesTensorTemp.data()))
+
     if (valuesTensorTemp.dtype() != valuesTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, valuesTensor, valuesTensorTemp));
     }
