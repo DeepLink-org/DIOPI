@@ -5455,12 +5455,13 @@ def flash_attention_v3_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
-def flash_attention_varlen(q, k, v, max_seqlen, cu_seqlens, p_dropout, softmax_scale, is_causal):
+def flash_attention_varlen(q, k, v, max_seqlen, cu_seqlens_q, cu_seqlens_kv, p_dropout, softmax_scale, is_causal):
     call = "diopiFlashAttentionVarLen"
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    cu_seqlens = Tensor.from_numpy(np.array(cu_seqlens[1:], dtype=np.int64))
+    cu_seqlens_q = Sizes(cu_seqlens_q[1:])
+    cu_seqlens_kv = Sizes(cu_seqlens_kv[1:])
     if is_causal:
         attention_mask = Tensor()
     else:
@@ -5495,8 +5496,8 @@ def flash_attention_varlen(q, k, v, max_seqlen, cu_seqlens, p_dropout, softmax_s
         q,
         k,
         v,
-        cu_seqlens,
-        cu_seqlens,
+        cu_seqlens_q,
+        cu_seqlens_kv,
         p_dropout,
         softmax_scale,
         is_causal,

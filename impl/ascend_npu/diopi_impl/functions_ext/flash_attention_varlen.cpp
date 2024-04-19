@@ -22,9 +22,9 @@ const int64_t uInt8BitNumber = 8;
 diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* attentionMask,
                                        diopiTensorHandle_t* dropoutMask, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
                                        diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                       diopiConstTensorHandle_t v, diopiConstTensorHandle_t cumSeqQ, diopiConstTensorHandle_t cumSeqK, double pDropout,
-                                       double softmaxScale, bool isCausal) {
-    BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqK, gen, attentionOut);
+                                       diopiConstTensorHandle_t v, diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, double pDropout, double softmaxScale,
+                                       bool isCausal) {
+    BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqKV, gen, attentionOut);
 
     DIOPI_CHECK(qAt.dim() == 3, "The shapes of the input query should be 3-dimensional");
     DIOPI_CHECK(kAt.dim() == 3, "The shapes of the input key should be 3-dimensional");
@@ -48,9 +48,9 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     at::Tensor dropoutMaskAt = at::Tensor();
     if (pDropout > 0 && pDropout <= 1) {
         int64_t numels = n;
-        int64_t accum = cumSeqQAt[0].item<int64_t>() * cumSeqKAt[0].item<int64_t>();
-        for (int64_t i = 1; i < cumSeqQAt.dim(); i++) {
-            accum += ((cumSeqQAt[i].item<int64_t>() - cumSeqQAt[i - 1].item<int64_t>()) * (cumSeqKAt[i].item<int64_t>() - cumSeqKAt[i - 1].item<int64_t>()));
+        int64_t accum = cumSeqQAt[0] * cumSeqKVAt[0];
+        for (int64_t i = 1; i < cumSeqQAt.size(); i++) {
+            accum += ((cumSeqQAt[i] - cumSeqQAt[i - 1]) * (cumSeqKVAt[i] - cumSeqKVAt[i - 1]));
         }
         numels *= accum;
         int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
@@ -100,7 +100,7 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
                                  attentionMaskAt,
                                  prefixN,
                                  cumSeqQAt,
-                                 cumSeqKAt,
+                                 cumSeqKVAt,
                                  softmaxScale,
                                  keepProb,
                                  preTokens,
@@ -128,11 +128,11 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
 
 diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
                                                diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                               diopiConstTensorHandle_t v, diopiConstTensorHandle_t cumSeqQ, diopiConstTensorHandle_t cumSeqK,
-                                               diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t attentionMask,
-                                               diopiConstTensorHandle_t dropoutMask, diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
-                                               diopiConstTensorHandle_t softmaxOut, double pDropout, double softmaxScale) {
-    BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqK, attentionOut, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
+                                               diopiConstTensorHandle_t v, diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, diopiConstTensorHandle_t attentionOut,
+                                               diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
+                                               diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum, diopiConstTensorHandle_t softmaxOut,
+                                               double pDropout, double softmaxScale) {
+    BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqKV, attentionOut, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
     at::Tensor dropoutMaskAt;
     at::Tensor attentionMaskAt;
@@ -183,7 +183,7 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
                                  attentionOutAt,
                                  prefixN,
                                  cumSeqQAt,
-                                 cumSeqKAt,
+                                 cumSeqKVAt,
                                  softmaxScale,
                                  keepProb,
                                  preTokens,

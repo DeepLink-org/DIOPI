@@ -8934,7 +8934,8 @@ diopi_configs = {
             is_causal=[True, True, False, True],
             softmax_scale=[None, 0.0883, None, 0.125],
             max_seqlen=[32, 32, 128, 64],
-            cu_seqlens=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128]],
+            cu_seqlens_q=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128]],
+            cu_seqlens_kv=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128]],
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
