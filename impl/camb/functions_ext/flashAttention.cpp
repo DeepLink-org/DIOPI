@@ -3,7 +3,6 @@
  * @author DeepLink
  * @copyright  (c) 2023, DeepLink.
  */
-#include <cnmlrt.h>
 #include <diopi/functions_ext.h>
 
 #include <cstring>
@@ -18,343 +17,180 @@
 namespace impl {
 namespace camb {
 
-DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t softmaxLse,
-                                             diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                             double dropoutP, double softmaxScale, bool isCausal) {
+DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t invRms, diopiConstTensorHandle_t input,
+                                    diopiSize_t normalizedShape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor qTensor(q);
-    DiopiTensor kTensor(k);
-    DiopiTensor vTensor(v);
-    DiopiTensor outTensor(attentionOut);
-    DiopiTensor softmaxLseTensor(softmaxLse);
+    DiopiTensor inputTensor(input);
+    DiopiTensor weightTensor(weight);
+    DiopiTensor biasTensor(bias);
+    DiopiTensor outTensor(out);
+    DiopiTensor invRmsTensor(invRms);
+    DIOPI_CHECK(inputTensor.dim() == invRmsTensor.dim(), "dimension error in RMSNORM");
+    DIOPI_CHECK(outTensor.shape() == inputTensor.shape(), "dimension error in RMSNORM");
 
-    if (qTensor.numel() == 0) {
+    // zero-shape protection
+    if (inputTensor.numel() == 0) {
         return diopiSuccess;
     }
 
-    // get sizes
-    const int batchSize = qTensor.shape()[0];
-    const int seqlenQ = qTensor.shape()[1];
-    const int numHeadsQ = qTensor.shape()[2];
-    const int headSize = qTensor.shape()[3];
-    const int seqlenK = kTensor.shape()[1];
-    const int numHeadsK = kTensor.shape()[2];
-    int totalQ = batchSize * seqlenQ;
-    int totalK = batchSize * seqlenK;
-
-    std::vector<int64_t> shapeQ = {totalQ, numHeadsQ, headSize};
-    std::vector<int64_t> strideQ = calContiguousStride(shapeQ);
-    std::vector<int64_t> shapeKV = {totalK, numHeadsK, headSize};
-    std::vector<int64_t> strideKV = calContiguousStride(shapeKV);
-    std::vector<int64_t> csShape = {batchSize + 1};
-    std::vector<int64_t> csStride = {1};
-    std::vector<int64_t> softmaxShape = {numHeadsQ, totalQ};
-    std::vector<int64_t> softmaxStride = calContiguousStride(softmaxShape);
-
-    DIOPI_CHECK(batchSize > 0, "batch size must be postive");
-    DIOPI_CHECK(headSize <= 256, "FlashAttention forward only supports head dimension at most 256");
-    DIOPI_CHECK(numHeadsQ % numHeadsK == 0, "Number of heads in key/value must divide number of heads in query");
-
-    // get accumulateQ
-    int32_t cuSeqlensQ[batchSize + 1];
-    int32_t cuSeqlensK[batchSize + 1];
-    for (int32_t i = 0; i < batchSize + 1; i++) {
-        cuSeqlensQ[i] = i * seqlenQ;
-        cuSeqlensK[i] = i * seqlenK;
+    // get normalized axis
+    int axis = inputTensor.dim() - normalizedShape.len;
+    for (int i = 0; i < normalizedShape.len; i++) {
+        DIOPI_CHECK(inputTensor.shape()[axis + i] == normalizedShape.data[i], "cnnl can only normalized last x dimensions");
     }
-
-    // require tensor csq & csk on device
-    DiopiTensor csq = requiresTensor(ctx, csShape, csStride, diopi_dtype_int32);
-    DiopiTensor csk = requiresTensor(ctx, csShape, csStride, diopi_dtype_int32);
-
-    void* csqPtr = csq.data();
-    void* cskPtr = csk.data();
-    diopiStreamHandle_t streamHandle;
-    diopiGetStream(ctx, &streamHandle);
-    cnrtQueue_t phStream = (cnrtQueue_t)streamHandle;
-    uint64_t bytes = sizeof(int32_t) * (batchSize + 1);
-    cnrtMemcpyAsync(csqPtr, static_cast<void*>(cuSeqlensQ), bytes, phStream, CNRT_MEM_TRANS_DIR_HOST2DEV);
-    cnrtMemcpyAsync(cskPtr, static_cast<void*>(cuSeqlensK), bytes, phStream, CNRT_MEM_TRANS_DIR_HOST2DEV);
 
     // change input,output data type
-    std::vector<DiopiTensor*> qkvTensors{&qTensor, &kTensor, &vTensor};
-    std::set<diopiDtype_t> supportedQKVDtypes{diopi_dtype_float16, diopi_dtype_bfloat16};
-    DIOPI_CALL(autoCastTensorType(ctx, qkvTensors, supportedQKVDtypes));
+    // mlu370 supports float16, float32
+    // mlu590 supports float16, float32, bfloat16
+    std::vector<DiopiTensor*> inTensors;
+    if (biasTensor.defined()) {
+        inTensors = {&inputTensor, &weightTensor, &biasTensor};
+    } else {
+        inTensors = {&inputTensor, &weightTensor};
+    }
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_float16};
+    DIOPI_CALL(autoCastTensorType(ctx, inTensors, supportedDtypes));
 
     DiopiTensor outTmpTr = outTensor;
-    if (outTensor.dtype() != qTensor.dtype()) {
-        outTmpTr = requiresTensor(ctx, outTensor.shape(), outTensor.stride(), qTensor.dtype());
+    if (outTensor.dtype() != inputTensor.dtype()) {
+        outTmpTr = requiresTensor(ctx, outTensor.shape(), outTensor.stride(), inputTensor.dtype());
     }
 
-    DiopiTensor softmaxLseTmpTensor = softmaxLseTensor;
-    if (softmaxLseTensor.dtype() != diopi_dtype_float32) {
-        softmaxLseTmpTensor = requiresTensor(ctx, softmaxLseTensor.shape(), softmaxLseTensor.stride(), diopi_dtype_float32);
+    DiopiTensor invRmsTmpTr = invRmsTensor;
+    if (invRmsTmpTr.dtype() != inputTensor.dtype()) {
+        invRmsTmpTr = requiresTensor(ctx, invRmsTmpTr.shape(), invRmsTmpTr.stride(), inputTensor.dtype());
     }
 
-    // set descriptor
-    CnnlResourceGuard<cnnlFlashAttentionDescriptor_t, cnnlCreateFlashAttentionDescriptor, cnnlDestroyFlashAttentionDescriptor> flashATTDesc;
+    // set Tensors' decriptor
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc wbDesc(weightTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outTmpDesc(outTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc invRmsTmpDesc(invRmsTmpTr, CNNL_LAYOUT_ARRAY);
 
-    bool returnDropout = false;
-    float qkScale = static_cast<float>(softmaxScale);
-    cnnlAttentionMaskMode_t attenMask = isCausal ? CNNL_ATTN_MASK_CAUSAL : CNNL_ATTN_MASK_NONE;
-    DIOPI_CALL_CNNL(cnnlSetFlashAttentionDescriptor(flashATTDesc.get(),
-                                                    CNNL_DTYPE_FLOAT,
-                                                    CNNL_ACTIVATION_HIGH_PRECISION,
-                                                    attenMask,
-                                                    true,
-                                                    false,
-                                                    returnDropout,
-                                                    seqlenQ,
-                                                    seqlenK,
-                                                    static_cast<float>(dropoutP),
-                                                    qkScale));
-
-    CnnlTensorDesc qDesc;
-    CnnlTensorDesc kDesc;
-    CnnlTensorDesc vDesc;
-    CnnlTensorDesc csqDesc;
-    CnnlTensorDesc cskDesc;
-    CnnlTensorDesc outTmpDesc;
-    CnnlTensorDesc softmaxLseTmpDesc;
-    CnnlTensorDesc dropoutDesc;
-
-    qDesc.set(qTensor.dtype(), shapeQ, strideQ, CNNL_LAYOUT_ARRAY);
-    kDesc.set(kTensor.dtype(), shapeKV, strideKV, CNNL_LAYOUT_ARRAY);
-    vDesc.set(vTensor.dtype(), shapeKV, strideKV, CNNL_LAYOUT_ARRAY);
-    csqDesc.set(diopi_dtype_int32, csShape, csStride, CNNL_LAYOUT_ARRAY);
-    cskDesc.set(diopi_dtype_int32, csShape, csStride, CNNL_LAYOUT_ARRAY);
-    outTmpDesc.set(outTmpTr.dtype(), shapeQ, strideQ, CNNL_LAYOUT_ARRAY);
-    softmaxLseTmpDesc.set(softmaxLseTmpTensor.dtype(), softmaxShape, softmaxStride, CNNL_LAYOUT_ARRAY);  // will not be the real result
-
-    // get workspace, currently not used, just for future use
+    // get worksize
     size_t workspaceSize = 0;
-    DIOPI_CALL_CNNL(cnnlGetFlashAttentionForwardWorkspaceSize(handle, flashATTDesc.get(), qDesc.get(), kDesc.get(), vDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetRmsNormOpWorkspaceSize(handle, axis, inputDesc.get(), &workspaceSize));
     void* workspace = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    // get random size
-    size_t randomNum[2];
-    randomNum[0] = 0;
-    randomNum[1] = 0;
-    if (dropoutP > 0.0) {
-        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, randomNum[0], randomNum[1]));
-    }
-
-    DIOPI_CALL_CNNL(cnnlFlashAttentionForward(handle,
-                                              flashATTDesc.get(),
-                                              qDesc.get(),
-                                              qTensor.data(),
-                                              kDesc.get(),
-                                              kTensor.data(),
-                                              vDesc.get(),
-                                              vTensor.data(),
-                                              csqDesc.get(),
-                                              csqPtr,
-                                              cskDesc.get(),
-                                              cskPtr,
-                                              dropoutP > 0.0 ? randomNum : nullptr,
-                                              workspace,
-                                              workspaceSize,
-                                              nullptr,
-                                              nullptr,
-                                              softmaxLseTmpDesc.get(),
-                                              softmaxLseTmpTensor.data(),
-                                              outTmpDesc.get(),
-                                              outTmpTr.data()))
+    DIOPI_CALL_CNNL(cnnlRmsNormForward(handle,
+                                       axis,
+                                       inputDesc.get(),
+                                       inputTensor.data(),
+                                       wbDesc.get(),
+                                       weightTensor.data(),
+                                       biasTensor.defined() ? biasTensor.data() : nullptr,
+                                       static_cast<float>(eps),
+                                       workspace,
+                                       workspaceSize,
+                                       outTmpDesc.get(),
+                                       outTmpTr.data(),
+                                       invRmsTmpDesc.get(),
+                                       invRmsTmpTr.data()));
 
     if (outTmpTr.dtype() != outTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, outTensor, outTmpTr));
     }
 
-    if (softmaxLseTensor.dtype() != diopi_dtype_float32) {
-        DIOPI_CALL(dataTypeCast(ctx, softmaxLseTensor, softmaxLseTmpTensor));
+    if (invRmsTmpTr.dtype() != invRmsTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, invRmsTensor, invRmsTmpTr));
     }
 
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
-                                                     diopiConstTensorHandle_t gradOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q,
-                                                     diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attentionOut,
-                                                     diopiConstTensorHandle_t softmaxLse, double dropoutP, double softmaxScale, bool isCausal) {
+DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight,
+                                            diopiTensorHandle_t gradBias, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
+                                            diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t invRms,
+                                            diopiSize_t normalizedShape, double eps) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor qTensor(q);
-    DiopiTensor kTensor(k);
-    DiopiTensor vTensor(v);
-    DiopiTensor gradOutTensor(gradOut);
-    DiopiTensor outputTensor(attentionOut);
-    DiopiTensor softmaxLseTensor(softmaxLse);
+    DiopiTensor inputTensor(input);
+    DiopiTensor weightTensor(weight);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor invRmsTensor(invRms);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradWeightTensor(gradWeight);
+    DiopiTensor gradBiasTensor(gradBias);
+    DIOPI_CHECK(inputTensor.dim() == invRmsTensor.dim(), "dimension error in RMSNORM");
+    DIOPI_CHECK(inputTensor.shape() == gradInputTensor.shape(), "dimension error in RMSNORM");
 
-    DiopiTensor gradQTensor(gradQ);
-    DiopiTensor gradKTensor(gradK);
-    DiopiTensor gradVTensor(gradV);
-
-    if (qTensor.numel() == 0) {
+    // zero-shape protection
+    if (inputTensor.numel() == 0) {
         return diopiSuccess;
     }
 
-    // get sizes
-    const int batchSize = qTensor.shape()[0];
-    const int seqlenQ = qTensor.shape()[1];
-    const int numHeadsQ = qTensor.shape()[2];
-    const int headSize = qTensor.shape()[3];
-    const int seqlenK = kTensor.shape()[1];
-    const int numHeadsK = kTensor.shape()[2];
-    int totalQ = batchSize * seqlenQ;
-    int totalK = batchSize * seqlenQ;
-
-    std::vector<int64_t> shapeQ = {totalQ, numHeadsQ, headSize};
-    std::vector<int64_t> strideQ = calContiguousStride(shapeQ);
-    std::vector<int64_t> shapeKV = {totalK, numHeadsK, headSize};
-    std::vector<int64_t> strideKV = calContiguousStride(shapeKV);
-    std::vector<int64_t> csShape = {batchSize + 1};
-    std::vector<int64_t> csStride = {1};
-    std::vector<int64_t> softmaxShape = {numHeadsQ, totalQ};
-    std::vector<int64_t> softmaxStride = calContiguousStride(softmaxShape);
-
-    // change dtype
-    std::vector<DiopiTensor*> qkvTensors{&qTensor, &kTensor, &vTensor, &gradOutTensor, &outputTensor};
-    std::set<diopiDtype_t> supportedQKVDtypes{diopi_dtype_float16, diopi_dtype_bfloat16};
-    DIOPI_CALL(autoCastTensorType(ctx, qkvTensors, supportedQKVDtypes));
-    std::vector<DiopiTensor*> softmaxTensors{&softmaxLseTensor};
-    std::set<diopiDtype_t> supportedSoftmaxDtypes{diopi_dtype_float32};
-    DIOPI_CALL(autoCastTensorType(ctx, softmaxTensors, supportedSoftmaxDtypes));
-
-    // get accumulateQ
-    int32_t cuSeqlensQ[batchSize + 1];
-    int32_t cuSeqlensK[batchSize + 1];
-    for (int32_t i = 0; i < batchSize + 1; i++) {
-        cuSeqlensQ[i] = i * seqlenQ;
-        cuSeqlensK[i] = i * seqlenK;
+    // get normalized axis
+    int axis = inputTensor.dim() - normalizedShape.len;
+    for (int i = 0; i < normalizedShape.len; i++) {
+        DIOPI_CHECK(inputTensor.shape()[axis + i] == normalizedShape.data[i], "cnnl can only normalized last x dimensions");
     }
 
-    // require tensor csq & csk on device
-    DiopiTensor csq = requiresTensor(ctx, csShape, csStride, diopi_dtype_int32);
-    DiopiTensor csk = requiresTensor(ctx, csShape, csStride, diopi_dtype_int32);
+    // change input,output data type
+    // mlu370 supports float16, float32
+    // mlu590 supports float16, float32, bfloat16
+    std::vector<DiopiTensor*> inTensors{&inputTensor, &weightTensor, &gradOutputTensor, &invRmsTensor};
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_float16};
+    DIOPI_CALL(autoCastTensorType(ctx, inTensors, supportedDtypes));
 
-    void* csqPtr = csq.data();
-    void* cskPtr = csk.data();
-    diopiStreamHandle_t streamHandle;
-    diopiGetStream(ctx, &streamHandle);
-    cnrtQueue_t phStream = (cnrtQueue_t)streamHandle;
-    uint64_t bytes = sizeof(int32_t) * (batchSize + 1);
-    cnrtMemcpyAsync(csqPtr, static_cast<void*>(cuSeqlensQ), bytes, phStream, CNRT_MEM_TRANS_DIR_HOST2DEV);
-    cnrtMemcpyAsync(cskPtr, static_cast<void*>(cuSeqlensK), bytes, phStream, CNRT_MEM_TRANS_DIR_HOST2DEV);
-
-    DiopiTensor gradQTmpTr = gradQTensor;
-    if (gradQTensor.dtype() != qTensor.dtype()) {
-        gradQTmpTr = requiresTensor(ctx, gradQTmpTr.shape(), gradQTmpTr.stride(), qTensor.dtype());
+    DiopiTensor gradInputTmpTr = gradInputTensor;
+    if (gradInputTensor.dtype() != inputTensor.dtype()) {
+        gradInputTmpTr = requiresTensor(ctx, gradInputTensor.shape(), gradInputTensor.stride(), inputTensor.dtype());
     }
 
-    DiopiTensor gradKTmpTr = gradKTensor;
-    if (gradKTensor.dtype() != qTensor.dtype()) {
-        gradKTmpTr = requiresTensor(ctx, gradKTmpTr.shape(), gradKTmpTr.stride(), qTensor.dtype());
+    DiopiTensor gradWeightTmpTr = gradWeightTensor;
+    if (gradWeightTensor.dtype() != inputTensor.dtype()) {
+        gradWeightTmpTr = requiresTensor(ctx, gradWeightTensor.shape(), gradWeightTensor.stride(), inputTensor.dtype());
     }
 
-    DiopiTensor gradVTmpTr = gradVTensor;
-    if (gradVTensor.dtype() != qTensor.dtype()) {
-        gradVTmpTr = requiresTensor(ctx, gradVTmpTr.shape(), gradVTmpTr.stride(), qTensor.dtype());
+    DiopiTensor gradBiasTmpTr = gradBiasTensor;
+    if (gradBiasTensor.defined()) {
+        if (gradBiasTensor.dtype() != inputTensor.dtype()) {
+            gradBiasTmpTr = requiresTensor(ctx, gradBiasTensor.shape(), gradBiasTensor.stride(), inputTensor.dtype());
+        }
     }
 
-    // set descriptor
-    CnnlResourceGuard<cnnlFlashAttentionDescriptor_t, cnnlCreateFlashAttentionDescriptor, cnnlDestroyFlashAttentionDescriptor> flashAttBckDesc;
+    // set Tensors' decriptor
+    CnnlTensorDesc inputDesc(inputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradOutputDesc(gradOutputTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc invRmsDesc(invRmsTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradInputDesc(gradInputTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradWBDesc(gradWeightTmpTr, CNNL_LAYOUT_ARRAY);
 
-    bool returnDropout = false;
-    float qkScale = (float)softmaxScale;
-    cnnlAttentionMaskMode_t attenMask = (isCausal == true) ? CNNL_ATTN_MASK_CAUSAL : CNNL_ATTN_MASK_NONE;
-    DIOPI_CALL_CNNL(cnnlSetFlashAttentionBackwardDescriptor(flashAttBckDesc.get(),
-                                                            CNNL_DTYPE_FLOAT,
-                                                            CNNL_ACTIVATION_HIGH_PRECISION,
-                                                            attenMask,
-                                                            true,
-                                                            false,
-                                                            returnDropout,
-                                                            (int)seqlenQ,
-                                                            (int)seqlenK,
-                                                            (float)dropoutP,
-                                                            qkScale));
-
-    DIOPI_CALL_CNNL(cnnlSetFlashAttentionSlidingWindowSize(flashAttBckDesc.get(), -1, -1, 1));
-
-    CnnlTensorDesc qDesc;
-    CnnlTensorDesc kDesc;
-    CnnlTensorDesc vDesc;
-    CnnlTensorDesc csqDesc;
-    CnnlTensorDesc cskDesc;
-    CnnlTensorDesc gradOutDesc;
-    CnnlTensorDesc outputDesc;
-    CnnlTensorDesc softmaxLseDesc;
-    CnnlTensorDesc gradQDesc;
-    CnnlTensorDesc gradKDesc;
-    CnnlTensorDesc gradVDesc;
-
-    qDesc.set(qTensor.dtype(), shapeQ, strideQ, CNNL_LAYOUT_ARRAY);
-    kDesc.set(kTensor.dtype(), shapeKV, strideKV, CNNL_LAYOUT_ARRAY);
-    vDesc.set(vTensor.dtype(), shapeKV, strideKV, CNNL_LAYOUT_ARRAY);
-    csqDesc.set(diopi_dtype_int32, csShape, csStride, CNNL_LAYOUT_ARRAY);
-    cskDesc.set(diopi_dtype_int32, csShape, csStride, CNNL_LAYOUT_ARRAY);
-    gradOutDesc.set(gradOutTensor.dtype(), shapeQ, strideQ, CNNL_LAYOUT_ARRAY);
-    outputDesc.set(outputTensor.dtype(), shapeQ, strideQ, CNNL_LAYOUT_ARRAY);
-    softmaxLseDesc.set(softmaxLseTensor.dtype(), softmaxShape, softmaxStride, CNNL_LAYOUT_ARRAY);
-    gradQDesc.set(qTensor.dtype(), shapeQ, strideQ, CNNL_LAYOUT_ARRAY);
-    gradKDesc.set(kTensor.dtype(), shapeKV, strideKV, CNNL_LAYOUT_ARRAY);
-    gradVDesc.set(vTensor.dtype(), shapeKV, strideKV, CNNL_LAYOUT_ARRAY);
-
-    // get workspace
+    // get worksize
     size_t workspaceSize = 0;
-    DIOPI_CALL_CNNL(cnnlGetFlashAttentionBackwardWorkspaceSize(handle, flashAttBckDesc.get(), qDesc.get(), kDesc.get(), vDesc.get(), &workspaceSize));
+    DIOPI_CALL_CNNL(cnnlGetRmsNormBackwardWorkspaceSize(handle, inputDesc.get(), axis, &workspaceSize));
     void* workspace = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    // get random size
-    size_t randomNum[2];
-    randomNum[0] = 0;
-    randomNum[1] = 0;
+    DIOPI_CALL_CNNL(cnnlRmsNormBackward(handle,
+                                        axis,
+                                        inputDesc.get(),
+                                        inputTensor.data(),
+                                        gradOutputDesc.get(),
+                                        gradOutputTensor.data(),
+                                        weightDesc.get(),
+                                        weightTensor.data(),
+                                        invRmsDesc.get(),
+                                        invRmsTensor.data(),
+                                        workspace,
+                                        workspaceSize,
+                                        gradInputDesc.get(),
+                                        gradInputTmpTr.data(),
+                                        gradWBDesc.get(),
+                                        gradWeightTmpTr.data(),
+                                        gradBiasTensor.defined() ? gradBiasTmpTr.data() : nullptr));
 
-    if (dropoutP > 0.0) {
-        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, randomNum[0], randomNum[1]));
+    if (gradInputTmpTr.dtype() != gradInputTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTmpTr));
     }
 
-    DIOPI_CALL_CNNL(cnnlFlashAttentionBackward(handle,
-                                               flashAttBckDesc.get(),
-                                               gradOutDesc.get(),
-                                               gradOutTensor.data(),
-                                               qDesc.get(),
-                                               qTensor.data(),
-                                               kDesc.get(),
-                                               kTensor.data(),
-                                               vDesc.get(),
-                                               vTensor.data(),
-                                               outputDesc.get(),
-                                               outputTensor.data(),
-                                               softmaxLseDesc.get(),
-                                               softmaxLseTensor.data(),
-                                               csqDesc.get(),
-                                               csqPtr,
-                                               cskDesc.get(),
-                                               cskPtr,
-                                               randomNum,
-                                               workspace,
-                                               workspaceSize,
-                                               gradQDesc.get(),
-                                               gradQTmpTr.data(),
-                                               gradKDesc.get(),
-                                               gradKTmpTr.data(),
-                                               gradVDesc.get(),
-                                               gradVTmpTr.data(),
-                                               nullptr,
-                                               nullptr,
-                                               nullptr,
-                                               nullptr))
-
-    if (gradQTmpTr.dtype() != gradQTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, gradQTensor, gradQTmpTr));
+    if (gradWeightTmpTr.dtype() != gradWeightTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTmpTr));
     }
 
-    if (gradKTmpTr.dtype() != gradKTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, gradKTensor, gradKTmpTr));
-    }
-
-    if (gradVTmpTr.dtype() != gradVTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, gradVTensor, gradVTmpTr));
+    if (gradBiasTensor.defined()) {
+        if (gradBiasTmpTr.dtype() != gradBiasTensor.dtype()) {
+            DIOPI_CALL(dataTypeCast(ctx, gradBiasTensor, gradBiasTmpTr));
+        }
     }
 
     return diopiSuccess;
