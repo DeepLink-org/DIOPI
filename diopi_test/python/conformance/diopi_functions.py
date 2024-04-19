@@ -5456,50 +5456,152 @@ def flash_attention_v3_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
 
-def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
-    call = "diopiAttention"
+def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
+    func = check_function("diopiAttention")
+    attn_out = raw_like(query)
+    save_for_backward_array = (ctypes.c_void_p * 16)()
+    save_for_backward = TensorP(save_for_backward_array[0])
+    save_tensor_num = ctypes.c_long()
+    generator = Generator(build_generator_state(query.context()))
+    ret = func(query.context(), attn_out, save_for_backward, get_capsule(byref(save_tensor_num)),
+               query, key, value, attn_mask, dropout_p, generator, scale, is_causal, attn_type)
+    check_returncode(ret)
+    return attn_out
+
+
+def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
+    call = "diopiScaledMaskedSoftmax"
     func = check_function(call)
-    out = raw_like(query)
-    if is_causal:
-        attn_mask = Tensor()
-    else:
-        attn_mask = None
-    if dropout_p > 0 and dropout_p <= 1:
-        dropout_mask = Tensor()
-        state = build_generator_state(query.context())
-        generator = Generator(state)
-    elif dropout_p == 0:
-        generator = None
-    else:
-        assert 0, "The dropout_p value must be in range of [0, 1]"
-    softmax_max = Tensor()
-    softmax_sum = Tensor()
-    softmax_out = Tensor()
+    size = list(input.size().data)
+    out = Tensor(size, input.get_dtype())
+    ret = func(
+        input.context(),
+        out,
+        input,
+        mask,
+        scale,
+        fixed_triu_mask,
+    )
+    check_returncode(ret)
+    return out
 
-    head_dim = query.shape().data[1]
-    save_tensor_num = ctypes.c_long(0)
-    save_for_backward = (ctypes.c_void_p * 16)()
-    #save_for_backward = attention_mask_ptr = TensorP(query)
-    save_for_backward_c_p = ctypes.byref(save_for_backward)
 
-    if attn_mask is None:
-        attn_mask = Tensor()
+def scaled_masked_softmax_backward(
+    grad_outputs, out, input, mask, scale, fixed_triu_mask
+):
+    call = "diopiScaledMaskedSoftmaxBackward"
+    func = check_function(call)
+    size = list(out.size().data)
+    grad_input = Tensor(size, out.get_dtype())
+    ret = func(
+        out.context(),
+        grad_input,
+        grad_outputs[0],
+        out,
+        mask,
+        scale,
+        fixed_triu_mask,
+    )
+    check_returncode(ret)
+    return {"input": grad_input}
+
+
+def apply_penalty(
+    logits,
+    presence_penalty,
+    frequency_penalty,
+    p_token_ids,
+    p_token_counts,
+    p_cumsum_seq_len,
+    p_max_len_in_batch,
+):
+    call = "diopiApplyPenalty"
+    func = check_function(call)
+    # some checks
+    logits_shape = list(logits.size().data)
+    presence_penalty_shape = list(presence_penalty.size().data)
+    frequency_penalty_shape = list(frequency_penalty.size().data)
+    p_cumsum_seq_len_shape = list(p_cumsum_seq_len.size().data)
+    p_token_ids_shape = list(p_token_ids.size().data)
+    p_token_counts_shape = list(p_token_counts.size().data)
+
+    assert (
+        logits_shape[0] == presence_penalty_shape[0]
+        and logits_shape[0] == frequency_penalty_shape[0]
+    ), "The first dimensions of logits, presence penalty, and frequency penalty must be equal."
+    assert (
+        logits_shape[0] + 1 == p_cumsum_seq_len_shape[0]
+    ), "The first dimension of logits_shape plus one must equal the first dimension of p_cumsum_seq_len_shape."
+    assert (
+        p_token_ids_shape == p_token_counts_shape
+    ), "The shape of p_token_ids must be equal to the shape of p_token_counts."
 
     ret = func(
-        query.context(),
-        out,
-        save_for_backward_c_p,
-        ctypes.byref(save_tensor_num),
-        query,
-        key,
-        value,
-        value,
-        dropout_p,
-        generator,
-        ctypes.c_double(scale),
-        ctypes.c_bool(is_causal),
-        "DotProduct",
+        logits.context(),
+        logits,
+        presence_penalty,
+        frequency_penalty,
+        p_token_ids,
+        p_token_counts,
+        p_cumsum_seq_len,
+        p_max_len_in_batch,
     )
+    out = logits
+    check_returncode(ret)
+    return out
+
+
+def destindex_copy_kv(k, dest_loc, out):
+    call = "diopiDestIndexCopyKV"
+    func = check_function(call)
+
+    ret = func(k.context(), out, k, dest_loc)
+    check_returncode(ret)
+    return out
+
+
+def token_attention(q, k, out, b_loc, b_start_loc, b_seq_len, max_input_len):
+    call = "diopiTokenAttentionInference"
+    func = check_function(call)
+
+    ret = func(q.context(), out, q, k, b_loc, b_start_loc, b_seq_len, max_input_len)
+    check_returncode(ret)
+    return out
+
+
+def token_softmax_reducev(
+    logics,
+    v,
+    out,
+    b_loc,
+    b_start_loc,
+    b_seq_len,
+    max_input_len,
+    other_kv_index,
+):
+    call = "diopiTokenSoftmaxReduceVInference"
+    func = check_function(call)
+
+    ret = func(
+        logics.context(),
+        out,
+        logics,
+        v,
+        b_loc,
+        b_start_loc,
+        b_seq_len,
+        max_input_len,
+        other_kv_index,
+    )
+    check_returncode(ret)
+    return out
+
+
+def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
+    call = "diopiContextAttentionInference"
+    func = check_function(call)
+
+    ret = func(q.context(), out, q, k, v, b_start_loc, b_seq_len, max_input_len)
     check_returncode(ret)
     return out
 

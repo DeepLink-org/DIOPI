@@ -60,53 +60,6 @@ def multihead_attention_inside(
     output = torch.einsum("bhts,bshd->bthd", attention, v)
     return output
 
-def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
-    L, S = query.size(-2), key.size(-2)
-    scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
-    device = query.device
-    attn_bias = torch.zeros(L, S, dtype=query.dtype, device = device)
-    if is_causal:
-        assert attn_mask is None
-        temp_mask = torch.ones(L, S, dtype=torch.bool, device = device).tril(diagonal=0)
-        attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
-        attn_bias.to(query.dtype)
-
-    if attn_mask is not None:
-        if attn_mask.dtype == torch.bool:
-            attn_bias.masked_fill_(attn_mask.logical_not(), float("-inf"))
-        else:
-            attn_bias += attn_mask
-    attn_weight = query @ key.transpose(-2, -1) * scale_factor
-    attn_weight += attn_bias
-    attn_weight = torch.softmax(attn_weight, dim=-1)
-    attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
-    return attn_weight @ value
-
-def attention_packed(query, key, value, cu_seqlens, max_seqlen, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
-    batch_size = len(cu_seqlens)
-    _, head_num, head_dim = query.size()
-    device = query.device
-    padded_shape = (batch_size, head_num, max_seqlen, head_dim)
-    # Initialize the attn_mask_padded as a Boolean mask with False values
-    attn_mask_padded = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
-    query_padded = torch.zeros(padded_shape, dtype=query.dtype, device=device)
-    key_padded = torch.zeros(padded_shape, dtype=key.dtype, device=device)
-    value_padded = torch.zeros(padded_shape, dtype=value.dtype, device=device)
-
-    # Initialize the attn_mask_padded as a Boolean mask with False values
-    attn_mask_padded = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
-    # Fill the attn_mask_padded with True values at positions with actual data (cu_seqlens)
-    for i in range(batch_size):
-        start_idx = cu_seqlens[i]
-        end_idx = cu_seqlens[i + 1]
-        actual_seq_len = end_idx - start_idx
-        attn_mask_padded[i, :actual_seq_len] = True
-        query_padded[i, :actual_seq_len, :, :] = query[start_idx:end_idx, :, :]
-        key_padded[i, :actual_seq_len, :, :] = key[start_idx:end_idx, :, :]
-        value_padded[i, :actual_seq_len, :, :] = value[start_idx:end_idx, :, :]
-
-    out_padded = attention(query_padded, key_padded, value_padded, attn_mask= None, dropout_p= dropout_p, is_causal=is_causal, scale=scale, attn_type=attn_type)
-
 class CustomizedTest(object):
     def cast_dtype(input, out):
         out = input.to(out.dtype, copy=True)
@@ -616,3 +569,47 @@ class CustomizedTest(object):
                 dim,
             )
         return out
+
+    def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
+        L, S = query.size(-2), key.size(-2)
+        scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
+        attn_bias = torch.zeros(L, S, dtype=query.dtype)
+        if is_causal:
+            assert attn_mask is None
+            temp_mask = torch.ones(L, S, dtype=torch.bool).tril(diagonal=0)
+            attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
+            attn_bias.to(query.dtype)
+
+        if attn_mask is not None:
+            if attn_mask.dtype == torch.bool:
+                attn_bias.masked_fill_(attn_mask.logical_not(), float("-inf"))
+            else:
+                attn_bias += attn_mask
+        attn_weight = query @ key.transpose(-2, -1) * scale_factor
+        attn_weight += attn_bias
+        attn_weight = torch.softmax(attn_weight, dim=-1)
+        attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
+        return attn_weight @ value
+
+    def attention_packed(query, key, value, cu_seqlens, max_seqlen, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
+        batch_size = len(cu_seqlens)
+        _, head_num, head_dim = query.size()
+        device = query.device
+        padded_shape = (batch_size, head_num, max_seqlen, head_dim)
+        # Initialize the key_padding_mask as a Boolean mask with False values
+        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
+        query_padded = torch.zeros(padded_shape, dtype=query.dtype, device=device)
+        key_padded = torch.zeros(padded_shape, dtype=key.dtype, device=device)
+        value_padded = torch.zeros(padded_shape, dtype=value.dtype, device=device)
+
+        # Initialize the key_padding_mask as a Boolean mask with False values
+        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
+        # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
+        for i in range(batch_size):
+            start_idx = cu_seqlens[i]
+            end_idx = cu_seqlens[i + 1]
+            actual_seq_len = end_idx - start_idx
+            key_padding_mask[i, :actual_seq_len] = True
+            query_padded[i, :actual_seq_len, :, :] = query[start_idx:end_idx, :, :]
+            key_padded[i, :actual_seq_len, :, :] = key[start_idx:end_idx, :, :]
+            value_padded[i, :actual_seq_len, :, :] = value[start_idx:end_idx, :, :]

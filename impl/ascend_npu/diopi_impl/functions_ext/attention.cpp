@@ -70,9 +70,11 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
                  softmaxSumOut,
                  softmaxOutOut,
                  attention_outAt);
+#if 0
     save_for_backward[0] = torch_npu::NPUBridge::GetNpuStorageImpl(softmaxMaxOut)->npu_desc_.diopi_tensor_;
     save_for_backward[1] = torch_npu::NPUBridge::GetNpuStorageImpl(softmaxSumOut)->npu_desc_.diopi_tensor_;
     save_for_backward[2] = torch_npu::NPUBridge::GetNpuStorageImpl(softmaxOutOut)->npu_desc_.diopi_tensor_;
+#endif
     *save_tensor_num = 3;
     END_CALL_ACL_OP();
 }
