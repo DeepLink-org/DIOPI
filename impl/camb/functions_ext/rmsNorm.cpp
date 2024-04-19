@@ -42,7 +42,12 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
     // change input,output data type
     // mlu370 supports float16, float32
     // mlu590 supports float16, float32, bfloat16
-    std::vector<DiopiTensor*> inTensors{&inputTensor, &weightTensor, &biasTensor};
+    std::vector<DiopiTensor*> inTensors;
+    if (biasTensor.defined()) {
+        inTensors = {&inputTensor, &weightTensor, &biasTensor};
+    } else {
+        inTensors = {&inputTensor, &weightTensor};
+    }
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_float16};
     DIOPI_CALL(autoCastTensorType(ctx, inTensors, supportedDtypes));
 
@@ -73,7 +78,7 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
                                        inputTensor.data(),
                                        wbDesc.get(),
                                        weightTensor.data(),
-                                       biasTensor.data(),
+                                       biasTensor.defined() ? biasTensor.data() : nullptr,
                                        static_cast<float>(eps),
                                        workspace,
                                        workspaceSize,
@@ -137,8 +142,10 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
     }
 
     DiopiTensor gradBiasTmpTr = gradBiasTensor;
-    if (gradBiasTensor.dtype() != inputTensor.dtype()) {
-        gradBiasTmpTr = requiresTensor(ctx, gradBiasTensor.shape(), gradBiasTensor.stride(), inputTensor.dtype());
+    if (gradBiasTensor.defined()) {
+        if (gradBiasTensor.dtype() != inputTensor.dtype()) {
+            gradBiasTmpTr = requiresTensor(ctx, gradBiasTensor.shape(), gradBiasTensor.stride(), inputTensor.dtype());
+        }
     }
 
     // set Tensors' decriptor
@@ -146,8 +153,8 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
     CnnlTensorDesc gradOutputDesc(gradOutputTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc invRmsDesc(invRmsTensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc gradInputDesc(gradInputTensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc gradWBDesc(gradWeightTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradInputDesc(gradInputTmpTr, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradWBDesc(gradWeightTmpTr, CNNL_LAYOUT_ARRAY);
 
     // get worksize
     size_t workspaceSize = 0;
@@ -170,7 +177,7 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
                                         gradInputTmpTr.data(),
                                         gradWBDesc.get(),
                                         gradWeightTmpTr.data(),
-                                        gradBiasTmpTr.data()));
+                                        gradBiasTensor.defined() ? gradBiasTmpTr.data() : nullptr));
 
     if (gradInputTmpTr.dtype() != gradInputTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTmpTr));
@@ -180,8 +187,10 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
         DIOPI_CALL(dataTypeCast(ctx, gradWeightTensor, gradWeightTmpTr));
     }
 
-    if (gradBiasTmpTr.dtype() != gradBiasTensor.dtype()) {
-        DIOPI_CALL(dataTypeCast(ctx, gradBiasTensor, gradBiasTmpTr));
+    if (gradBiasTensor.defined()) {
+        if (gradBiasTmpTr.dtype() != gradBiasTensor.dtype()) {
+            DIOPI_CALL(dataTypeCast(ctx, gradBiasTensor, gradBiasTmpTr));
+        }
     }
 
     return diopiSuccess;
