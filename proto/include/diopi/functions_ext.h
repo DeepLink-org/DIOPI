@@ -16,6 +16,7 @@ extern "C" {
 /**
  * @brief Apply rotary embedding operation to an input tensor.
  * @param[in] ctx The diopi context.
+ * @param[out] out The output tensor containing the rotary embeddings. type = [bfloat16, float16, float32, float64].
  * @param[in] x The input tensor which rotary embedding will be applied. type = [bfloat16, float16, float32, float64].
  * @param[in] cos The cosine values. type = [bfloat16, float16, float32, float64].
  * @param[in] sin The sine values. type = [bfloat16, float16, float32, float64].
@@ -24,7 +25,6 @@ extern "C" {
  * @param[in] interleaved bool:
  *   - When set to `false`, rotary embedding is applied by splitting 'x' in half and separately applying sine and cosine to each half.
  *   - When set to `true`, rotary embedding is applied by pairing every two elements in 'x' and applying sine and cosine to each pair.
- * @param[out] out The output tensor containing the rotary embeddings. type = [bfloat16, float16, float32, float64].
  */
 DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
                                             diopiConstTensorHandle_t sin, const bool conj, const bool interleaved);
@@ -32,13 +32,13 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
 /**
  * @brief Apply Root Mean Square (RMS) Normalization to the input tensor.
  * @param[in] ctx The diopi context.
+ * @param[out] out The output tensor containing the normalized values. type = [bfloat16, float16, float32, float64].
+ * @param[out] inv_rms The tensor containing the inverse of root mean square. type = [float32, float64].
  * @param[in] input The input tensor to be normalized. type = [bfloat16, float16, float32, float64].
  * @param[in] normalized_shape The shape of the partial input which is needed to be normalized.
  * @param[in] weight The gain parameter used to re-scale the standardized summed inputs type = [bfloat16, float16, float32, float64].
  * @param[in] bias The bias tensor for the normalization. type = [bfloat16, float16, float32, float64].
  * @param[in] eps A small value to avoid division by zero.
- * @param[out] out The output tensor containing the normalized values. type = [bfloat16, float16, float32, float64].
- * @param[out] inv_rms The tensor containing the inverse of root mean square. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t inv_rms, diopiConstTensorHandle_t input,
                                     diopiSize_t normalized_shape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps);
@@ -46,6 +46,9 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
 /**
  * @brief Compute the backward pass for Root Mean Square (RMS) Normalization.
  * @param[in] ctx The diopi context.
+ * @param[out] grad_input The gradient of the input tensor. type = [bfloat16, float16, float32, float64].
+ * @param[out] grad_weight The gradient of the weight parameter. type = [bfloat16, float16, float32, float64].
+ * @param[out] grad_bias The gradient of the bias parameter. type = [bfloat16, float16, float32, float64].
  * @param[in] grad_output The gradient of the output from the forward pass. type = [bfloat16, float16, float32, float64].
  * @param[in] input The input tensor used in the forward pass. type = [bfloat16, float16, float32, float64].
  * @param[in] weight The weight parameter used in the forward pass. type = [bfloat16, float16, float32, float64].
@@ -53,9 +56,6 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
  * @param[in] inv_rms The inverse of the root mean square values computed in the forward pass. type = [bfloat16, float32, float64].
  * @param[in] normalized_shape The shape of the partial input which is needed to be normalized.
  * @param[in] eps A small value used in the computation to avoid division by zero.
- * @param[out] grad_input The gradient of the input tensor. type = [bfloat16, float16, float32, float64].
- * @param[out] grad_weight The gradient of the weight parameter. type = [bfloat16, float16, float32, float64].
- * @param[out] grad_bias The gradient of the bias parameter. type = [bfloat16, float16, float32, float64].
  */
 DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                             diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
