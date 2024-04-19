@@ -102,18 +102,10 @@ inline int debugLevel() {
     BUILD_ATEN_ARG12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)          \
     BUILD_ATEN_ARGS_BODY(x13);
 
-#define BUILD_ATEN_ARG14(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14) \
-    BUILD_ATEN_ARG13(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13)          \
-    BUILD_ATEN_ARGS_BODY(x14);
-
-#define BUILD_ATEN_ARG15(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15) \
-    BUILD_ATEN_ARG14(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14)          \
-    BUILD_ATEN_ARGS_BODY(x15);
-
-#define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, N, ...) N
+#define PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, N, ...) N
 #define PRIVATE_MACRO_VAR_ARGS_IMPL(args) PRIVATE_MACRO_VAR_ARGS_IMPL_COUNT args
 
-#define COUNT_MACRO_VARR(...) PRIVATE_MACRO_VAR_ARGS_IMPL((__VA_ARGS__, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1))
+#define COUNT_MACRO_VARR(...) PRIVATE_MACRO_VAR_ARGS_IMPL((__VA_ARGS__, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1))
 
 #define PRIVATE_CONCAT_STR2(x, y) x##y
 #define PRIVATE_CONCAT_STR1(x, y) PRIVATE_CONCAT_STR2(x, y)
