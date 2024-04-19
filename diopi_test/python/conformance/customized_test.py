@@ -571,6 +571,11 @@ class CustomizedTest(object):
         return out
 
     def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
+        half_use_float = query.is_cpu and query.dtype == torch.float16
+        if half_use_float:
+            query = query.float()
+            key = key.float()
+            value = value.float()
         L, S = query.size(-2), key.size(-2)
         scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
         attn_bias = torch.zeros(L, S, dtype=query.dtype)
@@ -589,7 +594,10 @@ class CustomizedTest(object):
         attn_weight += attn_bias
         attn_weight = torch.softmax(attn_weight, dim=-1)
         attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
-        return attn_weight @ value
+        out = attn_weight @ value
+        if half_use_float:
+            out = out.half()
+        return out
 
     def attention_packed(query, key, value, cu_seqlens, max_seqlen, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
         batch_size = len(cu_seqlens)
