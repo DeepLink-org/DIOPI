@@ -19,6 +19,7 @@ env:
   CLUSTER_SUPA: SUPA
   DEEPLINK_PATH: '/mnt/cache/share/deeplinkci/github/${{ github.repository }}'
   HASH_FILE: 'diopi/diopi_case_items.cfg'
+  HASH_FILE2: 'diopi_test/python/conformance/diopi_manual_test.py'
   DATA_DIR: '/mnt/cache/share/deeplinkci/gen-data'
   ENV_PATH: '/mnt/cache/share/platform/env'
   GEN_DATA: 'diopi_test/python/cache'
@@ -66,13 +67,16 @@ jobs:
           ssh ${CLUSTER_V100} """
           set -e
           cd ${DATA_DIR}
-          if [[ -f "pre_hash" ]]; then
+          if [[ -f "pre_hash" ]] && [[ -f "pre_hash2" ]]; then
             sha1sum source/${GEN_DATA}/${HASH_FILE} > new_hash
             diff_output=\$(diff -q --ignore-all-space "new_hash" "pre_hash" ) && echo "false" > to_gen_data  || echo "true" > to_gen_data
+            sha1sum source/${HASH_FILE2} > new_hash2
+            diff_output=\$(diff -q --ignore-all-space "new_hash2" "pre_hash2" ) || echo "true" > to_gen_data
           else
             echo "true" > to_gen_data
           fi
           cp new_hash pre_hash
+          cp new_hash2 pre_hash2
           """
           export file_path="/home/autolink/rsync/sourcecode"
           rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/to_gen_data ${file_path}/
