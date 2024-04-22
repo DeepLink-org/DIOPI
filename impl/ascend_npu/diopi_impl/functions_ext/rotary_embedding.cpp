@@ -24,7 +24,7 @@ at::Tensor viewAs4D(const at::Tensor& input) {
     for (int i = 0; i < dim; ++i) {
         viewShape[i + n - dim] = inputShape[i];
     }
-    return input.view(viewShape);
+    return impl::aten::viewStorage(input, viewShape);
 }
 
 DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
@@ -60,15 +60,12 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     // the last dimension should be divisible by 128 when using RotaryMul operator.
     // If input dtype is fp16, testcase will pass when the last dimension is divisible by 32.
     // In order to achieve good performance on internlm, we use 32 and skip some testcases.
-    if ((xView.dim() == 4) && (xView.sizes()[3] % 32 == 0)) {
-        at_npu::native::OpCommand cmd;
-        cmd.Name("RotaryMul").Input(xView).Input(cosRepeated).Input(sinRepeated).Output(outView).Run();
-    } else {
-        std::vector<at::Tensor> chunkResult = xView.chunk(2, -1);
-        at::Tensor xNew = op_api::cat({chunkResult[1] * (-1), chunkResult[0]}, -1);
-        at::Tensor result = op_api::mul(cosRepeated, xView) + op_api::mul(sinRepeated, xNew);
-        outView.copy_(result);
-    }
+
+    std::vector<at::Tensor> chunkResult = xView.chunk(2, -1);
+    at::Tensor xNew = op_api::cat({chunkResult[1] * (-1), chunkResult[0]}, -1);
+    at::Tensor result = op_api::mul(cosRepeated, xView) + op_api::mul(sinRepeated, xNew);
+    outView.copy_(result);
+
     END_CALL_ACL_OP();
 }
 
