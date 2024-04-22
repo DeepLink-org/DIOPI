@@ -296,7 +296,7 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type);
 
 /**
- * @brief Computes attention on packed query, key and value tensors, using an optional attention mask if passed,
+ * @brief Computes attention on var Len query, key and value tensors, using an optional attention mask if passed,
  and applying dropout if a probability greater than 0.0 is specified.
  * @param[in] ctx The diopi context.
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [total, q_head_num, head_dim]. type =
@@ -318,13 +318,13 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
  * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
  * @param[in] attention_type attention type: default "DotProduct".
  */
-DIOPI_API diopiError_t diopiAttentionPacked(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward,
+DIOPI_API diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward,
                                             int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                             diopiConstTensorHandle_t attention_mask, double p_dropout, diopiGeneratorHandle_t gen_dropout,
                                             diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t max_seq_length,
                                             double softmax_scale, bool is_causal, const char* attention_type);
 /**
- * @brief Compute the backward pass for AttentionV2.
+ * @brief Compute the backward pass for var len Attention.
  * @param[in] ctx The diopi context.
  * @param[out] grad_q The gradient of the query tensor. shape = [total, q_head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
  * @param[out] grad_k The gradient of the key tensor. shape = [total, kv_head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
@@ -347,7 +347,7 @@ DIOPI_API diopiError_t diopiAttentionPacked(diopiContextHandle_t ctx, diopiTenso
  * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
  * @param[in] attention_type attention type: "DotProduct".
  */
-DIOPI_API diopiError_t diopiAttentionPackedBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
+DIOPI_API diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                     diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                                     diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q,
                                                     diopiConstTensorHandle_t cum_seq_k, diopiConstTensorHandle_t attention_out,

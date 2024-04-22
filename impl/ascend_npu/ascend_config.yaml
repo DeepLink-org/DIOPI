@@ -264,6 +264,6 @@ ascend_npu:
 - diopiScaledMaskedSoftmaxBackward
 - diopiAttention
 - diopiAttentionBackward
-- diopiAttentionPacked
-- diopiAttentionPackedBackward
+- diopiAttentionVarLen
+- diopiAttentionVarLenBackward
 

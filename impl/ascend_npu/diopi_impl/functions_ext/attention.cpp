@@ -127,7 +127,7 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     END_CALL_ACL_OP();
 }
 
-diopiError_t diopiAttentionPacked(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward, int64_t* save_tensor_num,
+diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward, int64_t* save_tensor_num,
                                   diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_mask,
                                   double p_dropout, diopiGeneratorHandle_t gen_dropout, diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k,
                                   int64_t max_seq_length, double softmax_scale, bool is_causal, const char* attention_type) {
@@ -188,7 +188,7 @@ diopiError_t diopiAttentionPacked(diopiContextHandle_t ctx, diopiTensorHandle_t 
     END_CALL_ACL_OP();
 }
 
-diopiError_t diopiAttentionPackedBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
+diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
                                           diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                           diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, diopiConstTensorHandle_t attention_out,
                                           diopiConstTensorHandle_t attention_mask, diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
