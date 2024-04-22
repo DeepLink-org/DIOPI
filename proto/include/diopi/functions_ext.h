@@ -258,7 +258,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  attention score.
  * @param[in] q Query tensor. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] k Key tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
- * @param[in] v Value tensor. shape = [batch_size, kv_seq_len, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] v Value tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] p_dropout Dropout probability; if greater than 0.0, dropout is applied.
  * @param[in] gen_dropout Handle for the random number generator used in dropout op.
  * @param[in] softmax_scale The temperature to use for the softmax attention. if softmax_scale < 0, softmax_scale=\frac{1}{\sqrt{head_dim}}
@@ -272,13 +272,13 @@ DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandl
 /**
  * @brief Compute the backward pass for Attention.
  * @param[in] ctx The diopi context.
- * @param[out] grad_q The gradient of the query tensor. shape = [batch_size,  q_seq_len, qk_embedding_dimension]. type = [bfloat16, float16, float32].
- * @param[out] grad_k The gradient of the key tensor. shape = [batch_size,  kv_seq_len, qk_embedding_dimension]. type = [bfloat16, float16, float32].
- * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, kv_seq_len,  head_dim]. type = [bfloat16, float16, float32].
+ * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] grad_out The gradient of the output tensor. shape = [batch_size, q_seq_len, q_head_num, head_dim].  type = [bfloat16, float16, float32].
- * @param[in] k k Key tensor. shape = [batch_size, kv_head_num, kv_seq_len, qk_embedding_dimension]. type = [bfloat16, float16, float32].
- * @param[in] v Value tensor. shape = [batch_size, kv_seq_len, head_num, head_dim]. type = [bfloat16, float16, float32].
- * @param[in] attention_out Tensor storing the result after applying flash attention. shape = [batch_size,  q_seq_len, head_dim]. type =
+ * @param[in] k k Key tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] v Value tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type =
  * [bfloat16, float16, float32].
  * @param[in] attention_mask (optional Tensor) – Attention mask. shape (batch_size, q_seq_len, kv_seq_len)
  * @param[in] save_for_backward The intermediate variables saved in forward
@@ -307,14 +307,14 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
  where a value of True indicates that the element should take part in attention. A float mask of the same type as query, key, value that is added to the
  attention score. A boolean mask where a value of True indicates that the element should take part in attention. A float mask of the same type as query, key,
  value that is added to the attention score.
- * @param[in] q Query tensor. shape = [total, q_head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
- * @param[in] k Key tensor. shape = [total, kv_head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
+ * @param[in] q Query tensor. shape = [total, q_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] k Key tensor. shape = [total, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] v Value tensor. shape = [total, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size+1]. type = [int64].
  * @param[in] cum_seq_k The cumulative sequence lengths of the sequences in the batch for key. shape = [batch_size+1]. type = [int64].
  * @param[in] p_dropout Dropout probability; if greater than 0.0, dropout is applied.
  * @param[in] gen_dropout Handle for the random number generator used in dropout op.
- * @param[in] softmax_scale The temperature to use for the softmax attention. if softmax_scale < 0, softmax_scale=\frac{1}{\sqrt{qk_embedding_dimension}}
+ * @param[in] softmax_scale The temperature to use for the softmax attention. if softmax_scale < 0, softmax_scale=\frac{1}{\sqrt{head_dim}}
  * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
  * @param[in] attention_type attention type: default "DotProduct".
  */
@@ -326,13 +326,13 @@ DIOPI_API diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTenso
 /**
  * @brief Compute the backward pass for var len Attention.
  * @param[in] ctx The diopi context.
- * @param[out] grad_q The gradient of the query tensor. shape = [total, q_head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
- * @param[out] grad_k The gradient of the key tensor. shape = [total, kv_head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
+ * @param[out] grad_q The gradient of the query tensor. shape = [total, q_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[out] grad_k The gradient of the key tensor. shape = [total, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[out] grad_v The gradient of the value tensor. shape = [total, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] grad_out The gradient of the output tensor. shape = [total, q_head_num, head_dim]. type =
  [bfloat16, float16, float32].
- * @param[in] q Query tensor. shape = [total, q_head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
- * @param[in] k Key tensor. shape = [total, kv_head_num, qk_embedding_dimension]. type = [bfloat16, float16, float32].
+ * @param[in] q Query tensor. shape = [total, q_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] k Key tensor. shape = [total, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] v Value tensor. shape = [total, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size+1]. type = [int64].
  * @param[in] cum_seq_k The cumulative sequence lengths of the sequences in the batch for key. shape = [batch_size+1]. type = [int64].
