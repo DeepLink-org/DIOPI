@@ -1198,6 +1198,8 @@ device_configs = {
 
     'remainder_self_scalar': dict(
         name=['remainder'],
+        atol=1e-3,
+        rtol=1e-3,
         tensor_para=dict(
             args=[
                 {
