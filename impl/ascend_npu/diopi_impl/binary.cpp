@@ -77,9 +77,6 @@ diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
 diopiError_t diopiAddInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other, const diopiScalar_t* alpha) {
     BEGIN_CALL_ACL_OP(input, other, alpha);
-    if (otherAt.is_cpu()) {
-        otherAt = otherAt.to(inputAt.device());
-    }
     EXEC_NPU_CMD(aclnnInplaceAdd, inputAt, otherAt, alphaAt);
     END_CALL_ACL_OP();
 }
