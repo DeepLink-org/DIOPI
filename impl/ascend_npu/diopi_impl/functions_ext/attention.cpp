@@ -28,25 +28,37 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     auto prefixOptional = nullptr;
     double scaleValueOptional = softmax_scale;
     double keepProbOptional = 1 - p_dropout;
-    int64_t preTockensOptional = 0;
+    int64_t preTockensOptional = kAt.size(1);
     int64_t nextTockensOptional = 0;
-    int64_t headNum = qAt.size(1);
-    const char* inputLayout = qAt.sizes().size() == 4 ? "BNSD" : "BSH";
-    int64_t innerPreciseOptional = 0;
-    int64_t sparseModeOptional = 0;
-    at::Tensor softmaxMaxOut = at_npu::native::empty_npu({1}, attention_outAt.options().dtype(at::kFloat));
-    at::Tensor softmaxSumOut = at_npu::native::empty_npu({1}, attention_outAt.options().dtype(at::kFloat));
-    at::Tensor softmaxOutOut = at_npu::native::empty_npu({1}, attention_outAt.options().dtype(at::kFloat));
+    int64_t headNum = qAt.size(2);
+    const char* inputLayout = "BSND";
+    const int64_t innerPreciseOptional = 0;
+    const int64_t sparseModeOptional = 0;
+    const int64_t B = qAt.size(0);
+    const int64_t Sq = qAt.size(1);
+    const int64_t Sk = kAt.size(1);
+    const int64_t N = qAt.size(2);
+
+    const auto qShape = qAt.sizes();
+    std::vector<int64_t> softmaxMaxShape{B, N, Sq, 8};  // [B, N, Sq, 8]
+    // std::vector<int64_t> softmaxMaxShape(attention_outAt.sizes().begin(), attention_outAt.sizes().end());
+    // softmaxMaxShape.back() = 8;
+
+    at::Tensor softmaxMaxOut = at_npu::native::empty_npu(softmaxMaxShape, attention_outAt.options().dtype(at::kFloat));
+    at::Tensor softmaxSumOut = at_npu::native::empty_npu(softmaxMaxShape, attention_outAt.options().dtype(at::kFloat));
+    at::Tensor softmaxOutOut = at_npu::native::empty_npu({0}, attention_outAt.options().dtype(at::kFloat));
+    DEBUG_ARGS(softmaxMaxOut);
+    DEBUG_ARGS(softmaxSumOut);
+    DEBUG_ARGS(softmaxOutOut);
     if (is_causal) {
-        int64_t s0 = qAt.size(-2);                                                                    // S for query
-        int64_t s1 = kAt.size(-2);                                                                    // S for key & value
-        attentionMaskOptional = at_npu::native::empty_npu({s0, s1}, qAt.options().dtype(at::kBool));  // [S0, S1]
+        attentionMaskOptional = at_npu::native::empty_npu({Sq, Sk}, qAt.options().dtype(at::kBool));  // [Sq, Sk]
         int64_t diagonal = 1;
         EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskOptional, diagonal);
+        DEBUG_ARGS(attentionMaskOptional);
     }
-    TORCH_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", qAt.dim(), "-dimensional");
-    TORCH_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", kAt.dim(), "-dimensional");
-    TORCH_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ", vAt.dim(), "-dimensional");
+    TORCH_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4 dimensional, but got ", qAt.dim(), "-dimensional");
+    TORCH_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4 dimensional, but got ", kAt.dim(), "-dimensional");
+    TORCH_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4 dimensional, but got ", vAt.dim(), "-dimensional");
     TORCH_CHECK(keepProbOptional >= 0 && keepProbOptional <= 1, "The keep_prob value must be in range of [0, 1], but got ", keepProbOptional);
     TORCH_CHECK(sparseModeOptional >= 0 && sparseModeOptional <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparseModeOptional);
     EXEC_NPU_CMD(aclnnFlashAttentionScore,
@@ -60,7 +72,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
                  prefixOptional,
                  scaleValueOptional,
                  keepProbOptional,
-                 prefixOptional,
+                 preTockensOptional,
                  nextTockensOptional,
                  headNum,
                  inputLayout,
@@ -70,7 +82,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
                  softmaxSumOut,
                  softmaxOutOut,
                  attention_outAt);
-#if 0
+#if 1
     save_for_backward[0] = torch_npu::NPUBridge::GetNpuStorageImpl(softmaxMaxOut)->npu_desc_.diopi_tensor_;
     save_for_backward[1] = torch_npu::NPUBridge::GetNpuStorageImpl(softmaxSumOut)->npu_desc_.diopi_tensor_;
     save_for_backward[2] = torch_npu::NPUBridge::GetNpuStorageImpl(softmaxOutOut)->npu_desc_.diopi_tensor_;
@@ -95,7 +107,7 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     at::Tensor prefixOptional;
     double scaleValueOptional = softmax_scale;
     double keepProbOptional = 1 - p_dropout;
-    int64_t preTockensOptional = 0;
+    int64_t preTockensOptional = kAt.size(1);
     int64_t nextTockensOptional = 0;
     int64_t headNum = qAt.size(1);
     const char* inputLayout = qAt.sizes().size() == 4 ? "BNSD" : "BSH";

@@ -5458,10 +5458,13 @@ def flash_attention_v3_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
 def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
     func = check_function("diopiAttention")
     attn_out = raw_like(query)
-    save_for_backward_array = (ctypes.c_void_p * 16)()
-    save_for_backward = TensorP(save_for_backward_array[0])
-    save_tensor_num = ctypes.c_long()
+    max_tensor_num_for_backward = 16
+    save_for_backward_array = [Tensor() for i in range(max_tensor_num_for_backward)]
+    save_for_backward = [TensorP(tensor) for tensor in save_for_backward_array]
+    save_tensor_num = ctypes.c_long(max_tensor_num_for_backward)
     generator = Generator(build_generator_state(query.context()))
+    if scale is None:
+        scale = 1 / math.sqrt(query.size().data[-1])
     ret = func(query.context(), attn_out, save_for_backward, get_capsule(byref(save_tensor_num)),
                query, key, value, attn_mask, dropout_p, generator, scale, is_causal, attn_type)
     check_returncode(ret)

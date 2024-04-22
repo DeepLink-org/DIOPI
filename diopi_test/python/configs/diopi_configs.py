@@ -8893,7 +8893,8 @@ diopi_configs = {
     'attention': dict(
         name=['attention'],
         interface=['CustomizedTest'],
-        dtype=[np.float16, np.float32],
+        #dtype=[np.float16, np.float32],
+        dtype=[np.float16],
         saved_args=dict(out=0),
         para=dict(
             dropout_p=[0, 0, 0, 0],

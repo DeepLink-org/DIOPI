@@ -73,6 +73,15 @@ def get_func_info(content):
                         out_ptr.append(arg_index)
                         arg_type = 'PtrWrapper<diopiTensor>'
                         break
+                    elif next_arg[0] == 'int64_t*':
+                        type_change = True
+                        next_arg_process = '(*static_cast<int64_t*>(' + next_arg[1] + '))'
+                        if arg_type == 'diopiTensorHandle_t*':
+                            outs_vector[arg_index] = next_arg_process
+                        else:
+                            ins_vector[arg_index] = next_arg_process
+                        arg_type = 'py::list&'
+                        break
                     elif next_arg[0] == 'int64_t':
                         type_change = True
                         if arg_type == 'diopiTensorHandle_t*':
