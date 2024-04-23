@@ -8893,31 +8893,35 @@ diopi_configs = {
     'attention': dict(
         name=['attention'],
         interface=['CustomizedTest'],
-        #dtype=[np.float16, np.float32],
         dtype=[np.float16],
         saved_args=dict(out=0),
         para=dict(
-            dropout_p=[0, 0, 0, 0],
-            is_causal=[True, False, True, True],
-            scale=[0.0883, None, 0.125, 0.0625],
+            dropout_p=[0, 0, 0, 0,
+                       0, 0, 0, 0],
+            is_causal=[True, False, True, True,
+                       True, False, True, True],
+            scale=[0.0883, None, 0.125, 0.0625,
+                   0.0883, None, 0.125, 0.0625],
         ),
         tensor_para=dict(
             gen_fn='Genfunc.rand',
-            #gen_fn='Genfunc.zeros',
             args=[
                 {
                     "ins": ['query'],
-                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64)),
+                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64),
+                              (2, 64, 128, 128), (4, 16, 512, 128), (6, 32, 32, 128), (8, 8, 1024, 64),),
                     "requires_grad": [False],
                 },
                 {
                     "ins": ['key'],
-                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64)),
+                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64),
+                              (2, 64, 128, 128), (4, 16, 512, 128), (6, 32, 32, 128), (8, 8, 1024, 64),),
                     "requires_grad": [False],
                 },
                 {
                     "ins": ['value'],
-                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64)),
+                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64),
+                              (2, 64, 128, 128), (4, 16, 512, 128), (6, 32, 32, 128), (8, 8, 1024, 64)),
                     "requires_grad": [False],
                 },
             ],
