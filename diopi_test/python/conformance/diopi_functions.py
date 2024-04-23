@@ -5047,8 +5047,8 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     out = Tensor(input.size(), input.get_dtype())
     size = list(input.size().data)
     inv_rms_size = size.copy()
-    N = len(normalized_shape)
-    inv_rms_size = size[:-N] + [1] * N
+    n = len(normalized_shape)
+    inv_rms_size = size[:-n] + [1] * n
     inv_dtype = input.get_dtype()
     # when input_dtype is bfloat16 or float16, inv_dtype is float32
     if inv_dtype == Dtype.float16:
@@ -5084,9 +5084,6 @@ def rms_norm_backward(grad_outputs, input, weight, bias, normalized_shape, eps):
         grad_bias = None
     # When weight and bias exist, its shape is equal to normalized_shape.
     # If not specified, normalized_shape generally defaults to the size of the last dimension of the input tensor.
-    # This is convenient for testing multi-dimensional normalized_shape on some devices.
-    if normalized_shape is None:
-        normalized_shape = [input.shape().data[-1]]
     normalized_shape = Sizes(normalized_shape)
 
     inv_rms = GLOBAL_STATE.pop('rms_norm_inv_rms')
