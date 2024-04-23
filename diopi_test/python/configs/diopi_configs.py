@@ -8902,7 +8902,8 @@ diopi_configs = {
             scale=[0.0883, None, 0.125, 0.0625],
         ),
         tensor_para=dict(
-            gen_fn='Genfunc.randn',
+            gen_fn='Genfunc.rand',
+            #gen_fn='Genfunc.zeros',
             args=[
                 {
                     "ins": ['query'],

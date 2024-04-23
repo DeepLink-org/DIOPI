@@ -5464,7 +5464,7 @@ def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False,
     save_tensor_num = ctypes.c_long(max_tensor_num_for_backward)
     generator = Generator(build_generator_state(query.context()))
     if scale is None:
-        scale = 1 / math.sqrt(query.size().data[-1])
+        scale = 1.0 / math.sqrt(query.size().data[-1])
     ret = func(query.context(), attn_out, save_for_backward, get_capsule(byref(save_tensor_num)),
                query, key, value, attn_mask, dropout_p, generator, scale, is_causal, attn_type)
     check_returncode(ret)
