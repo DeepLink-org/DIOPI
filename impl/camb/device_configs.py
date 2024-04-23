@@ -1,3 +1,4 @@
+
 # Copyright (c) 2023, DeepLink.
 import numpy as np
 from skip import Skip
@@ -1966,17 +1967,29 @@ device_configs = {
         ),
     ),
 
+    # # default is currently skipped on camb
+    # # The implementation does not handle the bias, which is None.
+    # 'rms_norm_default': dict(
+    #     name=['rms_norm'],
+    #     dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+    # ),
+
+    # # multi-dimensional normalized_shape is currently skipped on camb
+    # 'rms_norm_with_multi_dimensional_normalized_shape': dict(
+    #     name=['rms_norm'],
+    #     dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+    # ),
+
+    # # bias is currently skipped on camb
+    # 'rms_norm_with_bias': dict(
+    #     name=['rms_norm'],
+    #     dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+    # ),
+    
+    # # multi-dimensional normalized_shape and bias is currently skipped on camb
     # 'rms_norm': dict(
-    #     name=["rms_norm"],
-    #     tensor_para=dict(
-    #         args=[
-    #             {
-    #                 "ins": ['input'],
-    #                 # 寒武纪计算正确，gen-data生成的没考虑bias，暂时屏蔽
-    #                 "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64)],
-    #             },
-    #         ],
-    #     ),
+    #     name=['rms_norm'],
+    #     dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
     # ),
 
     'multihead_attention': dict(
