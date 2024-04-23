@@ -5044,10 +5044,11 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
         assert isinstance(bias, Tensor), "bias must be a Tensor"
     call = "diopiRMSNorm"
     func = check_function(call)
+    out = Tensor(input.size(), input.get_dtype())
     size = list(input.size().data)
-    out = Tensor(size, input.get_dtype())
     inv_rms_size = size.copy()
-    inv_rms_size[-1] = 1
+    N = len(normalized_shape)
+    inv_rms_size = size[:-N] + [1] * N
     inv_dtype = input.get_dtype()
     # when input_dtype is bfloat16 or float16, inv_dtype is float32
     if inv_dtype == Dtype.float16:
