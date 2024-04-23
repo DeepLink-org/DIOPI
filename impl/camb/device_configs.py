@@ -1966,18 +1966,18 @@ device_configs = {
         ),
     ),
 
-    'rms_norm': dict(
-        name=["rms_norm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # 寒武纪计算正确，gen-data生成的没考虑bias，暂时屏蔽
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64)],
-                },
-            ],
-        ),
-    ),
+    # 'rms_norm': dict(
+    #     name=["rms_norm"],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['input'],
+    #                 # 寒武纪计算正确，gen-data生成的没考虑bias，暂时屏蔽
+    #                 "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64)],
+    #             },
+    #         ],
+    #     ),
+    # ),
 
     'multihead_attention': dict(
         name=["multihead_attention"],
