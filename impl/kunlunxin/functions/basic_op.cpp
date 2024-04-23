@@ -79,14 +79,14 @@ DIOPI_API diopiError_t diopiCopyInp(diopiContextHandle_t ctx, diopiConstTensorHa
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double lr, double momentum,
-                                double dampening, double weight_decay, bool nesterov) {
+DIOPI_API diopiError_t diopiSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double lr,
+                                double momentum, double dampening, double weight_decay, bool nesterov) {
     xdnn::Context* ctx_xpu = impl::kunlunxin::set_cur_ctx(ctx);
-    xdnn_pytorch::Tensor _w = impl::kunlunxin::build_xtorch_tensor(w);
-    xdnn_pytorch::Tensor _dw = impl::kunlunxin::build_xtorch_tensor(dw);
+    xdnn_pytorch::Tensor _param = impl::kunlunxin::build_xtorch_tensor(param);
+    xdnn_pytorch::Tensor _grad = impl::kunlunxin::build_xtorch_tensor(grad);
     xdnn_pytorch::Tensor _buf = impl::kunlunxin::build_xtorch_tensor(buf);
 
-    DIOPI_CALL_XDNN(xdnn_pytorch::sgd(ctx_xpu, _w, _dw, _buf, lr, momentum, dampening, weight_decay, nesterov));
+    DIOPI_CALL_XDNN(xdnn_pytorch::sgd(ctx_xpu, _param, _grad, _buf, lr, momentum, dampening, weight_decay, nesterov));
     return diopiSuccess;
 }
 
