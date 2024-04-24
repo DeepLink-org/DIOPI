@@ -49,8 +49,13 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     at::Tensor outView = viewAs4D(outAt);
     at::Tensor cosView = viewAs4D(cosAt);
     at::Tensor sinView = viewAs4D(sinAt);
-    at::Tensor cosRepeated = op_api::repeat(cosView, {1, 1, 1, 2});
-    at::Tensor sinRepeated = op_api::repeat(sinView, {1, 1, 1, 2});
+
+    at::Tensor cosRepeated = cosView;
+    at::Tensor sinRepeated = sinView;
+    if (xView.size(-1) != cosView.size(-1) && xView.size(-1) != sinView.size(-1)) {
+        cosRepeated = op_api::repeat(cosView, {1, 1, 1, 2});
+        sinRepeated = op_api::repeat(sinView, {1, 1, 1, 2});
+    }
     if (conj) {
         op_api::neg_(sinRepeated);
     }
