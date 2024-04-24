@@ -5468,7 +5468,60 @@ def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False,
     ret = func(query.context(), attn_out, save_for_backward, get_capsule(byref(save_tensor_num)),
                query, key, value, attn_mask, dropout_p, generator, scale, is_causal, attn_type)
     check_returncode(ret)
+    save_for_backward_tensor_list = []
+    for i in range(save_tensor_num.value):
+        save_for_backward_tensor_list.append(save_for_backward[i])
+
+    GLOBAL_STATE["attention_save_tensor_num"] = save_tensor_num.value
+    GLOBAL_STATE["save_for_backward_tensor_list"] = save_for_backward_tensor_list
     return attn_out
+
+def attention_backward(
+    query,
+    key,
+    value,
+    out,
+    grad_outputs,
+    dropout_p,
+    scale,
+    is_causal,
+    attn_type = "DotProduct"
+):
+    call = "diopiAttentionBackward"
+    func = check_function(call)
+    assert (
+        dropout_p >= 0 and dropout_p <= 1
+    ), "The p_dropout value must be in range of [0, 1]"
+    grad_q = raw_like(query)
+    grad_k = raw_like(key)
+    grad_v = raw_like(value)
+    save_tensor_num = GLOBAL_STATE.pop("attention_save_tensor_num")
+    save_for_backward_tensor_list = GLOBAL_STATE.pop("save_for_backward_tensor_list")
+
+    save_for_backward = [TensorP(tensor) for tensor in save_for_backward_tensor_list]
+    generator = Generator(build_generator_state(query.context()))
+    head_dim = query.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not scale else scale
+    ret = func(
+        query.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_outputs[0],
+        query,
+        key,
+        value,
+        out,
+        save_for_backward,
+        save_tensor_num,
+        dropout_p,
+        generator,
+        softmax_scale,
+        is_causal,
+        attn_type
+    )
+    check_returncode(ret)
+    return {"q": grad_q, "k": grad_k, "v": grad_v}
 
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
