@@ -71,7 +71,6 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
     void* csqPtr = csq.data();
     void* cskPtr = csk.data();
     uint64_t bytes = sizeof(int32_t) * (batchSize + 1);
-    cnrtQueueSync(getStream(ctx));
     cnrtMemcpyAsync(csqPtr, static_cast<void*>(cuSeqlensQ), bytes, getStream(ctx), cnrtMemcpyHostToDev);
     cnrtMemcpyAsync(cskPtr, static_cast<void*>(cuSeqlensK), bytes, getStream(ctx), cnrtMemcpyHostToDev);
     cnrtQueueSync(getStream(ctx));
@@ -233,12 +232,10 @@ DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, d
 
     void* csqPtr = csq.data();
     void* cskPtr = csk.data();
-    diopiStreamHandle_t streamHandle;
-    diopiGetStream(ctx, &streamHandle);
-    cnrtQueue_t phStream = (cnrtQueue_t)streamHandle;
     uint64_t bytes = sizeof(int32_t) * (batchSize + 1);
-    cnrtMemcpyAsync(csqPtr, static_cast<void*>(cuSeqlensQ), bytes, phStream, CNRT_MEM_TRANS_DIR_HOST2DEV);
-    cnrtMemcpyAsync(cskPtr, static_cast<void*>(cuSeqlensK), bytes, phStream, CNRT_MEM_TRANS_DIR_HOST2DEV);
+    cnrtMemcpyAsync(csqPtr, static_cast<void*>(cuSeqlensQ), bytes, getStream(ctx), cnrtMemcpyHostToDev);
+    cnrtMemcpyAsync(cskPtr, static_cast<void*>(cuSeqlensK), bytes, getStream(ctx), cnrtMemcpyHostToDev);
+    cnrtQueueSync(getStream(ctx));
 
     DiopiTensor gradQTmpTr = gradQTensor;
     if (gradQTensor.dtype() != qTensor.dtype()) {
