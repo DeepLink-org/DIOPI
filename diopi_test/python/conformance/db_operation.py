@@ -65,6 +65,7 @@ class DeviceCase(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     pytest_nodeid = Column(String(100))
+    priority = Column(String(1000))
     case_name = Column(String(100))
     model_name = Column(String(100))
     func_name = Column(String(100))
@@ -367,6 +368,7 @@ class ExcelOperation(object):
         df["case_config"] = df["case_config"].apply(lambda x: pickle.loads(x))
         columns = [
             "pytest_nodeid",
+            "priority",
             "case_name",
             "model_name",
             "func_name",
