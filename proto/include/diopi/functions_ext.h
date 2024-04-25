@@ -248,6 +248,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
 /**
  * @brief Computes attention on query, key and value tensors, using an optional attention mask if passed,
  and applying dropout if a probability greater than 0.0 is specified.
+ * https://towardsdatascience.com/transformers-explained-visually-part-3-multi-head-attention-deep-dive-1c1ff1024853
  * @param[in] ctx The diopi context.
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_head_num, q_seq_len, head_dim] or [batch_size,
  q_seq_len, embedding_dim]. type = [bfloat16, float16, float32].
@@ -274,6 +275,7 @@ DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandl
                                       bool is_causal, const char* attention_type);
 /**
  * @brief Compute the backward pass for Attention.
+ * https://towardsdatascience.com/transformers-explained-visually-part-3-multi-head-attention-deep-dive-1c1ff1024853
  * @param[in] ctx The diopi context.
  * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, q_head_num, q_seq_len, head_dim] or [batch_size, q_seq_len, embedding_dim].
  * type = [bfloat16, float16, float32].

@@ -5521,7 +5521,7 @@ def attention_backward(
         attn_type
     )
     check_returncode(ret)
-    return {"q": grad_q, "k": grad_k, "v": grad_v}
+    return {"query": grad_q, "key": grad_k, "value": grad_v}
 
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
