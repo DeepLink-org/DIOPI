@@ -35,6 +35,8 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     }
 
     BEGIN_CALL_ACL_OP(out, x, cos, sin);
+    TORCH_CHECK(xAt.size(-1) == 2 * cosAt.size(-1) && xAt.size(-1) == 2 * sinAt.size(-1),
+                "The size of the last dimension of x must be twice the size of the corresponding dimensions of cos and sin!");
     if (xAt.numel() == 0) {
         END_CALL_ACL_OP();
     }
@@ -50,12 +52,8 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     at::Tensor cosView = viewAs4D(cosAt);
     at::Tensor sinView = viewAs4D(sinAt);
 
-    at::Tensor cosRepeated = cosView;
-    at::Tensor sinRepeated = sinView;
-    if (xView.size(-1) != cosView.size(-1) && xView.size(-1) != sinView.size(-1)) {
-        cosRepeated = op_api::repeat(cosView, {1, 1, 1, 2});
-        sinRepeated = op_api::repeat(sinView, {1, 1, 1, 2});
-    }
+    at::Tensor cosRepeated = op_api::repeat(cosView, {1, 1, 1, 2});
+    at::Tensor sinRepeated = op_api::repeat(sinView, {1, 1, 1, 2});
     if (conj) {
         op_api::neg_(sinRepeated);
     }
