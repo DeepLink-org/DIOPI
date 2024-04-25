@@ -358,12 +358,17 @@ class CustomizedTest(object):
         return out
 
     def rms_norm(input, normalized_shape, weight, bias, eps):
-        var = input.to(torch.float32).pow(2).mean(-1, keepdim=True)
-        inv_rms = torch.rsqrt(var + eps)
-        inp = input * inv_rms
-        out = weight * inp
-
-        return (out, inv_rms)
+        if normalized_shape is not None:
+            dims = tuple(i for i in range(-1, -len(normalized_shape) - 1, -1))
+        else:
+            dims = -1
+        ori_dtype = input.dtype
+        variance = input.to(torch.float32).pow(2).mean(dims, keepdim=True)
+        inv_rms = torch.rsqrt(variance + eps)
+        input = input * inv_rms
+        out = weight * input + bias if bias is not None else weight * input
+        out = out.to(ori_dtype)
+        return out
 
     def sort(input, dim, descending, stable=False):
         # Skip compare while stable==False
