@@ -5047,8 +5047,8 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
     out = Tensor(input.size(), input.get_dtype())
     size = list(input.size().data)
     inv_rms_size = size.copy()
-    N = len(normalized_shape)
-    inv_rms_size = size[:-N]
+    n = len(normalized_shape)
+    inv_rms_size = size[:-n]
     inv_dtype = input.get_dtype()
     # when input_dtype is bfloat16 or float16, inv_dtype is float32
     if inv_dtype == Dtype.float16:
