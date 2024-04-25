@@ -407,6 +407,15 @@ DIOPI_API diopiError_t diopiIncreFlashAttention(diopiContextHandle_t ctx, diopiT
                                                 diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t paddingMask, diopiConstTensorHandle_t attenMask,
                                                 diopiSize_t actualSeqLengths, int64_t numHeads, double scaleValue, const char* inputLayout, int64_t numKeyValueHeads);
 
+DIOPI_API diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q,
+                                                diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t paddingMask, diopiConstTensorHandle_t attenMask,
+                                                diopiSize_t actualSeqLengths, diopiConstTensorHandle_t antiquant_scale, diopiConstTensorHandle_t antiquant_offset,
+                                                diopiConstTensorHandle_t block_table,
+                                                diopiConstTensorHandle_t dequant_scale1, diopiConstTensorHandle_t quant_scale1,
+                                                diopiConstTensorHandle_t dequant_scale2, diopiConstTensorHandle_t quant_scale2,
+                                                diopiConstTensorHandle_t quant_offset2, diopiConstTensorHandle_t kv_padding_size,
+                                                int64_t numHeads, double scaleValue, const char* inputLayout, int64_t numKeyValueHeads,
+                                                int64_t block_size, int64_t inner_precise);
 /**
  * @brief The no pad implementation of
  * \text{context_attention_out}(\mathrm{q},\mathrm{k},\mathrm{v})=\text{softmax}(\frac{\mathrm{qk}^\mathrm{T}}{\sqrt{\mathrm{d_k}}})\mathrm{v}. For details,
