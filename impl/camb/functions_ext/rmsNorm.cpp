@@ -25,7 +25,8 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
     DiopiTensor biasTensor(bias);
     DiopiTensor outTensor(out);
     DiopiTensor invRmsTensor(invRms);
-    DIOPI_CHECK(inputTensor.dim() == invRmsTensor.dim(), "dimension error in RMSNORM");
+    DIOPI_CHECK((inputTensor.dim() == invRmsTensor.dim())|| (inputTensor.dim() - normalizedShape.len == invRmsTensor.dim()
+    ), "dimension error in RMSNORM-invRmsTensor");
     DIOPI_CHECK(outTensor.shape() == inputTensor.shape(), "dimension error in RMSNORM");
 
     // zero-shape protection
@@ -71,7 +72,7 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
     size_t workspaceSize = 0;
     DIOPI_CALL_CNNL(cnnlGetRmsNormOpWorkspaceSize(handle, axis, inputDesc.get(), &workspaceSize));
     void* workspace = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
-
+    
     DIOPI_CALL_CNNL(cnnlRmsNormForward(handle,
                                        axis,
                                        inputDesc.get(),
@@ -110,7 +111,7 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
     DiopiTensor gradInputTensor(gradInput);
     DiopiTensor gradWeightTensor(gradWeight);
     DiopiTensor gradBiasTensor(gradBias);
-    DIOPI_CHECK(inputTensor.dim() == invRmsTensor.dim(), "dimension error in RMSNORM");
+    DIOPI_CHECK((inputTensor.dim() == invRmsTensor.dim())||(inputTensor.dim() - normalizedShape.len == invRmsTensor.dim()), "dimension error in RMSNORM-invRmsTensor");   
     DIOPI_CHECK(inputTensor.shape() == gradInputTensor.shape(), "dimension error in RMSNORM");
 
     // zero-shape protection
