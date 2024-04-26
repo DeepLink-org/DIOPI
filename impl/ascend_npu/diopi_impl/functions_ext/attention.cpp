@@ -42,13 +42,13 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     const int64_t Sq = is_4d_input ? qAt.size(2) : qAt.size(1);
     const int64_t Sk = is_4d_input ? kAt.size(2) : kAt.size(1);
     const int64_t N = headNum;
-    const int64_t preTockensOptional = Sk;
+    const int64_t preTockensOptional = N;
 
     const auto qShape = qAt.sizes();
     std::vector<int64_t> softmaxMaxShape{B, N, Sq, 8};  // [B, N, Sq, 8]
     at::Tensor softmaxMaxOut = at_npu::native::empty_npu(softmaxMaxShape, attention_outAt.options().dtype(at::kFloat));
     at::Tensor softmaxSumOut = at_npu::native::empty_npu(softmaxMaxShape, attention_outAt.options().dtype(at::kFloat));
-    at::Tensor softmaxOutOut = at_npu::native::empty_npu({1}, attention_outAt.options().dtype(at::kFloat));
+    at::Tensor softmaxOutOut = at_npu::native::empty_npu({0}, attention_outAt.options().dtype(at::kFloat));
     if (is_causal) {
         attentionMaskOptional = at_npu::native::empty_npu({Sq, Sk}, qAt.options().dtype(at::kBool));  // [Sq, Sk]
         EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskOptional);
@@ -56,7 +56,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
         EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskOptional, diagonal);
     }
     if (attentionMaskOptional.defined()) {
-        sparseModeOptional = 1;
+        // sparseModeOptional = 1;
     }
 
     TORCH_CHECK(keepProbOptional >= 0 && keepProbOptional <= 1, "The keep_prob value must be in range of [0, 1], but got ", keepProbOptional);
@@ -114,7 +114,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
 diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
                                     diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                     diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
-                                    double pDropout, diopiGeneratorHandle_t gen_dropout, double softmaxScale, bool is_causal, const char* attention_type) {
+                                    double pDropout, diopiGeneratorHandle_t gen_dropout, double softmaxScale, const char* attention_type) {
     BEGIN_CALL_ACL_OP(q, k, v, attentionOut, gradQ, gradK, gradV, gradOut);
     DIOPI_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
@@ -139,7 +139,7 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     at::Tensor paddingMaskAt;
 
     // int64_t preTokens = kAt.size(1);
-    int64_t preTokens = Sk;
+    int64_t preTokens = N;
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
     int64_t sparseMode = 1;
@@ -177,75 +177,6 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     END_CALL_ACL_OP();
 }
-#if 0
-diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
-                                    diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                    diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
-                                    double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type) {
-    BEGIN_CALL_ACL_OP(attention_out, q, k, v, grad_q, grad_k, grad_v, grad_out, gen_dropout);
-    TORCH_CHECK(saved_tensor_num >= 4, "backward need 4 tensors saved in forward, bug got ", saved_tensor_num)
-    const at::Tensor softmaxMaxOptional = impl::aten::buildATen(saved_for_backward[0]);
-    const at::Tensor softmaxSumOptional = impl::aten::buildATen(saved_for_backward[1]);
-    const at::Tensor softmaxInOptional = impl::aten::buildATen(saved_for_backward[2]);
-    //const at::Tensor attentionMaskOptional = impl::aten::buildATen(saved_for_backward[3]);
-    //const at::Tensor dropMaskOptional = impl::aten::buildATen(saved_for_backward[4]);
-    const at::Tensor attentionMaskOptional;
-    const at::Tensor dropMaskOptional;
-
-    DEBUG_ARGS(softmaxMaxOptional);
-    DEBUG_ARGS(softmaxSumOptional);
-    DEBUG_ARGS(softmaxInOptional);
-    DEBUG_ARGS(attentionMaskOptional);
-    DEBUG_ARGS(dropMaskOptional);
-
-    at::IntArrayRef prefixOptional;
-    double scaleValueOptional = softmax_scale;
-    double keepProbOptional = 1 - p_dropout;
-    int64_t nextTockensOptional = 0;
-    const bool is_4d_input = qAt.sizes().size() == 4;
-    const char* inputLayout = is_4d_input ? "BNSD" : "BSH";
-    const int64_t headNum = is_4d_input ? qAt.size(1) : 1;
-    const int64_t B = qAt.size(0);
-    const int64_t Sq = is_4d_input ? qAt.size(2) : qAt.size(1);
-    const int64_t Sk = is_4d_input ? kAt.size(2) : kAt.size(1);
-    const int64_t N = headNum;
-    //const int64_t preTockensOptional = Sk;
-    const int64_t preTockensOptional = kAt.size(1);
-    int64_t innerPreciseOptional = 0;
-    int64_t sparseModeOptional = 0;
-    //at::Tensor gradPse = at_npu::native::empty_npu({1}, vAt.options());
-    at::Tensor gradPse;//= at_npu::native::empty_npu({1}, vAt.options());
-    at::Tensor pseShiftOptional;
-    at::Tensor paddingMaskOptional;
-    EXEC_NPU_CMD(aclnnFlashAttentionScoreGrad,
-                 qAt,
-                 kAt,
-                 vAt,
-                 grad_outAt,
-                 pseShiftOptional,
-                 dropMaskOptional,
-                 paddingMaskOptional,
-                 attentionMaskOptional,
-                 softmaxMaxOptional,
-                 softmaxSumOptional,
-                 softmaxInOptional,
-                 attention_outAt,
-                 prefixOptional,
-                 scaleValueOptional,
-                 keepProbOptional,
-                 preTockensOptional,
-                 nextTockensOptional,
-                 headNum,
-                 inputLayout,
-                 innerPreciseOptional,
-                 sparseModeOptional,
-                 grad_qAt,
-                 grad_kAt,
-                 grad_vAt,
-                 gradPse);
-    END_CALL_ACL_OP();
-}
-#endif
 
 diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward, int64_t* save_tensor_num,
                                   diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_mask,

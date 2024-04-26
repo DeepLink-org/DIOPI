@@ -5517,7 +5517,6 @@ def attention_backward(
         dropout_p,
         generator,
         softmax_scale,
-        is_causal,
         attn_type
     )
     check_returncode(ret)
