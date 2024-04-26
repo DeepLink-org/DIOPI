@@ -56,24 +56,24 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
     DIOPI_CHECK(headSize <= 256, "FlashAttention forward only supports head dimension at most 256");
     DIOPI_CHECK(numHeadsQ % numHeadsK == 0, "Number of heads in key/value must divide number of heads in query");
 
-    // get accumulateQ
-    int32_t cuSeqlensQ[batchSize + 1];
-    int32_t cuSeqlensK[batchSize + 1];
+    // get accumulateQ on cpu
+    DiopiTensor cuSeqlensQ = requiresTensor(ctx, csShape, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    DiopiTensor cuSeqlensK = requiresTensor(ctx, csShape, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    int* cuSeqlensQPtr = static_cast<int*>(cuSeqlensQ.data());
+    int* cuSeqlensKPtr = static_cast<int*>(cuSeqlensK.data());
     for (int32_t i = 0; i < batchSize + 1; i++) {
-        cuSeqlensQ[i] = i * seqlenQ;
-        cuSeqlensK[i] = i * seqlenK;
+        cuSeqlensQPtr[i] = i * seqlenQ;
+        cuSeqlensKPtr[i] = i * seqlenK;
     }
 
     // require tensor csq & csk on device
     DiopiTensor csq = requiresTensor(ctx, csShape, csStride, diopi_dtype_int32);
     DiopiTensor csk = requiresTensor(ctx, csShape, csStride, diopi_dtype_int32);
-
     void* csqPtr = csq.data();
     void* cskPtr = csk.data();
     uint64_t bytes = sizeof(int32_t) * (batchSize + 1);
-    cnrtMemcpyAsync(csqPtr, static_cast<void*>(cuSeqlensQ), bytes, getStream(ctx), cnrtMemcpyHostToDev);
-    cnrtMemcpyAsync(cskPtr, static_cast<void*>(cuSeqlensK), bytes, getStream(ctx), cnrtMemcpyHostToDev);
-    cnrtQueueSync(getStream(ctx));
+    cnrtMemcpyAsync_V2(csqPtr, static_cast<void*>(cuSeqlensQPtr), bytes, getStream(ctx), cnrtMemcpyHostToDev);
+    cnrtMemcpyAsync_V2(cskPtr, static_cast<void*>(cuSeqlensKPtr), bytes, getStream(ctx), cnrtMemcpyHostToDev);
 
     // change input,output data type
     std::vector<DiopiTensor*> qkvTensors{&qTensor, &kTensor, &vTensor};
@@ -218,24 +218,24 @@ DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, d
     std::set<diopiDtype_t> supportedSoftmaxDtypes{diopi_dtype_float32};
     DIOPI_CALL(autoCastTensorType(ctx, softmaxTensors, supportedSoftmaxDtypes));
 
-    // get accumulateQ
-    int32_t cuSeqlensQ[batchSize + 1];
-    int32_t cuSeqlensK[batchSize + 1];
+    // get accumulateQ on cpu
+    DiopiTensor cuSeqlensQ = requiresTensor(ctx, csShape, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    DiopiTensor cuSeqlensK = requiresTensor(ctx, csShape, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    int* cuSeqlensQPtr = static_cast<int*>(cuSeqlensQ.data());
+    int* cuSeqlensKPtr = static_cast<int*>(cuSeqlensK.data());
     for (int32_t i = 0; i < batchSize + 1; i++) {
-        cuSeqlensQ[i] = i * seqlenQ;
-        cuSeqlensK[i] = i * seqlenK;
+        cuSeqlensQPtr[i] = i * seqlenQ;
+        cuSeqlensKPtr[i] = i * seqlenK;
     }
 
     // require tensor csq & csk on device
     DiopiTensor csq = requiresTensor(ctx, csShape, csStride, diopi_dtype_int32);
     DiopiTensor csk = requiresTensor(ctx, csShape, csStride, diopi_dtype_int32);
-
     void* csqPtr = csq.data();
     void* cskPtr = csk.data();
     uint64_t bytes = sizeof(int32_t) * (batchSize + 1);
-    cnrtMemcpyAsync(csqPtr, static_cast<void*>(cuSeqlensQ), bytes, getStream(ctx), cnrtMemcpyHostToDev);
-    cnrtMemcpyAsync(cskPtr, static_cast<void*>(cuSeqlensK), bytes, getStream(ctx), cnrtMemcpyHostToDev);
-    cnrtQueueSync(getStream(ctx));
+    cnrtMemcpyAsync_V2(csqPtr, static_cast<void*>(cuSeqlensQPtr), bytes, getStream(ctx), cnrtMemcpyHostToDev);
+    cnrtMemcpyAsync_V2(cskPtr, static_cast<void*>(cuSeqlensKPtr), bytes, getStream(ctx), cnrtMemcpyHostToDev);
 
     DiopiTensor gradQTmpTr = gradQTensor;
     if (gradQTensor.dtype() != qTensor.dtype()) {
