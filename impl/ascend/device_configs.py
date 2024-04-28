@@ -542,25 +542,25 @@ device_configs = {
         name=['rms_norm'],
         dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
     ),
-    
+
     # multi-dimensional normalized_shape and bias is currently not supported on ascend
     'rms_norm': dict(
         name=['rms_norm'],
         dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
     ),
-    
+
     'rms_norm_with_bias': dict(
         name=['rms_norm'],
         atol_half=5e-2,
         rtol_half=5e-2,
     ),
-    
+
     'rms_norm_default': dict(
         name=['rms_norm'],
         atol_half=5e-2,
         rtol_half=5e-2,
     ),
-    
+
 
     'smooth_l1_loss': dict(
         name=['smooth_l1_loss'],
@@ -865,7 +865,7 @@ device_configs = {
                 },
             ],
         ),
-        
+
     ),
 
     'index_put_acc_one_indices': dict( # llm used
@@ -1303,5 +1303,18 @@ device_configs = {
                 },
             ]
         ),
+    ),
+
+    # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend
+    'flash_attention_varlen': dict(
+        name=['flash_attention_varlen'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["q"],
+                    "dtype": [Skip(np.float16)],
+                },
+            ]
+        )
     ),
 }

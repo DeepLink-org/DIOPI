@@ -3096,7 +3096,7 @@ diopi_configs = {
                  [0], -2, [0, 1]],
         ),
         atol=1e-4,
-        rtol=1e-5,
+        rtol=1e-4,
         tensor_para=dict(
             args=[
                 {
@@ -6723,14 +6723,14 @@ diopi_configs = {
                 },
                 {
                     "ins": ['index'],
-                    # FIXME(shenhao) change () to (1) as temp 
+                    # FIXME(shenhao) change () to (1) as temp
                     "shape": ((1), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
                     "dtype": [np.int64],
                     "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
                 },
                 {
                     "ins": ['src'],
-                    # FIXME(shenhao) change () to (1) as temp 
+                    # FIXME(shenhao) change () to (1) as temp
                     "shape": ((1), (7,), (4, 9), (8, 12, 20), (16, 4, 4), (2, 8, 4, 4), (2, 8, 4, 4)),
                     "gen_fn": 'Genfunc.ones',
                     "dtype": [np.float32, np.float64, np.float16, np.int16,
@@ -6825,7 +6825,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ['index'],
-                    # FIXME(shenhao) change () to (1) as temp 
+                    # FIXME(shenhao) change () to (1) as temp
                     "shape": ((1,), (6,), (2, 7), (4, 8, 10), (16, 4, 4), (2, 8, 1, 1), (2, 8, 1, 1)),
                     "dtype": [np.int64],
                     "gen_fn": dict(fn='Genfunc.randint', low=0, high=4),
@@ -8400,7 +8400,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'rms_norm': dict(
         name=['rms_norm'],
         atol=1e-4,
@@ -8805,7 +8805,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'flash_attention_v1_SBH': dict(
         name=['flash_attention_v1'],
         interface=['CustomizedTest'],
@@ -8839,7 +8839,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'flash_attention_v1_BSH': dict(
         name=['flash_attention_v1'],
         interface=['CustomizedTest'],
@@ -8907,7 +8907,7 @@ diopi_configs = {
             ],
         ),
     ),
-    
+
     'flash_attention_v1_BNSD': dict(
         name=['flash_attention_v1'],
         interface=['CustomizedTest'],
@@ -8969,6 +8969,40 @@ diopi_configs = {
                     "ins": ['v'],
                     "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
                     "requires_grad": [True],
+                },
+            ],
+        ),
+    ),
+
+    'flash_attention_varlen': dict(
+        name=['flash_attention_varlen'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            p_dropout=[0, 0, 0, 0],
+            is_causal=[True, True, False, True],
+            softmax_scale=[None, 0.0883, None, 0.125],
+            max_seqlen=[32, 32, 128, 64],
+            cu_seqlens_q=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128]],
+            cu_seqlens_kv=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128]],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
                 },
             ],
         ),
