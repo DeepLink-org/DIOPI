@@ -10,8 +10,9 @@
 
 namespace OP_IMPL_NS {
 
-diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t expAvg, diopiTensorHandle_t expAvgSq,
-                        diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps, float weightDecay, int64_t step, bool amsgrad) {
+diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t grad, diopiTensorHandle_t expAvg,
+                        diopiTensorHandle_t expAvgSq, diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps, float weightDecay,
+                        int64_t step, bool amsgrad) {
     BEGIN_CALL_ACL_OP(input, grad, expAvg, expAvgSq, maxExpAvgSq);
 
     // maximize is not supported in diopi for now
