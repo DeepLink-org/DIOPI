@@ -267,6 +267,12 @@ device_configs = {
         ),
     ),
 
+    'reduce_partial_op': dict(
+        name=['sum'],
+        atol=1e-3,
+        rtol=1e-4,
+    ),
+
     'reduce_partial_op_1': dict(
         name=['std'],
         tensor_para=dict(
