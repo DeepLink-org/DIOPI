@@ -5457,6 +5457,56 @@ def flash_attention_v3_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
+def flash_attention_varlen(q, k, v, max_seqlen, cu_seqlens_q, cu_seqlens_kv, p_dropout, softmax_scale, is_causal):
+    call = "diopiFlashAttentionVarLen"
+    func = check_function(call)
+    q_size = list(q.size().data)
+    out = Tensor(q_size, q.get_dtype())
+    cu_seqlens_q = Sizes(cu_seqlens_q[1:])
+    cu_seqlens_kv = Sizes(cu_seqlens_kv[1:])
+    if is_causal:
+        attention_mask = Tensor()
+    else:
+        attention_mask = None
+    if p_dropout > 0 and p_dropout <= 1:
+        dropout_mask = Tensor()
+        state = build_generator_state(q.context())
+        generator = Generator(state)
+    elif p_dropout == 0:
+        dropout_mask = None
+        generator = None
+    else:
+        assert 0, "The p_dropout value must be in range of [0, 1]"    
+    softmax_max = Tensor()
+    softmax_sum = Tensor()
+    softmax_out = Tensor()
+    attention_mask_ptr = TensorP(attention_mask)
+    dropout_mask_ptr = TensorP(dropout_mask)
+    softmax_max_ptr = TensorP(softmax_max)
+    softmax_sum_ptr = TensorP(softmax_sum)
+    softmax_out_ptr = TensorP(softmax_out)
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not softmax_scale else softmax_scale
+    ret = func(
+        q.context(),
+        out,
+        attention_mask_ptr,
+        dropout_mask_ptr,
+        softmax_max_ptr,
+        softmax_sum_ptr,
+        softmax_out_ptr,
+        generator,
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+    )
+    check_returncode(ret)
+    return out
+
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
     func = check_function(call)

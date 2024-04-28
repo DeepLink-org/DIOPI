@@ -8973,6 +8973,40 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'flash_attention_varlen': dict(
+        name=['flash_attention_varlen'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            p_dropout=[0, 0, 0, 0],
+            is_causal=[True, True, False, True],
+            softmax_scale=[None, 0.0883, None, 0.125],
+            max_seqlen=[32, 32, 128, 64],
+            cu_seqlens_q=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128]],
+            cu_seqlens_kv=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128]],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+            ],
+        ),
+    ),
 
     'scaled_masked_softmax': dict(
         name=['scaled_masked_softmax'],
