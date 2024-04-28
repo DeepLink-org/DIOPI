@@ -1285,7 +1285,8 @@ device_configs = {
                 {
                     "ins": ['param'],
                     # float64 not supported yet on ascend
-                    "dtype": [Skip(np.float64)],
+                    # temporarily skip all test cases due to software stack version
+                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
                 },
             ]
         ),
