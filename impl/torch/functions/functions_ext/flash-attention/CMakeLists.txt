@@ -2,6 +2,8 @@
 CUDA_DETECT_INSTALLED_GPUS(CURRENT_GPU_LIST)
 
 foreach(CC ${CURRENT_GPU_LIST})
+  string(STRIP "${CC}" CC) # remove leading spaces
+
   # See https://developer.nvidia.com/cuda-gpus#compute for Compute Capability
   if(CC VERSION_GREATER_EQUAL 8.0) # Ampere
     set(ENABLE_TORCH_EXT_FLASH_ATTN ON)
