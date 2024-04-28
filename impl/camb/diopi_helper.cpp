@@ -317,6 +317,13 @@ DiopiTensor requiresTensor(diopiContextHandle_t ctx, const diopiSize_t& size, di
     return DiopiTensor(tensor);
 }
 
+DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, diopiDtype_t dtype, diopiDevice_t device) {
+    diopiSize_t sizeTmp{size.data(), static_cast<int64_t>(size.size())};
+    diopiTensorHandle_t tensor = nullptr;
+    diopiRequireTensor(ctx, &tensor, &sizeTmp, nullptr, dtype, device);
+    return DiopiTensor(tensor);
+}
+
 DiopiTensor requiresTensor(diopiContextHandle_t ctx, const std::vector<int64_t>& size, const std::vector<int64_t>& stride, diopiDtype_t dtype) {
     diopiSize_t sizeTmp{size.data(), static_cast<int64_t>(size.size())};
     diopiSize_t strideTmp{stride.data(), static_cast<int64_t>(stride.size())};
