@@ -35,6 +35,8 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     }
 
     BEGIN_CALL_ACL_OP(out, x, cos, sin);
+    TORCH_CHECK(xAt.size(-1) == 2 * cosAt.size(-1) && xAt.size(-1) == 2 * sinAt.size(-1),
+                "The size of the last dimension of x must be twice the size of the corresponding dimensions of cos and sin!");
     if (xAt.numel() == 0) {
         END_CALL_ACL_OP();
     }
@@ -49,10 +51,12 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     at::Tensor outView = viewAs4D(outAt);
     at::Tensor cosView = viewAs4D(cosAt);
     at::Tensor sinView = viewAs4D(sinAt);
-    at::Tensor cosRepeated = op_api::repeat(cosView, {1, 1, 1, 2});
-    at::Tensor sinRepeated = op_api::repeat(sinView, {1, 1, 1, 2});
+    // To meet the ascend kernel requirement: the last dimension size of cos and sin is the same as the dimension size corresponding to input, use cat op to
+    // concatenate in the last dimension.
+    at::Tensor cosCat = op_api::cat({cosView, cosView}, -1);
+    at::Tensor sinCat = op_api::cat({sinView, sinView}, -1);
     if (conj) {
-        op_api::neg_(sinRepeated);
+        op_api::neg_(sinCat);
     }
 
     // According to API document
@@ -63,7 +67,7 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
 
     std::vector<at::Tensor> chunkResult = xView.chunk(2, -1);
     at::Tensor xNew = op_api::cat({chunkResult[1] * (-1), chunkResult[0]}, -1);
-    at::Tensor result = op_api::mul(cosRepeated, xView) + op_api::mul(sinRepeated, xNew);
+    at::Tensor result = op_api::mul(cosCat, xView) + op_api::mul(sinCat, xNew);
     outView.copy_(result);
 
     END_CALL_ACL_OP();
