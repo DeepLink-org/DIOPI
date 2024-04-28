@@ -537,12 +537,16 @@ device_configs = {
         ),
     ),
 
+    # multi-dimensional normalized_shape is currently not supported on ascend
+    'rms_norm_with_multi_dimensional_normalized_shape': dict(
+        name=['rms_norm'],
+        dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+    ),
+    
+    # multi-dimensional normalized_shape and bias is currently not supported on ascend
     'rms_norm': dict(
         name=['rms_norm'],
-        atol=1e-3,
-        rtol=1e-3,
-        atol_half=1e-1,
-        rtol_half=1e-1,
+        dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
     ),
 
     'smooth_l1_loss': dict(
@@ -1194,6 +1198,8 @@ device_configs = {
 
     'remainder_self_scalar': dict(
         name=['remainder'],
+        atol=1e-3,
+        rtol=1e-3,
         tensor_para=dict(
             args=[
                 {

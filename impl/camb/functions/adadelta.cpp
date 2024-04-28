@@ -4,29 +4,29 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t squareAvg,
+diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t squareAvg,
                            diopiTensorHandle_t accDelta, float lr, float rho, float eps, float weightDecay) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
-    DiopiTensor inputTensor = DiopiTensor(input);
+    DiopiTensor paramTensor = DiopiTensor(param);
     DiopiTensor gradTensor = DiopiTensor(grad);
     DiopiTensor squareAvgTensor = DiopiTensor(squareAvg);
     DiopiTensor accDeltaTensor = DiopiTensor(accDelta);
 
-    DiopiTensor inputCasted = inputTensor;
+    DiopiTensor paramCasted = paramTensor;
     DiopiTensor squareAvgCasted = squareAvgTensor;
     DiopiTensor accDeltaCasted = accDeltaTensor;
 
     DiopiTensor gradCasted;
     DIOPI_CALL(clone(ctx, gradTensor, gradCasted));
 
-    std::vector<DiopiTensor*> tensors{&inputCasted, &gradCasted, &squareAvgCasted, &accDeltaCasted};
+    std::vector<DiopiTensor*> tensors{&paramCasted, &gradCasted, &squareAvgCasted, &accDeltaCasted};
     DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
 
     if (weightDecay != 0.0f) {
-        DIOPI_CALL(cnnlOpTensor(ctx, inputCasted, gradCasted, gradCasted, CNNL_OP_TENSOR_ADD, static_cast<double>(weightDecay), 1.0, 0.0));
+        DIOPI_CALL(cnnlOpTensor(ctx, paramCasted, gradCasted, gradCasted, CNNL_OP_TENSOR_ADD, static_cast<double>(weightDecay), 1.0, 0.0));
     }
 
-    CnnlTensorDesc inputDesc(inputCasted, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc paramDesc(paramCasted, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc squareAvgDesc(squareAvgCasted, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc accDeltaDesc(accDeltaCasted, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradDesc(gradCasted, CNNL_LAYOUT_ARRAY);
@@ -40,13 +40,13 @@ diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, 
     DIOPI_CALL(makeTensorFromScalar(ctx, &rhoScalar, rhoTensor));
     DIOPI_CALL(makeTensorFromScalar(ctx, &epsScalar, epsTensor));
 
-    DIOPI_CALL(dataTypeCast(ctx, lrTensor, inputCasted.dtype()));
-    DIOPI_CALL(dataTypeCast(ctx, rhoTensor, inputCasted.dtype()));
-    DIOPI_CALL(dataTypeCast(ctx, epsTensor, inputCasted.dtype()));
+    DIOPI_CALL(dataTypeCast(ctx, lrTensor, paramCasted.dtype()));
+    DIOPI_CALL(dataTypeCast(ctx, rhoTensor, paramCasted.dtype()));
+    DIOPI_CALL(dataTypeCast(ctx, epsTensor, paramCasted.dtype()));
 
     DIOPI_CALL_CNNL(cnnlApplyAdadelta(handle,
-                                      inputDesc.get(),
-                                      inputCasted.data(),
+                                      paramDesc.get(),
+                                      paramCasted.data(),
                                       squareAvgDesc.get(),
                                       squareAvgCasted.data(),
                                       accDeltaDesc.get(),
@@ -57,7 +57,7 @@ diopiError_t diopiAdadelta(diopiContextHandle_t ctx, diopiTensorHandle_t input, 
                                       rhoTensor.data(),
                                       epsTensor.data()));
 
-    DIOPI_CALL(dataTypeCast(ctx, inputTensor, inputCasted));
+    DIOPI_CALL(dataTypeCast(ctx, paramTensor, paramCasted));
     DIOPI_CALL(dataTypeCast(ctx, squareAvgTensor, squareAvgCasted));
     DIOPI_CALL(dataTypeCast(ctx, accDeltaTensor, accDeltaCasted));
     return diopiSuccess;

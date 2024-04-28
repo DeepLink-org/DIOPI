@@ -298,12 +298,12 @@ DIOPI_API diopiError_t topsCrossEntropyLossBackward(diopiContextHandle_t ctx, di
                                                     diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                                     diopiReduction_t reduction, int64_t ignore_index, double label_smoothing);
 
-DIOPI_API diopiError_t topsSgd(diopiContextHandle_t ctx, diopiTensorHandle_t w, diopiTensorHandle_t dw, diopiTensorHandle_t buf, double lr, double momentum,
-                               double dampening, double weight_decay, bool nesterov);
+DIOPI_API diopiError_t topsSgd(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiTensorHandle_t grad, diopiTensorHandle_t buf, double lr,
+                               double momentum, double dampening, double weight_decay, bool nesterov);
 
 DIOPI_API diopiError_t topsExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
-DIOPI_API diopiError_t topsAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+DIOPI_API diopiError_t topsAdam(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
                                 diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps,
                                 float weight_decay, int64_t step, bool amsgrad);
 
@@ -321,7 +321,7 @@ DIOPI_API diopiError_t topsMaxAll(diopiContextHandle_t ctx, diopiTensorHandle_t 
 
 DIOPI_API diopiError_t topsAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t *other, const diopiScalar_t *alpha);
 
-DIOPI_API diopiError_t topsAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+DIOPI_API diopiError_t topsAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
                                  diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps,
                                  float weight_decay, int64_t step, bool amsgrad);
 
