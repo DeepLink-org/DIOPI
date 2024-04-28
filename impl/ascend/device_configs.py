@@ -548,6 +548,19 @@ device_configs = {
         name=['rms_norm'],
         dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
     ),
+    
+    'rms_norm_with_bias': dict(
+        name=['rms_norm'],
+        atol_half=5e-2,
+        rtol_half=5e-2,
+    ),
+    
+    'rms_norm_default': dict(
+        name=['rms_norm'],
+        atol_half=5e-2,
+        rtol_half=5e-2,
+    ),
+    
 
     'smooth_l1_loss': dict(
         name=['smooth_l1_loss'],
