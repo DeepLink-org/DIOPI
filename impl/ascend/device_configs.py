@@ -1302,7 +1302,7 @@ device_configs = {
             args=[
                 {
                     "ins": ["q"],
-                    "dtype": (Skip(np.float16)),
+                    "dtype": [Skip(np.float16)],
                 },
             ]
         )
