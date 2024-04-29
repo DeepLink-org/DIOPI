@@ -22,8 +22,8 @@ const int64_t uInt8BitNumber = 8;
 diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* attentionMask,
                                        diopiTensorHandle_t* dropoutMask, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
                                        diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                       diopiConstTensorHandle_t v, diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, double pDropout, double softmaxScale,
-                                       bool isCausal) {
+                                       diopiConstTensorHandle_t v, diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, int64_t maxSeqLenQ, int64_t maxSeqLenKV,
+                                       double pDropout, double softmaxScale, bool isCausal) {
     BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqKV, gen, attentionOut);
 
     DIOPI_CHECK(qAt.dim() == 3, "The shapes of the input query should be 3-dimensional");
@@ -68,7 +68,7 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
 
     at::Tensor attentionMaskAt = at::Tensor();
     if (isCausal) {
-        attentionMaskAt = npu_preparation::apply_tensor_without_format({t, t}, qAt.options().dtype(at::kBool));
+        attentionMaskAt = npu_preparation::apply_tensor_without_format({maxSeqLenQ, maxSeqLenKV}, qAt.options().dtype(at::kBool));
         EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskAt);
         int64_t diagonal = 1;
         EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskAt, diagonal);
@@ -131,7 +131,7 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
                                                diopiConstTensorHandle_t v, diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, diopiConstTensorHandle_t attentionOut,
                                                diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
                                                diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum, diopiConstTensorHandle_t softmaxOut,
-                                               double pDropout, double softmaxScale) {
+                                               int64_t maxSeqLenQ, int64_t maxSeqLenKV, double pDropout, double softmaxScale) {
     BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqKV, attentionOut, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
     at::Tensor dropoutMaskAt;

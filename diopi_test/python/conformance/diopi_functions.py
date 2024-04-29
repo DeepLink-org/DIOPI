@@ -5457,7 +5457,7 @@ def flash_attention_v3_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
-def flash_attention_varlen(q, k, v, max_seqlen, cu_seqlens_q, cu_seqlens_kv, p_dropout, softmax_scale, is_causal):
+def flash_attention_varlen(q, k, v, max_seqlen_q, max_seqlen_kv, cu_seqlens_q, cu_seqlens_kv, p_dropout, softmax_scale, is_causal):
     call = "diopiFlashAttentionVarLen"
     func = check_function(call)
     q_size = list(q.size().data)
@@ -5500,9 +5500,57 @@ def flash_attention_varlen(q, k, v, max_seqlen, cu_seqlens_q, cu_seqlens_kv, p_d
         v,
         cu_seqlens_q,
         cu_seqlens_kv,
+        max_seqlen_q, 
+        max_seqlen_kv,
         p_dropout,
         softmax_scale,
         is_causal,
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["flash_attention_varlen_attention_mask"] = attention_mask
+    GLOBAL_STATE["flash_attention_varlen_dropout_mask"] = dropout_mask
+    GLOBAL_STATE["flash_attention_varlen_softmax_max"] = softmax_max
+    GLOBAL_STATE["flash_attention_varlen_softmax_sum"] = softmax_sum
+    GLOBAL_STATE["flash_attention_varlen_softmax_out"] = softmax_out
+    return out
+
+def flash_attention_varlen_backward(q, k, v, out, grad_outputs, max_seqlen_q, max_seqlen_kv, cu_seqlens_q, cu_seqlens_kv, p_dropout, softmax_scale, is_causal):
+    call = "diopiFlashAttentionVarLenBackward"
+    func = check_function(call)
+    assert p_dropout >=0 and p_dropout <=1, "The p_dropout value must be in range of [0, 1]"
+    head_dim = q.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
+    cu_seqlens_q = Sizes(cu_seqlens_q[1:])
+    cu_seqlens_kv = Sizes(cu_seqlens_kv[1:])
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    attention_mask = GLOBAL_STATE.pop("flash_attention_varlen_attention_mask")
+    dropout_mask = GLOBAL_STATE.pop("flash_attention_varlen_dropout_mask")
+    softmax_max = GLOBAL_STATE.pop("flash_attention_varlen_softmax_max")
+    softmax_sum = GLOBAL_STATE.pop("flash_attention_varlen_softmax_sum")
+    softmax_out = GLOBAL_STATE.pop("flash_attention_varlen_softmax_out")
+    ret = func(
+        q.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        out,
+        attention_mask,
+        dropout_mask,
+        softmax_max,
+        softmax_sum,
+        softmax_out,
+        max_seqlen_q, 
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
     )
     check_returncode(ret)
     return out

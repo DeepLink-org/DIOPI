@@ -328,6 +328,8 @@ DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, d
  * @param[in] v Value tensor. shape = [total_v, head_num, head_dim, where total_v = total number of value tokens in the batch. type = [bfloat16, float16].
  * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size+1].
  * @param[in] cum_seq_kv The cumulative sequence lengths of the sequences in the batch for key and value. shape = [batch_size+1].
+ * @param[in] max_seqlen_q Maximum sequence length for query.
+ * @param[in] max_seqlen_kv Maximum sequence length for key and value.
  * @param[in] p_dropout Dropout probability.
  * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] is_causal Whether to apply causal attention mask.
@@ -343,7 +345,7 @@ DIOPI_API diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopi
                                                  diopiTensorHandle_t* dropout_mask, diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum,
                                                  diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q,
                                                  diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiSize_t cum_seq_q, diopiSize_t cum_seq_kv,
-                                                 double p_dropout, double softmax_scale, bool is_causal);
+                                                 int64_t max_seqlen_q, int64_t max_seqlen_kv, double p_dropout, double softmax_scale, bool is_causal);
 
 /**
  * @brief Compute the backward pass for the variable length version of Flash Attention.
@@ -360,6 +362,8 @@ DIOPI_API diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopi
  * @param[in] softmax_max Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
  * @param[in] softmax_sum Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
  * @param[in] softmax_out Tensor representing the intermediate calculation result of softmax op from the forward pass. type =[float32].
+ * @param[in] max_seqlen_q Maximum sequence length for query.
+ * @param[in] max_seqlen_kv Maximum sequence length for key and value.
  * @param[in] p_dropout Dropout probability.
  * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[out] grad_q The gradient of the query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type =
@@ -374,8 +378,8 @@ DIOPI_API diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ct
                                                          diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiSize_t cum_seq_q, diopiSize_t cum_seq_kv,
                                                          diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
                                                          diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
-                                                         diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, double p_dropout,
-                                                         double softmax_scale);
+                                                         diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, int64_t max_seqlen_q,
+                                                         int64_t max_seqlen_kv, double p_dropout, double softmax_scale);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
