@@ -477,10 +477,11 @@ class CustomizedTest(object):
         return output
 
     def flash_attention_varlen(
-        q, k, v, cu_seqlens_q, cu_seqlens_kv, max_seqlen, p_dropout, softmax_scale, is_causal
+        q, k, v, cu_seqlens_q, cu_seqlens_kv, max_seqlen_q, max_seqlen_kv, p_dropout, softmax_scale, is_causal
     ):
         # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
         cu_seqlens = cu_seqlens_q
+        max_seqlen = max_seqlen_q
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         batch_size = len(cu_seqlens) - 1
         _, head_num, head_dim = q.size()
