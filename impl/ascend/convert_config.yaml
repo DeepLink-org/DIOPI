@@ -116,7 +116,7 @@
     dtype: (float64)->float32
 
 - diopiGroupNormBackward:
-    dtype: (float64)->float32
+    dtype: (float16,float64)->float32
     layout: ND
 
 - diopiLayerNorm:

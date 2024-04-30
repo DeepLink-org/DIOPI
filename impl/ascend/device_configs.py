@@ -834,6 +834,19 @@ device_configs = {
             ],
         ),
     ),
+    
+    'index': dict(
+        name=['index'],
+        tensor_para=dict(
+            # aclnn not support index out of size
+            args=[
+                {
+                    "ins": ['idx3'],
+                    "shape": [Skip((224, 224)),],
+                },
+            ],
+        ),
+    ),
 
     'index_put_acc_three_indices': dict( # llm used
         name=['index_put'],

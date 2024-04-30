@@ -37,9 +37,9 @@ diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHa
 diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
     BEGIN_CALL_ACL_OP(input, out);
     std::vector<int64_t> sizeVec(size.data, size.data + size.len);
-    double scalesH = 1.0;
-    double scalesW = 1.0;
-    double scalesD = 1.0;
+    double scalesH = 0;
+    double scalesW = 0;
+    double scalesD = 0;
     if (sizeVec.size() == 1) {
         op_api::upsample_nearest1d_out(inputAt, sizeVec, scalesD, outAt);
     } else if (sizeVec.size() == 2) {
@@ -55,9 +55,9 @@ diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorH
     BEGIN_CALL_ACL_OP(gradInput, gradOutput);
     std::vector<int64_t> outSizeVec(outSize.data, outSize.data + outSize.len);
     std::vector<int64_t> inSizeVec(inSize.data, inSize.data + inSize.len);
-    double scalesH = 1.0;
-    double scalesW = 1.0;
-    double scalesD = 1.0;
+    double scalesH = 0;
+    double scalesW = 0;
+    double scalesD = 0;
     if (outSizeVec.size() == 1) {
         scalesD = gradOutputAt.size(2) * 1.0 / gradInputAt.size(2);
         op_api::upsample_nearest1d_backward_out(gradOutputAt, outSizeVec, inSizeVec, scalesD, gradInputAt);
