@@ -98,7 +98,7 @@ class DeviceConfig(object):
                 if isinstance(d, Skip):
                     self._device_rules[cfg_name]["skip"]["dtype"].add(d.value())
         if "skip_all" in value.keys():
-            self._device_rules[cfg_name]["skip_all"] = True
+            self._device_rules[cfg_name]["skip_all"] = value["skip_all"]
         
     # @staticmethod
     def run(self):
