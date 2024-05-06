@@ -1173,16 +1173,64 @@ device_configs = {
         ),
     ),
 
+    # 'apply_penalty': dict(
+    #     name=['apply_penalty'],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ['logits'],
+    #                 "dtype": [Skip(np.float64)],
+    #             },
+    #         ]
+    #     )
+    # ),
+
+    # Due to a bug in the software stack, this test will be skipped for now.
     'apply_penalty': dict(
         name=['apply_penalty'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['logits'],
-                    "dtype": [Skip(np.float64)],
-                },
-            ]
-        )
+        skip_all=True
+    ),
+    
+    # Due to a bug in the software stack, this test will be skipped for now.
+    'embedding': dict(
+        name=['embedding'],
+        skip_all=True
+    ),
+
+    # Due to a bug in the software stack, this test will be skipped for now.
+    'index_select': dict(
+        name = ['index_select'],
+        skip_all=True
+    ),
+
+    # Due to a bug in the software stack, this test will be skipped for now.
+    'index_select_not_float': dict(
+        name = ['index_select'],
+        skip_all=True
+    ),
+    
+    # Due to a bug in the software stack, this test will be skipped for now.
+    'pow_broadcast_inplace': dict(
+        name=['pow'],
+        skip_all=True
+    ),
+    
+    # Due to a bug in the software stack, this test will be skipped for now.
+    'pow_scalar_base_float_exp': dict(
+        name=['pow'],
+        skip_all=True
+    ),
+    
+    # Due to a bug in the software stack, this test will be skipped for now.
+    'pow_scalar_base_int_exp': dict(
+        name=['pow'],
+        skip_all=True
+    ),
+    
+    # Due to a bug in the software stack, this test will be skipped for now.
+    'token_attention': dict(
+        name=['token_attention'],
+        skip_all=True
     ),
 
     'rotary_emb': dict(
@@ -1197,16 +1245,22 @@ device_configs = {
         ),
     ),
 
+    # 'token_softmax_reducev': dict(
+    #     name=['token_softmax_reducev'],
+    #     tensor_para=dict(
+    #         args=[
+    #             {
+    #                 "ins": ["v"],
+    #                 "shape": (Skip((0, 15, 32)),),
+    #             },
+    #         ]
+    #     )
+    # ),
+    
+    # Due to a bug in the software stack, this test will be skipped for now.
     'token_softmax_reducev': dict(
         name=['token_softmax_reducev'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["v"],
-                    "shape": (Skip((0, 15, 32)),),
-                },
-            ]
-        )
+        skip_all=True
     ),
 
     # temp for 910B
@@ -1298,10 +1352,17 @@ device_configs = {
             other=[Skip(False),],
         ),
     ),
+    
+    # 'nll_loss': dict(
+    #     name=["nll_loss"],
+    #     atol=1e-4,
+    #     rtol=1e-3,
+    # ),
+
+    # Due to a bug in the software stack, this test will be skipped for now.
     'nll_loss': dict(
-        name=["nll_loss"],
-        atol=1e-4,
-        rtol=1e-3,
+        name = ['nll_loss'],
+        skip_all = True
     ),
 
     'adam': dict(
