@@ -127,7 +127,7 @@ class CollectCase(object):
             rule = filter_rule[case_key]
             
             # skip_all
-            if "skip_all" in rule.keys():
+            if rule.get("skip_all", False):
                 return True
             
             # tol
