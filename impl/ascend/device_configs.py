@@ -754,6 +754,7 @@ device_configs = {
         ),
     ),
 
+    # TODO(zhangqiu) Due to a bug in the software stack, float16 be skipped for now.
     'group_norm': dict(
         name=['group_norm'],
         atol=5e-2,
