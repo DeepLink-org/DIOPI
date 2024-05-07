@@ -18,10 +18,10 @@ extern "C" {
 /**
  * @brief Apply rotary embedding operation to an input tensor.
  * @param[in] ctx The diopi context.
- * @param[out] out The output tensor containing the rotary embeddings. type = [float32, float16, float64].
- * @param[in] x The input tensor which rotary embedding will be applied. type = [float32, float16, float64].
- * @param[in] cos The cosine values. type = [float32, float16, float64].
- * @param[in] sin The sine values. type = [float32, float16, float64].
+ * @param[out] out The output tensor containing the rotary embeddings. type = [bfloat16, float16, float32, float64].
+ * @param[in] x The input tensor which rotary embedding will be applied. type = [bfloat16, float16, float32, float64].
+ * @param[in] cos The cosine values. type = [bfloat16, float16, float32, float64].
+ * @param[in] sin The sine values. type = [bfloat16, float16, float32, float64].
  * @param[in] conj bool: If `false`, compute rotary embeddings for forward. If `true`, computes the backward of rotary embeddings according to the conjugate of
  * the rotary matrix.
  * @param[in] interleaved bool:
@@ -34,13 +34,13 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
 /**
  * @brief Apply Root Mean Square (RMS) Normalization to the input tensor.
  * @param[in] ctx The diopi context.
- * @param[out] out the output tensor containing the normalized values. type = [float32, float16, float64].
- * @param[out] inv_rms The tensor containing the inverse of root mean square. type = [float32, float16, float64].
- * @param[in] input The input tensor to be normalized. type = [float32, float16, float64].
- * @param[in] normalized_shape The shape of the partial input which is needed to be normalized. type = [int32, int64].
- * @param[in] weight The gain parameter used to re-scale the standardized summed inputs type = [float32, float16, float64].
- * @param[in] bias The bias tensor for the normalization. type = [float32, float16, float64].
- * @param[in] eps A small value to avoid division by zero. type = [float64].
+ * @param[out] out The output tensor containing the normalized values. type = [bfloat16, float16, float32, float64].
+ * @param[out] inv_rms The tensor containing the inverse of root mean square. type = [float32, float64].
+ * @param[in] input The input tensor to be normalized. type = [bfloat16, float16, float32, float64].
+ * @param[in] normalized_shape The shape of the partial input which is needed to be normalized.
+ * @param[in] weight The gain parameter used to re-scale the standardized summed inputs type = [bfloat16, float16, float32, float64].
+ * @param[in] bias The bias tensor for the normalization. type = [bfloat16, float16, float32, float64].
+ * @param[in] eps A small value to avoid division by zero.
  */
 DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t inv_rms, diopiConstTensorHandle_t input,
                                     diopiSize_t normalized_shape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps);
@@ -48,16 +48,16 @@ DIOPI_API diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_
 /**
  * @brief Compute the backward pass for Root Mean Square (RMS) Normalization.
  * @param[in] ctx The diopi context.
- * @param[out] grad_input The gradient of the input tensor. type = [float32, float16, float64].
- * @param[out] grad_weight The gradient of the weight parameter. type = [float32, float16, float64].
- * @param[out] grad_bias The gradient of the bias parameter. type = [float32, float16, float64].
- * @param[in] grad_output The gradient of the output from the forward pass. type = [float32, float16, float64].
- * @param[in] input The input tensor used in the forward pass. type = [float32, float16, float64].
- * @param[in] weight The weight parameter used in the forward pass. type = [float32, float16, float64].
- * @param[in] bias The bias used in the forward pass. type = [float32, float16, float64].
- * @param[in] inv_rms The inverse of the root mean square values computed in the forward pass. type = [float32, float16, float64].
- * @param[in] normalized_shape The shape of the partial input which is needed to be normalized. type = [int32, int64].
- * @param[in] eps A small value used in the computation to avoid division by zero. type = [float64].
+ * @param[out] grad_input The gradient of the input tensor. type = [bfloat16, float16, float32, float64].
+ * @param[out] grad_weight The gradient of the weight parameter. type = [bfloat16, float16, float32, float64].
+ * @param[out] grad_bias The gradient of the bias parameter. type = [bfloat16, float16, float32, float64].
+ * @param[in] grad_output The gradient of the output from the forward pass. type = [bfloat16, float16, float32, float64].
+ * @param[in] input The input tensor used in the forward pass. type = [bfloat16, float16, float32, float64].
+ * @param[in] weight The weight parameter used in the forward pass. type = [bfloat16, float16, float32, float64].
+ * @param[in] bias The bias used in the forward pass. type = [bfloat16, float16, float32, float64].
+ * @param[in] inv_rms The inverse of the root mean square values computed in the forward pass. type = [bfloat16, float32, float64].
+ * @param[in] normalized_shape The shape of the partial input which is needed to be normalized.
+ * @param[in] eps A small value used in the computation to avoid division by zero.
  */
 DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
                                             diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
@@ -441,6 +441,68 @@ DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, d
                                                      diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                                      diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t softmax_lse, double p_dropout,
                                                      double softmax_scale, bool is_causal);
+
+/**
+ * @brief Compute the forward pass for the variable length version of Flash Attention.
+ * @param[in] ctx The diopi context.
+ * @param[inout] gen Handle for the random number generator used in dropout op.
+ * @param[in] q Query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type = [bfloat16, float16].
+ * @param[in] k Key tensor. shape = [total_k, head_num, head_dim], where total_k = total number of key tokens in the batch. type = [bfloat16, float16].
+ * @param[in] v Value tensor. shape = [total_v, head_num, head_dim, where total_v = total number of value tokens in the batch. type = [bfloat16, float16].
+ * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size+1].
+ * @param[in] cum_seq_kv The cumulative sequence lengths of the sequences in the batch for key and value. shape = [batch_size+1].
+ * @param[in] max_seqlen_q Maximum sequence length for query.
+ * @param[in] max_seqlen_kv Maximum sequence length for key and value.
+ * @param[in] p_dropout Dropout probability.
+ * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[in] is_causal Whether to apply causal attention mask.
+ * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [total, head_num, head_dim]. type = [bfloat16,
+ * float16].
+ * @param[out] attention_mask Tensor storing the causal attention mask for back propagation. shape = [total_q, total_k]. type = [bool].
+ * @param[out] dropout_mask Tensor storing the dropout mask for back propagation.
+ * @param[out] softmax_max Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ * @param[out] softmax_sum Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ * @param[out] softmax_out Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
+ */
+DIOPI_API diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* attention_mask,
+                                                 diopiTensorHandle_t* dropout_mask, diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum,
+                                                 diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q,
+                                                 diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiSize_t cum_seq_q, diopiSize_t cum_seq_kv,
+                                                 int64_t max_seqlen_q, int64_t max_seqlen_kv, double p_dropout, double softmax_scale, bool is_causal);
+
+/**
+ * @brief Compute the backward pass for the variable length version of Flash Attention.
+ * @param[in] ctx The diopi context.
+ * @param[in] grad_out The gradient of the output tensor. shape = [total, head_num, head_dim]. type = [bfloat16, float16].
+ * @param[in] q Query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type = [bfloat16, float16].
+ * @param[in] k Key tensor. shape = [total_k, head_num, head_dim], where total_k = total number of key tokens in the batch. type = [bfloat16, float16].
+ * @param[in] v Value tensor. shape = [total_v, head_num, head_dim, where total_v = total number of value tokens in the batch. type = [bfloat16, float16].
+ * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size+1].
+ * @param[in] cum_seq_kv The cumulative sequence lengths of the sequences in the batch for key and value. shape = [batch_size+1].
+ * @param[in] attention_out Tensor representing the forward calculation result. shape = [total, head_num, head_dim]. type = [bfloat16, float16].
+ * @param[in] attention_mask Tensor representing the causal attention mask from the forward pass. shape = [total_q, total_k]. type = [bool].
+ * @param[in] dropout_mask Tensor representing the generated dropout mask from the forward pass.
+ * @param[in] softmax_max Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
+ * @param[in] softmax_sum Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
+ * @param[in] softmax_out Tensor representing the intermediate calculation result of softmax op from the forward pass. type =[float32].
+ * @param[in] max_seqlen_q Maximum sequence length for query.
+ * @param[in] max_seqlen_kv Maximum sequence length for key and value.
+ * @param[in] p_dropout Dropout probability.
+ * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[out] grad_q The gradient of the query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type =
+ * [bfloat16, float16].
+ * @param[out] grad_k The gradient of the key tensor. shape = [total_k, head_num, head_dim], where total_k = total number of key tokens in the batch. type =
+ * [bfloat16, float16].
+ * @param[out] grad_v The gradient of the value tensor. shape = [total_v, head_num, head_dim], where total_v = total number of value tokens in the batch. type =
+ * [bfloat16, float16].
+ */
+DIOPI_API diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
+                                                         diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                                         diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiSize_t cum_seq_q, diopiSize_t cum_seq_kv,
+                                                         diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
+                                                         diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
+                                                         diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, int64_t max_seqlen_q,
+                                                         int64_t max_seqlen_kv, double p_dropout, double softmax_scale);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**

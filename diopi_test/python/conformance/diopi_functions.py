@@ -5040,18 +5040,23 @@ def rotary_emb(input, cos, sin, conj, interleaved):
 
 
 def rms_norm(input, normalized_shape, weight, bias, eps):
+    if bias is not None:
+        assert isinstance(bias, Tensor), "bias must be a Tensor"
     call = "diopiRMSNorm"
     func = check_function(call)
+    out = Tensor(input.size(), input.get_dtype())
     size = list(input.size().data)
-    out = Tensor(size, input.get_dtype())
     inv_rms_size = size.copy()
-    inv_rms_size[-1] = 1
+    n = len(normalized_shape)
+    inv_rms_size = size[:-n]
     inv_dtype = input.get_dtype()
-    # float32 for float16
+    # when input_dtype is bfloat16 or float16, inv_dtype is float32
     if inv_dtype == Dtype.float16:
         inv_dtype = Dtype.float32
     inv_rms = Tensor(inv_rms_size, inv_dtype)
-    normalized_shape = Sizes(list(normalized_shape))
+    # When weight and bias exist, its shape is equal to normalized_shape.
+    # If not specified, normalized_shape generally defaults to the size of the last dimension of the input tensor.
+    normalized_shape = Sizes(normalized_shape)
     ret = func(
         input.context(),
         out,
@@ -5063,34 +5068,31 @@ def rms_norm(input, normalized_shape, weight, bias, eps):
         eps,
     )
     check_returncode(ret)
-    return (out, inv_rms)
+    GLOBAL_STATE["rms_norm_inv_rms"] = inv_rms
+    return out
 
 
-def rms_norm_backward(
-    grad_outputs, input, weight, bias, inv_rms, normalized_shape, eps
-):
+def rms_norm_backward(grad_outputs, input, weight, bias, normalized_shape, eps):
     call = "diopiRMSNormBackward"
     func = check_function(call)
     grad_input = Tensor(list(input.size().data), input.get_dtype())
     grad_weight = Tensor(list(weight.size().data), weight.get_dtype())
-    grad_bias = Tensor(list(bias.size().data), bias.get_dtype())
-    normalized_shape = Sizes(list(normalized_shape))
+    if bias is not None:
+        assert isinstance(bias, Tensor), "bias must be a Tensor"
+        grad_bias = raw_like(bias)
+    else:
+        grad_bias = None
+    # When weight and bias exist, its shape is equal to normalized_shape.
+    # If not specified, normalized_shape generally defaults to the size of the last dimension of the input tensor.
+    normalized_shape = Sizes(normalized_shape)
 
-    ret = func(
-        input.context(),
-        grad_input,
-        grad_weight,
-        grad_bias,
-        grad_outputs[0],
-        input,
-        weight,
-        bias,
-        inv_rms,
-        normalized_shape,
-        eps,
-    )
+    inv_rms = GLOBAL_STATE.pop('rms_norm_inv_rms')
+    ret = func(input.context(), grad_input, grad_weight, grad_bias, grad_outputs[0], input, weight, bias, inv_rms,
+               normalized_shape, eps)
     check_returncode(ret)
-    return {"input": grad_input, "weight": grad_weight}
+    if bias is None:
+        return {"input": grad_input, "weight": grad_weight}
+    return {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
 
 
 def multihead_attention(
@@ -5455,6 +5457,64 @@ def flash_attention_v3_backward(q, k, v, out, grad_outputs, p_dropout, softmax_s
     check_returncode(ret)
     return {'q': grad_q, 'k': grad_k, 'v': grad_v}
 
+def flash_attention_varlen(q, k, v, max_seqlen_q, max_seqlen_kv, cu_seqlens_q, cu_seqlens_kv, p_dropout, softmax_scale, is_causal):
+    call = "diopiFlashAttentionVarLen"
+    func = check_function(call)
+    q_size = list(q.size().data)
+    out = Tensor(q_size, q.get_dtype())
+    cu_seqlens_q = Sizes(cu_seqlens_q[1:])
+    cu_seqlens_kv = Sizes(cu_seqlens_kv[1:])
+    if is_causal:
+        attention_mask = Tensor()
+    else:
+        attention_mask = None
+    if p_dropout > 0 and p_dropout <= 1:
+        dropout_mask = Tensor()
+        state = build_generator_state(q.context())
+        generator = Generator(state)
+    elif p_dropout == 0:
+        dropout_mask = None
+        generator = None
+    else:
+        assert 0, "The p_dropout value must be in range of [0, 1]"
+    softmax_max = Tensor()
+    softmax_sum = Tensor()
+    softmax_out = Tensor()
+    attention_mask_ptr = TensorP(attention_mask)
+    dropout_mask_ptr = TensorP(dropout_mask)
+    softmax_max_ptr = TensorP(softmax_max)
+    softmax_sum_ptr = TensorP(softmax_sum)
+    softmax_out_ptr = TensorP(softmax_out)
+    softmax_scale = 1.0 / math.sqrt(q.shape().data[-1]) if not softmax_scale else softmax_scale
+    ret = func(
+        q.context(),
+        out,
+        attention_mask_ptr,
+        dropout_mask_ptr,
+        softmax_max_ptr,
+        softmax_sum_ptr,
+        softmax_out_ptr,
+        generator,
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        max_seqlen_q,
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["flash_attention_varlen_attention_mask"] = attention_mask
+    GLOBAL_STATE["flash_attention_varlen_dropout_mask"] = dropout_mask
+    GLOBAL_STATE["flash_attention_varlen_softmax_max"] = softmax_max
+    GLOBAL_STATE["flash_attention_varlen_softmax_sum"] = softmax_sum
+    GLOBAL_STATE["flash_attention_varlen_softmax_out"] = softmax_out
+    return out
+
+
 def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
     func = check_function("diopiAttention")
     attn_out = raw_like(query)
@@ -5475,6 +5535,7 @@ def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False,
     GLOBAL_STATE["attention_save_tensor_num"] = save_tensor_num.value
     GLOBAL_STATE["save_for_backward_tensor_list"] = save_for_backward_tensor_list
     return attn_out
+
 
 def attention_backward(
     query,
@@ -5521,6 +5582,48 @@ def attention_backward(
     )
     check_returncode(ret)
     return {"query": grad_q, "key": grad_k, "value": grad_v}
+
+
+def flash_attention_varlen_backward(q, k, v, out, grad_outputs, max_seqlen_q, max_seqlen_kv, cu_seqlens_q, cu_seqlens_kv, p_dropout, softmax_scale, is_causal):
+    call = "diopiFlashAttentionVarLenBackward"
+    func = check_function(call)
+    assert p_dropout >=0 and p_dropout <=1, "The p_dropout value must be in range of [0, 1]"
+    head_dim = q.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
+    cu_seqlens_q = Sizes(cu_seqlens_q[1:])
+    cu_seqlens_kv = Sizes(cu_seqlens_kv[1:])
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    attention_mask = GLOBAL_STATE.pop("flash_attention_varlen_attention_mask")
+    dropout_mask = GLOBAL_STATE.pop("flash_attention_varlen_dropout_mask")
+    softmax_max = GLOBAL_STATE.pop("flash_attention_varlen_softmax_max")
+    softmax_sum = GLOBAL_STATE.pop("flash_attention_varlen_softmax_sum")
+    softmax_out = GLOBAL_STATE.pop("flash_attention_varlen_softmax_out")
+    ret = func(
+        q.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        out,
+        attention_mask,
+        dropout_mask,
+        softmax_max,
+        softmax_sum,
+        softmax_out,
+        max_seqlen_q,
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
+    )
+    check_returncode(ret)
+    return out
 
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"

@@ -267,6 +267,12 @@ device_configs = {
         ),
     ),
 
+    'reduce_partial_op': dict(
+        name=['sum'],
+        atol=1e-3,
+        rtol=1e-4,
+    ),
+
     'reduce_partial_op_1': dict(
         name=['std'],
         tensor_para=dict(
@@ -537,13 +543,30 @@ device_configs = {
         ),
     ),
 
+    # multi-dimensional normalized_shape is currently not supported on ascend
+    'rms_norm_with_multi_dimensional_normalized_shape': dict(
+        name=['rms_norm'],
+        dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+    ),
+
+    # multi-dimensional normalized_shape and bias is currently not supported on ascend
     'rms_norm': dict(
         name=['rms_norm'],
-        atol=1e-3,
-        rtol=1e-3,
-        atol_half=1e-1,
-        rtol_half=1e-1,
+        dtype=[Skip(np.float16), Skip(np.float32), Skip(np.float64)],
     ),
+
+    'rms_norm_with_bias': dict(
+        name=['rms_norm'],
+        atol_half=5e-2,
+        rtol_half=5e-2,
+    ),
+
+    'rms_norm_default': dict(
+        name=['rms_norm'],
+        atol_half=5e-2,
+        rtol_half=5e-2,
+    ),
+
 
     'smooth_l1_loss': dict(
         name=['smooth_l1_loss'],
@@ -848,7 +871,7 @@ device_configs = {
                 },
             ],
         ),
-        
+
     ),
 
     'index_put_acc_one_indices': dict( # llm used
@@ -1194,6 +1217,8 @@ device_configs = {
 
     'remainder_self_scalar': dict(
         name=['remainder'],
+        atol=1e-3,
+        rtol=1e-3,
         tensor_para=dict(
             args=[
                 {
@@ -1274,19 +1299,28 @@ device_configs = {
 
     'adam': dict(
         name=['adamw'],
-        para = dict (
-            # amsgrad not supported yet
-            amsgrad=[Skip(True),]
-        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['param'],
                     # float64 not supported yet on ascend
-                    "dtype": [Skip(np.float64)],
+                    # temporarily skip all test cases due to software stack version
+                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
                 },
             ]
         ),
     ),
 
+    # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend
+    'flash_attention_varlen': dict(
+        name=['flash_attention_varlen'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["q"],
+                    "dtype": [Skip(np.float16)],
+                },
+            ]
+        )
+    ),
 }

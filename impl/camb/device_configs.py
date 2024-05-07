@@ -1,3 +1,4 @@
+
 # Copyright (c) 2023, DeepLink.
 import numpy as np
 from skip import Skip
@@ -1135,6 +1136,30 @@ device_configs = {
             ]
         ),
     ),
+    
+    'rms_norm': dict(
+        name=['rms_norm'],
+        atol_half=5e-2,
+        rtol_half=5e-2,
+    ),
+
+    'rms_norm_default': dict(
+        name=['rms_norm'],
+        atol_half=5e-2,
+        rtol_half=5e-2,
+    ),
+    
+    'rms_norm_with_bias': dict(
+        name=['rms_norm'],
+        atol_half=5e-2,
+        rtol_half=5e-2,
+    ),
+    
+    'rms_norm_with_multi_dimensional_normalized_shape': dict(
+        name=['rms_norm'],
+        atol_half=5e-2,
+        rtol_half=5e-2,
+    ),
 
     'conv3d': dict(
         name=['conv3d'],
@@ -1961,19 +1986,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip((3, 5, 12))],
-                },
-            ],
-        ),
-    ),
-
-    'rms_norm': dict(
-        name=["rms_norm"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    # 寒武纪计算正确，gen-data生成的没考虑bias，暂时屏蔽
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64)],
                 },
             ],
         ),
