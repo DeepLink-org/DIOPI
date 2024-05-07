@@ -313,7 +313,7 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
     'cdist': dict(
         name=['cdist'],
         skip_all=True
-    )
+    ),
 ```
 以上配置会直接跳过cdist::cdist的整个测试case，对应的所有测例都不会被测试。
 

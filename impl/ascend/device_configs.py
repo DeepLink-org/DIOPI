@@ -754,12 +754,18 @@ device_configs = {
         ),
     ),
 
+    # 'group_norm': dict(
+    #     name=['group_norm'],
+    #     atol=5e-2,
+    #     rtol=5e-2,
+    #     atol_half=5e-2,
+    #     rtol_half=5e-2,
+    # ),
+    
+    # TODO(zhangqiu) Due to a bug in the software stack, this test will be skipped for now.
     'group_norm': dict(
         name=['group_norm'],
-        atol=5e-2,
-        rtol=5e-2,
-        atol_half=5e-2,
-        rtol_half=5e-2,
+        skip_all=True
     ),
 
     'unique': dict(
