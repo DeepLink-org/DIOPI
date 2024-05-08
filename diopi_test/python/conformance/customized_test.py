@@ -432,14 +432,6 @@ class CustomizedTest(object):
     ):
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         # For calculation convenience, convert to BSND.
-        half_use_float = q.is_cpu and (
-            q.dtype == torch.float16 or q.dtype == torch.bfloat16
-        )
-        raw_dtype = q.dtype
-        if half_use_float:
-            q = q.float()
-            k = k.float()
-            v = v.float()
         if input_layout == "SBH":
             q, k, v = [
                 rearrange(x, "s b (n d) -> b s n d", n=head_num) for x in [q, k, v]
@@ -468,7 +460,6 @@ class CustomizedTest(object):
             output = rearrange(output, "b s n d -> b s (n d)")
         elif input_layout == "BNSD":
             output = rearrange(output, "b s n d -> b n s d")
-        output = output.to(raw_dtype)
         return output
 
     def flash_attention_v3(q, k, v, p_dropout, softmax_scale, is_causal):
