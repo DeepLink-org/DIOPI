@@ -393,19 +393,6 @@ DIOPI_API diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ct
                                                          diopiConstTensorHandle_t v, diopiConstTensorHandle_t b_loc, diopiConstTensorHandle_t b_start_loc,
                                                          diopiConstTensorHandle_t b_seq_len, int max_input_len, int other_kv_index);
 
-DIOPI_API diopiError_t diopiTokenDecodeAttentionInference(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q,
-                                                          diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                                          diopiConstTensorHandle_t b_loc, diopiConstTensorHandle_t b_start_loc, diopiConstTensorHandle_t b_seq_len,
-                                                          int max_input_len, int other_kv_index);
-
-DIOPI_API diopiError_t diopiTokenDecodeAttentionInferenceBatchOne(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q,
-                                                          diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                                          diopiConstTensorHandle_t b_loc, diopiConstTensorHandle_t b_start_loc, diopiConstTensorHandle_t b_seq_len,
-                                                          int max_input_len, int other_kv_index);
-
-DIOPI_API diopiError_t diopiIncreFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q,
-                                                diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t paddingMask, diopiConstTensorHandle_t attenMask,
-                                                diopiSize_t actualSeqLengths, int64_t numHeads, double scaleValue, const char* inputLayout, int64_t numKeyValueHeads);
 
 DIOPI_API diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q,
                                                 diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t paddingMask, diopiConstTensorHandle_t attenMask,
