@@ -252,7 +252,9 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  * @param[in] ctx The diopi context.
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16,
  float16, float32].
- * @param[out] save_for_backward The intermediate variables that need to be saved for backward
+ * @param[out] save_for_backward The intermediate variables that need to be saved for backward.How many intermediate variables need to be saved for forward
+ calculation to be used in backward calculation varies in different devices and implementations. Specifies that the pre-allocated save_for_backward size cannot
+ be less than 16
  * @param[out] save_tensor_num The number of the intermediate variables that need to be saved for backward
  * @param[in] attention_mask (optional Tensor) – Attention mask. shape (batch_size, q_seq_len, kv_seq_len). Two types of masks are supported. A boolean mask
  where a value of True indicates that the element should take part in attention. A float mask of the same type as query, key, value that is added to the
