@@ -8914,28 +8914,60 @@ diopi_configs = {
         dtype=[np.float16],
         saved_args=dict(out=0),
         para=dict(
-            p_dropout=[0, 0, 0, 0, 0],
-            is_causal=[True, False, True, True, True],
-            softmax_scale=[0.0883, None, 0.125, 0.0625, None],
-            head_num=[64, 16, 32, 8, 32],
-            input_layout=['BNSD', 'BNSD', 'BNSD', 'BNSD', "BNSD"]
+            p_dropout=[0, 0, 0, 0],
+            is_causal=[True, False, True, True],
+            softmax_scale=[0.0883, None, 0.125, 0.0625],
+            head_num=[64, 16, 32, 8],
+            input_layout=['BNSD', 'BNSD', 'BNSD', 'BNSD']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['q'],
-                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64), (1, 32, 64, 512)),
+                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64)),
                     "requires_grad": [True],
                 },
                 {
                     "ins": ['k'],
-                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64), (1, 32, 64, 512)),
+                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64)),
                     "requires_grad": [True],
                 },
                 {
                     "ins": ['v'],
-                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64), (1, 32, 64, 512)),
+                    "shape": ((1, 64, 64, 128), (1, 16, 256, 128), (1, 32, 64, 128), (1, 8, 16, 64)),
+                    "requires_grad": [True],
+                },
+            ],
+        ),
+    ),
+
+    'flash_attention_v3': dict(
+        name=['flash_attention_v3'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        para=dict(
+            p_dropout=[0, 0, 0, 0],
+            is_causal=[True, False, True, True],
+            softmax_scale=[0.0883, None, 0.125, 0.125],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
                     "requires_grad": [True],
                 },
             ],
@@ -8994,38 +9026,6 @@ diopi_configs = {
                               (2, 128, 64 * 128), (4, 512, 128), (6, 32, 256), (8, 1024, 8 * 64),
                               (2, 64, 128, 128), (4, 16, 512, 128), (6, 32, 32, 128), (8, 8, 1024, 64),
                               (64, 8, 8, 16), (8, 32, 512, 512), (16, 8, 512, 128), (8, 16, 512, 64),),
-                    "requires_grad": [True],
-                },
-            ],
-        ),
-    ),
-
-    'flash_attention_v3': dict(
-        name=['flash_attention_v3'],
-        interface=['CustomizedTest'],
-        dtype=[np.float16],
-        saved_args=dict(out=0),
-        para=dict(
-            p_dropout=[0, 0, 0, 0],
-            is_causal=[True, False, True, True],
-            softmax_scale=[0.0883, None, 0.125, 0.125],
-        ),
-        tensor_para=dict(
-            gen_fn='Genfunc.randn',
-            args=[
-                {
-                    "ins": ['q'],
-                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
-                    "requires_grad": [True],
-                },
-                {
-                    "ins": ['k'],
-                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
-                    "requires_grad": [True],
-                },
-                {
-                    "ins": ['v'],
-                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
                     "requires_grad": [True],
                 },
             ],

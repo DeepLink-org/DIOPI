@@ -5514,6 +5514,46 @@ def flash_attention_varlen(q, k, v, max_seqlen_q, max_seqlen_kv, cu_seqlens_q, c
     GLOBAL_STATE["flash_attention_varlen_softmax_out"] = softmax_out
     return out
 
+def flash_attention_varlen_backward(q, k, v, out, grad_outputs, max_seqlen_q, max_seqlen_kv, cu_seqlens_q, cu_seqlens_kv, p_dropout, softmax_scale, is_causal):
+    call = "diopiFlashAttentionVarLenBackward"
+    func = check_function(call)
+    assert p_dropout >=0 and p_dropout <=1, "The p_dropout value must be in range of [0, 1]"
+    head_dim = q.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
+    cu_seqlens_q = Sizes(cu_seqlens_q[1:])
+    cu_seqlens_kv = Sizes(cu_seqlens_kv[1:])
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    attention_mask = GLOBAL_STATE.pop("flash_attention_varlen_attention_mask")
+    dropout_mask = GLOBAL_STATE.pop("flash_attention_varlen_dropout_mask")
+    softmax_max = GLOBAL_STATE.pop("flash_attention_varlen_softmax_max")
+    softmax_sum = GLOBAL_STATE.pop("flash_attention_varlen_softmax_sum")
+    softmax_out = GLOBAL_STATE.pop("flash_attention_varlen_softmax_out")
+    ret = func(
+        q.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        out,
+        attention_mask,
+        dropout_mask,
+        softmax_max,
+        softmax_sum,
+        softmax_out,
+        max_seqlen_q,
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
+    )
+    check_returncode(ret)
+    return out
 
 def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
     func = check_function("diopiAttention")
@@ -5535,7 +5575,6 @@ def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False,
     GLOBAL_STATE["attention_save_tensor_num"] = save_tensor_num.value
     GLOBAL_STATE["save_for_backward_tensor_list"] = save_for_backward_tensor_list
     return attn_out
-
 
 def attention_backward(
     query,
@@ -5582,48 +5621,6 @@ def attention_backward(
     )
     check_returncode(ret)
     return {"query": grad_q, "key": grad_k, "value": grad_v}
-
-
-def flash_attention_varlen_backward(q, k, v, out, grad_outputs, max_seqlen_q, max_seqlen_kv, cu_seqlens_q, cu_seqlens_kv, p_dropout, softmax_scale, is_causal):
-    call = "diopiFlashAttentionVarLenBackward"
-    func = check_function(call)
-    assert p_dropout >=0 and p_dropout <=1, "The p_dropout value must be in range of [0, 1]"
-    head_dim = q.shape().data[-1]
-    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
-    cu_seqlens_q = Sizes(cu_seqlens_q[1:])
-    cu_seqlens_kv = Sizes(cu_seqlens_kv[1:])
-    grad_q = raw_like(q)
-    grad_k = raw_like(k)
-    grad_v = raw_like(v)
-    attention_mask = GLOBAL_STATE.pop("flash_attention_varlen_attention_mask")
-    dropout_mask = GLOBAL_STATE.pop("flash_attention_varlen_dropout_mask")
-    softmax_max = GLOBAL_STATE.pop("flash_attention_varlen_softmax_max")
-    softmax_sum = GLOBAL_STATE.pop("flash_attention_varlen_softmax_sum")
-    softmax_out = GLOBAL_STATE.pop("flash_attention_varlen_softmax_out")
-    ret = func(
-        q.context(),
-        grad_q,
-        grad_k,
-        grad_v,
-        grad_outputs[0],
-        q,
-        k,
-        v,
-        cu_seqlens_q,
-        cu_seqlens_kv,
-        out,
-        attention_mask,
-        dropout_mask,
-        softmax_max,
-        softmax_sum,
-        softmax_out,
-        max_seqlen_q,
-        max_seqlen_kv,
-        p_dropout,
-        softmax_scale,
-    )
-    check_returncode(ret)
-    return out
 
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
