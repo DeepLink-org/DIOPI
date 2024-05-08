@@ -56,6 +56,7 @@ def multi_head_attention_inside(
     output = torch.einsum("bhts,bshd->bthd", attention, v)
     return output
 
+
 class CustomizedTest(object):
     def cast_dtype(input, out):
         out = input.to(out.dtype, copy=True)
@@ -399,7 +400,9 @@ class CustomizedTest(object):
         v_padded = torch.zeros(padded_shape, dtype=v.dtype, device=device)
 
         # Initialize the key_padding_mask as a Boolean mask with False values
-        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
+        key_padding_mask = torch.zeros(
+            (batch_size, max_seqlen), dtype=torch.bool, device=device
+        )
         # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
         for i in range(batch_size):
             start_idx = cu_seqlens[i]
@@ -429,7 +432,9 @@ class CustomizedTest(object):
     ):
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         # For calculation convenience, convert to BSND.
-        half_use_float = q.is_cpu and (q.dtype == torch.float16 or q.dtype == torch.bfloat16)
+        half_use_float = q.is_cpu and (
+            q.dtype == torch.float16 or q.dtype == torch.bfloat16
+        )
         raw_dtype = q.dtype
         if half_use_float:
             q = q.float()
@@ -483,7 +488,16 @@ class CustomizedTest(object):
         return output
 
     def flash_attention_varlen(
-        q, k, v, cu_seqlens_q, cu_seqlens_kv, max_seqlen_q, max_seqlen_kv, p_dropout, softmax_scale, is_causal
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        max_seqlen_q,
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
+        is_causal,
     ):
         # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
         cu_seqlens = cu_seqlens_q
@@ -499,7 +513,9 @@ class CustomizedTest(object):
         v_padded = torch.zeros(padded_shape, dtype=v.dtype, device=device)
 
         # Initialize the key_padding_mask as a Boolean mask with False values
-        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
+        key_padding_mask = torch.zeros(
+            (batch_size, max_seqlen), dtype=torch.bool, device=device
+        )
         # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
         for i in range(batch_size):
             start_idx = cu_seqlens[i]
@@ -619,11 +635,22 @@ class CustomizedTest(object):
             )
         return out
 
-    def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
-        query = query.permute(0, 2, 1, 3) # BSND -> BNSD
-        key = key.permute(0, 2, 1, 3) # BSND -> BNSD
-        value = value.permute(0, 2, 1, 3) # BSND -> BNSD
-        half_use_float = query.is_cpu and (query.dtype == torch.float16 or query.dtype == torch.bfloat16)
+    def attention(
+        query,
+        key,
+        value,
+        attn_mask=None,
+        dropout_p=0.0,
+        is_causal=False,
+        scale=None,
+        attn_type="DotProduct",
+    ):
+        query = query.permute(0, 2, 1, 3)  # BSND -> BNSD
+        key = key.permute(0, 2, 1, 3)  # BSND -> BNSD
+        value = value.permute(0, 2, 1, 3)  # BSND -> BNSD
+        half_use_float = query.is_cpu and (
+            query.dtype == torch.float16 or query.dtype == torch.bfloat16
+        )
         raw_dtype = query.dtype
         device = query.device
         if half_use_float:
@@ -635,7 +662,9 @@ class CustomizedTest(object):
         attn_bias = torch.zeros(L, S, dtype=query.dtype, device=device)
         if is_causal:
             assert attn_mask is None
-            temp_mask = torch.ones(L, S, dtype=torch.bool, device=device).tril(diagonal=0)
+            temp_mask = torch.ones(L, S, dtype=torch.bool, device=device).tril(
+                diagonal=0
+            )
             attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
             attn_bias.to(query.dtype)
 
@@ -651,22 +680,37 @@ class CustomizedTest(object):
         out = attn_weight @ value
         if half_use_float:
             out = out.to(raw_dtype)
-        out = out.permute(0, 2, 1, 3) # BNSD -> BSND
+        out = out.permute(0, 2, 1, 3)  # BNSD -> BSND
         return out
 
-    def attention_packed(query, key, value, cu_seqlens, max_seqlen, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
+    def attention_packed(
+        query,
+        key,
+        value,
+        cu_seqlens,
+        max_seqlen,
+        attn_mask=None,
+        dropout_p=0.0,
+        is_causal=False,
+        scale=None,
+        attn_type="DotProduct",
+    ):
         batch_size = len(cu_seqlens)
         _, head_num, head_dim = query.size()
         device = query.device
         padded_shape = (batch_size, head_num, max_seqlen, head_dim)
         # Initialize the key_padding_mask as a Boolean mask with False values
-        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
+        key_padding_mask = torch.zeros(
+            (batch_size, max_seqlen), dtype=torch.bool, device=device
+        )
         query_padded = torch.zeros(padded_shape, dtype=query.dtype, device=device)
         key_padded = torch.zeros(padded_shape, dtype=key.dtype, device=device)
         value_padded = torch.zeros(padded_shape, dtype=value.dtype, device=device)
 
         # Initialize the key_padding_mask as a Boolean mask with False values
-        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
+        key_padding_mask = torch.zeros(
+            (batch_size, max_seqlen), dtype=torch.bool, device=device
+        )
         # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
         for i in range(batch_size):
             start_idx = cu_seqlens[i]
