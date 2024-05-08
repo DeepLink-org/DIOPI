@@ -620,6 +620,9 @@ class CustomizedTest(object):
         return out
 
     def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
+        query = query.permute(0, 2, 1, 3) # BSND -> BNSD
+        key = key.permute(0, 2, 1, 3) # BSND -> BNSD
+        value = value.permute(0, 2, 1, 3) # BSND -> BNSD
         half_use_float = query.is_cpu and (query.dtype == torch.float16 or query.dtype == torch.bfloat16)
         raw_dtype = query.dtype
         if half_use_float:
@@ -647,6 +650,7 @@ class CustomizedTest(object):
         out = attn_weight @ value
         if half_use_float:
             out = out.to(raw_dtype)
+        out = out.permute(0, 2, 1, 3) # BNSD -> BSND
         return out
 
     def attention_packed(query, key, value, cu_seqlens, max_seqlen, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):

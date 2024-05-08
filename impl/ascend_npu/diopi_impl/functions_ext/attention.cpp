@@ -22,9 +22,9 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
                             diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_mask,
                             double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type) {
     BEGIN_CALL_ACL_OP(attention_out, q, k, v, attention_mask, gen_dropout);
-    TORCH_CHECK(qAt.dim() == 4 || qAt.dim() == 3, "The shapes of the input query should be 4 or 3 dimensional, but got ", qAt.dim(), "-dimensional");
-    TORCH_CHECK(kAt.dim() == 4 || kAt.dim() == 3, "The shapes of the input key should be 4 or 3 dimensional, but got ", kAt.dim(), "-dimensional");
-    TORCH_CHECK(vAt.dim() == 4 || vAt.dim() == 3, "The shapes of the input value should be 4 or 3 dimensional, but got ", vAt.dim(), "-dimensional");
+    TORCH_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4 dimensional, but got ", qAt.dim(), "-dimensional");
+    TORCH_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4 dimensional, but got ", kAt.dim(), "-dimensional");
+    TORCH_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4 dimensional, but got ", vAt.dim(), "-dimensional");
     at::Tensor realShiftOptional;
     at::Tensor dropMaskOptional;
     at::Tensor paddingMaskOptional;
@@ -35,15 +35,13 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     int64_t nextTockensOptional = 0;
     const int64_t innerPreciseOptional = 0;
     int64_t sparseModeOptional = 0;
-    const bool is_4d_input = qAt.sizes().size() == 4;
-    const char* inputLayout = is_4d_input ? "BNSD" : "BSH";
-    const int64_t headNum = is_4d_input ? qAt.size(1) : 1;
+    const char* inputLayout = "BSND";
     const int64_t B = qAt.size(0);
-    const int64_t Sq = is_4d_input ? qAt.size(2) : qAt.size(1);
-    const int64_t Sk = is_4d_input ? kAt.size(2) : kAt.size(1);
+    const int64_t Sq = qAt.size(1);
+    const int64_t Sk = kAt.size(1);
+    const int64_t headNum = qAt.size(2);
     const int64_t N = headNum;
-    // const int64_t preTockensOptional = N;
-    const int64_t preTockensOptional = Sq;
+    const int64_t preTockensOptional = Sq + Sk;
 
     const auto qShape = qAt.sizes();
     std::vector<int64_t> softmaxMaxShape{B, N, Sq, 8};  // [B, N, Sq, 8]
@@ -127,10 +125,10 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     DIOPI_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
 
-    const char* inputLayout = "BNSD";
-    int64_t headNum = qAt.size(1);
-    int64_t Sk = kAt.size(2);
-    int64_t Sq = kAt.size(2);
+    const char* inputLayout = "BSND";
+    int64_t headNum = qAt.size(2);
+    int64_t Sk = kAt.size(1);
+    int64_t Sq = kAt.size(1);
     double keepProb = 1 - pDropout;
 
     at::Tensor pseAt;
@@ -139,8 +137,6 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     at::Tensor paddingMaskAt;
 
-    // int64_t preTokens = kAt.size(1);
-    // int64_t preTokens = Sk;
     int64_t preTokens = Sq + Sk;
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
