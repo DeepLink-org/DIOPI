@@ -625,16 +625,17 @@ class CustomizedTest(object):
         value = value.permute(0, 2, 1, 3) # BSND -> BNSD
         half_use_float = query.is_cpu and (query.dtype == torch.float16 or query.dtype == torch.bfloat16)
         raw_dtype = query.dtype
+        device = query.device
         if half_use_float:
             query = query.float()
             key = key.float()
             value = value.float()
         L, S = query.size(-2), key.size(-2)
         scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
-        attn_bias = torch.zeros(L, S, dtype=query.dtype)
+        attn_bias = torch.zeros(L, S, dtype=query.dtype, device=device)
         if is_causal:
             assert attn_mask is None
-            temp_mask = torch.ones(L, S, dtype=torch.bool).tril(diagonal=0)
+            temp_mask = torch.ones(L, S, dtype=torch.bool, device=device).tril(diagonal=0)
             attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
             attn_bias.to(query.dtype)
 
