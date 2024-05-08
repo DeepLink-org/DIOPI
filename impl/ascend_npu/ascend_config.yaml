@@ -17,6 +17,8 @@ ascend:
 - diopiSplitWithSizes
 ascend_npu:
 - diopiAdamW
+- diopiAttention
+- diopiAttentionBackward
 - diopiWhere
 - diopiAdd
 - diopiAddInp
@@ -264,8 +266,3 @@ ascend_npu:
 - diopiThresholdInp
 - diopiScaledMaskedSoftmax
 - diopiScaledMaskedSoftmaxBackward
-- diopiAttention
-- diopiAttentionBackward
-- diopiAttentionVarLen
-- diopiAttentionVarLenBackward
-
