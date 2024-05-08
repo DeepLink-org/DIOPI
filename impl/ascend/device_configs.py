@@ -1380,4 +1380,17 @@ device_configs = {
         skip_all = True
     ),
 
+    'adam': dict(
+        name=['adamw'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['param'],
+                    # float64 not supported yet on ascend
+                    "dtype": [Skip(np.float64)],
+                },
+            ]
+        ),
+    ),
+
 }
