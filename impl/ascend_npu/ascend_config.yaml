@@ -1,7 +1,5 @@
 ascend:
 - diopiAdamW
-- diopiAbs
-- diopiAbsInp
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward

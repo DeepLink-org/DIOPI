@@ -120,7 +120,6 @@ set(IMPL_SRC
 set(OLD_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/)
 set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/ascend_tensor.cpp
-    ${OLD_IMPL_DIR}/functions/abs.cpp
     ${OLD_IMPL_DIR}/functions/adamw.cpp
     ${OLD_IMPL_DIR}/functions_mmcv/roi_align_npu.cpp
     ${OLD_IMPL_DIR}/functions/bmm.cpp
