@@ -5,9 +5,6 @@
     dtype: (float64)->float32
     layout: ND
 
-- diopiAbs:
-    dtype: (bool)->int8, (uint8)->int16
-
 - diopiBaddbmm:
     dtype: (float64)->float32
 
