@@ -435,6 +435,8 @@ DIOPI_API diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, 
                                                       diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t b_start_loc,
                                                       diopiConstTensorHandle_t b_seq_len, int max_input_len);
 
+DIOPI_API diopiError_t diopiRotaryEmbeddingV2(diopiContextHandle_t ctx, diopiTensorHandle_t query, diopiTensorHandle_t key, diopiConstTensorHandle_t cos,
+                                              diopiConstTensorHandle_t sin);
 // ============================================lightllm end========================================
 
 #if defined(__cplusplus)
