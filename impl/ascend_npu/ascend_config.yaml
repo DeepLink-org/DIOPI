@@ -1,4 +1,6 @@
 ascend:
+- diopiAbs
+- diopiAbsInp
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
@@ -22,8 +24,6 @@ ascend_npu:
 - diopiAddInp
 - diopiAddScalar
 - diopiAddInpScalar
-- diopiAbs
-- diopiAbsInp
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
