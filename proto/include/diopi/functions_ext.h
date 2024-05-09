@@ -299,6 +299,41 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
                                               int64_t saved_tensor_num, double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale,
                                               const char* attention_type);
 
+/**
+ * @brief Computes attention on query, key and value tensors, using an optional attention mask if passed,
+ and applying dropout if a probability greater than 0.0 is specified.
+ * https://towardsdatascience.com/transformers-explained-visually-part-3-multi-head-attention-deep-dive-1c1ff1024853
+ * @param[in] ctx The diopi context.
+ * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [total_q, q_head_num, head_dim]. type = [bfloat16,
+ float16, float32].
+ * @param[out] save_for_backward The intermediate variables that need to be saved for backward.How many intermediate variables need to be saved for forward
+ calculation to be used in backward calculation varies in different devices and implementations. Specifies that the pre-allocated save_for_backward size cannot
+ be less than 16
+ * @param[out] save_tensor_num The number of the intermediate variables that need to be saved for backward
+ * @param[in] attention_mask (optional Tensor) – Attention mask. shape (total_q, total_kv). Two types of masks are supported. A boolean mask
+ where a value of True indicates that the element should take part in attention. A float mask of the same type as query, key, value that is added to the
+ attention score.
+ * @param[in] q Query tensor. shape = [total_q, q_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] k Key tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] v Value tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] cu_seqlens_q cu_seqlens_q tensor. shape = [total_q + 1]. type = [int64_t]. cu_seqlens_q[:total_q] contains the position of the first token in
+query for each batch. And cu_seqlens_q[total_q] contains the total length of query. Note that cu_seqlens_q[i+1]-cu_seqlens_q[i] can calculate out the sequence
+length of batch i.
+ * @param[in] cu_seqlens_kv cu_seqlens_kv tensor. shape = [total_kv + 1]. type = [int64_t]. cu_seqlens_kv[:total_kv] contains the position of the first token in
+key/value for each batch. And cu_seqlens_kv[total_kv] contains the total length of key/value. Note that cu_seqlens_kv[i+1]-cu_seqlens_kv[i] can calculate out
+the sequence length of batch i.
+ * @param[in] p_dropout Dropout probability; if greater than 0.0, dropout is applied.
+ * @param[in] gen_dropout Handle for the random number generator used in dropout op.
+ * @param[in] softmax_scale The temperature to use for the softmax attention. if softmax_scale < 0, softmax_scale=\frac{1}{\sqrt{head_dim}}
+ * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
+ * @param[in] attention_type attention type: default "DotProduct".
+ */
+DIOPI_API diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward,
+                                            int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                            diopiConstTensorHandle_t cu_seqlens_q, diopiConstTensorHandle_t cu_seqlens_kv, int64_t max_seqlen,
+                                            int64_t max_kvlen, diopiConstTensorHandle_t attention_mask, double p_dropout, diopiGeneratorHandle_t gen_dropout,
+                                            double softmax_scale, bool is_causal, const char* attention_type);
+
 // The difference between this interface and the original diopiFlashAttention definition is that the passed input attention mask can be used directly. This
 // prevents the attention mask from being recalculated inside the op. This helps reduce a lot of useless overhead when training large language models.
 /**
