@@ -13,12 +13,7 @@ namespace ascend {
 
 diopiError_t diopiAddcdiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t tensor1,
                           diopiConstTensorHandle_t tensor2, const diopiScalar_t* value) {
-    std::cout << std::endl;
-    std::cout << "value.dtype = " << value->stype << std::endl;
     int64_t inputNumel = 0;
-    diopiDtype_t inputDtype;
-    diopiGetTensorDtype(input, &inputDtype);
-    std::cout << "input.dtype = " << inputDtype << std::endl;
     diopiGetTensorNumel(input, &inputNumel);
     if (inputNumel != 0) {
         DIOPI_ASCEND_CALL_ACLNN(aclnnAddcdiv, ctx, input, tensor1, tensor2, value, out);
