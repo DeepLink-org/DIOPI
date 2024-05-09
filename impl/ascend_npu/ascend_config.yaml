@@ -1,4 +1,7 @@
 ascend:
+- diopiAdamW
+- diopiAbs
+- diopiAbsInp
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
@@ -16,7 +19,6 @@ ascend:
 - diopiConvolution2dBackward
 - diopiSplitWithSizes
 ascend_npu:
-- diopiAdamW
 - diopiWhere
 - diopiAdd
 - diopiAddInp
