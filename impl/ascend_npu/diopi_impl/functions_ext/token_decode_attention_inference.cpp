@@ -29,21 +29,6 @@ diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t o
                                                 int64_t block_size, int64_t inner_precise) {
     BEGIN_CALL_ACL_OP(out, q, k, v, paddingMask, attenMask, block_table);
     at::IntArrayRef actSeqLen(actualSeqLengths.data, actualSeqLengths.len);
-
-    // construct the output tensor of the NPU
-    at::Tensor output ;
-    if (ConvertType(quant_scale2) != nullptr) {
-        output = npu_preparation::apply_tensor_without_format(qAt.sizes(), c10::dtype(c10::ScalarType::Char));
-    } else if (qAt.dtype() == at::kChar) {
-        output = npu_preparation::apply_tensor_without_format(qAt.sizes(), c10::dtype(c10::ScalarType::Half));
-    } else {
-        output = npu_preparation::apply_tensor_without_format(qAt);
-    }
-
-    // convert str
-    std::string input_layout_str = std::string(inputLayout);
-    char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
-
     at::TensorList keyTensors = kAt;
     at::TensorList valueTensors = vAt;
 
@@ -51,9 +36,7 @@ diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t o
         dequant_scale1, quant_scale1, dequant_scale2, quant_scale2, quant_offset2, antiquant_scale, antiquant_offset,
         block_tableAt,
         kv_padding_size,
-        numHeads, scaleValue, input_layout_ptr, numKeyValueHeads, block_size, inner_precise, output);
-    
-    outAt.copy_(output);
+        numHeads, scaleValue, inputLayout, numKeyValueHeads, block_size, inner_precise, outAt);
     END_CALL_ACL_OP()
 }
 
