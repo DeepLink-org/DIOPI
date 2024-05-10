@@ -15,6 +15,12 @@ ascend:
 - diopiLayerNormBackward
 - diopiLinear
 - diopiLinearBackward
+- diopiLog
+- diopiLog10
+- diopiLog10Inp
+- diopiLog2
+- diopiLog2Inp
+- diopiLogInp
 - diopiNeg
 - diopiNegInp
 - diopiNormalScalarTensor
@@ -109,12 +115,6 @@ ascend_npu:
 - diopiRMSNorm
 - diopiRMSNormBackward
 - diopiCol2Im
-- diopiLog
-- diopiLog10
-- diopiLog10Inp
-- diopiLog2
-- diopiLog2Inp
-- diopiLogInp
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIndexSelect
