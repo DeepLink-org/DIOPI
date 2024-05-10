@@ -1,6 +1,7 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiArgmax
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
@@ -179,7 +180,6 @@ ascend_npu:
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
-- diopiArgmax
 - diopiLogicalAnd
 - diopiLogicalOr
 - diopiLogicalAndInp
