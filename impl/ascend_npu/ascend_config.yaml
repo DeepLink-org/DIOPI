@@ -1,6 +1,7 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiArange
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
@@ -33,7 +34,6 @@ ascend_npu:
 - diopiAddmm
 - diopiAll
 - diopiAny
-- diopiArange
 - diopiAtan
 - diopiAtanInp
 - diopiBaddbmm
