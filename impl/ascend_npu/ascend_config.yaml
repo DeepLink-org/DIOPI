@@ -267,3 +267,4 @@ ascend_npu:
 - diopiScaledMaskedSoftmaxBackward
 - diopiPagedAttention
 - diopiRotaryEmbeddingV2
+- diopiMatmulAllReduce

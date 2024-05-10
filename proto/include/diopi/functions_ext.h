@@ -536,6 +536,11 @@ DIOPI_API diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, 
 
 DIOPI_API diopiError_t diopiRotaryEmbeddingV2(diopiContextHandle_t ctx, diopiTensorHandle_t query, diopiTensorHandle_t key, diopiConstTensorHandle_t cos,
                                               diopiConstTensorHandle_t sin);
+
+DIOPI_API diopiError_t diopiMatmulAllReduce(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x1,
+                                            diopiConstTensorHandle_t x2, diopiConstTensorHandle_t bias, const char* group,
+                                            const char* reduceOp, int64_t commTurn, int64_t streamMode);
+                                            
 // ============================================lightllm end========================================
 
 #if defined(__cplusplus)
