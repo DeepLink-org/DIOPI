@@ -316,12 +316,12 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
  * @param[in] q Query tensor. shape = [total_q, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] k Key tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] v Value tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
- * @param[in] cu_seqlens_q cu_seqlens_q tensor. shape = [total_q + 1]. type = [int64_t]. cu_seqlens_q[:total_q] contains the position of the first token in
-query for each batch. And cu_seqlens_q[total_q] contains the total length of query. Note that cu_seqlens_q[i+1]-cu_seqlens_q[i] can calculate out the sequence
-length of batch i.
- * @param[in] cu_seqlens_kv cu_seqlens_kv tensor. shape = [total_kv + 1]. type = [int64_t]. cu_seqlens_kv[:total_kv] contains the position of the first token in
-key/value for each batch. And cu_seqlens_kv[total_kv] contains the total length of key/value. Note that cu_seqlens_kv[i+1]-cu_seqlens_kv[i] can calculate out
-the sequence length of batch i.
+ * @param[in] cu_seqlens_q cu_seqlens_q tensor. shape = [batch_size + 1]. type = [int64_t]. cu_seqlens_q[:total_q] contains the position of the first token in
+query for each batch. And cu_seqlens_q[batch_size] contains the total length of query. Note that cu_seqlens_q[i+1]-cu_seqlens_q[i] can calculate out the
+sequence length of batch i.
+ * @param[in] cu_seqlens_kv cu_seqlens_kv tensor. shape = [batch_size + 1]. type = [int64_t]. cu_seqlens_kv[:total_kv] contains the position of the first token
+in key/value for each batch. And cu_seqlens_kv[batch_size] contains the total length of key/value. Note that cu_seqlens_kv[i+1]-cu_seqlens_kv[i] can calculate
+out the sequence length of batch i.
  * @param[in] p_dropout Dropout probability; if greater than 0.0, dropout is applied.
  * @param[in] gen_dropout Handle for the random number generator used in dropout op.
  * @param[in] softmax_scale The temperature to use for the softmax attention. if softmax_scale < 0, softmax_scale=\frac{1}{\sqrt{head_dim}}
@@ -448,7 +448,7 @@ DIOPI_API diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopi
  * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size+1].
  * @param[in] cum_seq_kv The cumulative sequence lengths of the sequences in the batch for key and value. shape = [batch_size+1].
  * @param[in] attention_out Tensor representing the forward calculation result. shape = [total, head_num, head_dim]. type = [bfloat16, float16].
- * @param[in] attention_mask Tensor representing the causal attention mask from the forward pass. shape = [total_q, total_k]. type = [bool].
+ * @param[in] attention_mask Tensor representing the causal attention mask from the forward pass. shape = [max_seqlen_q, max_seqlen_kv]. type = [bool].
  * @param[in] dropout_mask Tensor representing the generated dropout mask from the forward pass.
  * @param[in] softmax_max Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].
  * @param[in] softmax_sum Tensor representing the intermediate calculation result of softmax op from the forward pass. type = [float32].

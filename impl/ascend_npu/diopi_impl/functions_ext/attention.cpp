@@ -3,6 +3,8 @@
  * @author DeepLink
  * @copyright  (c) 2024, DeepLink.
  */
+#include <c10/core/ScalarType.h>
+
 #include "../helper.hpp"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -38,6 +40,9 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     at::Tensor softmaxMaxOut = at_npu::native::empty_npu(softmaxMaxShape, attentionOutAt.options().dtype(at::kFloat));
     at::Tensor softmaxSumOut = at_npu::native::empty_npu(softmaxMaxShape, attentionOutAt.options().dtype(at::kFloat));
     at::Tensor softmaxOutOut = at_npu::native::empty_npu({0}, attentionOutAt.options().dtype(at::kFloat));
+    if (attentionMaskAt.defined() && attentionMaskAt.scalar_type() == at::kFloat) {
+        realShiftOptional = attentionMaskAt;
+    }
     if (isCausal) {
         attentionMaskOptional = at_npu::native::empty_npu({sq, sk}, qAt.options().dtype(at::kBool));  // [sq, sk]
         EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskOptional);
