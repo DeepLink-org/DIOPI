@@ -17,6 +17,8 @@ ascend:
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiSplitWithSizes
+- diopiZeroInp
+- diopiZeros
 ascend_npu:
 - diopiAdamW
 - diopiWhere
@@ -236,8 +238,6 @@ ascend_npu:
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
 - diopiOnes
-- diopiZeros
-- diopiZeroInp
 - diopiIsNan
 - diopiRelu
 - diopiReluInp
