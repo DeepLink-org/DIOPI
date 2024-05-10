@@ -175,25 +175,25 @@ typedef void (*ReleaseHugeMem)(void*, bool);
 class AclHugeMem final {
 public:
     explicit AclHugeMem(InitHugeMemThreadLocal initFunc, UnInitHugeMemThreadLocal unInitFunc, ReleaseHugeMem releaseFunc)
-        : initMemFunc(initFunc), unInitMemFunc(unInitFunc), releaseMemFunc(releaseFunc) {
-        if (initMemFunc) {
-            initMemFunc(nullptr, false);
+        : initMemFunc_(initFunc), unInitMemFunc_(unInitFunc), releaseMemFunc_(releaseFunc) {
+        if (initMemFunc_) {
+            initMemFunc_(nullptr, false);
         }
     }
 
     ~AclHugeMem() {
-        if (releaseMemFunc) {
-            releaseMemFunc(nullptr, false);
+        if (releaseMemFunc_) {
+            releaseMemFunc_(nullptr, false);
         }
-        if (unInitMemFunc) {
-            unInitMemFunc(nullptr, false);
+        if (unInitMemFunc_) {
+            unInitMemFunc_(nullptr, false);
         }
     }
 
 private:
-    InitHugeMemThreadLocal initMemFunc = nullptr;
-    UnInitHugeMemThreadLocal unInitMemFunc = nullptr;
-    ReleaseHugeMem releaseMemFunc = nullptr;
+    InitHugeMemThreadLocal initMemFunc_ = nullptr;
+    UnInitHugeMemThreadLocal unInitMemFunc_ = nullptr;
+    ReleaseHugeMem releaseMemFunc_ = nullptr;
 };
 
 // A class to alloc acl workspace and release it when the object is destroyed.
@@ -203,12 +203,12 @@ public:
         if (workspaceSize > 0) {
             diopiTensorHandle_t bufHandle;
             auto ret = diopiRequireBuffer(ctx, &bufHandle, workspaceSize, diopi_device);
-            ASCEND_CHECK(ret == diopiSuccess, "[AclWorkspace] Require workspace size %lld failed.", static_cast<uint64_t>(workspaceSize));
+            ASCEND_CHECK(ret == diopiSuccess, "[AclWorkspace] Require workspace size %ld failed.", static_cast<uint64_t>(workspaceSize));
             AscendTensor buf(bufHandle);
             workspaceAddr_ = const_cast<void*>(buf.data());
         }
     }
-    ~AclWorkspace() {}
+    ~AclWorkspace() = default;
     AclWorkspace(const AclWorkspace&) = delete;
     AclWorkspace& operator=(const AclWorkspace&) = delete;
     AclWorkspace(AclWorkspace&&) = delete;
