@@ -8,6 +8,8 @@ ascend:
 - diopiCrossEntropyLossBackward
 - diopiErf
 - diopiErfInp
+- diopiExp
+- diopiExpInp
 - diopiGather
 - diopiLayerNorm
 - diopiLayerNormBackward
@@ -198,8 +200,6 @@ ascend_npu:
 - diopiBitwiseOrInp
 - diopiBitwiseOrScalar
 - diopiBitwiseOrInpScalar
-- diopiExp
-- diopiExpInp
 - diopiOneHot
 - diopiPermute
 - diopiScatter
