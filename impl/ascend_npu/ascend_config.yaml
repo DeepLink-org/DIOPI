@@ -64,6 +64,7 @@ ascend_npu:
 - diopiDivInpScalar
 - diopiDivScalar
 - diopiDropout
+- diopiDropoutInp
 - diopiCopyInp
 - diopiEmbedding
 - diopiEmbeddingBackward
