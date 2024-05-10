@@ -12,6 +12,8 @@ ascend:
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
+- diopiRMSNorm
+- diopiRMSNormBackward
 - diopiSlice
 - diopiSliceBackward
 - diopiConvolution2d
@@ -100,8 +102,6 @@ ascend_npu:
 - diopiMaxPool2dWithIndices
 - diopiProd
 - diopiRotaryEmbedding
-- diopiRMSNorm
-- diopiRMSNormBackward
 - diopiCol2Im
 - diopiLog
 - diopiLog10
