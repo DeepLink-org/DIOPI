@@ -5586,6 +5586,7 @@ def attention_backward(
     dropout_p,
     scale,
     is_causal,
+    attn_bias,
     attn_type = "DotProduct"
 ):
     call = "diopiAttentionBackward"
@@ -5597,9 +5598,8 @@ def attention_backward(
     grad_k = raw_like(key)
     grad_v = raw_like(value)
     grad_attn_bias = None
-    attn_bias = GLOBAL_STATE.pop("attn_bias")
     if attn_bias is not None:
-        grad_attn_bias = raw_like(grad_attn_bias)
+        grad_attn_bias = raw_like(attn_bias)
     save_tensor_num = GLOBAL_STATE.pop("attention_save_tensor_num")
     save_for_backward_tensor_list = GLOBAL_STATE.pop("save_for_backward_tensor_list")
 

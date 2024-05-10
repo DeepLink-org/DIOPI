@@ -258,8 +258,8 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  * @param[out] save_tensor_num The number of the intermediate variables that need to be saved for backward
  * @param[in] attention_mask (optional Tensor) – Attention mask. shape (batch_size, q_seq_len, kv_seq_len) or (q_seq_len, kv_seq_len). A boolean mask
  where a value of True indicates that the element should take part in attention.
- * @param[in] attention_bias (optional Tensor) – Attention bias. shape = [(batch_size, q_seq_len, kv_seq_len), (q_seq_len, kv_seq_len)]. A float mask of the
- same type as query, key, value that is added to the attention score.
+ * @param[in] attention_bias (optional Tensor) – Attention bias. shape = [(batch_size, head_num, q_seq_len, kv_seq_len), (head_num, q_seq_len, kv_seq_len),
+ (q_seq_len, kv_seq_len)]. A float mask of the same type as query, key, value that is added to the attention score.
  * @param[in] q Query tensor. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] k Key tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] v Value tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].

@@ -19,7 +19,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     TORCH_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4 dimensional, but got ", qAt.dim(), "-dimensional");
     TORCH_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4 dimensional, but got ", kAt.dim(), "-dimensional");
     TORCH_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4 dimensional, but got ", vAt.dim(), "-dimensional");
-    at::Tensor realShiftOptional = attentionBiasAt;
+    at::Tensor pse;
     at::Tensor dropMaskOptional;
     at::Tensor paddingMaskOptional;
     at::Tensor attentionMaskOptional = attentionMaskAt;
@@ -47,6 +47,9 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
         int64_t diagonal = 1;
         EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskOptional, diagonal);
     }
+    if (attentionBiasAt.defined()) {
+        pse = attentionBiasAt;
+    }
 
     TORCH_CHECK(keepProbOptional >= 0 && keepProbOptional <= 1, "The keep_prob value must be in range of [0, 1], but got ", keepProbOptional);
     TORCH_CHECK(sparseModeOptional >= 0 && sparseModeOptional <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparseModeOptional);
@@ -73,7 +76,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
                  qAt,
                  kAt,
                  vAt,
-                 realShiftOptional,
+                 pse,
                  dropMaskOptional,
                  paddingMaskOptional,
                  attentionMaskOptional,
@@ -95,8 +98,9 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     saveForBackward[2] = torch_npu::NPUBridge::GetNpuStorageImpl(softmaxOutOut)->npu_desc_.diopi_tensor_;
     saveForBackward[3] = attentionMaskOptional.defined() ? torch_npu::NPUBridge::GetNpuStorageImpl(attentionMaskOptional)->npu_desc_.diopi_tensor_ : nullptr;
     saveForBackward[4] = dropMaskOptional.defined() ? torch_npu::NPUBridge::GetNpuStorageImpl(dropMaskOptional)->npu_desc_.diopi_tensor_ : nullptr;
+    saveForBackward[5] = attentionBiasAt.defined() ? torch_npu::NPUBridge::GetNpuStorageImpl(attentionBiasAt)->npu_desc_.diopi_tensor_ : nullptr;
     DEBUG_ARGS(dropMaskOptional);
-    *saveTensorNum = 5;
+    *saveTensorNum = 6;
     END_CALL_ACL_OP();
 }
 
@@ -107,12 +111,13 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     const char* attentionType) {
     BEGIN_CALL_ACL_OP(q, k, v, attentionOut, gradQ, gradK, gradV, gradAttnBias, gradOut);
 
-    TORCH_CHECK(savedTensorNum >= 5, "backward need 5 tensors saved in forward")
+    TORCH_CHECK(savedTensorNum >= 6, "backward need 5 tensors saved in forward")
     const at::Tensor softmaxMaxAt = impl::aten::buildATen(savedForBackward[0]);
     const at::Tensor softmaxSumAt = impl::aten::buildATen(savedForBackward[1]);
     const at::Tensor softmaxOutAt = impl::aten::buildATen(savedForBackward[2]);
     const at::Tensor attentionMaskAt = impl::aten::buildATen(savedForBackward[3]);
     const at::Tensor dropoutMaskAt = impl::aten::buildATen(savedForBackward[4]);
+    const at::Tensor pseAt = impl::aten::buildATen(savedForBackward[5]);
 
     DIOPI_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4-dimensional");
     DIOPI_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4-dimensional");
@@ -125,9 +130,9 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     int64_t sq = qAt.size(1);
     double keepProb = 1 - pDropout;
 
-    at::Tensor pseAt;
     at::Tensor gradPseAt;
     if (gradAttnBiasAt.defined()) {
+        // todo: support shape broadcast
         gradPseAt = gradAttnBiasAt;
     } else {
         gradPseAt = at_npu::native::OpPreparation::apply_tensor_without_format({0}, qAt.options());

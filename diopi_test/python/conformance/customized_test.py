@@ -626,6 +626,57 @@ class CustomizedTest(object):
             )
         return out
 
+    def attention2(
+        query,
+        key,
+        value,
+        attn_mask=None,
+        attn_bias=None,
+        dropout_p=0.0,
+        is_causal=False,
+        scale=None,
+        attn_type="DotProduct",
+    ):
+        query = query.permute(0, 2, 1, 3)  # BSND -> BNSD
+        key = key.permute(0, 2, 1, 3)  # BSND -> BNSD
+        value = value.permute(0, 2, 1, 3)  # BSND -> BNSD
+        half_use_float = query.is_cpu and (
+            query.dtype == torch.float16 or query.dtype == torch.bfloat16
+        )
+        raw_dtype = query.dtype
+        device = query.device
+        if half_use_float:
+            query = query.float()
+            key = key.float()
+            value = value.float()
+        seq_len_q, S = query.size(-2), key.size(-2)
+        scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
+        attn_bias_temp = torch.zeros(seq_len_q, S, dtype=query.dtype, device=device)
+        if is_causal:
+            assert attn_mask is None
+            temp_mask = torch.ones(seq_len_q, S, dtype=torch.bool, device=device).tril(
+                diagonal=0
+            )
+            attn_bias_temp.masked_fill_(temp_mask.logical_not(), float("-inf"))
+            attn_bias_temp.to(query.dtype)
+
+        if attn_mask is not None:
+            if attn_mask.dtype == torch.bool:
+                attn_bias_temp.masked_fill_(attn_mask.logical_not(), float("-inf"))
+            else:
+                assert False, "atten_mask dtype is not bool"
+        if attn_bias is not None:
+            attn_bias_temp += attn_bias
+        attn_weight = query @ key.transpose(-2, -1) * scale_factor
+        attn_weight += attn_bias_temp
+        attn_weight = torch.softmax(attn_weight, dim=-1)
+        attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
+        out = attn_weight @ value
+        if half_use_float:
+            out = out.to(raw_dtype)
+        out = out.permute(0, 2, 1, 3)  # BNSD -> BSND
+        return out
+
     def attention(
         query,
         key,
@@ -649,12 +700,12 @@ class CustomizedTest(object):
             query = query.float()
             key = key.float()
             value = value.float()
-        L, S = query.size(-2), key.size(-2)
+        batch_size, seq_len_q, seq_len_kv = query.size(), query.size(-2), key.size(-2)
         scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
-        attn_bias_temp = torch.zeros(L, S, dtype=query.dtype, device=device)
+        attn_bias_temp = torch.zeros(seq_len_q, seq_len_kv, dtype=query.dtype, device=device)
         if is_causal:
             assert attn_mask is None
-            temp_mask = torch.ones(L, S, dtype=torch.bool, device=device).tril(
+            temp_mask = torch.ones(seq_len_q, seq_len_kv, dtype=torch.bool, device=device).tril(
                 diagonal=0
             )
             attn_bias_temp.masked_fill_(temp_mask.logical_not(), float("-inf"))
@@ -665,10 +716,11 @@ class CustomizedTest(object):
                 attn_bias_temp.masked_fill_(attn_mask.logical_not(), float("-inf"))
             else:
                 assert False, "atten_mask dtype is not bool"
-        if attn_bias is not None:
-            attn_bias_temp += attn_bias
+
         attn_weight = query @ key.transpose(-2, -1) * scale_factor
         attn_weight += attn_bias_temp
+        if attn_bias is not None:
+            attn_weight += attn_bias
         attn_weight = torch.softmax(attn_weight, dim=-1)
         attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
         out = attn_weight @ value
