@@ -58,7 +58,7 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         if (outDim > biasDim) {
             std::vector<int64_t> sumDims(outDim - biasDim);
             std::iota(sumDims.begin(), sumDims.end(), 0);
-            // DIOPI_ASCEND_CALL_ACLNN(aclnnReduceSum, ctx, gradOutput, sumDims, false, gradBiasTensor.dtype(), gradBias);
+            DIOPI_ASCEND_CALL_ACLNN(aclnnReduceSum, ctx, gradOutput, sumDims, false, gradBiasTensor.dtype(), gradBias);
         } else {
             DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, gradBias, gradOutput);
         }
