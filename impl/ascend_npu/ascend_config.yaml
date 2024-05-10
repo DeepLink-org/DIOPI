@@ -6,6 +6,8 @@ ascend:
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
+- diopiErf
+- diopiErfInp
 - diopiGather
 - diopiLayerNorm
 - diopiLayerNormBackward
@@ -16,8 +18,12 @@ ascend:
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
+- diopiRsqrt
+- diopiRsqrtInp
 - diopiSlice
 - diopiSliceBackward
+- diopiSqrt
+- diopiSqrtInp
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiSplitWithSizes
@@ -44,8 +50,6 @@ ascend_npu:
 - diopiBatchNormBackward
 - diopiCos
 - diopiCosInp
-- diopiErf
-- diopiErfInp
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
@@ -83,10 +87,6 @@ ascend_npu:
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
 - diopiMaskedFillScalar
-- diopiRsqrt
-- diopiRsqrtInp
-- diopiSqrt
-- diopiSqrtInp
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
