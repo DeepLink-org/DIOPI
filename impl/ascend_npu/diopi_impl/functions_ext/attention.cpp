@@ -3,6 +3,8 @@
  * @author DeepLink
  * @copyright  (c) 2024, DeepLink.
  */
+#include <c10/core/ScalarType.h>
+
 #include "../helper.hpp"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -11,12 +13,13 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* saveForBackward, int64_t* saveTensorNum,
                             diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attentionMask,
-                            double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale, bool isCausal, const char* attentionType) {
-    BEGIN_CALL_ACL_OP(attentionOut, q, k, v, attentionMask, genDropout);
+                            diopiConstTensorHandle_t attentionBias, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale, bool isCausal,
+                            const char* attentionType) {
+    BEGIN_CALL_ACL_OP(attentionOut, q, k, v, attentionMask, attentionBias, genDropout);
     TORCH_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4 dimensional, but got ", qAt.dim(), "-dimensional");
     TORCH_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4 dimensional, but got ", kAt.dim(), "-dimensional");
     TORCH_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4 dimensional, but got ", vAt.dim(), "-dimensional");
-    at::Tensor realShiftOptional;
+    at::Tensor realShiftOptional = attentionBiasAt;
     at::Tensor dropMaskOptional;
     at::Tensor paddingMaskOptional;
     at::Tensor attentionMaskOptional = attentionMaskAt;
@@ -98,10 +101,11 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
 }
 
 diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
-                                    diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                    diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t* savedForBackward, int64_t savedTensorNum, double pDropout,
-                                    diopiGeneratorHandle_t genDropout, double softmaxScale, const char* attentionType) {
-    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, gradQ, gradK, gradV, gradOut);
+                                    diopiTensorHandle_t gradAttnBias, diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+                                    diopiConstTensorHandle_t v, diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t* savedForBackward,
+                                    int64_t savedTensorNum, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale,
+                                    const char* attentionType) {
+    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, gradQ, gradK, gradV, gradAttnBias, gradOut);
 
     TORCH_CHECK(savedTensorNum >= 5, "backward need 5 tensors saved in forward")
     const at::Tensor softmaxMaxAt = impl::aten::buildATen(savedForBackward[0]);
@@ -122,7 +126,12 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     double keepProb = 1 - pDropout;
 
     at::Tensor pseAt;
-    at::Tensor gradPseAt = at_npu::native::OpPreparation::apply_tensor_without_format({0}, qAt.options());
+    at::Tensor gradPseAt;
+    if (gradAttnBiasAt.defined()) {
+        gradPseAt = gradAttnBiasAt;
+    } else {
+        gradPseAt = at_npu::native::OpPreparation::apply_tensor_without_format({0}, qAt.options());
+    }
     at::IntArrayRef prefixN;
 
     at::Tensor paddingMaskAt;

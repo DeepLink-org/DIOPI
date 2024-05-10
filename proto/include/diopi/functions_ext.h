@@ -256,9 +256,10 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  calculation to be used in backward calculation varies in different devices and implementations. Specifies that the pre-allocated save_for_backward size cannot
  be less than 16
  * @param[out] save_tensor_num The number of the intermediate variables that need to be saved for backward
- * @param[in] attention_mask (optional Tensor) – Attention mask. shape (batch_size, q_seq_len, kv_seq_len). Two types of masks are supported. A boolean mask
- where a value of True indicates that the element should take part in attention. A float mask of the same type as query, key, value that is added to the
- attention score.
+ * @param[in] attention_mask (optional Tensor) – Attention mask. shape (batch_size, q_seq_len, kv_seq_len) or (q_seq_len, kv_seq_len). A boolean mask
+ where a value of True indicates that the element should take part in attention.
+ * @param[in] attention_bias (optional Tensor) – Attention bias. shape = [(batch_size, q_seq_len, kv_seq_len), (q_seq_len, kv_seq_len)]. A float mask of the
+ same type as query, key, value that is added to the attention score.
  * @param[in] q Query tensor. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] k Key tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] v Value tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
@@ -270,8 +271,8 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  */
 DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward,
                                       int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                      diopiConstTensorHandle_t attention_mask, double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale,
-                                      bool is_causal, const char* attention_type);
+                                      diopiConstTensorHandle_t attention_mask, diopiConstTensorHandle_t attention_bias, double p_dropout,
+                                      diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type);
 /**
  * @brief Compute the backward pass for Attention.
  * https://towardsdatascience.com/transformers-explained-visually-part-3-multi-head-attention-deep-dive-1c1ff1024853
@@ -279,6 +280,8 @@ DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandl
  * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[out] grad_attn_bias (optional Tensor) The gradient of the atten_bias. shape = [(batch_size, q_seq_len, kv_seq_len), (q_seq_len, kv_seq_len)]. type =
+ * [bfloat16, float16, float32].
  * @param[in] grad_out The gradient of the output tensor. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] q Query tensor. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] k k Key tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
@@ -294,10 +297,10 @@ DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandl
  * @param[in] attention_type attention type: "DotProduct".
  */
 DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
-                                              diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                              diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t* saved_for_backward,
-                                              int64_t saved_tensor_num, double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale,
-                                              const char* attention_type);
+                                              diopiTensorHandle_t grad_attn_bias, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                              diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
+                                              diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num, double p_dropout,
+                                              diopiGeneratorHandle_t gen_dropout, double softmax_scale, const char* attention_type);
 
 // The difference between this interface and the original diopiFlashAttention definition is that the passed input attention mask can be used directly. This
 // prevents the attention mask from being recalculated inside the op. This helps reduce a lot of useless overhead when training large language models.
