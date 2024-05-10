@@ -41,6 +41,17 @@ class Genfunc:
         if dtype == np.uint8:
             return np.random.randint(low=0, high=high, size=shape).astype(dtype)
         return np.random.randint(low=low, high=high, size=shape).astype(dtype)
+    
+    @staticmethod
+    def randint_with_replace(low=0, high=10, shape=(1,), val=-1, dtype=np.float32):
+        arr = Genfunc.randint(low=low, high=high, shape=shape, dtype=dtype)
+        if val != -1 and arr.size > 10:
+            num_elements = np.random.randint(2, 10)
+            random_indices = np.random.choice(arr.size, num_elements, replace=False)
+            arr_flat = arr.flatten()
+            arr_flat[random_indices] = val
+            arr = arr_flat.reshape(shape)
+        return arr
 
     @staticmethod
     def positive(shape, dtype=np.float32):
