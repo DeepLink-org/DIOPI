@@ -10,8 +10,7 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t outputSize) {
-    DIOPI_ASCEND_CALL_ACLNN(aclnnAdaptiveAvgPool2d, ctx, input, &outputSize, out);
-
+    DIOPI_ASCEND_CALL_ACLNN(aclnnAdaptiveAvgPool2d, ctx, input, outputSize, out);
     return diopiSuccess;
 }
 
