@@ -18,6 +18,8 @@ ascend:
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
+- diopiReciprocal
+- diopiReciprocalInp
 - diopiRsqrt
 - diopiRsqrtInp
 - diopiSlice
@@ -200,8 +202,6 @@ ascend_npu:
 - diopiExpInp
 - diopiOneHot
 - diopiPermute
-- diopiReciprocal
-- diopiReciprocalInp
 - diopiScatter
 - diopiScatterInp
 - diopiScatterScalar

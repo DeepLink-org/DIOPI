@@ -96,11 +96,14 @@ diopiError_t diopiExp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 diopiError_t diopiExpInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiExp(ctx, input, input); }
 
 diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Reciprocal", ctx).addInput(input).addOutput(out).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnReciprocal, ctx, input, out);
     return diopiSuccess;
 }
 
-diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiReciprocal(ctx, input, input); }
+diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceReciprocal, ctx, input);
+    return diopiSuccess;
+}
 
 }  // namespace ascend
 }  // namespace impl
