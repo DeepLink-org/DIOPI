@@ -106,6 +106,8 @@ inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
     return ::aclCreateScalar(bytes.data(), diopiDtypeToAclDataType(scalar->stype));
 }
 
+inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) { return ::aclCreateIntArray(size.data, size.len); }
+
 template <class T, class U = std::remove_cv_t<std::remove_reference_t<T>>>
 decltype(auto) convertType(T&& param) {
     if constexpr (std::is_same_v<U, AscendTensor>) {
@@ -114,6 +116,8 @@ decltype(auto) convertType(T&& param) {
         return createAclTensorFromDiopiTensor(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiScalar_t*> || std::is_same_v<U, const diopiScalar_t*>) {
         return createAclScalarFromDiopiScalar(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, diopiSize_t> || std::is_same_v<U, const diopiSize_t>) {
+        return createAclIntArrayFromDiopiSize(std::forward<T>(param));
     } else {
         static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
         return std::forward<T>(param);
@@ -164,20 +168,47 @@ constexpr auto convertParams(const Args&... args) {
     return ConvertedParamsHolder(std::make_tuple(convertType(args)...));
 }
 
+typedef int (*InitHugeMemThreadLocal)(void*, bool);
+typedef void (*UnInitHugeMemThreadLocal)(void*, bool);
+typedef void (*ReleaseHugeMem)(void*, bool);
+
+class AclHugeMem final {
+public:
+    explicit AclHugeMem(InitHugeMemThreadLocal initFunc, UnInitHugeMemThreadLocal unInitFunc, ReleaseHugeMem releaseFunc)
+        : initMemFunc(initFunc), unInitMemFunc(unInitFunc), releaseMemFunc(releaseFunc) {
+        if (initMemFunc) {
+            initMemFunc(nullptr, false);
+        }
+    }
+
+    ~AclHugeMem() {
+        if (releaseMemFunc) {
+            releaseMemFunc(nullptr, false);
+        }
+        if (unInitMemFunc) {
+            unInitMemFunc(nullptr, false);
+        }
+    }
+
+private:
+    InitHugeMemThreadLocal initMemFunc = nullptr;
+    UnInitHugeMemThreadLocal unInitMemFunc = nullptr;
+    ReleaseHugeMem releaseMemFunc = nullptr;
+};
+
 // A class to alloc acl workspace and release it when the object is destroyed.
 class AclWorkspace final {
 public:
-    explicit AclWorkspace(std::size_t workspaceSize) noexcept {
+    explicit AclWorkspace(diopiContextHandle_t ctx, std::size_t workspaceSize) noexcept {
         if (workspaceSize > 0) {
-            auto ret = aclrtMalloc(&workspaceAddr_, workspaceSize, ACL_MEM_MALLOC_HUGE_FIRST);
-            ASCEND_CHECK(ret == ACL_SUCCESS, "allocate workspace failed. ERROR: %d\n", ret);
+            diopiTensorHandle_t bufHandle;
+            auto ret = diopiRequireBuffer(ctx, &bufHandle, workspaceSize, diopi_device);
+            ASCEND_CHECK(ret == diopiSuccess, "[AclWorkspace] Require workspace size %lld failed.", static_cast<uint64_t>(workspaceSize));
+            AscendTensor buf(bufHandle);
+            workspaceAddr_ = const_cast<void*>(buf.data());
         }
     }
-    ~AclWorkspace() {
-        if (workspaceAddr_ != nullptr) {
-            aclrtFree(workspaceAddr_);
-        }
-    }
+    ~AclWorkspace() {}
     AclWorkspace(const AclWorkspace&) = delete;
     AclWorkspace& operator=(const AclWorkspace&) = delete;
     AclWorkspace(AclWorkspace&&) = delete;
@@ -204,13 +235,18 @@ void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
     using WorkspaceSizeFuncType = int (*)(std::decay_t<decltype(convertType(std::declval<Args>()))>..., uint64_t*, aclOpExecutor**);
     static const auto workspaceSizeFunc = reinterpret_cast<WorkspaceSizeFuncType>(workspaceSizeFuncAddr);
 
+    static const auto initFunc = reinterpret_cast<InitHugeMemThreadLocal>(getOpApiFuncAddr("InitHugeMemThreadLocal"));
+    static const auto unInitFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(getOpApiFuncAddr("UnInitHugeMemThreadLocal"));
+    static const auto releaseFunc = reinterpret_cast<ReleaseHugeMem>(getOpApiFuncAddr("ReleaseHugeMem"));
+    AclHugeMem aclHugeMem(initFunc, unInitFunc, releaseFunc);
+
     uint64_t workspaceSize = 0;
     aclOpExecutor* executor = nullptr;
     auto convertedParams = convertParams(args...);
     auto workspaceStatus = std::apply(workspaceSizeFunc, std::tuple_cat(convertedParams.params(), std::make_tuple(&workspaceSize, &executor)));
     ASCEND_CHECK(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS.");
 
-    AclWorkspace workspace(workspaceSize);
+    AclWorkspace workspace(ctx, workspaceSize);
 
     /* 2. call aclnnXXX function */
     static const auto opApiFuncAddr = getOpApiFuncAddr(api);
