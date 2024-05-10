@@ -11,6 +11,8 @@ ascend:
 - diopiLayerNormBackward
 - diopiLinear
 - diopiLinearBackward
+- diopiNeg
+- diopiNegInp
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -160,8 +162,6 @@ ascend_npu:
 - diopiNeInp
 - diopiNeInpScalar
 - diopiNeScalar
-- diopiNeg
-- diopiNegInp
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
