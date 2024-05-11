@@ -5,6 +5,7 @@ ascend:
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
+- diopiFlip
 - diopiGather
 - diopiLayerNorm
 - diopiLayerNormBackward
@@ -65,7 +66,6 @@ ascend_npu:
 - diopiEmbeddingBackward
 - diopiEqual
 - diopiExpand
-- diopiFlip
 - diopiFloor
 - diopiFloorInp
 - diopiGroupNorm
