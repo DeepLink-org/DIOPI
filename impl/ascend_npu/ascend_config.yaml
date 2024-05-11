@@ -13,6 +13,8 @@ ascend:
 - diopiErfInp
 - diopiExp
 - diopiExpInp
+- diopiFloor
+- diopiFloorInp
 - diopiGather
 - diopiHardtanh
 - diopiHardtanhBackward
@@ -106,8 +108,6 @@ ascend_npu:
 - diopiEqual
 - diopiExpand
 - diopiFlip
-- diopiFloor
-- diopiFloorInp
 - diopiGroupNorm
 - diopiGroupNormBackward
 - diopiLinspace
