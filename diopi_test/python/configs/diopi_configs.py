@@ -9048,6 +9048,51 @@ diopi_configs = {
         ),
     ),
 
+    'attention_varlen': dict(
+        name=['attention_varlen'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            dropout_p=[0, 0, 0, 0],
+            is_causal=[True, True, False, True],
+            scale=[None, 0.0883, None, 0.125],
+            max_seqlen_q=[32, 32, 128, 64],
+            max_seqlen_kv=[32, 32, 128, 64],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['query'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ['key'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ['value'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                },
+                {
+                    "ins": ['cu_seqlens_q'],
+                    "value": ([0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128],),
+                    "gen_policy": "gen_tensor_by_value",
+                    "dtype": [np.int64],
+                },
+                {
+                    "ins": ['cu_seqlens_kv'],
+                    "value": ([0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128],),
+                    "dtype": [np.int64],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+            ],
+        ),
+    ),
+
     'flash_attention_varlen': dict(
         name=['flash_attention_varlen'],
         interface=['CustomizedTest'],
