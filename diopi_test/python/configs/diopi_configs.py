@@ -9057,7 +9057,7 @@ diopi_configs = {
         rtol=1e-4,
         para=dict(
             dropout_p=[0, 0, 0, 0],
-            is_causal=[True, True, False, True],
+            is_causal=[True, True, True, True],
             scale=[None, 0.0883, None, 0.125],
             max_seqlen_q=[32, 32, 128, 64],
             max_seqlen_kv=[32, 32, 128, 64],
@@ -9068,26 +9068,31 @@ diopi_configs = {
                 {
                     "ins": ['query'],
                     "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                    "requires_grad": [False],
                 },
                 {
                     "ins": ['key'],
                     "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                    "requires_grad": [False],
                 },
                 {
                     "ins": ['value'],
                     "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                    "requires_grad": [False],
                 },
                 {
                     "ins": ['cu_seqlens_q'],
                     "value": ([0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128],),
                     "gen_policy": "gen_tensor_by_value",
                     "dtype": [np.int64],
+                    "requires_grad": [False],
                 },
                 {
                     "ins": ['cu_seqlens_kv'],
                     "value": ([0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128],),
                     "dtype": [np.int64],
-                    "gen_policy": "gen_tensor_by_value"
+                    "gen_policy": "gen_tensor_by_value",
+                    "requires_grad": [False],
                 },
             ],
         ),

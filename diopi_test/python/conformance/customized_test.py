@@ -740,6 +740,7 @@ class CustomizedTest(object):
         max_seqlen_q,
         max_seqlen_kv,
         attn_mask=None,
+        attn_bias=None,
         dropout_p=0.0,
         is_causal=False,
         scale=None,
@@ -763,9 +764,7 @@ class CustomizedTest(object):
         for i in range(batch_size):
             actual_q_seq_len = cu_seqlens_q[i + 1] - cu_seqlens_q[i]
             actual_kv_seq_len = cu_seqlens_kv[i + 1] - cu_seqlens_kv[i]
-            padded_attn_bias[i, :, actual_q_seq_len:, actual_kv_seq_len:] = float(
-                "-inf"
-            )
+            padded_attn_bias[i, :, actual_q_seq_len:, actual_kv_seq_len:] = float("-inf")
             query_padded[i, :actual_q_seq_len, :, :] = query[
                 cu_seqlens_q[i] : cu_seqlens_q[i + 1], :, :
             ]  # BSND
@@ -777,6 +776,10 @@ class CustomizedTest(object):
             ]
 
             actual_q_seq_len = cu_seqlens_q[i + 1] - cu_seqlens_q[i]
+        if attn_bias is None:
+            attn_bias = padded_attn_bias
+        else:
+            attn_bias += padded_attn_bias
         out_paded = CustomizedTest.attention(
             query=query_padded,
             key=key_padded,
@@ -784,7 +787,7 @@ class CustomizedTest(object):
             dropout_p=dropout_p,
             is_causal=is_causal,
             scale=scale,
-            attn_bias=padded_attn_bias,
+            attn_bias=attn_bias,
         )  # BSND
 
         out = torch.zeros(query.shape, dtype=query.dtype, device=device)
