@@ -172,7 +172,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erfinv', 'asin', 'ceil'],
+        name=['erfinv', 'asin'],
         tensor_para=dict(
             args=[
                 {
