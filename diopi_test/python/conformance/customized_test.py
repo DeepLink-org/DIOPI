@@ -764,7 +764,8 @@ class CustomizedTest(object):
         for i in range(batch_size):
             actual_q_seq_len = cu_seqlens_q[i + 1] - cu_seqlens_q[i]
             actual_kv_seq_len = cu_seqlens_kv[i + 1] - cu_seqlens_kv[i]
-            padded_attn_bias[i, :, actual_q_seq_len:, actual_kv_seq_len:] = float("-inf")
+            padded_attn_bias[i, :, actual_q_seq_len:, :] = float("-inf")
+            padded_attn_bias[i, :, :, actual_kv_seq_len:] = float("-inf")
             query_padded[i, :actual_q_seq_len, :, :] = query[
                 cu_seqlens_q[i] : cu_seqlens_q[i + 1], :, :
             ]  # BSND
