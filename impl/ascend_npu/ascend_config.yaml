@@ -52,6 +52,9 @@ ascend:
 - diopiTanhInp
 - diopiConvolution2d
 - diopiConvolution2dBackward
+- diopiSilu
+- diopiSiluInp
+- diopiSiluBackward
 - diopiSin
 - diopiSinInp
 - diopiSplitWithSizes
@@ -109,9 +112,6 @@ ascend_npu:
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
 - diopiMaskedFillScalar
-- diopiSilu
-- diopiSiluInp
-- diopiSiluBackward
 - diopiStack
 - diopiMSELoss
 - diopiMSELossBackward

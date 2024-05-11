@@ -48,17 +48,17 @@ diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle
 }
 
 diopiError_t diopiSilu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Swish", ctx).addInput(input).setAttr<float>("scale", 1.0).addOutput(out).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnSilu, ctx, input, out);
     return diopiSuccess;
 }
 
-diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiSilu(ctx, input, input); }
+diopiError_t diopiSiluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnSilu, ctx, input, input);
+    return diopiSuccess;
+}
 
 diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input) {
-    diopiTensorHandle_t out;
-    makeTensorLike(ctx, &out, input);
-    diopiSilu(ctx, out, input);
-    AclOpRunner<3, 1>("SwishGrad", ctx).addInput(gradOutput).addInput(input).addInput(out).addOutput(gradInput).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnSiluBackward, ctx, gradOutput, input, gradInput);
     return diopiSuccess;
 }
 
