@@ -184,6 +184,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/addmm.cpp
     ${OLD_IMPL_DIR}/functions/expand.cpp
     ${OLD_IMPL_DIR}/functions/linspace.cpp
+    ${OLD_IMPL_DIR}/functions/ones.cpp
     ${OLD_IMPL_DIR}/functions/split.cpp
     ${OLD_IMPL_DIR}/functions/zeros.cpp
     ${OLD_IMPL_DIR}/functions_mmcv/roi_align_npu.cpp
