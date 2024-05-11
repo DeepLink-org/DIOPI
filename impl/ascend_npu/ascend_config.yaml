@@ -47,6 +47,9 @@ ascend:
 - diopiSliceBackward
 - diopiSqrt
 - diopiSqrtInp
+- diopiTanh
+- diopiTanhBackward
+- diopiTanhInp
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiSin
@@ -136,9 +139,6 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiSum
-- diopiTanh
-- diopiTanhBackward
-- diopiTanhInp
 - diopiTensorDestructionHook
 - diopiGelu
 - diopiGeluBackward

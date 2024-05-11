@@ -110,12 +110,17 @@ diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 }
 
 diopiError_t diopiTanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Tanh", ctx).addInput(input).addOutput(out).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnTanh, ctx, input, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiTanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceTanh, ctx, input);
     return diopiSuccess;
 }
 
 diopiError_t diopiTanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output) {
-    AclOpRunner<2, 1>("TanhGrad", ctx).addInput(output).addInput(gradOutput).addOutput(gradInput).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnTanhBackward, ctx, gradOutput, output, gradInput);
     return diopiSuccess;
 }
 
