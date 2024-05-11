@@ -3,6 +3,7 @@ ascend:
 - diopiAbsInp
 - diopiAtan
 - diopiAtanInp
+- diopiCastDtype
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
@@ -69,7 +70,6 @@ ascend_npu:
 - diopiMin
 - diopiMinAll
 - diopiMinimum
-- diopiCastDtype
 - diopiCat
 - diopiCeil
 - diopiCeilInp

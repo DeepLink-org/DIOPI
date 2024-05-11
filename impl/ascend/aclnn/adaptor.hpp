@@ -107,6 +107,7 @@ inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
 }
 
 inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) { return ::aclCreateIntArray(size.data, size.len); }
+inline aclIntArray* createAclIntArrayFromVector(const std::vector<int64_t>& vec) { return ::aclCreateIntArray(vec.data(), vec.size()); }
 
 template <class T, class U = std::remove_cv_t<std::remove_reference_t<T>>>
 decltype(auto) convertType(T&& param) {
@@ -118,8 +119,11 @@ decltype(auto) convertType(T&& param) {
         return createAclScalarFromDiopiScalar(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiSize_t> || std::is_same_v<U, const diopiSize_t>) {
         return createAclIntArrayFromDiopiSize(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, std::vector<int64_t>> || std::is_same_v<U, const std::vector<int64_t>>) {
+        return createAclIntArrayFromVector(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, diopiDtype_t> || std::is_same_v<U, const diopiDtype_t>) {
+        return diopiDtypeToAclDataType(std::forward<T>(param));
     } else {
-        static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
         return std::forward<T>(param);
     }
 }
