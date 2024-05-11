@@ -1,6 +1,18 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiClamp
+- diopiClampInp
+- diopiClampInpScalar
+- diopiClampMax
+- diopiClampMaxInp
+- diopiClampMaxInpScalar
+- diopiClampMaxScalar
+- diopiClampMin
+- diopiClampMinInp
+- diopiClampMinInpScalar
+- diopiClampMinScalar
+- diopiClampScalar
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
@@ -219,18 +231,6 @@ ascend_npu:
 - diopiTriu
 - diopiTriuInp
 - diopiUniformInp
-- diopiClamp
-- diopiClampInp
-- diopiClampInpScalar
-- diopiClampMax
-- diopiClampMaxInp
-- diopiClampMaxInpScalar
-- diopiClampMaxScalar
-- diopiClampMin
-- diopiClampMinInp
-- diopiClampMinInpScalar
-- diopiClampMinScalar
-- diopiClampScalar
 - diopiUpsampleLinear
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
