@@ -33,6 +33,9 @@ ascend:
 - diopiReciprocalInp
 - diopiRelu
 - diopiReluInp
+- diopiRemainderTensor
+- diopiRemainderScalar
+- diopiRemainder
 - diopiRsqrt
 - diopiRsqrtInp
 - diopiSlice
@@ -93,9 +96,6 @@ ascend_npu:
 - diopiLinspace
 - diopiMax
 - diopiMaximum
-- diopiRemainderTensor
-- diopiRemainderScalar
-- diopiRemainder
 - diopiRepeat
 - diopiMaskedFill
 - diopiMaskedFillInp
