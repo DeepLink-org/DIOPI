@@ -63,15 +63,18 @@ diopiError_t diopiSiluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gra
 }
 
 diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Sigmoid", ctx).addInput(input).addOutput(out).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnSigmoid, ctx, input, out);
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiSigmoid(ctx, input, input); }
+DIOPI_API diopiError_t diopiSigmoidInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceSigmoid, ctx, input);
+    return diopiSuccess;
+}
 
 DIOPI_API diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                             diopiConstTensorHandle_t output) {
-    AclOpRunner<2, 1>("SigmoidGrad", ctx).addInput(output).addInput(gradOutput).addOutput(gradInput).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnSigmoidBackward, ctx, gradOutput, output, gradInput);
     return diopiSuccess;
 }
 

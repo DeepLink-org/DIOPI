@@ -40,6 +40,9 @@ ascend:
 - diopiRsqrtInp
 - diopiSgn
 - diopiSgnInp
+- diopiSigmoid
+- diopiSigmoidBackward
+- diopiSigmoidInp
 - diopiSlice
 - diopiSliceBackward
 - diopiSqrt
@@ -132,10 +135,7 @@ ascend_npu:
 - diopiContextAttentionInference
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
-- diopiSigmoid
 - diopiSum
-- diopiSigmoidBackward
-- diopiSigmoidInp
 - diopiTanh
 - diopiTanhBackward
 - diopiTanhInp
