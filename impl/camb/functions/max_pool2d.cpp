@@ -9,7 +9,6 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
-#include "../common/debug.hpp"
 
 namespace impl {
 namespace camb {
@@ -132,7 +131,7 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     diopiDtype_t indicesDtype = inputTr.dtype() == diopi_dtype_float16 ? diopi_dtype_int16 : diopi_dtype_int32;
     DiopiTensor indicesTmpTr = indicesTr;
     if (indicesTr.dtype() != indicesDtype) {
-        indicesTmpTr = requiresTensor(ctx, indicesTr.shape(),indicesTr.stride(), indicesDtype);
+        indicesTmpTr = requiresTensor(ctx, indicesTr.shape(), indicesTr.stride(), indicesDtype);
     }
 
     std::vector<int64_t> inputDim = inputTr.shape();
@@ -269,16 +268,12 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
     }
     
-    printDevData(ctx,indicesTr);
-
     if (inputTr.dtype() == diopi_dtype_float16) {
         DIOPI_CALL(dataTypeCast(ctx, indicesTr, diopi_dtype_int16));
     } else {
         DIOPI_CALL(dataTypeCast(ctx, indicesTr, diopi_dtype_int32));
     }
 
-    printDevData(ctx,indicesTr);
-    std::cout<<"is3dim:" << is3dim <<std::endl;
     diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::ChannelsLast;
     // for 3 dim input, it is contiguous, and needs to convert to channelslast for camb kernel.
     if (is3dim) {
@@ -293,8 +288,6 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     std::vector<int64_t> inputDim = inputTr.shape();
     std::vector<int64_t> gradOutputDim = gradOutputTr.shape();
-
-    printDevData(ctx,indicesTr);
 
     CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc gradInputDesc(gradInputTmpTr, CNNL_LAYOUT_NHWC);
