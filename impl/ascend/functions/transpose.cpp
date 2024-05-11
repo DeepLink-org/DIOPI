@@ -10,7 +10,7 @@
 namespace impl {
 namespace ascend {
 
-diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim0, int64_t dim1) {    
+diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim0, int64_t dim1) {
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
     if (0 == inputShape.len) {
