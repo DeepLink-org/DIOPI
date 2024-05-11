@@ -267,7 +267,7 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     if (inputTr.dtype() != gradOutputTr.dtype() || (inputTr.dtype() != diopi_dtype_float16 && inputTr.dtype() != diopi_dtype_float32)) {
         DIOPI_CALL(autoCastTensorType(ctx, pTensors, {diopi_dtype_float16, diopi_dtype_float32}));
     }
-    
+
     if (inputTr.dtype() == diopi_dtype_float16) {
         DIOPI_CALL(dataTypeCast(ctx, indicesTr, diopi_dtype_int16));
     } else {
