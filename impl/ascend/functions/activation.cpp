@@ -90,22 +90,18 @@ diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gra
 }
 
 diopiError_t diopiLeakyRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope) {
-    AclOpRunner<1, 1>("LeakyRelu", ctx).addInput(input).setAttr("negative_slope", getValue<float>(negativeSlope)).addOutput(out).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnLeakyRelu, ctx, input, negativeSlope, out);
     return diopiSuccess;
 }
 
 diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* negativeSlope) {
-    return diopiLeakyRelu(ctx, input, input, negativeSlope);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceLeakyRelu, ctx, input, negativeSlope);
+    return diopiSuccess;
 }
 
 diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                     diopiConstTensorHandle_t input, const diopiScalar_t* negativeSlope, bool inputIsResult) {
-    AclOpRunner<2, 1>("LeakyReluGrad", ctx)
-        .addInput(gradOutput)
-        .addInput(input)
-        .setAttr("negative_slope", getValue<float>(negativeSlope))
-        .addOutput(gradInput)
-        .run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnLeakyReluBackward, ctx, gradOutput, input, negativeSlope, inputIsResult, gradInput);
     return diopiSuccess;
 }
 

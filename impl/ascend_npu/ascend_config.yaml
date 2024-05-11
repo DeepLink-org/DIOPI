@@ -19,6 +19,9 @@ ascend:
 - diopiHardtanhInp
 - diopiLayerNorm
 - diopiLayerNormBackward
+- diopiLeakyRelu
+- diopiLeakyReluBackward
+- diopiLeakyReluInp
 - diopiLinear
 - diopiLinearBackward
 - diopiLog
@@ -173,9 +176,6 @@ ascend_npu:
 - diopiNeInp
 - diopiNeInpScalar
 - diopiNeScalar
-- diopiLeakyRelu
-- diopiLeakyReluBackward
-- diopiLeakyReluInp
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiFill
