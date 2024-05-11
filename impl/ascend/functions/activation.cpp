@@ -1,23 +1,23 @@
 /**
  * @file
  * @author DeepLink
- * @copyright  (c) 2023, DeepLink.
+ * @copyright  (c) 2024, DeepLink.
  */
 
-#include <set>
-
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
 #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Relu", ctx).addInput(input).addOutput(out).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnRelu, ctx, input, out);
     return diopiSuccess;
 }
 
 diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    AclOpRunner<1, 1>("Relu", ctx).addInput(input).addOutput(input).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceRelu, ctx, input);
     return diopiSuccess;
 }
 

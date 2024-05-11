@@ -28,6 +28,8 @@ ascend:
 - diopiNormalTensorScalar
 - diopiReciprocal
 - diopiReciprocalInp
+- diopiRelu
+- diopiReluInp
 - diopiRsqrt
 - diopiRsqrtInp
 - diopiSlice
@@ -239,8 +241,6 @@ ascend_npu:
 - diopiZeros
 - diopiZeroInp
 - diopiIsNan
-- diopiRelu
-- diopiReluInp
 - diopiSoftmax
 - diopiSoftmaxBackward
 - diopiMul
