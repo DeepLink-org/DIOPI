@@ -16,7 +16,12 @@ ascend:
 - diopiSliceBackward
 - diopiConvolution2d
 - diopiConvolution2dBackward
+- diopiPermute
 - diopiSplitWithSizes
+- diopiTranspose
+- diopiTril
+- diopiTriu
+- diopiTriuInp
 ascend_npu:
 - diopiAdamW
 - diopiWhere
@@ -199,7 +204,6 @@ ascend_npu:
 - diopiExp
 - diopiExpInp
 - diopiOneHot
-- diopiPermute
 - diopiReciprocal
 - diopiReciprocalInp
 - diopiScatter
@@ -213,11 +217,7 @@ ascend_npu:
 - diopiSubInp
 - diopiSubInpScalar
 - diopiSubScalar
-- diopiTranspose
 - diopiTopk
-- diopiTril
-- diopiTriu
-- diopiTriuInp
 - diopiUniformInp
 - diopiClamp
 - diopiClampInp
