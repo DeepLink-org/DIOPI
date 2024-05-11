@@ -15,7 +15,7 @@ diopiError_t diopiZeros(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
 }
 
 diopiError_t diopiZeroInp(diopiContextHandle_t ctx, diopiTensorHandle_t self) {
-    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, input);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, self);
     return diopiSuccess;
 }
 
