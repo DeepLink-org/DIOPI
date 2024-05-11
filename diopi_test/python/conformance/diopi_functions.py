@@ -5555,7 +5555,7 @@ def flash_attention_varlen_backward(q, k, v, out, grad_outputs, max_seqlen_q, ma
     check_returncode(ret)
     return out
 
-def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
+def attention(query, key, value, attn_mask=None, attn_bias=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
     func = check_function("diopiAttention")
     attn_out = raw_like(query)
     max_tensor_num_for_backward = 16
@@ -5566,12 +5566,13 @@ def attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False,
     if scale is None:
         scale = 1.0 / math.sqrt(query.size().data[-1])
     ret = func(query.context(), attn_out, save_for_backward, get_capsule(byref(save_tensor_num)),
-               query, key, value, attn_mask, dropout_p, generator, scale, is_causal, attn_type)
+               query, key, value, attn_mask, attn_bias, dropout_p, generator, scale, is_causal, attn_type)
     check_returncode(ret)
     save_for_backward_tensor_list = []
     for i in range(save_tensor_num.value):
         save_for_backward_tensor_list.append(save_for_backward[i])
 
+    GLOBAL_STATE["attn_bias"] = attn_bias
     GLOBAL_STATE["attention_save_tensor_num"] = save_tensor_num.value
     GLOBAL_STATE["save_for_backward_tensor_list"] = save_for_backward_tensor_list
     return attn_out
@@ -5585,6 +5586,7 @@ def attention_backward(
     dropout_p,
     scale,
     is_causal,
+    attn_bias,
     attn_type = "DotProduct"
 ):
     call = "diopiAttentionBackward"
@@ -5595,6 +5597,9 @@ def attention_backward(
     grad_q = raw_like(query)
     grad_k = raw_like(key)
     grad_v = raw_like(value)
+    grad_attn_bias = None
+    if attn_bias is not None:
+        grad_attn_bias = raw_like(attn_bias)
     save_tensor_num = GLOBAL_STATE.pop("attention_save_tensor_num")
     save_for_backward_tensor_list = GLOBAL_STATE.pop("save_for_backward_tensor_list")
 
@@ -5607,6 +5612,7 @@ def attention_backward(
         grad_q,
         grad_k,
         grad_v,
+        grad_attn_bias,
         grad_outputs[0],
         query,
         key,
