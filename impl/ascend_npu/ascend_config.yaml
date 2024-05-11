@@ -5,6 +5,8 @@ ascend:
 - diopiAtanInp
 - diopiCastDtype
 - diopiContiguous
+- diopiCos
+- diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
 - diopiErf
@@ -39,6 +41,8 @@ ascend:
 - diopiSqrtInp
 - diopiConvolution2d
 - diopiConvolution2dBackward
+- diopiSin
+- diopiSinInp
 - diopiSplitWithSizes
 ascend_npu:
 - diopiAdamW
@@ -61,8 +65,6 @@ ascend_npu:
 - diopiBaddbmmInp
 - diopiBatchNorm
 - diopiBatchNormBackward
-- diopiCos
-- diopiCosInp
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
@@ -102,8 +104,6 @@ ascend_npu:
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
-- diopiSin
-- diopiSinInp
 - diopiStack
 - diopiMSELoss
 - diopiMSELossBackward
