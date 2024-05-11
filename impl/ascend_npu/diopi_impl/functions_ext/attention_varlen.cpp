@@ -4,6 +4,9 @@
  * @copyright  (c) 2024, DeepLink.
  */
 #include <c10/core/ScalarType.h>
+#include <c10/util/Exception.h>
+
+#include <cstdint>
 
 #include "../helper.hpp"
 #include "op_plugin/OpApiInterface.h"
@@ -11,14 +14,20 @@
 
 namespace OP_IMPL_NS {
 
-diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* saveForBackward, int64_t* saveTensorNum,
-                            diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attentionMask,
-                            diopiConstTensorHandle_t attentionBias, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale, bool isCausal,
-                            const char* attentionType) {
-    BEGIN_CALL_ACL_OP(attentionOut, q, k, v, attentionMask, attentionBias, genDropout);
-    TORCH_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4 dimensional, but got ", qAt.dim(), "-dimensional");
-    TORCH_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4 dimensional, but got ", kAt.dim(), "-dimensional");
-    TORCH_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4 dimensional, but got ", vAt.dim(), "-dimensional");
+diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* saveForBackward, int64_t* saveTensorNum,
+                                  diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cuSeqlensQ,
+                                  diopiConstTensorHandle_t cuSeqlensKv, int64_t maxSeqlenQ, int64_t maxKvLenKv, diopiConstTensorHandle_t attentionMask,
+                                  diopiConstTensorHandle_t attentionBias, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale,
+                                  bool isCausal, const char* attentionType) {
+    BEGIN_CALL_ACL_OP(attentionOut, q, k, v, cuSeqlensQ, cuSeqlensKv, attentionMask, attentionBias, genDropout);
+    TORCH_CHECK(qAt.dim() == 3, "The shapes of the input query should be 3 dimensional, but got ", qAt.dim(), "-dimensional");
+    TORCH_CHECK(kAt.dim() == 3, "The shapes of the input key should be 3 dimensional, but got ", kAt.dim(), "-dimensional");
+    TORCH_CHECK(vAt.dim() == 3, "The shapes of the input value should be 3 dimensional, but got ", vAt.dim(), "-dimensional");
+    TORCH_CHECK(cuSeqlensKvAt.numel() == cuSeqlensQAt.numel(), "q k shoule have same batchsize");
+    const int64_t totalSeq = qAt.size(0);
+    const int64_t headNum = qAt.size(1);
+    const int64_t headDim = qAt.size(2);
+    const int64_t batch_size = cuSeqlensQAt.sizes().size() - 1;
     at::Tensor pse;
     at::Tensor dropMaskOptional;
     at::Tensor paddingMaskOptional;
@@ -26,23 +35,22 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     auto prefixOptional = nullptr;
     double scaleValueOptional = softmaxScale;
     double keepProbOptional = 1 - pDropout;
+    const int64_t preTockensOptional = totalSeq;
     int64_t nextTockensOptional = 0;
     const int64_t innerPreciseOptional = 0;
     int64_t sparseModeOptional = 0;
-    const char* inputLayout = "BSND";
-    const int64_t batch = qAt.size(0);
-    const int64_t sq = qAt.size(1);
-    const int64_t sk = kAt.size(1);
-    const int64_t headNum = qAt.size(2);
-    const int64_t preTockensOptional = sq + sk;
+    const char* inputLayout = "TND";
 
     const auto qShape = qAt.sizes();
-    std::vector<int64_t> softmaxMaxShape{batch, headNum, sq, 8};  // [B, N, sq, 8]
+    std::vector<int64_t> softmaxMaxShape{totalSeq, headNum, 8};  // [T, N, 8]
     at::Tensor softmaxMaxOut = at_npu::native::empty_npu(softmaxMaxShape, attentionOutAt.options().dtype(at::kFloat));
     at::Tensor softmaxSumOut = at_npu::native::empty_npu(softmaxMaxShape, attentionOutAt.options().dtype(at::kFloat));
     at::Tensor softmaxOutOut = at_npu::native::empty_npu({0}, attentionOutAt.options().dtype(at::kFloat));
+    if (attentionBiasAt.defined()) {
+        pse = attentionBiasAt;
+    }
     if (isCausal) {
-        attentionMaskOptional = at_npu::native::empty_npu({sq, sk}, qAt.options().dtype(at::kBool));  // [sq, sk]
+        attentionMaskOptional = at_npu::native::empty_npu({maxSeqlenQ, maxKvLenKv}, qAt.options().dtype(at::kBool));  // [maxSq, maxSk]
         EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskOptional);
         int64_t diagonal = 1;
         EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskOptional, diagonal);
@@ -55,7 +63,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     TORCH_CHECK(sparseModeOptional >= 0 && sparseModeOptional <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparseModeOptional);
 
     if (pDropout > 0 && pDropout <= 1) {
-        int64_t numels = batch * headNum * sq * sk;  // [B,N,S,S]
+        int64_t numels = batch_size * headNum * maxSeqlenQ * maxKvLenKv;  // [B,N,S,S]
         constexpr int64_t bitNumber = 128;
         constexpr int64_t uInt8BitNumber = 8;
         int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;

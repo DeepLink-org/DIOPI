@@ -313,9 +313,10 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
  calculation to be used in backward calculation varies in different devices and implementations. Specifies that the pre-allocated save_for_backward size cannot
  be less than 16
  * @param[out] save_tensor_num The number of the intermediate variables that need to be saved for backward
- * @param[in] attention_mask (optional Tensor) – Attention mask. shape (total_q, total_kv). Two types of masks are supported. A boolean mask
- where a value of True indicates that the element should take part in attention. A float mask of the same type as query, key, value that is added to the
- attention score.
+ * @param[in] attention_mask (optional Tensor) – Attention mask. shape (total_q, total_kv). A boolean mask
+ where a value of True indicates that the element should take part in attention.
+ * @param[in] attention_bias (optional Tensor) – Attention bias. shape = [(total_q, total_kv)]. A float mask of the same type as query, key, value that is added
+to the attention score.
  * @param[in] q Query tensor. shape = [total_q, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] k Key tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] v Value tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
@@ -334,8 +335,9 @@ out the sequence length of batch i.
 DIOPI_API diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward,
                                             int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                             diopiConstTensorHandle_t cu_seqlens_q, diopiConstTensorHandle_t cu_seqlens_kv, int64_t max_seqlen,
-                                            int64_t max_kvlen, diopiConstTensorHandle_t attention_mask, double p_dropout, diopiGeneratorHandle_t gen_dropout,
-                                            double softmax_scale, bool is_causal, const char* attention_type);
+                                            int64_t max_kvlen, diopiConstTensorHandle_t attention_mask, diopiConstTensorHandle_t attention_bias,
+                                            double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal,
+                                            const char* attention_type);
 
 // The difference between this interface and the original diopiFlashAttention definition is that the passed input attention mask can be used directly. This
 // prevents the attention mask from being recalculated inside the op. This helps reduce a lot of useless overhead when training large language models.
