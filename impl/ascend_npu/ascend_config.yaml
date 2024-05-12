@@ -13,6 +13,8 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
+- diopiNormal
+- diopiNormalInp
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -99,8 +101,6 @@ ascend_npu:
 - diopiMSELoss
 - diopiMSELossBackward
 - diopiMultinomial
-- diopiNormal
-- diopiNormalInp
 - diopiNorm
 - diopiMaxPool2dWithIndices
 - diopiProd
