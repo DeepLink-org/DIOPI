@@ -9,6 +9,10 @@ ascend:
 - diopiLayerNormBackward
 - diopiLinear
 - diopiLinearBackward
+- diopiMul
+- diopiMulInp
+- diopiMulInpScalar
+- diopiMulScalar
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -60,6 +64,7 @@ ascend_npu:
 - diopiDivInpScalar
 - diopiDivScalar
 - diopiDropout
+- diopiDropoutInp
 - diopiCopyInp
 - diopiEmbedding
 - diopiEmbeddingBackward
@@ -243,10 +248,6 @@ ascend_npu:
 - diopiReluInp
 - diopiSoftmax
 - diopiSoftmaxBackward
-- diopiMul
-- diopiMulInp
-- diopiMulInpScalar
-- diopiMulScalar
 - diopiPow
 - diopiPowInp
 - diopiPowInpTensor
