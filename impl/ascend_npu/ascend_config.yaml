@@ -1,9 +1,17 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiAdd
+- diopiAddInp
+- diopiAddScalar
+- diopiAddInpScalar
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
+- diopiDiv
+- diopiDivInp
+- diopiDivInpScalar
+- diopiDivScalar
 - diopiGather
 - diopiLayerNorm
 - diopiLayerNormBackward
@@ -20,16 +28,16 @@ ascend:
 - diopiNormalTensorScalar
 - diopiSlice
 - diopiSliceBackward
+- diopiSub
+- diopiSubInp
+- diopiSubInpScalar
+- diopiSubScalar
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiSplitWithSizes
 ascend_npu:
 - diopiAdamW
 - diopiWhere
-- diopiAdd
-- diopiAddInp
-- diopiAddScalar
-- diopiAddInpScalar
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
@@ -61,10 +69,6 @@ ascend_npu:
 - diopiCat
 - diopiCeil
 - diopiCeilInp
-- diopiDiv
-- diopiDivInp
-- diopiDivInpScalar
-- diopiDivScalar
 - diopiDropout
 - diopiDropoutInp
 - diopiCopyInp
@@ -214,10 +218,6 @@ ascend_npu:
 - diopiSgn
 - diopiSgnInp
 - diopiSort
-- diopiSub
-- diopiSubInp
-- diopiSubInpScalar
-- diopiSubScalar
 - diopiTranspose
 - diopiTopk
 - diopiTril
