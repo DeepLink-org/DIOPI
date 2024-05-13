@@ -21,6 +21,8 @@ ascend:
 - diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
+- diopiEmbedding
+- diopiEmbeddingBackward
 - diopiEq
 - diopiEqInp
 - diopiEqInpScalar
@@ -134,8 +136,6 @@ ascend_npu:
 - diopiDropout
 - diopiDropoutInp
 - diopiCopyInp
-- diopiEmbedding
-- diopiEmbeddingBackward
 - diopiEqual
 - diopiExpand
 - diopiFlip
