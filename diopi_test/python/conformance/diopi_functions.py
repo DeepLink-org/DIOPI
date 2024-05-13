@@ -5739,8 +5739,6 @@ def attention_varlen_backward(
     return {"query": grad_q, "key": grad_k, "value": grad_v}
 
 
-
-
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
     func = check_function(call)

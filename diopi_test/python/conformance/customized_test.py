@@ -658,12 +658,11 @@ class CustomizedTest(object):
             temp_mask = torch.ones(
                 seq_len_q, seq_len_kv, dtype=torch.bool, device=device
             ).tril(diagonal=0)
-            attn_bias_temp.masked_fill_(temp_mask.logical_not(), float("-inf"))
-            attn_bias_temp.to(query.dtype)
+            attn_bias_temp.masked_fill_(temp_mask.logical_not(), -10000.0)
 
         if attn_mask is not None:
             if attn_mask.dtype == torch.bool:
-                attn_bias_temp.masked_fill_(attn_mask.logical_not(), float("-inf"))
+                attn_bias_temp.masked_fill_(attn_mask.logical_not(), -10000.0)
             else:
                 assert False, "atten_mask dtype is not bool"
 

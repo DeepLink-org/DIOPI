@@ -31,7 +31,6 @@ diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t 
     const int64_t totalSeqK = kAt.size(0);
     const int64_t headNum = qAt.size(1);
     const int64_t headDim = qAt.size(2);
-    const int64_t batch_size = cuSeqlensQAt.sizes().size() - 1;
     at::Tensor pse;
     at::Tensor dropMaskOptional;
     at::Tensor paddingMaskOptional;
@@ -39,13 +38,12 @@ diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto prefixOptional = nullptr;
     double scaleValueOptional = softmaxScale;
     double keepProbOptional = 1 - pDropout;
-    const int64_t preTockensOptional = totalSeqQ;
+    const int64_t preTockensOptional =  totalSeqK + totalSeqQ;
     int64_t nextTockensOptional = 0;
     const int64_t innerPreciseOptional = 0;
     int64_t sparseModeOptional = 0;
     const char* inputLayout = "TND";
 
-    const auto qShape = qAt.sizes();
     std::vector<int64_t> softmaxMaxShape{totalSeqQ, headNum, 8};  // [T, N, 8]
     at::Tensor softmaxMaxOut = at_npu::native::empty_npu(softmaxMaxShape, attentionOutAt.options().dtype(at::kFloat));
     at::Tensor softmaxSumOut = at_npu::native::empty_npu(softmaxMaxShape, attentionOutAt.options().dtype(at::kFloat));
@@ -115,7 +113,7 @@ diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t 
     saveForBackward[2] = torch_npu::NPUBridge::GetNpuStorageImpl(softmaxOutOut)->npu_desc_.diopi_tensor_;
     saveForBackward[3] = attentionMaskOptional.defined() ? torch_npu::NPUBridge::GetNpuStorageImpl(attentionMaskOptional)->npu_desc_.diopi_tensor_ : nullptr;
     saveForBackward[4] = dropMaskOptional.defined() ? torch_npu::NPUBridge::GetNpuStorageImpl(dropMaskOptional)->npu_desc_.diopi_tensor_ : nullptr;
-    saveForBackward[5] = attentionBiasAt.defined() ? torch_npu::NPUBridge::GetNpuStorageImpl(attentionBiasAt)->npu_desc_.diopi_tensor_ : nullptr;
+    saveForBackward[5] = pse.defined() ? torch_npu::NPUBridge::GetNpuStorageImpl(pse)->npu_desc_.diopi_tensor_ : nullptr;
     DEBUG_ARGS(dropMaskOptional);
     *saveTensorNum = 6;
     END_CALL_ACL_OP();
@@ -146,11 +144,10 @@ diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorH
     const int64_t totalSeqK = kAt.size(0);
     const int64_t headNum = qAt.size(1);
     const int64_t headDim = qAt.size(2);
-    const int64_t batch_size = cuSeqlensQAt.sizes().size() - 1;
     at::Tensor paddingMaskOptional;
     auto prefixOptional = nullptr;
     double scaleValueOptional = softmaxScale;
-    const int64_t preTockensOptional = totalSeqQ;
+    const int64_t preTockensOptional = totalSeqQ + totalSeqK;
     int64_t nextTockensOptional = 0;
     const int64_t innerPreciseOptional = 0;
     int64_t sparseModeOptional = 0;
@@ -175,11 +172,6 @@ diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorH
 
     at::Tensor paddingMaskAt;
 
-    int64_t preTokens = totalSeqQ;
-    int64_t nextTokens = 0;
-    int64_t innerPrecise = 0;
-    int64_t sparseMode = 0;
-
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionUnpaddingScoreGrad,
                                  qAt,
                                  kAt,
@@ -198,12 +190,12 @@ diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorH
                                  cuSeqlensKvAtArray,
                                  softmaxScale,
                                  keepProbOptional,
-                                 preTokens,
-                                 nextTokens,
+                                 preTockensOptional,
+                                 nextTockensOptional,
                                  headNum,
                                  inputLayout,
-                                 innerPrecise,
-                                 sparseMode,
+                                 innerPreciseOptional,
+                                 sparseModeOptional,
                                  gradQAt,
                                  gradKAt,
                                  gradVAt,
