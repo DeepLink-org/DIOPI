@@ -19,7 +19,7 @@ diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cuSeqlensQ,
                                   diopiConstTensorHandle_t cuSeqlensKv, int64_t maxSeqlenQ, int64_t maxKvLenKv, diopiConstTensorHandle_t attentionMask,
                                   diopiConstTensorHandle_t attentionBias, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale,
-                                  bool isCausal, const char* attentionType) {
+                                  bool isCausal) {
     BEGIN_CALL_ACL_OP(attentionOut, q, k, v, cuSeqlensQ, cuSeqlensKv, attentionMask, attentionBias, genDropout);
     TORCH_CHECK(qAt.dim() == 3, "The shapes of the input query should be 3 dimensional, but got ", qAt.dim(), "-dimensional");
     TORCH_CHECK(kAt.dim() == 3, "The shapes of the input key should be 3 dimensional, but got ", kAt.dim(), "-dimensional");
@@ -121,4 +121,94 @@ diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t 
     END_CALL_ACL_OP();
 }
 
+diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
+                                          diopiTensorHandle_t gradAttnBias, diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q,
+                                          diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cuSeqlensQ,
+                                          diopiConstTensorHandle_t cuSeqlensKv, diopiConstTensorHandle_t attentionOut,
+                                          diopiConstTensorHandle_t* savedForBackward, int64_t savedTensorNum, double pDropout,
+                                          diopiGeneratorHandle_t genDropout, double softmaxScale) {
+    BEGIN_CALL_ACL_OP(gradQ, gradK, gradV, gradAttnBias, gradOut, attentionOut, q, k, v, cuSeqlensQ, cuSeqlensKv, genDropout);
+    TORCH_CHECK(qAt.dim() == 3, "The shapes of the input query should be 3 dimensional, but got ", qAt.dim(), "-dimensional");
+    TORCH_CHECK(kAt.dim() == 3, "The shapes of the input key should be 3 dimensional, but got ", kAt.dim(), "-dimensional");
+    TORCH_CHECK(vAt.dim() == 3, "The shapes of the input value should be 3 dimensional, but got ", vAt.dim(), "-dimensional");
+    TORCH_CHECK(cuSeqlensKvAt.numel() == cuSeqlensQAt.numel(), "q k shoule have same batchsize");
+    TORCH_CHECK(cuSeqlensKvAt.scalar_type() == at::kLong);
+    TORCH_CHECK(cuSeqlensQAt.scalar_type() == at::kLong);
+
+    TORCH_CHECK(savedTensorNum >= 6, "backward need 6 tensors saved in forward");
+    const at::Tensor softmaxMaxAt = impl::aten::buildATen(savedForBackward[0]);
+    const at::Tensor softmaxSumAt = impl::aten::buildATen(savedForBackward[1]);
+    const at::Tensor softmaxOutAt = impl::aten::buildATen(savedForBackward[2]);
+    const at::Tensor attentionMaskAt = impl::aten::buildATen(savedForBackward[3]);
+    const at::Tensor dropoutMaskAt = impl::aten::buildATen(savedForBackward[4]);
+    const at::Tensor pseAt = impl::aten::buildATen(savedForBackward[5]);
+    const int64_t totalSeqQ = qAt.size(0);
+    const int64_t totalSeqK = kAt.size(0);
+    const int64_t headNum = qAt.size(1);
+    const int64_t headDim = qAt.size(2);
+    const int64_t batch_size = cuSeqlensQAt.sizes().size() - 1;
+    at::Tensor paddingMaskOptional;
+    auto prefixOptional = nullptr;
+    double scaleValueOptional = softmaxScale;
+    const int64_t preTockensOptional = totalSeqQ;
+    int64_t nextTockensOptional = 0;
+    const int64_t innerPreciseOptional = 0;
+    int64_t sparseModeOptional = 0;
+    const char* inputLayout = "TND";
+    double keepProbOptional = 1 - pDropout;
+    TORCH_CHECK(keepProbOptional >= 0 && keepProbOptional <= 1, "The keep_prob value must be in range of [0, 1], but got ", keepProbOptional);
+    TORCH_CHECK(sparseModeOptional >= 0 && sparseModeOptional <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparseModeOptional);
+
+    at::Tensor cuSeqlensKvAtHost = cuSeqlensKvAt.cpu();
+    at::Tensor cuSeqlensQAtHost = cuSeqlensQAt.cpu();
+    at::IntArrayRef cuSeqlensKvAtArray(cuSeqlensKvAtHost.data_ptr<int64_t>(), cuSeqlensKvAtHost.numel());
+    at::IntArrayRef cuSeqlensQAtArray(cuSeqlensQAtHost.data_ptr<int64_t>(), cuSeqlensQAtHost.numel());
+
+    at::Tensor gradPseAt;
+    if (gradAttnBiasAt.defined()) {
+        // todo: support shape broadcast
+        gradPseAt = gradAttnBiasAt;
+    } else {
+        gradPseAt = at_npu::native::OpPreparation::apply_tensor_without_format({0}, qAt.options());
+    }
+    at::IntArrayRef prefixN;
+
+    at::Tensor paddingMaskAt;
+
+    int64_t preTokens = totalSeqQ;
+    int64_t nextTokens = 0;
+    int64_t innerPrecise = 0;
+    int64_t sparseMode = 0;
+
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionUnpaddingScoreGrad,
+                                 qAt,
+                                 kAt,
+                                 vAt,
+                                 gradOutAt,
+                                 pseAt,
+                                 dropoutMaskAt,
+                                 paddingMaskAt,
+                                 attentionMaskAt,
+                                 softmaxMaxAt,
+                                 softmaxSumAt,
+                                 softmaxOutAt,
+                                 attentionOutAt,
+                                 prefixN,
+                                 cuSeqlensQAtArray,
+                                 cuSeqlensKvAtArray,
+                                 softmaxScale,
+                                 keepProbOptional,
+                                 preTokens,
+                                 nextTokens,
+                                 headNum,
+                                 inputLayout,
+                                 innerPrecise,
+                                 sparseMode,
+                                 gradQAt,
+                                 gradKAt,
+                                 gradVAt,
+                                 gradPseAt);
+
+    END_CALL_ACL_OP();
+}
 }  // namespace OP_IMPL_NS

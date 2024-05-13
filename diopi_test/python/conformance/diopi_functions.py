@@ -5641,7 +5641,6 @@ def attention_varlen(
     dropout_p=0.0,
     is_causal=False,
     scale=None,
-    attn_type="DotProduct",
 ):
     func = check_function("diopiAttentionVarLen")
     attn_out = raw_like(query)
@@ -5670,7 +5669,6 @@ def attention_varlen(
         generator,
         scale,
         is_causal,
-        attn_type,
     )
     check_returncode(ret)
     save_for_backward_tensor_list = []
@@ -5681,6 +5679,65 @@ def attention_varlen(
     GLOBAL_STATE["attention_save_tensor_num"] = save_tensor_num.value
     GLOBAL_STATE["save_for_backward_tensor_list"] = save_for_backward_tensor_list
     return attn_out
+
+
+def attention_varlen_backward(
+    query,
+    key,
+    value,
+    out,
+    cu_seqlens_q,
+    cu_seqlens_kv,
+    max_seqlen_q,
+    max_seqlen_kv,
+    grad_outputs,
+    attn_mask=None,
+    attn_bias=None,
+    dropout_p=0.0,
+    is_causal=False,
+    scale=None,
+):
+    call = "diopiAttentionVarLenBackward"
+    func = check_function(call)
+    assert (
+        dropout_p >= 0 and dropout_p <= 1
+    ), "The p_dropout value must be in range of [0, 1]"
+    grad_q = raw_like(query)
+    grad_k = raw_like(key)
+    grad_v = raw_like(value)
+    grad_attn_bias = None
+    if attn_bias is not None:
+        #grad_attn_bias = raw_like(attn_bias)
+        pass
+    save_tensor_num = GLOBAL_STATE.pop("attention_save_tensor_num")
+    save_for_backward_tensor_list = GLOBAL_STATE.pop("save_for_backward_tensor_list")
+
+    save_for_backward = [TensorP(tensor) for tensor in save_for_backward_tensor_list]
+    generator = Generator(build_generator_state(query.context()))
+    head_dim = query.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not scale else scale
+    ret = func(
+        query.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_attn_bias,
+        grad_outputs[0],
+        query,
+        key,
+        value,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        out,
+        save_for_backward,
+        save_tensor_num,
+        dropout_p,
+        generator,
+        softmax_scale
+    )
+    check_returncode(ret)
+    return {"query": grad_q, "key": grad_k, "value": grad_v}
+
 
 
 

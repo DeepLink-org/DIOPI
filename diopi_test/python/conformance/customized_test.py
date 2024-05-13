@@ -692,7 +692,6 @@ class CustomizedTest(object):
         dropout_p=0.0,
         is_causal=False,
         scale=None,
-        attn_type="DotProduct",
     ):
 
         batch_size = cu_seqlens_q.numel() - 1
@@ -712,8 +711,8 @@ class CustomizedTest(object):
         for i in range(batch_size):
             actual_q_seq_len = cu_seqlens_q[i + 1] - cu_seqlens_q[i]
             actual_kv_seq_len = cu_seqlens_kv[i + 1] - cu_seqlens_kv[i]
-            padded_attn_bias[i, :, actual_q_seq_len:, :] = float("-inf")
-            padded_attn_bias[i, :, :, actual_kv_seq_len:] = float("-inf")
+            padded_attn_bias[i, :, actual_q_seq_len:, :] = -10000.0
+            padded_attn_bias[i, :, :, actual_kv_seq_len:] = -10000.0
             query_padded[i, :actual_q_seq_len, :, :] = query[
                 cu_seqlens_q[i] : cu_seqlens_q[i + 1], :, :
             ]  # BSND

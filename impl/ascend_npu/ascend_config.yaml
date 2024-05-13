@@ -20,6 +20,7 @@ ascend_npu:
 - diopiAttention
 - diopiAttentionBackward
 - diopiAttentionVarLen
+- diopiAttentionVarLenBackward
 - diopiWhere
 - diopiAdd
 - diopiAddInp

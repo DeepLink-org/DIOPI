@@ -109,7 +109,7 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     int64_t savedTensorNum, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale) {
     BEGIN_CALL_ACL_OP(q, k, v, attentionOut, gradQ, gradK, gradV, gradAttnBias, gradOut);
 
-    TORCH_CHECK(savedTensorNum >= 6, "backward need 5 tensors saved in forward")
+    TORCH_CHECK(savedTensorNum >= 6, "backward need 6 tensors saved in forward");
     const at::Tensor softmaxMaxAt = impl::aten::buildATen(savedForBackward[0]);
     const at::Tensor softmaxSumAt = impl::aten::buildATen(savedForBackward[1]);
     const at::Tensor softmaxOutAt = impl::aten::buildATen(savedForBackward[2]);
