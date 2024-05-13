@@ -5,6 +5,7 @@ ascend:
 - diopiAddInp
 - diopiAddScalar
 - diopiAddInpScalar
+- diopiArgmax
 - diopiCeil
 - diopiCeilInp
 - diopiArange
@@ -208,7 +209,6 @@ ascend_npu:
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
-- diopiArgmax
 - diopiLogicalAnd
 - diopiLogicalOr
 - diopiLogicalAndInp
