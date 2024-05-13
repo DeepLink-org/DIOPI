@@ -10,13 +10,7 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiTril(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t diagonal) {
-    AscendTensor inputAt(input);
-    AscendTensor outAt(out);
-    if (!inputAt.defined() || inputAt.numel() == 0) {
-        return diopiSuccess;
-    }
-
-    DIOPI_ASCEND_CALL_ACLNN(aclnnTril, ctx, inputAt, diagonal, outAt);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnTril, ctx, input, diagonal, out);
     return diopiSuccess;
 }
 
