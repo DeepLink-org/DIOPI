@@ -17,6 +17,7 @@ ascend:
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiSplitWithSizes
+- diopiUniformInp
 ascend_npu:
 - diopiAdamW
 - diopiWhere
@@ -218,7 +219,6 @@ ascend_npu:
 - diopiTril
 - diopiTriu
 - diopiTriuInp
-- diopiUniformInp
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
