@@ -35,11 +35,11 @@ ascend:
 - diopiTriuInp
 - diopiTopk
 - diopiUniformInp
+- diopiWhere
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
 - diopiAdamW
-- diopiWhere
 - diopiAdd
 - diopiAddInp
 - diopiAddScalar
