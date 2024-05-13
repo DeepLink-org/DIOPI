@@ -4,13 +4,14 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
-    AclOpRunner<2, 1>("ReverseV2", ctx).addInput(input).addConstInput(dims).addOutput(out).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnFlip, ctx, input, dims, out);
     return diopiSuccess;
 }
 

@@ -5,6 +5,8 @@ ascend:
 - diopiAddInp
 - diopiAddScalar
 - diopiAddInpScalar
+- diopiCeil
+- diopiCeilInp
 - diopiArange
 - diopiBitwiseNot
 - diopiBitwiseNotInp
@@ -24,6 +26,7 @@ ascend:
 - diopiDivInp
 - diopiDivInpScalar
 - diopiDivScalar
+- diopiFlip
 - diopiEq
 - diopiEqInp
 - diopiEqInpScalar
@@ -92,8 +95,6 @@ ascend_npu:
 - diopiMinimum
 - diopiCastDtype
 - diopiCat
-- diopiCeil
-- diopiCeilInp
 - diopiDropout
 - diopiDropoutInp
 - diopiCopyInp
@@ -101,7 +102,6 @@ ascend_npu:
 - diopiEmbeddingBackward
 - diopiEqual
 - diopiExpand
-- diopiFlip
 - diopiFloor
 - diopiFloorInp
 - diopiGroupNorm

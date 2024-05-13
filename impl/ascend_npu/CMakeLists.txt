@@ -121,6 +121,7 @@ set(OLD_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/)
 set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/ascend_tensor.cpp
     ${OLD_IMPL_DIR}/functions/abs.cpp
+    ${OLD_IMPL_DIR}/functions/ceil.cpp
     ${OLD_IMPL_DIR}/functions/bmm.cpp
     ${OLD_IMPL_DIR}/functions/col2im.cpp
     ${OLD_IMPL_DIR}/functions/embedding.cpp
