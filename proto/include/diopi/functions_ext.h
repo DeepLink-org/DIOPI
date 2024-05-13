@@ -267,12 +267,11 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  * @param[in] gen_dropout Handle for the random number generator used in dropout op.
  * @param[in] softmax_scale The temperature to use for the softmax attention. if softmax_scale < 0, softmax_scale=\frac{1}{\sqrt{head_dim}}
  * @param[in] is_causal Whether to apply causal attention mask. If true, assumes causal attention masking and errors if both attn_mask and is_causal are set.
- * @param[in] attention_type attention type: default "DotProduct".
  */
 DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward,
                                       int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                       diopiConstTensorHandle_t attention_mask, diopiConstTensorHandle_t attention_bias, double p_dropout,
-                                      diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal, const char* attention_type);
+                                      diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal);
 /**
  * @brief Compute the backward pass for Attention.
  * https://towardsdatascience.com/transformers-explained-visually-part-3-multi-head-attention-deep-dive-1c1ff1024853
@@ -294,13 +293,12 @@ DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandl
  * @param[in] p_dropout The probability of dropout op.
  * @param[in] softmax_scale The temperature to use for the softmax attention. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] gen_dropout Handle for the random number generator used in dropout op.
- * @param[in] attention_type attention type: "DotProduct".
  */
 DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
                                               diopiTensorHandle_t grad_attn_bias, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                               diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
                                               diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num, double p_dropout,
-                                              diopiGeneratorHandle_t gen_dropout, double softmax_scale, const char* attention_type);
+                                              diopiGeneratorHandle_t gen_dropout, double softmax_scale);
 
 // The difference between this interface and the original diopiFlashAttention definition is that the passed input attention mask can be used directly. This
 // prevents the attention mask from being recalculated inside the op. This helps reduce a lot of useless overhead when training large language models.

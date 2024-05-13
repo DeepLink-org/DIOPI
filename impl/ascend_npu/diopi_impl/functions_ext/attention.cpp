@@ -13,8 +13,7 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* saveForBackward, int64_t* saveTensorNum,
                             diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attentionMask,
-                            diopiConstTensorHandle_t attentionBias, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale, bool isCausal,
-                            const char* attentionType) {
+                            diopiConstTensorHandle_t attentionBias, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale, bool isCausal) {
     BEGIN_CALL_ACL_OP(attentionOut, q, k, v, attentionMask, attentionBias, genDropout);
     TORCH_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4 dimensional, but got ", qAt.dim(), "-dimensional");
     TORCH_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4 dimensional, but got ", kAt.dim(), "-dimensional");
@@ -107,8 +106,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
 diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
                                     diopiTensorHandle_t gradAttnBias, diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                     diopiConstTensorHandle_t v, diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t* savedForBackward,
-                                    int64_t savedTensorNum, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale,
-                                    const char* attentionType) {
+                                    int64_t savedTensorNum, double pDropout, diopiGeneratorHandle_t genDropout, double softmaxScale) {
     BEGIN_CALL_ACL_OP(q, k, v, attentionOut, gradQ, gradK, gradV, gradAttnBias, gradOut);
 
     TORCH_CHECK(savedTensorNum >= 6, "backward need 5 tensors saved in forward")
