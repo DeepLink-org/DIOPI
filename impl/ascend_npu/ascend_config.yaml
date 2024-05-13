@@ -51,6 +51,7 @@ ascend:
 - diopiLerpScalar
 - diopiLinear
 - diopiLinearBackward
+- diopiLinspace
 - diopiLog
 - diopiLog10
 - diopiLog10Inp
@@ -144,7 +145,6 @@ ascend_npu:
 - diopiExpand
 - diopiGroupNorm
 - diopiGroupNormBackward
-- diopiLinspace
 - diopiMax
 - diopiMaximum
 - diopiRepeat
