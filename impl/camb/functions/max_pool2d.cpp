@@ -120,16 +120,18 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
         outTr.unsqueeze(0);
     } else {  // dim() == 4
         DIOPI_CHECK(inputTr.isContiguous(diopiMemoryFormat_t::ChannelsLast), "only support contiguous for 3D input");
+        DIOPI_CALL(contiguous(ctx, indicesTr, diopiMemoryFormat_t::ChannelsLast));
     }
 
     DiopiTensor outTmpTr = outTr;
     if (inputTr.dtype() != outTr.dtype()) {
-        outTmpTr = requiresTensor(ctx, outTr.shape(), inputTr.dtype());
+        outTmpTr = requiresTensor(ctx, outTr.shape(), outTr.stride(), inputTr.dtype());
     }
+
     diopiDtype_t indicesDtype = inputTr.dtype() == diopi_dtype_float16 ? diopi_dtype_int16 : diopi_dtype_int32;
     DiopiTensor indicesTmpTr = indicesTr;
     if (indicesTr.dtype() != indicesDtype) {
-        indicesTmpTr = requiresTensor(ctx, indicesTr.shape(), indicesDtype);
+        indicesTmpTr = requiresTensor(ctx, indicesTr.shape(), indicesTr.stride(), indicesDtype);
     }
 
     std::vector<int64_t> inputDim = inputTr.shape();
@@ -139,6 +141,7 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     if (inDim == 3) {
         layout = CNNL_LAYOUT_NCHW;
     }
+
     CnnlTensorDesc inputDesc(inputTr, layout);
     CnnlTensorDesc indicesDesc(indicesTmpTr, layout);
     CnnlTensorDesc outDesc(outTmpTr, layout);
@@ -270,6 +273,7 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     } else {
         DIOPI_CALL(dataTypeCast(ctx, indicesTr, diopi_dtype_int32));
     }
+
     diopiMemoryFormat_t memoryFormat = diopiMemoryFormat_t::ChannelsLast;
     // for 3 dim input, it is contiguous, and needs to convert to channelslast for camb kernel.
     if (is3dim) {
@@ -284,6 +288,7 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     std::vector<int64_t> inputDim = inputTr.shape();
     std::vector<int64_t> gradOutputDim = gradOutputTr.shape();
+
     CnnlTensorDesc inputDesc(inputTr, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc gradInputDesc(gradInputTmpTr, CNNL_LAYOUT_NHWC);
     CnnlTensorDesc gradOutputDesc(gradOutputTr, CNNL_LAYOUT_NHWC);
