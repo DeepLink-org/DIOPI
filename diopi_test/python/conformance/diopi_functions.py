@@ -5555,7 +5555,7 @@ def flash_attention_varlen_backward(q, k, v, out, grad_outputs, max_seqlen_q, ma
     check_returncode(ret)
     return out
 
-def attention(query, key, value, attn_mask=None, attn_bias=None, dropout_p=0.0, is_causal=False, scale=None, attn_type = "DotProduct"):
+def attention(query, key, value, attn_mask=None, attn_bias=None, dropout_p=0.0, is_causal=False, scale=None):
     func = check_function("diopiAttention")
     attn_out = raw_like(query)
     max_tensor_num_for_backward = 16
@@ -5566,7 +5566,7 @@ def attention(query, key, value, attn_mask=None, attn_bias=None, dropout_p=0.0, 
     if scale is None:
         scale = 1.0 / math.sqrt(query.size().data[-1])
     ret = func(query.context(), attn_out, save_for_backward, get_capsule(byref(save_tensor_num)),
-               query, key, value, attn_mask, attn_bias, dropout_p, generator, scale, is_causal, attn_type)
+               query, key, value, attn_mask, attn_bias, dropout_p, generator, scale, is_causal)
     check_returncode(ret)
     save_for_backward_tensor_list = []
     for i in range(save_tensor_num.value):
@@ -5586,8 +5586,7 @@ def attention_backward(
     dropout_p,
     scale,
     is_causal,
-    attn_bias,
-    attn_type = "DotProduct"
+    attn_bias
 ):
     call = "diopiAttentionBackward"
     func = check_function(call)
@@ -5622,8 +5621,7 @@ def attention_backward(
         save_tensor_num,
         dropout_p,
         generator,
-        softmax_scale,
-        attn_type
+        softmax_scale
     )
     check_returncode(ret)
     return {"query": grad_q, "key": grad_k, "value": grad_v}
