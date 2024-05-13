@@ -56,8 +56,6 @@ ascend:
 - diopiSubInp
 - diopiSubInpScalar
 - diopiSubScalar
-- diopiConvolution2d
-- diopiConvolution2dBackward
 - diopiOnes
 - diopiPermute
 - diopiProd
