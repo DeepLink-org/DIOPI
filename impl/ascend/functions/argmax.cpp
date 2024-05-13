@@ -6,7 +6,7 @@
 
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
-#include "../common/acloprunner.hpp"
+// #include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
@@ -19,13 +19,12 @@ diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         dimTmp = 0;
         std::vector<int64_t> flattenShape{inputAt.numel()};
         auto flattenInput = inputAt.view(flattenShape);
-        DIOPI_ASCEND_CALL_ACLNN(aclnnArgMax, ctx, flattenInput.tensorHandle(), dimTmp, keepdim, out);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnArgMax, ctx, flattenInput, dimTmp, keepdim, out);
 
     } else {
         dimTmp = *dim;
         DIOPI_ASCEND_CALL_ACLNN(aclnnArgMax, ctx, input, dimTmp, keepdim, out);
-
-    }  
+    }
 
     return diopiSuccess;
 }
