@@ -60,7 +60,6 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiAdamW
-- diopiWhere
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
@@ -228,12 +227,6 @@ ascend_npu:
 - diopiSgn
 - diopiSgnInp
 - diopiSort
-- diopiTranspose
-- diopiTopk
-- diopiTril
-- diopiTriu
-- diopiTriuInp
-- diopiUniformInp
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
