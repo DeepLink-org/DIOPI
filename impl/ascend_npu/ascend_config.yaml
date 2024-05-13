@@ -235,7 +235,6 @@ ascend_npu:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
-
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
