@@ -20,6 +20,7 @@ ascend:
 - diopiSplitWithSizes
 - diopiZeroInp
 - diopiZeros
+- diopiUniformInp
 ascend_npu:
 - diopiAdamW
 - diopiWhere
@@ -221,7 +222,6 @@ ascend_npu:
 - diopiTril
 - diopiTriu
 - diopiTriuInp
-- diopiUniformInp
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
