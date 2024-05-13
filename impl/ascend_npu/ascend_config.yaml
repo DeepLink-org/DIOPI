@@ -29,6 +29,7 @@ ascend:
 - diopiErfInp
 - diopiExp
 - diopiExpInp
+- diopiFill
 - diopiFloor
 - diopiFloorInp
 - diopiGather
@@ -203,7 +204,6 @@ ascend_npu:
 - diopiNeScalar
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
-- diopiFill
 - diopiLogSoftmax
 - diopiLogSoftmaxBackward
 - diopiMean
