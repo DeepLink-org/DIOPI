@@ -39,6 +39,9 @@ ascend:
 - diopiConvolution2dBackward
 - diopiOnes
 - diopiPermute
+- diopiRemainderTensor
+- diopiRemainderScalar
+- diopiRemainder
 - diopiSplitWithSizes
 - diopiTranspose
 - diopiTril
@@ -99,9 +102,6 @@ ascend_npu:
 - diopiLinspace
 - diopiMax
 - diopiMaximum
-- diopiRemainderTensor
-- diopiRemainderScalar
-- diopiRemainder
 - diopiRepeat
 - diopiMaskedFill
 - diopiMaskedFillInp
