@@ -188,6 +188,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/multinomial.cpp
     ${OLD_IMPL_DIR}/functions/addmm.cpp
     ${OLD_IMPL_DIR}/functions/expand.cpp
+    ${OLD_IMPL_DIR}/functions/linalg_vec_norm.cpp
     ${OLD_IMPL_DIR}/functions/linspace.cpp
     ${OLD_IMPL_DIR}/functions/ones.cpp
     ${OLD_IMPL_DIR}/functions/split.cpp
