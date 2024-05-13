@@ -5,6 +5,7 @@ ascend:
 - diopiAddInp
 - diopiAddScalar
 - diopiAddInpScalar
+- diopiArgmax
 - diopiCeil
 - diopiCeilInp
 - diopiArange
