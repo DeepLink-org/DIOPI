@@ -60,6 +60,7 @@ ascend:
 - diopiSubInp
 - diopiSubInpScalar
 - diopiSubScalar
+- diopiSum
 - diopiTranspose
 - diopiTril
 - diopiTriu
@@ -157,7 +158,6 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiSigmoid
-- diopiSum
 - diopiSigmoidBackward
 - diopiSigmoidInp
 - diopiTanh

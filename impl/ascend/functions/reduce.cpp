@@ -11,6 +11,13 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim) {
+    int64_t numel;
+    diopiGetTensorNumel(input, &numel);
+    if (0 == numel) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, out);
+        return diopiSuccess;
+    }
+
     diopiSize_t inputSize, outSize;
     diopiGetTensorShape(input, &inputSize);
     diopiGetTensorShape(out, &outSize);
@@ -19,7 +26,10 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         keepDim = false;
     }
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnSum, ctx, input, dim, keepDim, out);
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(out, &dtype);
+    aclDataType type = diopiDtypeToAclDataType(dtype);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnReduceSum, ctx, input, dim, keepDim, type, out);
     return diopiSuccess;
 }
 
@@ -34,7 +44,7 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 
     diopiDtype_t dtype;
     diopiGetTensorDtype(out, &dtype);
-    auto type = diopiDtypeToAclDataType(dtype);
+    aclDataType type = diopiDtypeToAclDataType(dtype);
     DIOPI_ASCEND_CALL_ACLNN(aclnnMean, ctx, input, dim, keepDim, type, out);
     return diopiSuccess;
 }
@@ -84,23 +94,21 @@ diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 }
 
 diopiError_t diopiProd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim) {
-    diopiSize_t inputSize, outSize;
-    diopiGetTensorShape(input, &inputSize);
-    diopiGetTensorShape(out, &outSize);
-    bool keepDim = true;
-    if (inputSize.len != outSize.len) {
-        keepDim = false;
-    }
+    diopiDtype_t dtype;
+    diopiGetTensorDtype(out, &dtype);
+    aclDataType type = diopiDtypeToAclDataType(dtype);
 
     if (nullptr == dim) {
-        std::vector<int64_t> dimVector(inputSize.len);
-        std::iota(dimVector.begin(), dimVector.end(), 0);
-        diopiSize_t dimSize = vectorToDiopiSize(dimVector);
-        DIOPI_ASCEND_CALL_ACLNN(aclnnProd, ctx, input, dimSize, keepDim, out);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnProd, ctx, input, type, out);
     } else {
-        std::vector<int64_t> dimVector = std::vector<int64_t>{*dim};
-        diopiSize_t dimSize = vectorToDiopiSize(dimVector);
-        DIOPI_ASCEND_CALL_ACLNN(aclnnProd, ctx, input, dimSize, keepDim, out);
+        diopiSize_t inputSize, outSize;
+        diopiGetTensorShape(input, &inputSize);
+        diopiGetTensorShape(out, &outSize);
+        bool keepDim = true;
+        if (inputSize.len != outSize.len) {
+            keepDim = false;
+        }
+        DIOPI_ASCEND_CALL_ACLNN(aclnnProdDim, ctx, input, *dim, keepDim, type, out);
     }
     return diopiSuccess;
 }
