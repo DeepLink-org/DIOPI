@@ -24,6 +24,10 @@ ascend:
 - diopiDivInp
 - diopiDivInpScalar
 - diopiDivScalar
+- diopiEq
+- diopiEqInp
+- diopiEqInpScalar
+- diopiEqScalar
 - diopiGather
 - diopiLayerNorm
 - diopiLayerNormBackward
@@ -164,10 +168,6 @@ ascend_npu:
 - diopiHardswish
 - diopiHardswishInp
 - diopiHardswishBackward
-- diopiEq
-- diopiEqInp
-- diopiEqInpScalar
-- diopiEqScalar
 - diopiGe
 - diopiGeInp
 - diopiGeInpScalar
