@@ -69,6 +69,7 @@ ascend:
 - diopiSigmoidInp
 - diopiSlice
 - diopiSliceBackward
+- diopiSort
 - diopiSqrt
 - diopiSqrtInp
 - diopiTanh
@@ -223,7 +224,6 @@ ascend_npu:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
-- diopiSort
 - diopiSub
 - diopiSubInp
 - diopiSubInpScalar
