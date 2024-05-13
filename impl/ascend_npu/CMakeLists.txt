@@ -124,6 +124,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/atan.cpp
     ${OLD_IMPL_DIR}/functions/remainder.cpp
     ${OLD_IMPL_DIR}/functions/lerp.cpp
+    ${OLD_IMPL_DIR}/functions/ceil.cpp
     ${OLD_IMPL_DIR}/functions/bmm.cpp
     ${OLD_IMPL_DIR}/functions/col2im.cpp
     ${OLD_IMPL_DIR}/functions/embedding.cpp

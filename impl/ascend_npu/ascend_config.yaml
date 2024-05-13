@@ -4,6 +4,8 @@ ascend:
 - diopiAtan
 - diopiAtanInp
 - diopiCastDtype
+- diopiCeil
+- diopiCeilInp
 - diopiArange
 - diopiBitwiseNot
 - diopiBitwiseNotInp
@@ -23,6 +25,7 @@ ascend:
 - diopiCrossEntropyLossBackward
 - diopiEmbedding
 - diopiEmbeddingBackward
+- diopiFlip
 - diopiEq
 - diopiEqInp
 - diopiEqInpScalar
@@ -130,8 +133,6 @@ ascend_npu:
 - diopiMinAll
 - diopiMinimum
 - diopiCat
-- diopiCeil
-- diopiCeilInp
 - diopiDiv
 - diopiDivInp
 - diopiDivInpScalar
@@ -141,7 +142,6 @@ ascend_npu:
 - diopiCopyInp
 - diopiEqual
 - diopiExpand
-- diopiFlip
 - diopiGroupNorm
 - diopiGroupNormBackward
 - diopiLinspace
