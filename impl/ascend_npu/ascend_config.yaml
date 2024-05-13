@@ -41,9 +41,6 @@ ascend:
 - diopiLinear
 - diopiLinearBackward
 - diopiMean
-- diopiNormalScalarTensor
-- diopiNormalTensor
-- diopiNormalTensorScalar
 - diopiMul
 - diopiMulInp
 - diopiMulInpScalar
