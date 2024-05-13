@@ -1,6 +1,8 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiCeil
+- diopiCeilInp
 - diopiArange
 - diopiBitwiseNot
 - diopiBitwiseNotInp
@@ -78,8 +80,6 @@ ascend_npu:
 - diopiMinimum
 - diopiCastDtype
 - diopiCat
-- diopiCeil
-- diopiCeilInp
 - diopiDiv
 - diopiDivInp
 - diopiDivInpScalar
