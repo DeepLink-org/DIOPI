@@ -22,6 +22,7 @@ ascend:
 - diopiTril
 - diopiTriu
 - diopiTriuInp
+- diopiUniformInp
 ascend_npu:
 - diopiAdamW
 - diopiWhere
@@ -218,7 +219,6 @@ ascend_npu:
 - diopiSubInpScalar
 - diopiSubScalar
 - diopiTopk
-- diopiUniformInp
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
