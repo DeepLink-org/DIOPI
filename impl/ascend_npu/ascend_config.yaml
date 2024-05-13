@@ -84,6 +84,9 @@ ascend:
 - diopiSin
 - diopiSinInp
 - diopiSplitWithSizes
+- diopiThreshold
+- diopiThresholdBackward
+- diopiThresholdInp
 - diopiTranspose
 - diopiTril
 - diopiTriu
@@ -260,8 +263,5 @@ ascend_npu:
 - diopiFlashAttentionV2
 - diopiFlashAttentionVarLen
 - diopiFlashAttentionVarLenBackward
-- diopiThreshold
-- diopiThresholdBackward
-- diopiThresholdInp
 - diopiScaledMaskedSoftmax
 - diopiScaledMaskedSoftmaxBackward
