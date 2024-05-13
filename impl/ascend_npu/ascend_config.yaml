@@ -107,9 +107,7 @@ ascend_npu:
 - diopiAddcdivInp
 - diopiAddmm
 - diopiAll
-- diopiAny 
-- diopiAtan
-- diopiAtanInp
+- diopiAny
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiBatchNorm
@@ -217,8 +215,6 @@ ascend_npu:
 - diopiLogicalOrInp
 - diopiLogicalNot
 - diopiLogicalNotInp
-- diopiExp
-- diopiExpInp
 - diopiOneHot
 - diopiScatter
 - diopiScatterInp
