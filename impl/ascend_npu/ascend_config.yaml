@@ -43,6 +43,8 @@ ascend:
 - diopiLeakyRelu
 - diopiLeakyReluBackward
 - diopiLeakyReluInp
+- diopiLerpTensor
+- diopiLerpScalar
 - diopiLinear
 - diopiLinearBackward
 - diopiLog
@@ -256,8 +258,6 @@ ascend_npu:
 - diopiPowInpTensor
 - diopiPowScalar
 - diopiPowTensor
-- diopiLerpTensor
-- diopiLerpScalar
 - diopiFlashAttention
 - diopiFlashAttentionBackward
 - diopiFlashAttentionV2
