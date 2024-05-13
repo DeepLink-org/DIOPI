@@ -1,6 +1,8 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiBatchNorm
+- diopiBatchNormBackward
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
@@ -38,8 +40,6 @@ ascend_npu:
 - diopiAtanInp
 - diopiBaddbmm
 - diopiBaddbmmInp
-- diopiBatchNorm
-- diopiBatchNormBackward
 - diopiCos
 - diopiCosInp
 - diopiErf

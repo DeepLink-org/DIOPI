@@ -23,6 +23,15 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t runningMean, diopiConstTensorHandle_t runningVar, diopiConstTensorHandle_t saveMean,
                                     diopiConstTensorHandle_t saveInvstd, bool training, double eps) {
     int64_t gradMask[3] = {true, true, true};
+    if (nullptr == gradInput) {
+        gradMask[0] = false;
+    }
+    if (nullptr == gradWeight) {
+        gradMask[1] = false;
+    }
+    if (nullptr == gradBias) {
+        gradMask[2] = false;
+    }
     diopiSize_t gradMaskArray{gradMask, 3};
     DIOPI_ASCEND_CALL_ACLNN(aclnnBatchNormBackward,
                             ctx,
