@@ -14,6 +14,7 @@ namespace ascend {
 
 diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min,
                         diopiConstTensorHandle_t max) {
+    std::cout << "calling diopiClamp" << std::endl;
     AscendTensor inputAt(input);
     AscendTensor outAt(out);
 
@@ -38,6 +39,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
 
 diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* minPtr,
                               const diopiScalar_t* maxPtr) {
+    std::cout << "calling diopiClampScalar" << std::endl;
     AscendTensor inputAt(input);
     AscendTensor outAt(out);
 
@@ -61,6 +63,8 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 }
 
 diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t min, diopiConstTensorHandle_t max) {
+    std::cout << "calling diopiClampInp" << std::endl;
+
     AscendTensor inputAt(input);
     if (input == nullptr || inputAt.numel() == 0) {
         return diopiSuccess;
@@ -80,6 +84,7 @@ diopiError_t diopiClampInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, 
 }
 
 diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min, const diopiScalar_t* max) {
+    std::cout << "calling diopiClampInpScalar" << std::endl;
     AscendTensor inputAt(input);
     if (input == nullptr || inputAt.numel() == 0) {
         return diopiSuccess;
@@ -98,6 +103,7 @@ diopiError_t diopiClampInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t i
 }
 
 DIOPI_API diopiError_t diopiClampMinInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* min) {
+    std::cout << "calling diopiClampMinInpScalar" << std::endl;
     AscendTensor inputAt(input);
     if (input == nullptr || inputAt.numel() == 0) {
         return diopiSuccess;
@@ -108,16 +114,18 @@ DIOPI_API diopiError_t diopiClampMinInpScalar(diopiContextHandle_t ctx, diopiTen
 }
 
 DIOPI_API diopiError_t diopiClampMinInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t min) {
+    std::cout << "calling diopiClampMinInp" << std::endl;
     AscendTensor inputAt(input);
     if (input == nullptr || inputAt.numel() == 0) {
         return diopiSuccess;
     }
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceClampMinTensor, ctx, input, min, input);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceClampMinTensor, ctx, input, min);
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiClampMinScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* min) {
+    std::cout << "calling diopiClampMinScalar" << std::endl;
     AscendTensor inputAt(input);
     AscendTensor outAt(out);
 
@@ -125,12 +133,13 @@ DIOPI_API diopiError_t diopiClampMinScalar(diopiContextHandle_t ctx, diopiTensor
         return diopiSuccess;
     }
 
-    castTensor(ctx, inputAt, outAt);
+    castTensor(ctx, inputAt, outAt.dtype());
     DIOPI_ASCEND_CALL_ACLNN(aclnnClampMin, ctx, inputAt, min, outAt);
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min) {
+    std::cout << "calling diopiClampMin" << std::endl;
     AscendTensor inputAt(input);
     AscendTensor outAt(out);
 
@@ -138,12 +147,13 @@ DIOPI_API diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle
         return diopiSuccess;
     }
 
-    castTensor(ctx, inputAt, outAt);
+    castTensor(ctx, inputAt, outAt.dtype());
     DIOPI_ASCEND_CALL_ACLNN(aclnnClampMinTensor, ctx, inputAt, min, outAt);
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiClampMaxInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* max) {
+    std::cout << "calling diopiClampMaxInpScalar" << std::endl;
     AscendTensor inputAt(input);
     if (input == nullptr || inputAt.numel() == 0) {
         return diopiSuccess;
@@ -154,6 +164,7 @@ DIOPI_API diopiError_t diopiClampMaxInpScalar(diopiContextHandle_t ctx, diopiTen
 }
 
 DIOPI_API diopiError_t diopiClampMaxInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t max) {
+    std::cout << "calling diopiClampMaxInp" << std::endl;
     AscendTensor inputAt(input);
     if (input == nullptr || inputAt.numel() == 0) {
         return diopiSuccess;
@@ -164,16 +175,20 @@ DIOPI_API diopiError_t diopiClampMaxInp(diopiContextHandle_t ctx, diopiTensorHan
 }
 
 DIOPI_API diopiError_t diopiClampMaxScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* max) {
+    std::cout << "calling diopiClampMaxScalar" << std::endl;
     AscendTensor inputAt(input);
+    AscendTensor outAt(out);
     if (input == nullptr || inputAt.numel() == 0) {
         return diopiSuccess;
     }
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceClampMax, ctx, input, max, out);
+    castTensor(ctx, inputAt, outAt.dtype());
+    DIOPI_ASCEND_CALL_ACLNN(aclnnClampMax, ctx, inputAt, max, outAt);
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t max) {
+    std::cout << "calling diopiClampMax" << std::endl;
     AscendTensor inputAt(input);
     AscendTensor outAt(out);
 
@@ -181,8 +196,8 @@ DIOPI_API diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle
         return diopiSuccess;
     }
 
-    castTensor(ctx, inputAt, outAt);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceClampMaxTensor, ctx, inputAt, max, outAt);
+    castTensor(ctx, inputAt, outAt.dtype());
+    DIOPI_ASCEND_CALL_ACLNN(aclnnClampMaxTensor, ctx, inputAt, max, outAt);
     return diopiSuccess;
 }
 }  // namespace ascend

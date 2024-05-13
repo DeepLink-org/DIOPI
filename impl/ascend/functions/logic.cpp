@@ -4,6 +4,7 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include "../aclnn/adaptor.hpp"
 #include "../common/acloprunner.hpp"
 #include "string"
 
@@ -117,18 +118,24 @@ diopiError_t diopiNeInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
 
 // eq
 diopiError_t diopiEqScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    return logicScalar(ctx, out, input, other, "Equal");
+    DIOPI_ASCEND_CALL_ACLNN(aclnnEqScalar, ctx, input, other, out);
+    return diopiSuccess;
 }
 
 diopiError_t diopiEqInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other) {
-    return logicInpScalar(ctx, input, other, "Equal");
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceEqScalar, ctx, input, other);
+    return diopiSuccess;
 }
 
 diopiError_t diopiEq(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    return logic(ctx, out, input, other, "Equal");
+    DIOPI_ASCEND_CALL_ACLNN(aclnnEqTensor, ctx, input, other, out);
+    return diopiSuccess;
 }
 
-diopiError_t diopiEqInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) { return logicInp(ctx, input, other, "Equal"); }
+diopiError_t diopiEqInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t other) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceEqTensor, ctx, input, other);
+    return diopiSuccess;
+}
 
 //  logical_and
 diopiError_t diopiLogicalAnd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
