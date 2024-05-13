@@ -15,9 +15,9 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
     if (outAt.numel() == 0) {
         return diopiSuccess;
     }
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    const uint64_t seed = pair.first;
-    const uint64_t offset = pair.second;
+
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
 
     float meanCast = static_cast<float>(mean);
     float rstdCast = static_cast<float>(std);
@@ -26,9 +26,8 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
 }
 
 diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator) {
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    const uint64_t seed = pair.first;
-    const uint64_t offset = pair.second;
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
 
     float meanCast = static_cast<float>(mean);
     float rstdCast = static_cast<float>(std);
@@ -42,9 +41,9 @@ diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out
     if (outAt.numel() == 0) {
         return diopiSuccess;
     }
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    const uint64_t seed = pair.first;
-    const uint64_t offset = pair.second;
+
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
 
     DIOPI_ASCEND_CALL_ACLNN(aclnnNormalTensorTensor, ctx, mean, std, seed, offset, out);
     return diopiSuccess;
@@ -56,9 +55,9 @@ diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTensorHandle
     if (outAt.numel() == 0) {
         return diopiSuccess;
     }
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    const uint64_t seed = pair.first;
-    const uint64_t offset = pair.second;
+
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
 
     float meanCast = static_cast<float>(mean);
     DIOPI_ASCEND_CALL_ACLNN(aclnnNormalFloatTensor, ctx, meanCast, std, seed, offset, out);
@@ -71,9 +70,9 @@ diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTensorHandle
     if (outAt.numel() == 0) {
         return diopiSuccess;
     }
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    const uint64_t seed = pair.first;
-    const uint64_t offset = pair.second;
+
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
 
     float rstdCast = static_cast<float>(std);
     DIOPI_ASCEND_CALL_ACLNN(aclnnNormalTensorFloat, ctx, mean, rstdCast, seed, offset, out);
