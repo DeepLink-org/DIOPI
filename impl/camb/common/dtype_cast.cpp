@@ -84,7 +84,7 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& src, diopiDtype
     if (src.dtype() == destDtype) {
         return diopiSuccess;
     }
-    DiopiTensor dest = requiresTensor(ctx, src.shape(), destDtype);
+    DiopiTensor dest = requiresTensor(ctx, src.shape(), src.stride(), destDtype);
     DIOPI_CALL(dataTypeCast(ctx, dest, src));
     src = dest;
     return diopiSuccess;
