@@ -4,27 +4,21 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
-
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
+#include "../common/utils.hpp"
 namespace impl {
 namespace ascend {
-extern "C" DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
-    diopiDtype_t inputDtype;
-    diopiDtype_t outputDtype;
-    diopiGetTensorDtype(input, &inputDtype);
-    diopiGetTensorDtype(out, &outputDtype);
-
-    if (inputDtype != outputDtype) {
-        AscendTensor inputCopy(input);
-        castTensor(ctx, inputCopy, outputDtype);
-        AclOpRunner<2, 1>("Cumsum", ctx).addInput(inputCopy).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
-    } else if (inputDtype == diopi_dtype_bool) {
-        AscendTensor inputCopy(input);
-        castTensor(ctx, inputCopy, outputDtype);
-        AclOpRunner<2, 1>("Cumsum", ctx).addInput(inputCopy).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
-    } else {
-        AclOpRunner<2, 1>("Cumsum", ctx).addInput(input).addConstInput(dim, diopi_dtype_int64).addOutput(out).run();
+extern "C" DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {    
+    int64_t inputNumel = 0;
+    diopiGetTensorNumel(input, &inputNumel);
+    if (inputNumel == 0) {
+        return diopiSuccess;
     }
+
+    bool exclusive = false;
+    bool reverse = false;
+    DIOPI_ASCEND_CALL_ACLNN(aclnnCumsumV2, ctx, input, dim, exclusive, reverse, out);
 
     return diopiSuccess;
 }
