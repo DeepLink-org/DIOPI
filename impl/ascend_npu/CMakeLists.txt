@@ -183,6 +183,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/reduce.cpp
     ${OLD_IMPL_DIR}/functions/where.cpp
     ${OLD_IMPL_DIR}/functions/multinomial.cpp
+    ${OLD_IMPL_DIR}/functions/mul.cpp
     ${OLD_IMPL_DIR}/functions/addmm.cpp
     ${OLD_IMPL_DIR}/functions/expand.cpp
     ${OLD_IMPL_DIR}/functions/linspace.cpp
