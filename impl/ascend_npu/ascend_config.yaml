@@ -18,9 +18,10 @@ ascend:
 - diopiConvolution2dBackward
 - diopiOnes
 - diopiSplitWithSizes
+- diopiTopk
+- diopiUniformInp
 - diopiZeroInp
 - diopiZeros
-- diopiUniformInp
 ascend_npu:
 - diopiAdamW
 - diopiWhere
@@ -218,7 +219,6 @@ ascend_npu:
 - diopiSubInpScalar
 - diopiSubScalar
 - diopiTranspose
-- diopiTopk
 - diopiTril
 - diopiTriu
 - diopiTriuInp
