@@ -38,6 +38,7 @@ ascend:
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
+- diopiIsNan
 - diopiLayerNorm
 - diopiLayerNormBackward
 - diopiLeakyRelu
@@ -246,7 +247,6 @@ ascend_npu:
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
-- diopiIsNan
 - diopiSoftmax
 - diopiSoftmaxBackward
 - diopiMul
