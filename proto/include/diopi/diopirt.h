@@ -144,7 +144,7 @@ extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRequireBuffer(diopiContext
 
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diopiConstTensorHandle_t state);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorGetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t& seed, uint64_t& offset);
+extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorGetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t *seed, uint64_t *ffset);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorSetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t seed, uint64_t offset);
 
 /**
