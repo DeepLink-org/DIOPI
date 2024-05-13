@@ -4,14 +4,17 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
+#include "../ascend_tensor.hpp"
 
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AscendTensor outTensor(out);
-    AclOpRunner<2, 1>("Expand", ctx).addInput(input).addConstInput(outTensor.shape()).addOutput(out).run();
+    diopiSize_t outSize;
+    diopiGetTensorShape(out, &outSize);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnExpand, ctx, input, outSize, out);
     return diopiSuccess;
 }
 
