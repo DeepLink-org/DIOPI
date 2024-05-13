@@ -1,6 +1,16 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiBitwiseNot
+- diopiBitwiseNotInp
+- diopiBitwiseAnd
+- diopiBitwiseAndInp
+- diopiBitwiseAndScalar
+- diopiBitwiseAndInpScalar
+- diopiBitwiseOr
+- diopiBitwiseOrInp
+- diopiBitwiseOrScalar
+- diopiBitwiseOrInpScalar
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
@@ -196,16 +206,6 @@ ascend_npu:
 - diopiLogicalOrInp
 - diopiLogicalNot
 - diopiLogicalNotInp
-- diopiBitwiseNot
-- diopiBitwiseNotInp
-- diopiBitwiseAnd
-- diopiBitwiseAndInp
-- diopiBitwiseAndScalar
-- diopiBitwiseAndInpScalar
-- diopiBitwiseOr
-- diopiBitwiseOrInp
-- diopiBitwiseOrScalar
-- diopiBitwiseOrInpScalar
 - diopiExp
 - diopiExpInp
 - diopiOneHot
