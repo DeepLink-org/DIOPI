@@ -107,8 +107,7 @@ ascend_npu:
 - diopiAddcdivInp
 - diopiAddmm
 - diopiAll
-- diopiAny
-- diopiArange
+- diopiAny 
 - diopiAtan
 - diopiAtanInp
 - diopiBaddbmm
@@ -159,13 +158,6 @@ ascend_npu:
 - diopiRotaryEmbedding
 - diopiRMSNorm
 - diopiRMSNormBackward
-- diopiCol2Im
-- diopiLog
-- diopiLog10
-- diopiLog10Inp
-- diopiLog2
-- diopiLog2Inp
-- diopiLogInp
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIndexSelect
