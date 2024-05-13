@@ -124,6 +124,7 @@ decltype(auto) convertType(T&& param) {
     } else if constexpr (std::is_same_v<U, diopiDtype_t> || std::is_same_v<U, const diopiDtype_t>) {
         return diopiDtypeToAclDataType(std::forward<T>(param));
     } else {
+        static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
         return std::forward<T>(param);
     }
 }
