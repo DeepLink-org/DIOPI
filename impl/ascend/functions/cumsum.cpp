@@ -16,10 +16,7 @@ diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         return diopiSuccess;
     }
 
-    bool exclusive = false;
-    bool reverse = false;
-    castTensor(ctx, inputAt, outAt.dtype());
-    DIOPI_ASCEND_CALL_ACLNN(aclnnCumsumV2, ctx, inputAt, dim, exclusive, reverse, outAt);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnCumsum, ctx, inputAt, dim, outAt.dtype(), outAt);
 
     return diopiSuccess;
 }
