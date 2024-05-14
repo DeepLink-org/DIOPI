@@ -8,6 +8,7 @@ ascend:
 - diopiArgmax
 - diopiCeil
 - diopiCeilInp
+- diopiCumsum
 - diopiArange
 - diopiBitwiseNot
 - diopiBitwiseNotInp
