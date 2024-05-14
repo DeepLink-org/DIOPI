@@ -131,7 +131,7 @@ std::vector<int64_t> calContiguousStride(std::vector<int64_t> shape) {
 // shape: 2,4,5,3 stride: 60, 15, 3, 1
 diopiError_t permuteTensor(DiopiTensor& t, const std::vector<int32_t>& order) {
     std::vector<int64_t> newShape = changeVecAccordingToOrder(t.shape(), order);
-    std::vector<int64_t> newStride = calContiguousStride(t.shape());
+    std::vector<int64_t> newStride = calContiguousStride(newShape);
     t.asStrided(newShape, newStride);
     return diopiSuccess;
 }
