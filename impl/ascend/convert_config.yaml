@@ -1,10 +1,6 @@
 - common_config:
     layout: NCHW
 
-- diopiSoftmax:
-    dtype: (float64)->float32
-    layout: ND
-
 - diopiBaddbmm:
     dtype: (float64)->float32
 
@@ -12,10 +8,6 @@
     dtype: (float64)->float32
 
 - diopiSoftmaxBackward:
-    dtype: (float64)->float32
-    layout: ND
-
-- diopiLogSoftmax:
     dtype: (float64)->float32
     layout: ND
 
@@ -60,11 +52,11 @@
     dtype: (float16, float32, float64, int16, int32, int64, uint8, int8)->bool
 
 - diopiNeg:
-    dtype: (uint8, int16, uint16, uint32, uint64)->int64, (complex32)->complex64
+    dtype: (uint8, int16, uint16)->int32, (uint32, uint64)->int64, (complex32)->complex64
     layout: ND
 
 - diopiNegInp:
-    dtype: (uint8, int16, uint16, uint32, uint64)->int64, (complex32)->complex64
+    dtype: (uint8, int16, uint16)->int32, (uint32, uint64)->int64, (complex32)->complex64
 
 - diopiThreshold:
     dtype: (float64)->float32, (int16, int64)->int32
@@ -80,12 +72,6 @@
 
 - diopiMinimum:
     dtype: (uint8, bool, int16)->int32, (float64)->float32
-
-- diopiHardtanh:
-    dtype: (float64)->float32
-
-- diopiHardtanhInp:
-    dtype: (float64)->float32
 
 - diopiHardtanhBackward:
     dtype: (float64)->float32
