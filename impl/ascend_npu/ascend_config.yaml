@@ -1,4 +1,6 @@
 ascend:
+- diopiAddcdiv
+- diopiAddcdivInp
 - diopiAbs
 - diopiAbsInp
 - diopiAdd
@@ -80,6 +82,9 @@ ascend:
 - diopiOnes
 - diopiPermute
 - diopiProd
+- diopiRemainder
+- diopiRemainderScalar
+- diopiRemainderTensor
 - diopiSlice
 - diopiSliceBackward
 - diopiSplitWithSizes
@@ -103,8 +108,6 @@ ascend_npu:
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
 - diopiAddcmulInp
-- diopiAddcdiv
-- diopiAddcdivInp
 - diopiAddmm
 - diopiAtan
 - diopiAtanInp
@@ -139,9 +142,6 @@ ascend_npu:
 - diopiLinspace
 - diopiMax
 - diopiMaximum
-- diopiRemainderTensor
-- diopiRemainderScalar
-- diopiRemainder
 - diopiRepeat
 - diopiMaskedFill
 - diopiMaskedFillInp
