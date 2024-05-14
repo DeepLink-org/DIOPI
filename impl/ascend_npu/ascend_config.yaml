@@ -1,4 +1,6 @@
 ascend:
+- diopiAddcdiv
+- diopiAddcdivInp
 - diopiAbs
 - diopiAbsInp
 - diopiAdd
@@ -82,6 +84,9 @@ ascend:
 - diopiConvolution2dBackward
 - diopiOnes
 - diopiPermute
+- diopiRemainderTensor
+- diopiRemainderScalar
+- diopiRemainder
 - diopiSplitWithSizes
 - diopiTranspose
 - diopiTril
@@ -98,13 +103,11 @@ ascend_npu:
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
 - diopiAddcmulInp
-- diopiAddcdiv
-- diopiAddcdivInp
+- diopiAddmm
 - diopiAttention
 - diopiAttentionBackward
 - diopiAttentionVarLen
 - diopiAttentionVarLenBackward
-- diopiAddmm
 - diopiAll
 - diopiAny
 - diopiAtan
@@ -140,9 +143,6 @@ ascend_npu:
 - diopiLinspace
 - diopiMax
 - diopiMaximum
-- diopiRemainderTensor
-- diopiRemainderScalar
-- diopiRemainder
 - diopiRepeat
 - diopiMaskedFill
 - diopiMaskedFillInp
