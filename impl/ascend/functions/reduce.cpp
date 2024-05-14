@@ -67,8 +67,8 @@ diopiError_t diopiAll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         diopiSize_t dimSize = vectorToDiopiSize(dimVector);
         DIOPI_ASCEND_CALL_ACLNN(aclnnAll, ctx, input, dimSize, keepDim, out);
     } else {
-        std::vector<int64_t> dimVector = std::vector<int64_t>{*dim};
-        diopiSize_t dimSize = vectorToDiopiSize(dimVector);
+        std::array<int64_t, 1> dimVector = {*dim};
+        diopiSize_t dimSize = {dimVector.data(), dimVector.size()};
         DIOPI_ASCEND_CALL_ACLNN(aclnnAll, ctx, input, dimSize, keepDim, out);
     }
     return diopiSuccess;
@@ -89,8 +89,8 @@ diopiError_t diopiAny(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         diopiSize_t dimSize = vectorToDiopiSize(dimVector);
         DIOPI_ASCEND_CALL_ACLNN(aclnnAny, ctx, input, dimSize, keepDim, out);
     } else {
-        std::vector<int64_t> dimVector = std::vector<int64_t>{*dim};
-        diopiSize_t dimSize = vectorToDiopiSize(dimVector);
+        std::array<int64_t, 1> dimVector = {*dim};
+        diopiSize_t dimSize = {dimVector.data(), dimVector.size()};
         DIOPI_ASCEND_CALL_ACLNN(aclnnAny, ctx, input, dimSize, keepDim, out);
     }
     return diopiSuccess;
