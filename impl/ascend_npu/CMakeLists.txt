@@ -142,7 +142,6 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/loss.cpp
     ${OLD_IMPL_DIR}/functions/contiguous.cpp
     ${OLD_IMPL_DIR}/functions/bitwise.cpp
-    ${OLD_IMPL_DIR}/functions/upsample.cpp
     ${OLD_IMPL_DIR}/functions/tril.cpp
     ${OLD_IMPL_DIR}/functions/floor.cpp
     ${OLD_IMPL_DIR}/functions/mm.cpp

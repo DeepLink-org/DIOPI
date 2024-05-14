@@ -12,15 +12,29 @@ namespace ascend {
 
 diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size, bool alignCorners,
                                  const char* mode) {
-    ASCEND_CHECK(strcmp(mode, "bilinear") == 0, "diopiUpsampleLinearBackward unsupport mode %s", mode);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleBilinear2d, ctx, input, size, alignCorners, 1.0, 1.0, out);
+    if (0 == strcmp(mode, "bilinear")) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleBilinear2d, ctx, input, size, alignCorners, 1.0, 1.0, out);
+    } else if (0 == strcmp(mode, "bicubic")) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleBicubic2d, ctx, input, size, alignCorners, 0, 0, out);
+    } else if (0 == strcmp(mode, "trilinear")) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleTrilinear3d, ctx, input, size, alignCorners, 0, 0, 0, out);
+    } else if (0 == strcmp(mode, "linear")) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleLinear1d, ctx, input, size, alignCorners, -1, out);
+    }
     return diopiSuccess;
 }
 
 diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
                                          diopiSize_t inSize, bool alignCorners, const char* mode) {
-    ASCEND_CHECK(strcmp(mode, "bilinear") == 0, "diopiUpsampleLinearBackward unsupport mode %s", mode);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleBilinear2dBackward, ctx, gradOutput, outSize, inSize, alignCorners, 1.0, 1.0, gradInput);
+    if (0 == strcmp(mode, "bilinear")) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleBilinear2dBackward, ctx, gradOutput, outSize, inSize, alignCorners, 1.0, 1.0, gradInput);
+    } else if (0 == strcmp(mode, "bicubic")) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleBicubic2dBackward, ctx, gradOutput, outSize, inSize, alignCorners, 1, 1, gradInput);
+    } else if (0 == strcmp(mode, "trilinear")) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleTrilinear3dBackward, ctx, gradOutput, outSize, inSize, alignCorners, 0, 0, 0, gradInput);
+    } else if (0 == strcmp(mode, "linear")) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnUpsampleLinear1dBackward, ctx, gradOutput, outSize, inSize, alignCorners, 1, gradInput);
+    }
     return diopiSuccess;
 }
 
