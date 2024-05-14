@@ -20,6 +20,9 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
     diopiSize_t inputSize, outSize;
     diopiGetTensorShape(input, &inputSize);
+    if (0 == inputSize.len) {
+        return diopiCopyInp(ctx, input, out);
+    }
     diopiGetTensorShape(out, &outSize);
     bool keepDim = true;
     if (inputSize.len != outSize.len) {
