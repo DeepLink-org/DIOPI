@@ -1291,6 +1291,18 @@ device_configs = {
         ),
     ),
 
+     'normal_tensor': dict(
+        name=["normal"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['mean'],
+                    "shape": [Skip(()), Skip((256, 1, 3, 3)),],
+                },
+            ]
+        ),
+    ),
+
     'remainder_self_scalar': dict(
         name=['remainder'],
         atol=1e-3,

@@ -12,6 +12,11 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiExpand(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    AscendTensor inputAt(input);
+    if (inputAt.numel() == 0) {
+        return diopiSuccess;
+    }
+
     diopiSize_t outSize;
     diopiGetTensorShape(out, &outSize);
     DIOPI_ASCEND_CALL_ACLNN(aclnnExpand, ctx, input, outSize, out);

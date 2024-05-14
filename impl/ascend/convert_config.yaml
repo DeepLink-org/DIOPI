@@ -104,10 +104,10 @@
     dtype: (int16, uint16)->int32, (uint32, uint64)->int64, (float64)->float32
 
 - diopiAddcdiv:
-    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64
 
 - diopiAddcdivInp:
-    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64, (float64)->float32
+    dtype: (int8, int16, int32, int64, uint16, uint32, uint64)->int64
 
 - diopiTopk:
     dtype: (float32)->float64
@@ -230,13 +230,13 @@
     dtype: (float64)->float32
 
 - diopiRemainderTensor:
-    dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
+    dtype: (bool, uint8, int8, int16, uint16)->int32
 
 - diopiRemainderScalar:
-    dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
+    dtype: (bool, uint8, int8, int16, uint16)->int32
 
 - diopiRemainder:
-    dtype: (bool, uint8, int8, int16, uint16)->int32, (float64)->float32
+    dtype: (bool, uint8, int8, int16, uint16)->int32
 
 - diopiRMSNorm:
     dtype: (float64)->float32
