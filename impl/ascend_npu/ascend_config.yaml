@@ -1,6 +1,13 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiAdd
+- diopiAddInp
+- diopiAddScalar
+- diopiAddInpScalar
+- diopiArgmax
+- diopiCeil
+- diopiCeilInp
 - diopiArange
 - diopiBitwiseNot
 - diopiBitwiseNotInp
@@ -16,6 +23,11 @@ ascend:
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
+- diopiDiv
+- diopiDivInp
+- diopiDivInpScalar
+- diopiDivScalar
+- diopiFlip
 - diopiEq
 - diopiEqInp
 - diopiEqInpScalar
@@ -25,11 +37,21 @@ ascend:
 - diopiLayerNormBackward
 - diopiLinear
 - diopiLinearBackward
+- diopiMul
+- diopiMulInp
+- diopiMulInpScalar
+- diopiMulScalar
+- diopiNormal
+- diopiNormalInp
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
 - diopiSlice
 - diopiSliceBackward
+- diopiSub
+- diopiSubInp
+- diopiSubInpScalar
+- diopiSubScalar
 - diopiConvolution2d
 - diopiConvolution2dBackward
 - diopiOnes
@@ -46,10 +68,6 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiAdamW
-- diopiAdd
-- diopiAddInp
-- diopiAddScalar
-- diopiAddInpScalar
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
@@ -78,12 +96,6 @@ ascend_npu:
 - diopiMinimum
 - diopiCastDtype
 - diopiCat
-- diopiCeil
-- diopiCeilInp
-- diopiDiv
-- diopiDivInp
-- diopiDivInpScalar
-- diopiDivScalar
 - diopiDropout
 - diopiDropoutInp
 - diopiCopyInp
@@ -91,7 +103,6 @@ ascend_npu:
 - diopiEmbeddingBackward
 - diopiEqual
 - diopiExpand
-- diopiFlip
 - diopiFloor
 - diopiFloorInp
 - diopiGroupNorm
@@ -120,8 +131,6 @@ ascend_npu:
 - diopiMSELoss
 - diopiMSELossBackward
 - diopiMultinomial
-- diopiNormal
-- diopiNormalInp
 - diopiNorm
 - diopiMaxPool2dWithIndices
 - diopiProd
@@ -200,7 +209,6 @@ ascend_npu:
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
-- diopiArgmax
 - diopiLogicalAnd
 - diopiLogicalOr
 - diopiLogicalAndInp
@@ -219,10 +227,6 @@ ascend_npu:
 - diopiSgn
 - diopiSgnInp
 - diopiSort
-- diopiSub
-- diopiSubInp
-- diopiSubInpScalar
-- diopiSubScalar
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
@@ -244,10 +248,6 @@ ascend_npu:
 - diopiReluInp
 - diopiSoftmax
 - diopiSoftmaxBackward
-- diopiMul
-- diopiMulInp
-- diopiMulInpScalar
-- diopiMulScalar
 - diopiPow
 - diopiPowInp
 - diopiPowInpTensor
