@@ -157,5 +157,21 @@ diopiError_t diopiHardtanhBackward(diopiContextHandle_t ctx, diopiTensorHandle_t
     return diopiSuccess;
 }
 
+diopiError_t diopiHardswish(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnHardswish, ctx, input, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiHardswishInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceHardswish, ctx, input);
+    return diopiSuccess;
+}
+
+diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                    diopiConstTensorHandle_t input) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnHardswishBackward, ctx, gradOutput, input, gradInput);
+    return diopiSuccess;
+}
+
 }  // namespace ascend
 }  // namespace impl

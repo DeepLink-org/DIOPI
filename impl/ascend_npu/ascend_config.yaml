@@ -57,6 +57,9 @@ ascend:
 - diopiGtInp
 - diopiGtInpScalar
 - diopiGtScalar
+- diopiHardswish
+- diopiHardswishInp
+- diopiHardswishBackward
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
@@ -221,9 +224,6 @@ ascend_npu:
 - diopiGetNativeMemoryFormat
 - diopiSum
 - diopiTensorDestructionHook
-- diopiHardswish
-- diopiHardswishInp
-- diopiHardswishBackward
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiMean
