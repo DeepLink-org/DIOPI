@@ -236,7 +236,7 @@ void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
 
     /* 1. call xxxGetWorkspaceSize function. */
     static const auto workspaceSizeFuncAddr = getOpApiFuncAddr(workspaceApi);
-    ASCEND_CHECK_ABORT(workspaceSizeFuncAddr != nullptr, "can't get workSpaceName function for %s.", api);
+    ASCEND_CHECK_ABORT(workspaceSizeFuncAddr != nullptr, "[%s] can't get workSpaceName function.", api);
     using WorkspaceSizeFuncType = int (*)(std::decay_t<decltype(convertType(std::declval<Args>()))>..., uint64_t*, aclOpExecutor**);
     static const auto workspaceSizeFunc = reinterpret_cast<WorkspaceSizeFuncType>(workspaceSizeFuncAddr);
 
@@ -249,18 +249,18 @@ void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
     aclOpExecutor* executor = nullptr;
     auto convertedParams = convertParams(args...);
     auto workspaceStatus = std::apply(workspaceSizeFunc, std::tuple_cat(convertedParams.params(), std::make_tuple(&workspaceSize, &executor)));
-    ASCEND_CHECK_ABORT(workspaceStatus == ACL_SUCCESS, "workspaceStatus not equal ACL_SUCCESS for %s. aclnnStatus: %d.", api, workspaceStatus);
+    ASCEND_CHECK_ABORT(workspaceStatus == ACL_SUCCESS, "[%s]'s workspaceStatus is not equal to ACL_SUCCESS. aclnnStatus is %d.", api, workspaceStatus);
 
     AclWorkspace workspace(ctx, workspaceSize);
 
     /* 2. call aclnnXXX function */
     static const auto opApiFuncAddr = getOpApiFuncAddr(api);
-    ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "can't get op function.");
+    ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "[%s] can't get op function.", api);
     using OpApiFuncType = int (*)(void*, uint64_t, aclOpExecutor*, aclrtStream);
     static const auto opApiFunc = reinterpret_cast<OpApiFuncType>(opApiFuncAddr);
 
     auto ret = opApiFunc(workspace.addr(), workspaceSize, executor, stream);
-    ASCEND_CHECK_ABORT(ret == ACL_SUCCESS, "%s failed. aclnnStatus: %d.", api, ret);
+    ASCEND_CHECK_ABORT(ret == ACL_SUCCESS, "[%s] failed. aclnnStatus is %d.", api, ret);
 }
 
 #define DIOPI_ASCEND_CALL_ACLNN(api, ctx, ...)                                                       \
