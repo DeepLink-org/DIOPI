@@ -1,12 +1,11 @@
 /**
  * @file
  * @author DeepLink
- * @copyright  (c) 2024, DeepLink.
+ * @copyright  (c) 2023, DeepLink.
  */
 
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
-#include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {

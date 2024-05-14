@@ -1,7 +1,7 @@
 /**
  * @file
  * @author DeepLink
- * @copyright  (c) 2024, DeepLink.
+ * @copyright  (c) 2023, DeepLink.
  */
 
 #include "../aclnn/adaptor.hpp"
