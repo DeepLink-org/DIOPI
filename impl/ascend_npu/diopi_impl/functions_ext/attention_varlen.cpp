@@ -83,8 +83,8 @@ diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t 
     }
     at::Tensor cuSeqlensKvAtHost = cuSeqlensKvAt.cpu();
     at::Tensor cuSeqlensQAtHost = cuSeqlensQAt.cpu();
-    at::IntArrayRef cuSeqlensKvAtArray(cuSeqlensKvAtHost.data_ptr<int64_t>(), cuSeqlensKvAtHost.numel());
-    at::IntArrayRef cuSeqlensQAtArray(cuSeqlensQAtHost.data_ptr<int64_t>(), cuSeqlensQAtHost.numel());
+    at::IntArrayRef cuSeqlensKvAtArray(cuSeqlensKvAtHost.data_ptr<int64_t>() + 1, cuSeqlensKvAtHost.numel() - 1);
+    at::IntArrayRef cuSeqlensQAtArray(cuSeqlensQAtHost.data_ptr<int64_t>() + 1, cuSeqlensQAtHost.numel() - 1);
     EXEC_NPU_CMD(aclnnFlashAttentionVarLenScore,
                  qAt,
                  kAt,
@@ -158,8 +158,8 @@ diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorH
 
     at::Tensor cuSeqlensKvAtHost = cuSeqlensKvAt.cpu();
     at::Tensor cuSeqlensQAtHost = cuSeqlensQAt.cpu();
-    at::IntArrayRef cuSeqlensKvAtArray(cuSeqlensKvAtHost.data_ptr<int64_t>(), cuSeqlensKvAtHost.numel());
-    at::IntArrayRef cuSeqlensQAtArray(cuSeqlensQAtHost.data_ptr<int64_t>(), cuSeqlensQAtHost.numel());
+    at::IntArrayRef cuSeqlensKvAtArray(cuSeqlensKvAtHost.data_ptr<int64_t>() + 1, cuSeqlensKvAtHost.numel() - 1);
+    at::IntArrayRef cuSeqlensQAtArray(cuSeqlensQAtHost.data_ptr<int64_t>() + 1, cuSeqlensQAtHost.numel() - 1);
 
     at::Tensor gradPseAt;
     if (gradAttnBiasAt.defined()) {
