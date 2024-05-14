@@ -374,11 +374,11 @@ diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 
     size_t workspaceSize = 0;
     DIOPI_CALL_CNNL(cnnlGetMSELossWorkspaceSize(handle, descInput.get(), &workspaceSize));
-
     void* workspace = nullptr;
     void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
 
-    DIOPI_CALL_CNNL(cnnlMSELoss_v2(handle, cnnlReduction, descInput.get(), trInput.data(), descTarget.get(), trTarget.data(), workspace, workspaceSize, descOut.get(), trOutTmp.data()));
+    DIOPI_CALL_CNNL(cnnlMSELoss_v2(
+        handle, cnnlReduction, descInput.get(), trInput.data(), descTarget.get(), trTarget.data(), workspace, workspaceSize, descOut.get(), trOutTmp.data()));
     if (trOutTmp.dtype() != trOut.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, trOut, trOutTmp));
     }
