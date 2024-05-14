@@ -38,7 +38,7 @@ diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto prefixOptional = nullptr;
     double scaleValueOptional = softmaxScale;
     double keepProbOptional = 1 - pDropout;
-    const int64_t preTockensOptional =  totalSeqK + totalSeqQ;
+    const int64_t preTockensOptional = totalSeqK + totalSeqQ;
     int64_t nextTockensOptional = 0;
     const int64_t innerPreciseOptional = 0;
     int64_t sparseModeOptional = 0;
