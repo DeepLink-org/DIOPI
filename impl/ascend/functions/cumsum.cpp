@@ -6,19 +6,21 @@
 
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
-#include "../common/utils.hpp"
+#include "../common/acloprunner.hpp"
 namespace impl {
 namespace ascend {
-extern "C" DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {    
-    int64_t inputNumel = 0;
-    diopiGetTensorNumel(input, &inputNumel);
-    if (inputNumel == 0) {
+extern "C" DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
+    AscendTensor inputAt(input);
+    AscendTensor outAt(out);
+
+    if (inputAt.numel() == 0) {
         return diopiSuccess;
     }
 
     bool exclusive = false;
     bool reverse = false;
-    DIOPI_ASCEND_CALL_ACLNN(aclnnCumsumV2, ctx, input, dim, exclusive, reverse, out);
+    castTensor(ctx, inputAt, outAt.dtype());
+    DIOPI_ASCEND_CALL_ACLNN(aclnnCumsumV2, ctx, inputAt, dim, exclusive, reverse, outAt);
 
     return diopiSuccess;
 }
