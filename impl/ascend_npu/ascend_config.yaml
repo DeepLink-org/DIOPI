@@ -112,6 +112,8 @@ ascend:
 - diopiRemainderTensor
 - diopiRemainderScalar
 - diopiRemainder
+- diopiRMSNorm
+- diopiRMSNormBackward
 - diopiRsqrt
 - diopiRsqrtInp
 - diopiSgn
@@ -198,8 +200,6 @@ ascend_npu:
 - diopiMaxPool2dWithIndices
 - diopiProd
 - diopiRotaryEmbedding
-- diopiRMSNorm
-- diopiRMSNormBackward
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIndexSelect
