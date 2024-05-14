@@ -73,6 +73,8 @@ ascend:
 - diopiLeInp
 - diopiLeInpScalar
 - diopiLeScalar
+- diopiLogSoftmax
+- diopiLogSoftmaxBackward
 - diopiLt
 - diopiLtInp
 - diopiLtInpScalar
@@ -142,6 +144,8 @@ ascend:
 - diopiSiluBackward
 - diopiSin
 - diopiSinInp
+- diopiSoftmax
+- diopiSoftmaxBackward
 - diopiSplitWithSizes
 - diopiThreshold
 - diopiThresholdBackward
@@ -222,8 +226,6 @@ ascend_npu:
 - diopiHardswishBackward
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
-- diopiLogSoftmax
-- diopiLogSoftmaxBackward
 - diopiMean
 - diopiMm
 - diopiNLLLoss
@@ -251,8 +253,6 @@ ascend_npu:
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
-- diopiSoftmax
-- diopiSoftmaxBackward
 - diopiPow
 - diopiPowInp
 - diopiPowInpTensor

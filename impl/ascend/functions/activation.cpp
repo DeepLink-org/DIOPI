@@ -22,28 +22,48 @@ diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 }
 
 diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
-    std::vector<int64_t> dimList = {dim};
-    AclOpRunner<1, 1>("SoftmaxV2", ctx).addInput(input).setAttr<int64_t>("axes", dimList).addOutput(out).run();
+    AscendTensor inputTensor(input);
+    if (inputTensor.dim() == 0) {
+        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float32, 1.0);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, out, &value);
+    } else {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnSoftmax, ctx, input, dim, out);
+    }
     return diopiSuccess;
 }
 
 diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t output,
                                   int64_t dim) {
-    std::vector<int64_t> dimList = {dim};
-    AclOpRunner<2, 1>("SoftmaxGrad", ctx).addInput(output).addInput(gradOutput).setAttr<int64_t>("axes", dimList).addOutput(gradInput).run();
+    AscendTensor gradInputTensor(gradInput);
+    if (gradInputTensor.dim() == 0) {
+        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float32, 0.0);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, gradInput, &value);
+    } else {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnSoftmaxBackward, ctx, gradOutput, output, dim, gradInput);
+    }
     return diopiSuccess;
 }
 
 diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
-    std::vector<int64_t> dimList = {dim};
-    AclOpRunner<1, 1>("LogSoftmaxV2", ctx).addInput(input).setAttr("axes", dimList).addOutput(out).run();
+    AscendTensor inputTensor(input);
+    if (inputTensor.dim() == 0) {
+        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float32, 0.0);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, out, &value);
+    } else {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnLogSoftmax, ctx, input, dim, out);
+    }
     return diopiSuccess;
 }
 
 diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                      diopiConstTensorHandle_t output, int64_t dim) {
-    std::vector<int64_t> dimList = {dim};
-    AclOpRunner<2, 1>("LogSoftmaxGrad", ctx).addInput(gradOutput).addInput(output).addOutput(gradInput).setAttr("axis", dimList).run();
+    AscendTensor gradInputTensor(gradInput);
+    if (gradInputTensor.dim() == 0) {
+        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float32, 0.0);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, gradInput, &value);
+    } else {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnLogSoftmaxBackward, ctx, gradOutput, output, dim, gradInput);
+    }
     return diopiSuccess;
 }
 
