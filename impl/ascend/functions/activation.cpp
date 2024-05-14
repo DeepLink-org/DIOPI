@@ -99,13 +99,13 @@ DIOPI_API diopiError_t diopiSigmoidBackward(diopiContextHandle_t ctx, diopiTenso
 }
 
 diopiError_t diopiGelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* approximate) {
-    AclOpRunner<1, 1>("Gelu", ctx).addInput(input).addOutput(out).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnGelu, ctx, input, out);
     return diopiSuccess;
 }
 
 diopiError_t diopiGeluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
                                const char* approximate) {
-    AclOpRunner<3, 1>("GeluGrad", ctx).addInput(gradOutput).addInput(input).addInput(gradOutput).addOutput(gradInput).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnGeluBackward, ctx, gradOutput, input, gradInput);
     return diopiSuccess;
 }
 
