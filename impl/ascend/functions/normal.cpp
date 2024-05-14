@@ -17,7 +17,7 @@ diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, doub
     }
 
     uint64_t seed, offset;
-    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, &seed, &offset));
 
     float meanCast = static_cast<float>(mean);
     float rstdCast = static_cast<float>(std);
