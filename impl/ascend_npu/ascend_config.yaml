@@ -23,7 +23,6 @@ ascend:
 - diopiContiguous
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
-- diopiCumsum
 - diopiDiv
 - diopiDivInp
 - diopiDivInpScalar
