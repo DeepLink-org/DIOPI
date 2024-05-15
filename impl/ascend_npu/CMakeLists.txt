@@ -122,6 +122,8 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/ascend_tensor.cpp
     ${OLD_IMPL_DIR}/functions/remainder.cpp
     ${OLD_IMPL_DIR}/functions/abs.cpp
+    ${OLD_IMPL_DIR}/functions/atan.cpp
+    ${OLD_IMPL_DIR}/functions/lerp.cpp
     ${OLD_IMPL_DIR}/functions/ceil.cpp
     ${OLD_IMPL_DIR}/functions/bmm.cpp
     ${OLD_IMPL_DIR}/functions/col2im.cpp
@@ -188,6 +190,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/mul.cpp
     ${OLD_IMPL_DIR}/functions/addmm.cpp
     ${OLD_IMPL_DIR}/functions/expand.cpp
+    ${OLD_IMPL_DIR}/functions/linalg_vec_norm.cpp
     ${OLD_IMPL_DIR}/functions/linspace.cpp
     ${OLD_IMPL_DIR}/functions/ones.cpp
     ${OLD_IMPL_DIR}/functions/split.cpp
