@@ -45,6 +45,8 @@ ascend:
 - diopiGeInp
 - diopiGeInpScalar
 - diopiGeScalar
+- diopiGroupNorm
+- diopiGroupNormBackward
 - diopiGt
 - diopiGtInp
 - diopiGtInpScalar
@@ -139,8 +141,6 @@ ascend_npu:
 - diopiExpand
 - diopiFloor
 - diopiFloorInp
-- diopiGroupNorm
-- diopiGroupNormBackward
 - diopiLinspace
 - diopiMax
 - diopiMaximum
