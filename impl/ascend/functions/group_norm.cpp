@@ -24,7 +24,7 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
     int64_t hw = inputAt.numel() / (n * c);
     eps = (eps < 1e-5) ? 1e-5 : eps;
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnGroupNorm, ctx, inputAt, weight, bias, n, c, hw, numGroups, eps, out, saveMean, saveInvstd);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnGroupNorm, ctx, input, weight, bias, n, c, hw, numGroups, eps, out, saveMean, saveInvstd);
     return diopiSuccess;
 }
 
@@ -33,7 +33,6 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, int64_t numGroups) {
     AscendTensor inputAt(input);
     AscendTensor gradWeightAt(gradWeight);
-    AscendTensor gradBiasAt(gradBias);
 
     if (!inputAt.defined()) {
         return diopiSuccess;
@@ -41,9 +40,9 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
     if (inputAt.numel() == 0) {
         diopiScalar_t zeroScalar = constructDiopiScalarT(diopi_dtype_float64, 0.0);
-        makeTensorFromScalar(ctx, gradBiasAt, &zeroScalar);
+        diopiFill(ctx, gradBias, &zeroScalar);
         if (inputAt.shape()[0] == 0) {
-            makeTensorFromScalar(ctx, gradWeightAt, &zeroScalar);
+            diopiFill(ctx, gradWeight, &zeroScalar);
         } else {
             fillNan(ctx, gradWeightAt);
         }
@@ -52,9 +51,18 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         int64_t c = inputAt.shape(1);
         int64_t hw = inputAt.numel() / (n * c);
         int64_t gradMaskData[3] = {true, true, true};
+        if (nullptr == gradInput) {
+            gradMaskData[0] = false;
+        }
+        if (nullptr == gradWeight) {
+            gradMaskData[1] = false;
+        }
+        if (nullptr == gradBias) {
+            gradMaskData[2] = false;
+        }
         diopiSize_t gradMask{gradMaskData, 3};
         DIOPI_ASCEND_CALL_ACLNN(
-            aclnnGroupNormBackward, ctx, gradOutput, inputAt, mean, rstd, weight, n, c, hw, numGroups, gradMask, gradInput, gradWeightAt, gradBiasAt);
+            aclnnGroupNormBackward, ctx, gradOutput, inputAt, mean, rstd, weight, n, c, hw, numGroups, gradMask, gradInput, gradWeightAt, gradBias);
     }
     return diopiSuccess;
 }
