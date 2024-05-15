@@ -23,7 +23,7 @@ diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
 diopiError_t diopiSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     AscendTensor inputTensor(input);
     if (inputTensor.dim() == 0) {
-        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float32, 1.0);
+        diopiScalar_t value = constructDiopiScalarT(inputTensor.dtype(), 1.0);
         DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, out, &value);
     } else {
         DIOPI_ASCEND_CALL_ACLNN(aclnnSoftmax, ctx, input, dim, out);
@@ -35,7 +35,7 @@ diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                   int64_t dim) {
     AscendTensor gradInputTensor(gradInput);
     if (gradInputTensor.dim() == 0) {
-        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float32, 0.0);
+        diopiScalar_t value = constructDiopiScalarT(gradInputTensor.dtype(), 0.0);
         DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, gradInput, &value);
     } else {
         DIOPI_ASCEND_CALL_ACLNN(aclnnSoftmaxBackward, ctx, gradOutput, output, dim, gradInput);
@@ -46,7 +46,7 @@ diopiError_t diopiSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
 diopiError_t diopiLogSoftmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim) {
     AscendTensor inputTensor(input);
     if (inputTensor.dim() == 0) {
-        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float32, 0.0);
+        diopiScalar_t value = constructDiopiScalarT(inputTensor.dtype(), 0.0);
         DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, out, &value);
     } else {
         DIOPI_ASCEND_CALL_ACLNN(aclnnLogSoftmax, ctx, input, dim, out);
@@ -58,7 +58,7 @@ diopiError_t diopiLogSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle
                                      diopiConstTensorHandle_t output, int64_t dim) {
     AscendTensor gradInputTensor(gradInput);
     if (gradInputTensor.dim() == 0) {
-        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float32, 0.0);
+        diopiScalar_t value = constructDiopiScalarT(gradInputTensor.dtype(), 0.0);
         DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, gradInput, &value);
     } else {
         DIOPI_ASCEND_CALL_ACLNN(aclnnLogSoftmaxBackward, ctx, gradOutput, output, dim, gradInput);

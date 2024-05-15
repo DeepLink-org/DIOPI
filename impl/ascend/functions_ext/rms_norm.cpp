@@ -23,7 +23,7 @@ diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DIOPI_ASCEND_CALL_ACLNN(aclnnRmsNorm, ctx, input, weight, eps, out, invRms);
 
     if (bias) {
-        diopiScalar_t alpha = constructDiopiScalarT(diopi_dtype_float32, 1.0);
+        diopiScalar_t alpha = constructDiopiScalarT(inputTensor.dtype(), 1.0);
         DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceAdd, ctx, out, bias, &alpha);
     }
     return diopiSuccess;

@@ -15,7 +15,7 @@ diopiError_t diopiLinalgVecNorm(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     AscendTensor inputTensor(input);
     AscendTensor outTensor(out);
     if (inputTensor.numel() == 0) {
-        diopiScalar_t value = constructDiopiScalarT(diopi_dtype_float32, 0);
+        diopiScalar_t value = constructDiopiScalarT(outTensor.dtype(), 0);
         DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, out, &value);
     } else {
         DIOPI_ASCEND_CALL_ACLNN(aclnnLinalgVectorNorm, ctx, input, ord, dim, keepdim, outTensor.dtype(), out);
