@@ -1,6 +1,9 @@
 - common_config:
     layout: NCHW
 
+- diopiSoftmax:
+    layout: ND
+
 - diopiBaddbmm:
     dtype: (float64)->float32
 
@@ -9,6 +12,9 @@
 
 - diopiSoftmaxBackward:
     dtype: (float64)->float32
+    layout: ND
+
+- diopiLogSoftmax:
     layout: ND
 
 - diopiLogSoftmaxBackward:
@@ -153,6 +159,9 @@
 
 - diopiNorm:
     dtype: (bool, uint8, int8, int16, int32, int64, float64)->float32
+    layout: ND
+
+- diopiRsqrt:
     layout: ND
 
 - diopiEmbeddingBackward:
