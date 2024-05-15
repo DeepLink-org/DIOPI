@@ -22,6 +22,7 @@ ascend:
 - diopiBitwiseOrInp
 - diopiBitwiseOrScalar
 - diopiBitwiseOrInpScalar
+- diopiCat
 - diopiCeil
 - diopiCeilInp
 - diopiCol2Im
@@ -131,7 +132,6 @@ ascend_npu:
 - diopiMinAll
 - diopiMinimum
 - diopiCastDtype
-- diopiCat
 - diopiDropout
 - diopiDropoutInp
 - diopiCopyInp
