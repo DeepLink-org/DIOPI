@@ -4,13 +4,20 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
+#include "../common/utils.hpp"
 
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeatsSize) {
-    AclOpRunner<2, 1>("Tile", ctx).addInput(input).addConstInput(repeatsSize).addOutput(out).run();
+    AscendTensor inputAt(input);
+    // When repeatSize.len is equal to 0, out is the same as input.
+    if (repeatsSize.len == 0) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, out, input);
+    }
+    DIOPI_ASCEND_CALL_ACLNN(aclnnRepeat, ctx, input, repeatsSize, out);
     return diopiSuccess;
 }
 
