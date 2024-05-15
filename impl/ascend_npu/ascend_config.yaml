@@ -67,6 +67,7 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
+- diopiMatmul
 - diopiMean
 - diopiMul
 - diopiMulInp
@@ -123,7 +124,6 @@ ascend_npu:
 - diopiErfInp
 - diopiNonzero
 - diopiBmm
-- diopiMatmul
 - diopiMaxAll
 - diopiMin
 - diopiMinAll
