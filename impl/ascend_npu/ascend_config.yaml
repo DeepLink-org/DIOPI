@@ -67,11 +67,13 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
+- diopiMaximum
 - diopiMean
 - diopiMul
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
+- diopiMinimum
 - diopiNe
 - diopiNeInp
 - diopiNeInpScalar
@@ -127,7 +129,6 @@ ascend_npu:
 - diopiMaxAll
 - diopiMin
 - diopiMinAll
-- diopiMinimum
 - diopiCastDtype
 - diopiCat
 - diopiDropout
@@ -143,7 +144,6 @@ ascend_npu:
 - diopiGroupNormBackward
 - diopiLinspace
 - diopiMax
-- diopiMaximum
 - diopiRepeat
 - diopiMaskedFill
 - diopiMaskedFillInp

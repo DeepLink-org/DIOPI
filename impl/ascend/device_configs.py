@@ -118,6 +118,66 @@ device_configs = {
         ),
     ),
 
+    'imum': dict(
+        name=['maximum', 'minimum'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.int16), Skip(np.float64),],
+                },
+            ],
+        ),
+    ),
+
+    'imum_input_nan': dict(
+        name=['maximum', 'minimum'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                }
+            ],
+        ),
+    ),
+
+    'imum_other_nan': dict(
+        name=['maximum', 'minimum'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                }
+            ],
+        ),
+    ),
+
+      'imum_broadcast': dict(
+        name=['maximum', 'minimum'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                }
+            ],
+        ),
+    ),
+
+    'imum_ones': dict(
+        name=['maximum', 'minimum'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                }
+            ],
+        ),
+    ),
+
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
         atol=2e-2,
