@@ -43,23 +43,6 @@ class Genfunc:
         return np.random.randint(low=low, high=high, size=shape).astype(dtype)
 
     @staticmethod
-    def randint_with_replace(low, high, val, shape, dtype=np.float32):
-        arr = Genfunc.randint(low=low, high=high, shape=shape, dtype=dtype)
-        if val is not None and shape:
-            total_num = reduce(lambda x, y: x*y, shape)
-            if total_num == 0 :
-                return arr
-            num_elements = np.random.randint(1, total_num)
-            indexs = np.arange(num_elements)
-            cnt = num_elements // 5
-            random_indices = np.random.choice(indexs, cnt, replace=False)
-            arr_flat = arr.flatten()
-            for i in random_indices:
-                arr_flat[i] = val
-            arr = arr_flat.reshape(shape)
-        return arr
-
-    @staticmethod
     def positive(shape, dtype=np.float32):
         return np.array(np.abs(np.random.randn(*shape)).astype(dtype))
 
