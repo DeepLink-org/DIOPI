@@ -15,9 +15,10 @@ diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 diopiError_t diopiIndexSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t inputSizes,
                                       int64_t dim, diopiConstTensorHandle_t index) {
-    diopiScalar_t zero = constructDiopiScalarT(diopi_dtype_float32, 0.0);
+    AscendTensor gradInputTensor(gradInput);
+    diopiScalar_t zero = constructDiopiScalarT(gradInputTensor.dtype(), 0);
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, gradInput, &zero);
-    diopiScalar_t one = constructDiopiScalarT(diopi_dtype_float32, 1.0);
+    diopiScalar_t one = constructDiopiScalarT(gradInputTensor.dtype(), 1);
     DIOPI_ASCEND_CALL_ACLNN(aclnnIndexAdd, ctx, gradInput, dim, index, gradOutput, &one, gradInput);
     return diopiSuccess;
 }
