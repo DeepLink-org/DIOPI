@@ -3374,7 +3374,7 @@ diopi_configs = {
                               (5, 0), (0,), (0, 6, 1, 3), (4, 0, 3),
                               (2048,)),
                     "dtype": [np.int64],
-                    "gen_fn": dict('patial(Genfunc.randint_with_replace, low=0, high=80, vals=-100, cnt=2')
+                    "gen_fn": dict('patial(Genfunc.randint_with_replace, low=0, high=80, vals=-100')
                 },
                 {
                     "ins": ['weight'],
