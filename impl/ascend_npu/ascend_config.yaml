@@ -157,6 +157,7 @@ ascend:
 - diopiSort
 - diopiSqrt
 - diopiSqrtInp
+- diopiStack
 - diopiTanh
 - diopiTanhBackward
 - diopiTanhInp
@@ -209,7 +210,6 @@ ascend_npu:
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
 - diopiMaskedFillScalar
-- diopiStack
 - diopiMultinomial
 - diopiNorm
 - diopiMaxPool2dWithIndices
