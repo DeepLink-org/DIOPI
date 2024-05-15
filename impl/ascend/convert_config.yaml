@@ -131,7 +131,6 @@
     dtype: (float64)->float32
 
 - diopiUniformInp:
-    dtype: (float64)->float32
     layout: ND
 
 - diopiExp:
@@ -421,6 +420,7 @@
 
 - diopiSum:
     layout: ND
+
 - diopiLerpTensor:
     # aclnnLerp doesn't support float64
     dtype: (float64)->float32

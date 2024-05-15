@@ -108,7 +108,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, d
     randomNum[1] = 0;
 
     if (dropoutP > 0.0) {
-        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, randomNum[0], randomNum[1]));
+        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, &(randomNum[0]), &(randomNum[1])));
     }
 
     DIOPI_CALL_CNNL(cnnlFlashAttentionForward(handle,
@@ -245,7 +245,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
     randomNum[1] = 0;
 
     if (dropoutP > 0.0) {
-        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, randomNum[0], randomNum[1]));
+        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, &(randomNum[0]), &(randomNum[1])));
     }
 
     DIOPI_CALL_CNNL(cnnlGetFlashAttentionGeneratedRandomNumbers(handle, flashAttBckDesc.get(), qDesc.get(), vDesc.get(), qLenDesc.get(), randomNum))

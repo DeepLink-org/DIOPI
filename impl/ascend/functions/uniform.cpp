@@ -13,7 +13,7 @@ namespace ascend {
 diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiGeneratorHandle_t generator) {
     uint64_t seed = 0;
     uint64_t offset = 0;
-    diopiGeneratorGetSeedAndOffset(generator, seed, offset);
+    diopiGeneratorGetSeedAndOffset(generator, &seed, &offset);
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceUniform, ctx, inout, from, to, seed, offset);
     return diopiSuccess;
 }
