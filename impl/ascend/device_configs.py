@@ -652,6 +652,33 @@ device_configs = {
         ),
     ),
 
+
+    'reduce_partial_op_2': dict(
+        name=['min', 'max'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.int16),
+                              Skip(np.int32), Skip(np.uint8), Skip(np.int8),],
+                },
+            ],
+        ),
+    ),
+
+    'max_min_all': dict(
+        name=['min', 'max'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64), Skip(np.int16),
+                              Skip(np.int32), Skip(np.uint8), Skip(np.int8),],
+                },
+            ],
+        ),
+    ),
+
     'max_pool3d': dict(
         name=['max_pool3d'],
         tensor_para=dict(
