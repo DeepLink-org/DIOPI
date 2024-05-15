@@ -20,8 +20,7 @@ diopiError_t diopiEqual(diopiContextHandle_t ctx, bool* out, diopiConstTensorHan
     diopiStreamHandle_t stream;
     diopiGetStream(ctx, &stream);
     CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
-    CALL_ACLRT(aclrtMemcpyAsync(out, sizeof(bool), outAt.data(), sizeof(bool), ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream)));
-    CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+    CALL_ACLRT(aclrtMemcpy(out, sizeof(bool), outAt.data(), sizeof(bool), ACL_MEMCPY_DEVICE_TO_HOST));
     return diopiSuccess;
 }
 }  // namespace ascend
