@@ -68,6 +68,8 @@ ascend:
 - diopiLtInpScalar
 - diopiLtScalar
 - diopiMean
+- diopiMSELoss
+- diopiMSELossBackward
 - diopiMul
 - diopiMulInp
 - diopiMulInpScalar
@@ -159,8 +161,6 @@ ascend_npu:
 - diopiSin
 - diopiSinInp
 - diopiStack
-- diopiMSELoss
-- diopiMSELossBackward
 - diopiMultinomial
 - diopiNorm
 - diopiMaxPool2dWithIndices
