@@ -158,7 +158,6 @@ ascend:
 - diopiSinInp
 - diopiSoftmax
 - diopiSoftmaxBackward
-- diopiSplitWithSizes
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
