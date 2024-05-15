@@ -87,6 +87,7 @@ ascend:
 - diopiRemainder
 - diopiRemainderScalar
 - diopiRemainderTensor
+- diopiRepeat
 - diopiSlice
 - diopiSliceBackward
 - diopiSplitWithSizes
@@ -144,7 +145,6 @@ ascend_npu:
 - diopiLinspace
 - diopiMax
 - diopiMaximum
-- diopiRepeat
 - diopiMaskedFill
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
