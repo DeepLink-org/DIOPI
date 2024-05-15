@@ -3373,12 +3373,8 @@ diopi_configs = {
                               (), (180,), (2, 64, 64), (3, 25, 24, 5),
                               (5, 0), (0,), (0, 6, 1, 3), (4, 0, 3),
                               (2048,)),
-                    "val": [-1, -1, -1, -1,
-                          -1, -1, -1, -1,
-                          -1, -1, -1, -1,
-                          -100],
                     "dtype": [np.int64],
-                    "gen_fn": dict(fn='Genfunc.randint_with_replace', low=0, high=80),
+                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=80),
                 },
                 {
                     "ins": ['weight'],
