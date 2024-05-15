@@ -1432,4 +1432,18 @@ device_configs = {
             ]
         ),
     ),
+    
+    # aclnnNorm not support float64
+    # TODO(zhangqiu): skip float64 temporarily, as norm can not pass the test with float64 cast to float32
+    'norm': dict(
+        name=['norm'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                },
+            ]
+        ),
+    ),
 }
