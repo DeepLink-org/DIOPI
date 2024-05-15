@@ -46,6 +46,7 @@ ascend:
 - diopiEqInp
 - diopiEqInpScalar
 - diopiEqScalar
+- diopiEqual
 - diopiErf
 - diopiErfInp
 - diopiExp
@@ -139,6 +140,7 @@ ascend:
 - diopiRemainder
 - diopiRemainderScalar
 - diopiRemainderTensor
+- diopiRepeat
 - diopiSlice
 - diopiSliceBackward
 - diopiSplitWithSizes
@@ -194,13 +196,11 @@ ascend_npu:
 - diopiDropout
 - diopiDropoutInp
 - diopiCopyInp
-- diopiEqual
 - diopiExpand
 - diopiGroupNorm
 - diopiGroupNormBackward
 - diopiMax
 - diopiMaximum
-- diopiRepeat
 - diopiMaskedFill
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
