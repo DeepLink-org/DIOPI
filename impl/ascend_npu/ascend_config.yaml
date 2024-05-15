@@ -28,6 +28,8 @@ ascend:
 - diopiCeilInp
 - diopiCol2Im
 - diopiContiguous
+- diopiConvolution2d
+- diopiConvolution2dBackward
 - diopiCos
 - diopiCosInp
 - diopiCrossEntropyLoss
@@ -189,8 +191,6 @@ ascend_npu:
 - diopiMinAll
 - diopiMinimum
 - diopiCat
-- diopiConvolution2d
-- diopiConvolution2dBackward
 - diopiDropout
 - diopiDropoutInp
 - diopiCopyInp

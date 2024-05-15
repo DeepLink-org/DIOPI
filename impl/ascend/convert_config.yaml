@@ -22,10 +22,10 @@
     dtype: (float64)->float32
 
 - diopiConvolution2d:
-    dtype: (float64)->float16
+    dtype: (float64)->float32
 
 - diopiConvolution2dBackward:
-    dtype: (float64)->float16
+    dtype: (float64)->float32
 
 - diopiAdaptiveAvgPool2d:
     dtype: (float64)->float32
