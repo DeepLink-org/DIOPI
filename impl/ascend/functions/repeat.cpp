@@ -13,7 +13,6 @@ namespace ascend {
 
 diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t repeatsSize) {
     AscendTensor inputAt(input);
-    ASCEND_CHECK(inputAt.dim() <= repeatsSize.len, "repeats size should not be smaller than input tensor dim on ascend!");
     // When repeatSize.len is equal to 0, out is the same as input.
     if (repeatsSize.len == 0) {
         DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, out, input);
