@@ -24,7 +24,7 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
     int64_t hw = inputAt.numel() / (n * c);
     eps = (eps < 1e-5) ? 1e-5 : eps;
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnGroupNorm, ctx, input, weight, bias, n, c, hw, numGroups, eps, out, saveMean, saveInvstd);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnGroupNorm, ctx, inputAt, weight, bias, n, c, hw, numGroups, eps, out, saveMean, saveInvstd);
     return diopiSuccess;
 }
 
@@ -34,12 +34,16 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     AscendTensor inputAt(input);
     AscendTensor gradWeightAt(gradWeight);
     AscendTensor gradBiasAt(gradBias);
+
+    if (!inputAt.defined()) {
+        return diopiSuccess;
+    }
+
     if (inputAt.numel() == 0) {
-        diopiScalar_t zeroScalar = constructDiopiScalarT(diopi_dtype_float32, 0.0);
+        diopiScalar_t zeroScalar = constructDiopiScalarT(diopi_dtype_float64, 0.0);
         makeTensorFromScalar(ctx, gradBiasAt, &zeroScalar);
         if (inputAt.shape()[0] == 0) {
             makeTensorFromScalar(ctx, gradWeightAt, &zeroScalar);
-
         } else {
             fillNan(ctx, gradWeightAt);
         }
@@ -50,7 +54,7 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         int64_t gradMaskData[3] = {true, true, true};
         diopiSize_t gradMask{gradMaskData, 3};
         DIOPI_ASCEND_CALL_ACLNN(
-            aclnnGroupNormBackward, ctx, gradOutput, inputAt, mean, rstd, weight, n, c, hw, numGroups, gradMask, gradInput, gradWeight, gradBias);
+            aclnnGroupNormBackward, ctx, gradOutput, inputAt, mean, rstd, weight, n, c, hw, numGroups, gradMask, gradInput, gradWeightAt, gradBiasAt);
     }
     return diopiSuccess;
 }
