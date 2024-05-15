@@ -1,7 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 import numpy as np
 import scipy as sp
-
+from functools import reduce
 
 class Genfunc:
     @staticmethod
@@ -41,13 +41,15 @@ class Genfunc:
         if dtype == np.uint8:
             return np.random.randint(low=0, high=high, size=shape).astype(dtype)
         return np.random.randint(low=low, high=high, size=shape).astype(dtype)
-    
+
     @staticmethod
-    def randint_with_replace(low=0, high=10, shape=(1,), val=-1, dtype=np.float32):
+    def randint_with_seq_replace(low, high, val, cnt, shape, dtype=np.float32):
         arr = Genfunc.randint(low=low, high=high, shape=shape, dtype=dtype)
-        if val != -1 and arr.size > 10:
-            num_elements = np.random.randint(2, 10)
-            random_indices = np.random.choice(arr.size, num_elements, replace=False)
+        if val is not None:
+            total_num = reduce(lambda x, y: x*y, shape)
+            num_elements = np.random.randint(1, total_num)
+            indexs = np.arange(num_elements)
+            random_indices = np.random.choice(indexs, cnt, replace=False)
             arr_flat = arr.flatten()
             arr_flat[random_indices] = val
             arr = arr_flat.reshape(shape)
