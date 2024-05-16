@@ -97,11 +97,21 @@ diopiError_t diopiDivInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 }
 
 diopiError_t diopiMaximum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
+    AscendTensor outAt(out);
+    if (outAt.numel() == 0) {
+        return diopiSuccess;
+    }
+
     DIOPI_ASCEND_CALL_ACLNN(aclnnMaximum, ctx, input, other, out);
     return diopiSuccess;
 }
 
 diopiError_t diopiMinimum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
+    AscendTensor outAt(out);
+    if (outAt.numel() == 0) {
+        return diopiSuccess;
+    }
+
     DIOPI_ASCEND_CALL_ACLNN(aclnnMinimum, ctx, input, other, out);
     return diopiSuccess;
 }
