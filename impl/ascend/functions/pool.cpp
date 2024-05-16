@@ -13,7 +13,7 @@ namespace ascend {
 diopiError_t diopiAdaptiveAvgPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t outputSize) {
     int64_t inputNumel = 0;
     diopiGetTensorNumel(input, &inputNumel);
-    if (inputNumel == 0) {
+    if (input == nullptr || inputNumel == 0) {
         return diopiSuccess;
     }
     DIOPI_ASCEND_CALL_ACLNN(aclnnAdaptiveAvgPool2d, ctx, input, outputSize, out);

@@ -296,23 +296,5 @@ diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, diopiTensor
     return diopiSuccess;
 }
 
-diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
-                          diopiReduction_t reduction) {
-    AclOpRunner<2, 1>("MseLoss", ctx).addInput(input).addInput(target).addOutput(out).setAttr<std::string>("reduction", getReductionStr(reduction)).run();
-    return diopiSuccess;
-}
-
-diopiError_t diopiMSELossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input,
-                                  diopiConstTensorHandle_t target, diopiReduction_t reduction) {
-    AclOpRunner<3, 1>("MseLossGrad", ctx)
-        .addInput(input)
-        .addInput(target)
-        .addInput(gradOutput)
-        .addOutput(gradInput)
-        .setAttr<std::string>("reduction", getReductionStr(reduction))
-        .run();
-    return diopiSuccess;
-}
-
 }  // namespace ascend
 }  // namespace impl
