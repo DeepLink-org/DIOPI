@@ -50,7 +50,8 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         int64_t n = inputAt.shape(0);
         int64_t c = inputAt.shape(1);
         int64_t hw = inputAt.numel() / (n * c);
-        std::array<bool,3> gradMask= {true, true, true};
+
+        std::array<bool, 3> gradMask = {true, true, true};
         if (nullptr == gradInput) {
             gradMask[0] = false;
         }

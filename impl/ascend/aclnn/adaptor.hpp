@@ -10,8 +10,9 @@
 #include <acl/acl.h>
 #include <aclnn/acl_meta.h>
 #include <dlfcn.h>
-#include <cassert>
+
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -108,16 +109,16 @@ inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
 
 inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) { return ::aclCreateIntArray(size.data, size.len); }
 inline aclIntArray* createAclIntArrayFromVector(const std::vector<int64_t>& vec) { return ::aclCreateIntArray(vec.data(), vec.size()); }
-template <size_t N=0>
-inline aclBoolArray* createAclBoolArrayFromVector(const std::array<bool,N>& vec) { return ::aclCreateBoolArray(vec.data(), vec.size()); }
-
+template <size_t N = 0>
+inline aclBoolArray* createAclBoolArrayFromVector(const std::array<bool, N>& vec) {
+    return ::aclCreateBoolArray(vec.data(), vec.size());
+}
 
 template <typename T>
 struct IsBoolStdArray : std::false_type {};
 
 template <std::size_t N>
 struct IsBoolStdArray<std::array<bool, N>> : std::true_type {};
-
 
 template <class T, class U = std::remove_cv_t<std::remove_reference_t<T>>>
 decltype(auto) convertType(T&& param) {
