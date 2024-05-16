@@ -135,7 +135,7 @@ DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTens
     randomNum[0] = 0;
     randomNum[1] = 0;
     if (dropoutP > 0.0) {
-        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, randomNum[0], randomNum[1]));
+        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, &(randomNum[0]), &(randomNum[1])));
     }
 
     DIOPI_CALL_CNNL(cnnlFlashAttentionForward(handle,
@@ -307,7 +307,7 @@ DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, d
     randomNum[1] = 0;
 
     if (dropoutP > 0.0) {
-        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, randomNum[0], randomNum[1]));
+        DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, &(randomNum[0]), &(randomNum[1])));
     }
 
     DIOPI_CALL_CNNL(cnnlFlashAttentionBackward(handle,
