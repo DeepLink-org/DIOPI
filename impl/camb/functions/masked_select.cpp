@@ -10,7 +10,7 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DiopiTensor inputTensor(input);
     DiopiTensor maskTensor(mask);
-    
+
     DIOPI_CALL(contiguous(ctx, inputTensor));
     DIOPI_CALL(contiguous(ctx, maskTensor));
 
