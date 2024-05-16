@@ -13,6 +13,8 @@ ascend:
 - diopiArgmax
 - diopiAtan
 - diopiAtanInp
+- diopiBaddbmm
+- diopiBaddbmmInp
 - diopiBitwiseNot
 - diopiBitwiseNotInp
 - diopiBitwiseAnd
@@ -189,17 +191,11 @@ ascend_npu:
 - diopiAddcmul
 - diopiAddcmulInp
 - diopiAddmm
-- diopiBaddbmm
-- diopiBaddbmmInp
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
-- diopiMaxAll
-- diopiMin
-- diopiMinAll
-- diopiMinimum
 - diopiCat
 - diopiDropout
 - diopiDropoutInp
@@ -207,8 +203,6 @@ ascend_npu:
 - diopiExpand
 - diopiGroupNorm
 - diopiGroupNormBackward
-- diopiMax
-- diopiMaximum
 - diopiMaskedFill
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
