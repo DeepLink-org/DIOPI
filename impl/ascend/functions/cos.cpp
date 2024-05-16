@@ -10,23 +10,12 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-    AscendTensor inputAt(input);
-    if (!inputAt.defined() || inputAt.numel() == 0) {
-        return diopiSuccess;
-    }
-
-    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCos, ctx, inputAt);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCos, ctx, input);
     return diopiSuccess;
 }
 
 diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AscendTensor inputAt(input);
-    AscendTensor outAt(out);
-    if (!inputAt.defined() || inputAt.numel() == 0) {
-        return diopiSuccess;
-    }
-
-    DIOPI_ASCEND_CALL_ACLNN(aclnnCos, ctx, inputAt, outAt);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnCos, ctx, input, out);
     return diopiSuccess;
 }
 
