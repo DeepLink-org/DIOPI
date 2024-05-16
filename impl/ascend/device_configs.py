@@ -44,9 +44,9 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "shape": (Skip((2, )), (0, 2)),
+                    "shape": [Skip((2,))],
                 },
-            ]
+            ],
         ),
     ),
 
