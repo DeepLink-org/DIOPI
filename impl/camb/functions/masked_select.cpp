@@ -11,6 +11,9 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t *ou
     DiopiTensor inputTensor(input);
     DiopiTensor maskTensor(mask);
 
+    DIOPI_CALL(contiguous(ctx, inputTensor));
+    DIOPI_CALL(contiguous(ctx, maskTensor));
+    
     std::vector<DiopiTensor *> pmask{&maskTensor};
     std::set<diopiDtype_t> maskDtypes{diopi_dtype_bool};
     DIOPI_CALL(autoCastTensorType(ctx, pmask, maskDtypes));
