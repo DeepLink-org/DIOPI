@@ -107,6 +107,9 @@ ascend:
 - diopiLog2
 - diopiLog2Inp
 - diopiLogInp
+- diopiMax
+- diopiMaxAll
+- diopiMaximum
 - diopiMean
 - diopiMSELoss
 - diopiMSELossBackward
@@ -114,6 +117,9 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
+- diopiMin
+- diopiMinAll
+- diopiMinimum
 - diopiNe
 - diopiNeInp
 - diopiNeInpScalar
