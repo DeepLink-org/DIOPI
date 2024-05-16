@@ -14,7 +14,7 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
     if (0 == inputShape.len) {
-        impl::ascend::diopiCopyInp(ctx, input, out);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, out, input);
         return diopiSuccess;
     }
 
@@ -30,7 +30,12 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 }
 
 diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
-    DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, input, dims, out);
+    AscendTensor inputTensor(input);
+    if (inputTensor.dim() == 0) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, out, input);
+    } else {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, input, dims, out);
+    }
     return diopiSuccess;
 }
 
