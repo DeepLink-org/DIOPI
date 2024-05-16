@@ -147,6 +147,11 @@ ascend:
 - diopiSigmoidInp
 - diopiOnes
 - diopiPermute
+- diopiPow
+- diopiPowInp
+- diopiPowInpTensor
+- diopiPowScalar
+- diopiPowTensor
 - diopiProd
 - diopiRemainder
 - diopiRemainderScalar
@@ -254,11 +259,6 @@ ascend_npu:
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
-- diopiPow
-- diopiPowInp
-- diopiPowInpTensor
-- diopiPowScalar
-- diopiPowTensor
 - diopiFlashAttention
 - diopiFlashAttentionBackward
 - diopiFlashAttentionV2
