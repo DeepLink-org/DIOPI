@@ -122,6 +122,8 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/ascend_tensor.cpp
     ${OLD_IMPL_DIR}/functions/remainder.cpp
     ${OLD_IMPL_DIR}/functions/abs.cpp
+    ${OLD_IMPL_DIR}/functions/atan.cpp
+    ${OLD_IMPL_DIR}/functions/lerp.cpp
     ${OLD_IMPL_DIR}/functions/ceil.cpp
     ${OLD_IMPL_DIR}/functions/bmm.cpp
     ${OLD_IMPL_DIR}/functions/col2im.cpp
@@ -145,6 +147,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/bitwise.cpp
     ${OLD_IMPL_DIR}/functions/upsample.cpp
     ${OLD_IMPL_DIR}/functions/tril.cpp
+    ${OLD_IMPL_DIR}/functions/mse_loss.cpp
     ${OLD_IMPL_DIR}/functions/floor.cpp
     ${OLD_IMPL_DIR}/functions/mm.cpp
     ${OLD_IMPL_DIR}/functions/addcdiv.cpp
@@ -187,11 +190,13 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/mul.cpp
     ${OLD_IMPL_DIR}/functions/addmm.cpp
     ${OLD_IMPL_DIR}/functions/expand.cpp
+    ${OLD_IMPL_DIR}/functions/linalg_vec_norm.cpp
     ${OLD_IMPL_DIR}/functions/linspace.cpp
     ${OLD_IMPL_DIR}/functions/ones.cpp
     ${OLD_IMPL_DIR}/functions/split.cpp
     ${OLD_IMPL_DIR}/functions/zeros.cpp
     ${OLD_IMPL_DIR}/functions/matmul.cpp
+    ${OLD_IMPL_DIR}/functions/equal.cpp
     ${OLD_IMPL_DIR}/functions_mmcv/roi_align_npu.cpp
     ${OLD_IMPL_DIR}/functions_ext/rms_norm.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
