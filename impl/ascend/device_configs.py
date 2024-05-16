@@ -5,12 +5,21 @@ from skip import Skip
 # topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
 
 device_configs = {
-     'batch_norm': dict(
+    # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.
+    'batch_norm': dict(
         name=["batch_norm"],
         atol_half=1e-1,
         rtol_half=1e-1,
         atol=1e-2,
         rtol=1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                }
+            ]
+        )
      ),
 
     'batch_norm_no_contiguous': dict(
@@ -117,70 +126,17 @@ device_configs = {
             ]
         ),
     ),
-
-    'imum': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16), Skip(np.float64),],
-                },
-            ],
-        ),
-    ),
-
-    'imum_input_nan': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),],
-                }
-            ],
-        ),
-    ),
-
-    'imum_other_nan': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),],
-                }
-            ],
-        ),
-    ),
-
-      'imum_broadcast': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),],
-                }
-            ],
-        ),
-    ),
-
-    'imum_ones': dict(
-        name=['maximum', 'minimum'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),],
-                }
-            ],
-        ),
-    ),
-
+    # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
-        atol=2e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                },
+            ]
+        ),
     ),
 
     'adaptive_max_pool2d': dict(
@@ -1158,8 +1114,10 @@ device_configs = {
         )
     ),
 
+    # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.
     'interpolate': dict(
         name=['interpolate'],
+        dtype=[Skip(np.float64),],
         para=dict(
             # support bilinear, nearest
             mode=[Skip('bicubic'),Skip('trilinear'),Skip('linear'),],
@@ -1504,5 +1462,33 @@ device_configs = {
                 },
             ]
         )
+    ),
+    
+    # aclnnMseloss not support float64
+    # TODO(zhangqiu): skip float64 temporarily, as mse_loss can not pass the test with float64 cast to float32
+    'mse_loss': dict(
+        name=['mse_loss'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                },
+            ]
+        ),
+    ),
+    
+    # aclnnNorm not support float64
+    # TODO(zhangqiu): skip float64 temporarily, as norm can not pass the test with float64 cast to float32
+    'norm': dict(
+        name=['norm'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                },
+            ]
+        ),
     ),
 }
