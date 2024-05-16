@@ -50,17 +50,16 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         int64_t n = inputAt.shape(0);
         int64_t c = inputAt.shape(1);
         int64_t hw = inputAt.numel() / (n * c);
-        int64_t gradMaskData[3] = {true, true, true};
+        std::array<bool,3> gradMask= {true, true, true};
         if (nullptr == gradInput) {
-            gradMaskData[0] = false;
+            gradMask[0] = false;
         }
         if (nullptr == gradWeight) {
-            gradMaskData[1] = false;
+            gradMask[1] = false;
         }
         if (nullptr == gradBias) {
-            gradMaskData[2] = false;
+            gradMask[2] = false;
         }
-        diopiSize_t gradMask{gradMaskData, 3};
         DIOPI_ASCEND_CALL_ACLNN(
             aclnnGroupNormBackward, ctx, gradOutput, inputAt, mean, rstd, weight, n, c, hw, numGroups, gradMask, gradInput, gradWeightAt, gradBias);
     }
