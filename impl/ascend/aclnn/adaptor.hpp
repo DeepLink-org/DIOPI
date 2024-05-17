@@ -124,15 +124,15 @@ decltype(auto) convertType(T&& param) {
         return createAclTensorFromAscendTensor(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiTensorHandle_t> || std::is_same_v<U, diopiConstTensorHandle_t>) {
         return createAclTensorFromDiopiTensor(std::forward<T>(param));
-    } else if constexpr (std::is_same_v<U, std::vector<diopiConstTensorHandle_t>> || std::is_same_v<U, const std::vector<diopiConstTensorHandle_t>>) {
+    } else if constexpr (std::is_same_v<U, std::vector<diopiConstTensorHandle_t>>) {
         return createAclTensorListFromDiopiTensorVector(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiScalar_t*> || std::is_same_v<U, const diopiScalar_t*>) {
         return createAclScalarFromDiopiScalar(std::forward<T>(param));
-    } else if constexpr (std::is_same_v<U, diopiSize_t> || std::is_same_v<U, const diopiSize_t>) {
+    } else if constexpr (std::is_same_v<U, diopiSize_t>) {
         return createAclIntArrayFromDiopiSize(std::forward<T>(param));
-    } else if constexpr (std::is_same_v<U, std::vector<int64_t>> || std::is_same_v<U, const std::vector<int64_t>>) {
+    } else if constexpr (std::is_same_v<U, std::vector<int64_t>>) {
         return createAclIntArrayFromIntVector(std::forward<T>(param));
-    } else if constexpr (std::is_same_v<U, diopiDtype_t> || std::is_same_v<U, const diopiDtype_t>) {
+    } else if constexpr (std::is_same_v<U, diopiDtype_t>) {
         return diopiDtypeToAclDataType(std::forward<T>(param));
     } else {
         static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
