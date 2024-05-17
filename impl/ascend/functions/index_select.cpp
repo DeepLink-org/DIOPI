@@ -15,6 +15,7 @@ diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
 diopiError_t diopiIndexSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t inputSizes,
                                       int64_t dim, diopiConstTensorHandle_t index) {
+    // TODO (wang xing): Optimization for the backward of index_select.
     AscendTensor gradInputTensor(gradInput);
     diopiScalar_t zero = constructDiopiScalarT(gradInputTensor.dtype(), 0);
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, gradInput, &zero);
