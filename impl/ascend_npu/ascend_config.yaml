@@ -115,6 +115,7 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
+- diopiMatmul
 - diopiMax
 - diopiMaxAll
 - diopiMaximum
@@ -208,7 +209,6 @@ ascend_npu:
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiNonzero
-- diopiMatmul
 - diopiCat
 - diopiDropout
 - diopiDropoutInp
