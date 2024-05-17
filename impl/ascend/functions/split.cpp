@@ -10,7 +10,12 @@ namespace impl {
 namespace ascend {
 diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, int64_t numOuts, diopiConstTensorHandle_t input,
                                  const diopiSize_t splitSizes, int64_t dim) {
+    std::cout << std::endl;
     AscendTensor inputTensor(input);
+
+    if (input == nullptr || inputTensor.numel() == 0) {
+        return diopiSuccess;
+    }
 
     if (dim < 0) {  // make sure dim is positive
         dim += inputTensor.dim();
@@ -24,7 +29,6 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
     }
 
     DIOPI_ASCEND_CALL_ACLNN(aclnnSplitWithSize, ctx, input, splitSizes, dim, dynamicOutput);
-
     return diopiSuccess;
 }
 }  // namespace ascend
