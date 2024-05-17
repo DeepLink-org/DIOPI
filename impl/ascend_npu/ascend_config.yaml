@@ -13,6 +13,8 @@ ascend:
 - diopiArgmax
 - diopiAtan
 - diopiAtanInp
+- diopiBaddbmm
+- diopiBaddbmmInp
 - diopiBitwiseNot
 - diopiBitwiseNotInp
 - diopiBitwiseAnd
@@ -23,6 +25,7 @@ ascend:
 - diopiBitwiseOrInp
 - diopiBitwiseOrScalar
 - diopiBitwiseOrInpScalar
+- diopiBmm
 - diopiCastDtype
 - diopiCat
 - diopiClamp
@@ -210,12 +213,9 @@ ascend_npu:
 - diopiAddcmul
 - diopiAddcmulInp
 - diopiAddmm
-- diopiBaddbmm
-- diopiBaddbmmInp
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiNonzero
-- diopiBmm
 - diopiMatmul
 - diopiDropout
 - diopiDropoutInp
