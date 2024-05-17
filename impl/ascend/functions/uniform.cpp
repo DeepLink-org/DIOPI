@@ -10,7 +10,6 @@ namespace impl {
 namespace ascend {
 
 diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiGeneratorHandle_t generator) {
-<<<<<<< HEAD
     auto pair = getSeedAndOffset(ctx, generator, 10);
     diopiScalar_t seedScalar = constructDiopiScalarT(diopi_dtype_int64, pair.first);
     diopiTensorHandle_t seedTh;
@@ -34,12 +33,6 @@ diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout
     diopiScalar_t fromScalar = constructDiopiScalarT(inoutTensor.dtype(), from);
     diopiScalar_t alphaScalar = constructDiopiScalarT(inoutTensor.dtype(), 1);
     diopiAddInpScalar(ctx, inout, &fromScalar, &alphaScalar);
-=======
-    uint64_t seed = 0;
-    uint64_t offset = 0;
-    diopiGeneratorGetSeedAndOffset(generator, &seed, &offset);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceUniform, ctx, inout, from, to, seed, offset);
->>>>>>> 261c5186... tyf/change gen (#1191)
     return diopiSuccess;
 }
 
