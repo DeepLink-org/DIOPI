@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feat/*
       - dev_v0.25
   pull_request:
     paths-ignore:

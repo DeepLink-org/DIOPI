@@ -35,6 +35,20 @@ device_configs = {
             ]
         )
     ),
+    # Bad in-place call: input tensor size [2] and output tensor size [2, 0, 2] should match
+    # pytorch 2.1.0 does not support this case
+    # input: (2,), batch1: (2, 0, 4), batch2: (2, 4, 2)
+    'baddbmm_without_inplace': dict(
+        name=["baddbmm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [Skip((2,))],
+                },
+            ],
+        ),
+    ),
 
     # temp for 910B
     'uniform': dict(
