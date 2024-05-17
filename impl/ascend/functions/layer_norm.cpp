@@ -51,18 +51,17 @@ diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         rstdAt.unsqueeze(rstdAt.dim());
     }
 
-    int64_t gradMaskData[3] = {true, true, true};
+    std::array<bool, 3> gradMask = {true, true, true};
     if (nullptr == gradInput) {
-        gradMaskData[0] = false;
+        gradMask[0] = false;
     }
     if (nullptr == gradWeight) {
-        gradMaskData[1] = false;
+        gradMask[1] = false;
     }
     if (nullptr == gradBias) {
-        gradMaskData[2] = false;
+        gradMask[2] = false;
     }
 
-    diopiSize_t gradMask{gradMaskData, 3};
     DIOPI_ASCEND_CALL_ACLNN(aclnnLayerNormBackward,
                             ctx,
                             gradOutput,
