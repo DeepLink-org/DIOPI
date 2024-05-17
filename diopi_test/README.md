@@ -308,6 +308,15 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
 
 以上配置会跳过p=1 __或__ x1为float64类型的测例。
 
+4. 直接跳过整个测试case
+```
+    'cdist': dict(
+        name=['cdist'],
+        skip_all=True
+    ),
+```
+以上配置会直接跳过cdist::cdist的整个测试case，对应的所有测例都不会被测试。
+
 
 一个完整的device_configs.py的示例如下:
 ```

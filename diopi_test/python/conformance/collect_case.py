@@ -97,7 +97,9 @@ class DeviceConfig(object):
             for d in value["dtype"]:
                 if isinstance(d, Skip):
                     self._device_rules[cfg_name]["skip"]["dtype"].add(d.value())
-
+        if "skip_all" in value.keys():
+            self._device_rules[cfg_name]["skip_all"] = value["skip_all"]
+        
     # @staticmethod
     def run(self):
         self._expand_config_with_name()
@@ -122,8 +124,12 @@ class CollectCase(object):
             case_key = "_".join(case_key.split("_")[:-1])
             if case_key not in filter_rule.keys():
                 return False
-
             rule = filter_rule[case_key]
+            
+            # skip_all
+            if rule.get("skip_all", False):
+                return True
+            
             # tol
             if "tol" in rule.keys():
                 for tol in rule["tol"]:
