@@ -95,6 +95,7 @@ constexpr aclDataType diopiDtypeToAclDataType(diopiDtype_t dtype) noexcept {
         return acl_dtype;
 
     switch (dtype) {
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_bfloat16, ACL_BF16)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_float16, ACL_FLOAT16)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_float32, ACL_FLOAT)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_float64, ACL_DOUBLE)
@@ -107,6 +108,7 @@ constexpr aclDataType diopiDtypeToAclDataType(diopiDtype_t dtype) noexcept {
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_int64, ACL_INT64)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_uint64, ACL_UINT64)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_bool, ACL_BOOL)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_complex32, ACL_COMPLEX32)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_complex64, ACL_COMPLEX64)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_complex128, ACL_COMPLEX128)
         default:
