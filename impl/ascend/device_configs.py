@@ -855,31 +855,6 @@ device_configs = {
         ),
     ),
 
-    'scatter_scalar': dict( # llm used
-        name=['scatter'],
-        para=dict(
-            # In this case, for float32 (but not float64), no matter what the value parameter is,
-            # the shape and dim parameters will result in wrong output for unknown reasons.
-            # Specificially, the rows of elements that shouldn't get impacted by scatter,
-            # will be filled with seemingly random or zero values.
-            # aclnn not support index out of size
-            value=[Skip(0.25),],
-        ),
-    ),
-
-    'scatter': dict( # llm used
-        name=['scatter'],
-        tensor_para=dict(
-            # aclnn not support index out of size
-            args=[
-                {
-                    "ins": ['index'],
-                    "shape": [Skip((6,)),],
-                },
-            ],
-        ),
-    ),
-    
     'index': dict(
         name=['index'],
         tensor_para=dict(
