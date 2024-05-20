@@ -1,6 +1,7 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiAddmm
 - diopiAdd
 - diopiAddInp
 - diopiAddScalar
@@ -64,6 +65,7 @@ ascend:
 - diopiEqual
 - diopiErf
 - diopiErfInp
+- diopiExpand
 - diopiExp
 - diopiExpInp
 - diopiFill
@@ -115,6 +117,7 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
+- diopiMatmul
 - diopiMax
 - diopiMaxAll
 - diopiMaximum
@@ -205,16 +208,13 @@ ascend_npu:
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
 - diopiAddcmulInp
-- diopiAddmm
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiNonzero
-- diopiMatmul
 - diopiCat
 - diopiDropout
 - diopiDropoutInp
 - diopiCopyInp
-- diopiExpand
 - diopiMaskedFill
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
