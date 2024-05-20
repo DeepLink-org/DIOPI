@@ -147,6 +147,7 @@ ascend:
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
+- diopiOneHot
 - diopiReciprocal
 - diopiReciprocalInp
 - diopiRelu
@@ -245,7 +246,6 @@ ascend_npu:
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
-- diopiOneHot
 - diopiScatter
 - diopiScatterInp
 - diopiScatterScalar
