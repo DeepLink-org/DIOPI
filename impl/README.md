@@ -16,10 +16,10 @@
 ## **实现原理**
 
 如果使用diopi_test来测试算子实现的正确性，则需要实现[diopi/proto/include/diopi/diopirt.h](../proto/include/diopi/diopirt.h)中的和厂商相关的runtime接口(通过注册的形式，详见下文)。
-编译脚本在[scripts/build_imp.sh](scripts/build_impl.sh)其中-DTEST表示是否编译diopi_test测试所需要的代码。并且需要设置环境变量`-DTEST=ON`时,此时在编译时，会包含测试相关的代码，并生成供diopi_test使用的so文件。如果不设置环境变量`-DTEST=OFF`，则编译生成的so文件中没diopi_test所需要的so文件，此时可供上层框架调用（比如[DIPU](https://github.com/DeepLink-org/DIPU)）。
+编译脚本在[scripts/build_imp.sh](scripts/build_impl.sh)其中编译选项-DTEST表示是否编译diopi_test测试所需要的代码，该编译选项默认为`-DTEST=ON`,此时在编译时，会包含测试相关的代码，并生成供diopi_test使用的so文件。如果设置为`-DTEST=OFF`，则编译生成的so文件中没diopi_test所需要的so文件，此时可供上层框架调用（比如[DIPU](https://github.com/DeepLink-org/DIPU)）。
 #### 实现 TEST 所需运行时函数
 
-  [diopi_test/include/conform_test.h](../diopi_test/include/conform_test.h) 中提供了运行时所需 C-API 函数声明，用户根据函数声明实现运行时所需函数，以便测试套件能够在芯片上管理内存等资源。该实现部分仅供测试时使用。
+  [diopi_test/diopi_stub/include/conform_test.h](../diopi_test/include/conform_test.h) 中提供了运行时所需 C-API 函数声明，用户根据函数声明实现运行时所需函数，以便测试套件能够在芯片上管理内存等资源。该实现部分仅供测试时使用。
 
 <!-- #### 要求实现并注册的函数列表如下
 
@@ -54,14 +54,14 @@
 
 #### 实现 DIOPI 函数接口
 
-  [proto/include/diopi/functions.h](../proto/include/diopi/functions.h) 根据模型训练和框架开发经验定义了一套标准算子的函数，每一个函数完成一个特定的、需要计算设备参与执行的功能。截止目前，从30个常用模型所需算子的角度出发，定义了所需的常见训练算子。该实现部分会由 TEST 测试后接入训练框架，用于真实模型训练。在实现的过程中，芯片厂商可根据自身特性来优化算子的性能。
+  [proto/include/diopi/functions.h](../proto/include/diopi/functions.h) 根据模型训练和框架开发经验定义了一套标准算子的函数，每一个函数完成一个特定的、需要计算设备参与执行的功能。截止目前，从30个常用模型所需算子的角度出发，定义了所需的常见训练算子。该实现部分会由 DIOPI_TEST 测试后接入训练框架，用于真实模型训练。在实现的过程中，芯片厂商可根据自身特性来优化算子的性能。
 
-  另外，PROTO 提供了如张量，标量等基础数据结构，这些基础数据结构也出现在DIOPI标准算子的参数列表中。而其中一些数据接口如张量 *Tensor*，上下文 *Context* 是不透明数据类型 ***Opaque data type***。 因此 [proto/include/diopi/diopirt.h](../proto/include/diopi/diopirt.h) 提供了一套接口用以获取 *Tensor* 的相关信息或者从上下文 *Context* 请求资源。这套接口设计旨在连接训练框架和 DIOPI 算子库， 由训练框架提供给 DIOPI 算子库。而 TEST 将以仅为测试服务的原则实现这套接口。
+  另外，PROTO 提供了如张量，标量等基础数据结构，这些基础数据结构也出现在DIOPI标准算子的参数列表中。而其中一些数据接口如张量 *Tensor*，上下文 *Context* 是不透明数据类型 ***Opaque data type***。 因此 [proto/include/diopi/diopirt.h](../proto/include/diopi/diopirt.h) 提供了一套接口用以获取 *Tensor* 的相关信息或者从上下文 *Context* 请求资源。这套接口设计旨在连接训练框架和 DIOPI 算子库， 由训练框架提供给 DIOPI 算子库。而 DIOPI_TEST 将以仅为测试服务的原则实现这套接口。
 
 #### 配置 DIOPI 转换逻辑（可选）
 
 
-  如果某些算子支持的类型或者layout有限制，可以通过编写配置文件实现调用接口前后的自动转换，转换依赖两个DIOPI接口：`diopiDtypeCast`和`diopiCopyInp`、 `diopiContiguous`，因此必须实现这两个接口。需要注意的是，由于这种转换是通过copy来完成的，所以会有一定的性能损耗。
+  如果某些算子支持的数据类型(dtype)或者数据格式(layout)有限制，例如仅支持某些数据类型或数据格式，可以通过编写配置文件实现调用接口前后的自动转换，从而对数据类型或数据格式进行转换。转换依赖两个DIOPI接口：`diopiDtypeCast`和`diopiCopyInp`、 `diopiContiguous`，因此必须实现这三个接口。需要注意的是，由于这种转换是通过copy来完成的，所以会有一定的性能损耗。
   此功能的代码逻辑在[adaptor](../adaptor)中，并且在diopi函数接口实现时，需要满足一下条件：
 
   * 所有包含的diopi函数实现的cpp文件需要放在`impl/${DEVICE}/functions/`目录下 <sup>*</sup>
@@ -70,12 +70,13 @@
 
   [*] 其中${DEVICE}为编译adaptor时，指定的厂商名。
 
-  在impl/设备文件夹下新建`convert_config.yaml`文件，配置内容参考：
+  
+  每个厂商的设备(device)有自己对应的转换规则，具体位于`impl/${DEVICE}/convert_config.yaml`文件，配置内容参考：
 
   ```
   - common_config:
     dtype: (int64)->int32, (float64)->float32
-    layout: NHWC
+    layout: NCHW
 
   - diopiAdd:
       dtype: (int64)->int32, (float64)->float32
@@ -83,13 +84,13 @@
           input：(float64)->float32
           other：(float64，int64)->float32
           out: (float64，int64)->float32
-      layout: NCHW，NHWC, input(NHWC)
+      layout: NHWC
   ```
 
   配置应用可分为三级：
-  每个设备通用的配置(`common_config`)，说明了不支持的dtype以及转换规则、接收的layout(默认为NHWC、NCHW)，该配置作用于所有算子。
-  每个算子可以有自己的配置(`diopiAdd`)，所有输入输出参数，其中缺省的部分沿用通用配置。
-  每个参数也可以有自己的配置(`tensor_dtype`)：对于特殊的参数可以配置参数粒度的，此时会覆盖算子粒度的配置。
+  1. 全局的、特定设备通用的配置(`common_config`)，该配置作用于所有缺省配置的算子，用于对dtype和layout进行转换。
+  2. 算子粒度的配置(`diopiAdd`)，该配置会覆盖通用配置，作用于该算子的所有输入和输出参数，其中缺省的部分沿用通用配置。
+  3. 参数粒度配置(`tensor_dtype`)：对于算子特殊的参数可以配置参数粒度的转换规则，此时会覆盖算子粒度的配置。
 
   ##### **配置项说明**
 
@@ -97,13 +98,14 @@
 
   可在设备通用配置和算子配置中设置支持的`dtype`，通用配置的选项包括：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、float64、bool，算子内各参数可配置的类型为该参数支持的所有类型。
   ```
+  # 该算子不支持int64和float64的参数，需要分别转换为int32和float32进行计算，并会在计算完成后转换回原本类型
   dtype: (int64)->int32, (float64)->float32
   ```
-  括号中为不支持的类型，`->`指向转换后的类型，括号中可以有多个类型，表示这些类型都会转换至`->`后的类型。转换规则可不配置，默认 `dtype: int64->int32`
+  括号中为不支持的类型，`->`指向转换后的类型，括号中可以有多个类型，表示这些类型都会转换至`->`后的类型。
 
   2. **layout**
 
-  layout可配置的选项包括NHWC和NCHW，后续若有其他layout，DIOPI支持后也可配置。配置中两个可同时包含，表示两种类型都支持，默认值即为都支持，对layout没有特殊要求。layout也可以配置算子和参数粒度的，配置形式如下：
+  layout可配置的选项包括NHWC、NCHW和ND，后续若有其他layout，DIOPI支持后也可配置。配置中两个可同时包含，表示两种类型都支持，默认值即为都支持，对layout没有特殊要求。layout也可以配置算子和参数粒度的，配置形式如下：
   ```
   layout: NCHW，NHWC, input(NHWC)
   ```
