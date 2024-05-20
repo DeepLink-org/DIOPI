@@ -213,7 +213,7 @@ device_configs = {
         ),
     ),
     
-    # TODO(zhangqiu) skip (2, 31, 512, 6, 40) temporarily，since this case will invoke ascend Inner Error in global test.
+    # TODO(zhangqiu) skip (2, 31, 512, 6, 40) temporarily，since if the input shape is (2, 31, 512, 6, 40) and dtyep is float64 will invoke ascend Inner Error in global test.
     'pointwise_op': dict(
         name=['sqrt'],
         tensor_para=dict(
