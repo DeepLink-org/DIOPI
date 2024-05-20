@@ -54,6 +54,8 @@ ascend:
 - diopiDivInp
 - diopiDivInpScalar
 - diopiDivScalar
+- diopiDropout
+- diopiDropoutInp
 - diopiEmbedding
 - diopiEmbeddingBackward
 - diopiFlip
@@ -209,8 +211,6 @@ ascend_npu:
 - diopiNonzero
 - diopiMatmul
 - diopiCat
-- diopiDropout
-- diopiDropoutInp
 - diopiCopyInp
 - diopiExpand
 - diopiGroupNorm
