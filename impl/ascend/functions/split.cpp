@@ -22,7 +22,7 @@ diopiError_t diopiSplitWithSizes(diopiContextHandle_t ctx, diopiTensorHandle_t* 
 
     // build the dynamicOutput vector
     std::vector<diopiTensorHandle_t> dynamicOutput;
-    dynamicOutput.reserve(numOuts * sizeof(diopiTensorHandle_t));
+    dynamicOutput.reserve(numOuts);
 
     for (int64_t i = 0; i < numOuts; i++) {
         dynamicOutput.emplace_back(outs[i]);
