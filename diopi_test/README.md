@@ -74,15 +74,11 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
         # 只测试 relu
         python main.py --mode gen_data --fname relu
         python main.py --mode gen_case --fname relu
-        python main.py --mode run_test
+        python main.py --mode run_test --fname relu
+
         # 测试所有算子
         python main.py --mode gen_data
         python main.py --mode gen_case
-        python main.py --mode run_test
-
-        # 测试所有算子
-        python main.py --mode gen_data --fname all_ops
-        python main.py --mode gen_case --fname all_ops
         python main.py --mode run_test
     ```
 
@@ -115,7 +111,7 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     ```
         # --nhwc 仅对在 nhwc_op 字典中的算子有效
         python main.py --mode gen_case --fname relu --nhwc
-        python main.py --mode run_test
+        python main.py --mode run_test --fname relu
     ```
 
 
@@ -135,7 +131,7 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
     ```
         # --four_bytes 仅对在 dtype_op/dtype_out_op 字典中的算子有效
         python main.py --mode gen_case --fname relu --four_bytes
-        python main.py --mode run_test
+        python main.py --mode run_test --fname relu
     ```
 
 * model_name: 指定模型相关算子测试
