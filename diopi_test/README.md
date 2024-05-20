@@ -4,7 +4,7 @@
 
 # DIOPI_TEST
 
-DIOPI_TEST是构建于设备无关算子接口（Device-Independent Operator Interface, DIOPI）之上的测试框架，它支持了没有训练框架的情况下，验证算子适配正确性的功能。DIOPI_TEST设计了一套完整的测试框架和一套算子函数测试。测试套件，可以使芯片厂商适配 DIOPI 算子时，无需训练框架即可对适配结果的正确性进行验证。
+DIOPI_TEST是构建于设备无关算子接口（Device-Independent Operator Interface, DIOPI）之上的测试框架，它支持在没有训练框架的情况下，验证算子适配正确性的功能。DIOPI_TEST设计了一套完整的测试框架和一套算子函数测试套件，可以使芯片厂商适配 DIOPI 算子时，无需训练框架即可对适配结果的正确性进行验证。
 
 主要模块：
 * DIOPI_TEST 运行时：支持了运行时函数的接口，用以管理设备相关资源。
@@ -45,7 +45,7 @@ python main.py --mode run_test --html_report
 ```
 
 ### 可选测试模式
-DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其他测试模式
+DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其他便于开发者使用的选项
 
 * mode: 指定测试阶段
 
@@ -75,6 +75,7 @@ DIOPI_TEST框架还提供针对不同硬件芯片特点的测试模式以及其�
         python main.py --mode gen_data --fname relu
         python main.py --mode gen_case --fname relu
         python main.py --mode run_test
+
         # 测试所有算子
         python main.py --mode gen_data
         python main.py --mode gen_case
@@ -348,4 +349,3 @@ DIOPI-TEST 设计了一套测例配置规则及相应的测试框架。以算子
     python main.py --mode gen_case --impl_folder /path/to/folder --fname cdist
     python main.py --mode run_test
 ```
-
