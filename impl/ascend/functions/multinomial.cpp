@@ -4,21 +4,16 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t numSamples, bool replacement,
                               diopiGeneratorHandle_t generator) {
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    AclOpRunner<3, 1>("MultinomialWithReplacement", ctx)
-        .addInput(input)
-        .addConstInput(pair.first, diopi_dtype_int64)
-        .addConstInput(pair.second, diopi_dtype_int64)
-        .setAttr("numsamples", numSamples)
-        .setAttr("replacement", replacement)
-        .addOutput(out)
-        .run();
+    uint64_t seed = 0;
+    uint64_t offset = 0;
+    diopiGeneratorGetSeedAndOffset(generator, &seed, &offset);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnMultinomial, ctx, input, numSamples, replacement, seed, offset, out);
     return diopiSuccess;
 }
 

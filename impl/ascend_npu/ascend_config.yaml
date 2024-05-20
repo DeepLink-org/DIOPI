@@ -142,6 +142,7 @@ ascend:
 - diopiLog2
 - diopiLog2Inp
 - diopiLogInp
+- diopiMultinomial
 - diopiNeg
 - diopiNegInp
 - diopiNormalScalarTensor
@@ -220,7 +221,6 @@ ascend_npu:
 - diopiMaskedFillInpScalar
 - diopiMaskedFillScalar
 - diopiStack
-- diopiMultinomial
 - diopiNorm
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
