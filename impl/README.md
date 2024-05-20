@@ -107,5 +107,5 @@
 
   layout可配置的选项包括NHWC、NCHW和ND，后续若有其他layout，DIOPI支持后也可配置。配置中两个可同时包含，表示两种类型都支持，默认值即为都支持，对layout没有特殊要求。layout也可以配置算子和参数粒度的，配置形式如下：
   ```
-  layout: NCHW，NHWC, input(NHWC)
+  layout: NCHW，input(NHWC)
   ```
