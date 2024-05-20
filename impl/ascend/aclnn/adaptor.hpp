@@ -12,7 +12,6 @@
 #include <dlfcn.h>
 
 #include <array>
-#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -72,6 +71,7 @@ inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
 }
 
 inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor) {
+    // The Ascend kernel can handle the case that the input tensor is nullptr
     if (tensor == nullptr) {
         return nullptr;
     }
