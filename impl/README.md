@@ -16,7 +16,7 @@
 ## **实现原理**
 
 如果使用diopi_test来测试算子实现的正确性，则需要实现[diopi/proto/include/diopi/diopirt.h](../proto/include/diopi/diopirt.h)中的和厂商相关的runtime接口(通过注册的形式，详见下文)。
-编译脚本在[scripts/build_imp.sh](scripts/build_impl.sh)其中编译选项-DTEST表示是否编译diopi_test测试所需要的代码，该编译选项默认为`-DTEST=ON`,此时在编译时，会包含测试相关的代码，并生成供diopi_test使用的so文件。如果设置为`-DTEST=OFF`，则编译生成的so文件中没diopi_test所需要的so文件，此时可供上层框架调用（比如[DIPU](https://github.com/DeepLink-org/DIPU)）。
+编译脚本在[scripts/build_imp.sh](scripts/build_impl.sh)其中编译选项-DTEST表示是否编译diopi_test测试所需要的代码，如果设置为`-DTEST=ON`，则在编译时会包含测试相关的代码，并生成供diopi_test使用的so文件。如果设置为`-DTEST=OFF`，则编译生成的so文件中没diopi_test所需要的so文件，此时可供上层框架调用（比如[DIPU](https://github.com/DeepLink-org/DIPU)）。
 #### 实现 TEST 所需运行时函数
 
   [diopi_test/diopi_stub/include/conform_test.h](../diopi_test/include/conform_test.h) 中提供了运行时所需 C-API 函数声明，用户根据函数声明实现运行时所需函数，以便测试套件能够在芯片上管理内存等资源。该实现部分仅供测试时使用。
