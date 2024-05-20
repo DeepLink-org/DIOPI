@@ -21,7 +21,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t runningMean, diopiConstTensorHandle_t runningVar, diopiConstTensorHandle_t saveMean,
                                     diopiConstTensorHandle_t saveInvstd, bool training, double eps) {
-    int64_t gradMask[3] = {true, true, true};
+    std::array<bool, 3> gradMask = {true, true, true};
     if (nullptr == gradInput) {
         gradMask[0] = false;
     }
@@ -31,7 +31,6 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     if (nullptr == gradBias) {
         gradMask[2] = false;
     }
-    diopiSize_t gradMaskArray{gradMask, 3};
     DIOPI_ASCEND_CALL_ACLNN(aclnnBatchNormBackward,
                             ctx,
                             gradOutput,
@@ -43,7 +42,7 @@ diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                             saveInvstd,
                             training,
                             eps,
-                            gradMaskArray,
+                            gradMask,
                             gradInput,
                             gradWeight,
                             gradBias);
