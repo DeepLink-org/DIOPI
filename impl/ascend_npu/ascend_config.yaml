@@ -122,6 +122,7 @@ ascend:
 - diopiMaxAll
 - diopiMaximum
 - diopiMean
+- diopiMm
 - diopiMSELoss
 - diopiMSELossBackward
 - diopiMul
@@ -241,7 +242,6 @@ ascend_npu:
 - diopiTensorDestructionHook
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
-- diopiMm
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNLLLossV2
