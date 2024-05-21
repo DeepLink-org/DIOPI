@@ -133,6 +133,8 @@ decltype(auto) convertType(T&& param) {
     } else if constexpr (std::is_same_v<U, diopiTensorHandle_t> || std::is_same_v<U, diopiConstTensorHandle_t>) {
         return createAclTensorFromDiopiTensor(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, std::vector<diopiConstTensorHandle_t>>) {
+        return createAclTensorListFromConstDiopiTensorVector(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, std::vector<diopiTensorHandle_t>>) {
         return createAclTensorListFromDiopiTensorVector(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiScalar_t*> || std::is_same_v<U, const diopiScalar_t*>) {
         return createAclScalarFromDiopiScalar(std::forward<T>(param));
