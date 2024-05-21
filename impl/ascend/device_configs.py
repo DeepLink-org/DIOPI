@@ -1426,15 +1426,8 @@ device_configs = {
 
     'adam': dict(
         name=['adamw'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['param'],
-                    # float64 not supported yet on ascend
-                    # temporarily skip all test cases due to software stack version
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
-                },
-            ]
+        para=dict(
+            amsgrad=[Skip(False)],
         ),
     ),
 

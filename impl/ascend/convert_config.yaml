@@ -1,6 +1,10 @@
 - common_config:
     layout: NCHW
 
+- diopiAdamW:
+    dtype: (float64)->float32
+    layout: ND
+
 - diopiSoftmax:
     layout: ND
 
