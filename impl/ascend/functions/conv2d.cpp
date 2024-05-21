@@ -74,12 +74,18 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
     auto dilationExpand = expandDim(dilation, 2);
     auto outputPaddingExpand = expandDim(outputPadding, 2);
 
+    AscendTensor gradBiasAt(gradBias);
+    std::vector<int64_t> biasShape;
+    if (gradBias != nullptr) {
+        biasShape = gradBiasAt.shape();
+    }
+
     DIOPI_ASCEND_CALL_ACLNN(aclnnConvolutionBackward,
                             ctx,
                             gradOutput,
                             input,
                             weight,
-                            *biasSizes,
+                            biasShape,
                             strideExpand,
                             paddingExpand,
                             dilationExpand,
