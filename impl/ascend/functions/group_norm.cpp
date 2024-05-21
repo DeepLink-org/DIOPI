@@ -39,10 +39,9 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
 
     if (inputAt.numel() == 0) {
-        diopiScalar_t zeroScalar = constructDiopiScalarT(diopi_dtype_float64, 0.0);
-        diopiFill(ctx, gradBias, &zeroScalar);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradBias);
         if (inputAt.shape()[0] == 0) {
-            diopiFill(ctx, gradWeight, &zeroScalar);
+            DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradWeight);
         } else {
             fillNan(ctx, gradWeightAt);
         }
