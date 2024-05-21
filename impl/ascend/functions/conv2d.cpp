@@ -6,19 +6,6 @@
 
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
-
-static diopiSize_t expandDim(diopiSize_t inputShape, int64_t expectedDim) {
-    if (inputShape.len == 1) {
-        int64_t expandShapeData[expectedDim];
-        for (int64_t i = 0; i < expectedDim; i++) {
-            expandShapeData[i] = inputShape.data[0];
-        }
-        diopiSize_t expandShape{expandShapeData, expectedDim};
-        return expandShape;
-    } else {
-        return inputShape;
-    }
-}
 namespace impl {
 namespace ascend {
 
@@ -29,19 +16,38 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     // TODO(zhangqiu) impl int8_t CalcuOpUtil::GetCubeMathType(bool allowHf32)
     int8_t cubeMathType = 0;
 
-    int64_t outputPaddingData[padding.len];
+    int64_t outputPaddingData[2];
     for (int i = 0; i < padding.len; i++) {
         outputPaddingData[i] = 0;
     }
-    diopiSize_t outputPadding{outputPaddingData, padding.len};
+    diopiSize_t outputPadding{outputPaddingData, 2};
 
-    auto strideExpand = expandDim(stride, 2);
-    auto paddingExpand = expandDim(padding, 2);
-    auto dilationExpand = expandDim(dilation, 2);
-    auto outputPaddingExpand = expandDim(outputPadding, 2);
+    int64_t strideExpandData[2];
+    int64_t paddingExpandData[2];
+    int64_t dilationExpandData[2];
 
-    DIOPI_ASCEND_CALL_ACLNN(
-        aclnnConvolution, ctx, input, weight, bias, strideExpand, paddingExpand, dilationExpand, transposed, outputPaddingExpand, groups, out, cubeMathType);
+    strideExpandData[0] = stride.data[0];
+    strideExpandData[1] = (stride.len == 1) ? stride.data[0] : stride.data[1];
+
+    paddingExpandData[0] = padding.data[0];
+    paddingExpandData[1] = (padding.len == 1) ? padding.data[0] : padding.data[1];
+
+    dilationExpandData[0] = dilation.data[0];
+    dilationExpandData[1] = (dilation.len == 1) ? dilation.data[0] : dilation.data[1];
+
+    DIOPI_ASCEND_CALL_ACLNN(aclnnConvolution,
+                            ctx,
+                            input,
+                            weight,
+                            bias,
+                            diopiSize_t{strideExpandData, 2},
+                            diopiSize_t{paddingExpandData, 2},
+                            diopiSize_t{dilationExpandData, 2},
+                            transposed,
+                            outputPadding,
+                            groups,
+                            out,
+                            cubeMathType);
     return diopiSuccess;
 }
 
@@ -63,16 +69,24 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
         gradMask[2] = false;
     }
 
-    int64_t outputPaddingData[padding.len];
+    int64_t outputPaddingData[2];
     for (int i = 0; i < padding.len; i++) {
         outputPaddingData[i] = 0;
     }
-    diopiSize_t outputPadding{outputPaddingData, padding.len};
+    diopiSize_t outputPadding{outputPaddingData, 2};
 
-    auto strideExpand = expandDim(stride, 2);
-    auto paddingExpand = expandDim(padding, 2);
-    auto dilationExpand = expandDim(dilation, 2);
-    auto outputPaddingExpand = expandDim(outputPadding, 2);
+    int64_t strideExpandData[2];
+    int64_t paddingExpandData[2];
+    int64_t dilationExpandData[2];
+
+    strideExpandData[0] = stride.data[0];
+    strideExpandData[1] = (stride.len == 1) ? stride.data[0] : stride.data[1];
+
+    paddingExpandData[0] = padding.data[0];
+    paddingExpandData[1] = (padding.len == 1) ? padding.data[0] : padding.data[1];
+
+    dilationExpandData[0] = dilation.data[0];
+    dilationExpandData[1] = (dilation.len == 1) ? dilation.data[0] : dilation.data[1];
 
     AscendTensor gradBiasAt(gradBias);
     std::vector<int64_t> biasShape;
@@ -86,11 +100,11 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
                             input,
                             weight,
                             biasShape,
-                            strideExpand,
-                            paddingExpand,
-                            dilationExpand,
+                            diopiSize_t{strideExpandData, 2},
+                            diopiSize_t{paddingExpandData, 2},
+                            diopiSize_t{dilationExpandData, 2},
                             transposed,
-                            outputPaddingExpand,
+                            outputPadding,
                             groups,
                             gradMask,
                             cubeMathType,
