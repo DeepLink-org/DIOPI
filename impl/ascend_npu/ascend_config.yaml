@@ -1,6 +1,7 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiAddmm
 - diopiAdd
 - diopiAddInp
 - diopiAddScalar
@@ -13,6 +14,8 @@ ascend:
 - diopiArgmax
 - diopiAtan
 - diopiAtanInp
+- diopiBaddbmm
+- diopiBaddbmmInp
 - diopiBitwiseNot
 - diopiBitwiseNotInp
 - diopiBitwiseAnd
@@ -23,6 +26,7 @@ ascend:
 - diopiBitwiseOrInp
 - diopiBitwiseOrScalar
 - diopiBitwiseOrInpScalar
+- diopiBmm
 - diopiCastDtype
 - diopiClamp
 - diopiClampInp
@@ -61,6 +65,7 @@ ascend:
 - diopiEqual
 - diopiErf
 - diopiErfInp
+- diopiExpand
 - diopiExp
 - diopiExpInp
 - diopiFill
@@ -110,6 +115,7 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
+- diopiMatmul
 - diopiMax
 - diopiMaxAll
 - diopiMaximum
@@ -200,27 +206,15 @@ ascend_npu:
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
 - diopiAddcmulInp
-- diopiAddmm
-- diopiBaddbmm
-- diopiBaddbmmInp
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiNonzero
-- diopiBmm
-- diopiMatmul
-- diopiMaxAll
-- diopiMin
-- diopiMinAll
-- diopiMinimum
 - diopiCat
 - diopiDropout
 - diopiDropoutInp
 - diopiCopyInp
-- diopiExpand
 - diopiGroupNorm
 - diopiGroupNormBackward
-- diopiMax
-- diopiMaximum
 - diopiMaskedFill
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
