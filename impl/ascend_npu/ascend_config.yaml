@@ -56,6 +56,8 @@ ascend:
 - diopiDivInp
 - diopiDivInpScalar
 - diopiDivScalar
+- diopiDropout
+- diopiDropoutInp
 - diopiEmbedding
 - diopiEmbeddingBackward
 - diopiFlip
@@ -136,6 +138,7 @@ ascend:
 - diopiNeInp
 - diopiNeInpScalar
 - diopiNeScalar
+- diopiNorm
 - diopiNormal
 - diopiNormalInp
 - diopiLinspace
@@ -218,8 +221,7 @@ ascend_npu:
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiNonzero
-- diopiDropout
-- diopiDropoutInp
+- diopiCat
 - diopiCopyInp
 - diopiGroupNorm
 - diopiGroupNormBackward
@@ -228,7 +230,6 @@ ascend_npu:
 - diopiMaskedFillInpScalar
 - diopiMaskedFillScalar
 - diopiMultinomial
-- diopiNorm
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiIndexPut

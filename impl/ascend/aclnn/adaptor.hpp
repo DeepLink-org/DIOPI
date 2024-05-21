@@ -110,7 +110,15 @@ inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) { ret
 
 inline aclIntArray* createAclIntArrayFromIntVector(const std::vector<int64_t>& vec) { return ::aclCreateIntArray(vec.data(), vec.size()); }
 
-inline aclTensorList* createAclTensorListFromDiopiTensorVector(const std::vector<diopiConstTensorHandle_t>& tensorsVec) {
+inline aclTensorList* createAclTensorListFromDiopiTensorVector(const std::vector<diopiTensorHandle_t>& tensorsVec) {
+    std::vector<const aclTensor*> tensorList(tensorsVec.size());
+    for (size_t i = 0; i < tensorsVec.size(); i++) {
+        tensorList[i] = createAclTensorFromDiopiTensor(tensorsVec[i]);
+    }
+    return ::aclCreateTensorList(tensorList.data(), tensorList.size());
+}
+
+inline aclTensorList* createAclTensorListFromConstDiopiTensorVector(const std::vector<diopiConstTensorHandle_t>& tensorsVec) {
     std::vector<const aclTensor*> tensorList(tensorsVec.size());
     for (size_t i = 0; i < tensorsVec.size(); i++) {
         tensorList[i] = createAclTensorFromDiopiTensor(tensorsVec[i]);
