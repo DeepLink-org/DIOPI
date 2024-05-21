@@ -133,6 +133,7 @@ ascend:
 - diopiNeInp
 - diopiNeInpScalar
 - diopiNeScalar
+- diopiNorm
 - diopiNormal
 - diopiNormalInp
 - diopiLinspace
@@ -221,7 +222,6 @@ ascend_npu:
 - diopiMaskedFillScalar
 - diopiStack
 - diopiMultinomial
-- diopiNorm
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiIndexPut
