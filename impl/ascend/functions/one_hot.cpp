@@ -12,9 +12,10 @@ namespace ascend {
 
 diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t numClasses) {
     if (-1 == numClasses) {
-        diopiScalar_t maxScalar = constructDiopiScalarT(diopi_dtype_int64, -1);
         diopiTensorHandle_t maxTensor;
-        makeTensorFromScalar(ctx, &maxScalar, &maxTensor, diopi_device);
+        int64_t sizeTmp[1] = {1};
+        diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
+        diopiRequireTensor(ctx, &maxTensor, &sSize, nullptr, diopi_dtype_int64, diopi_device);
         DIOPI_ASCEND_CALL_ACLNN(aclnnMax, ctx, input, maxTensor);
 
         void* dataPtr = nullptr;
