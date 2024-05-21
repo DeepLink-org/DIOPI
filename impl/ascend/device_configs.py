@@ -35,6 +35,20 @@ device_configs = {
             ]
         )
     ),
+    # Bad in-place call: input tensor size [2] and output tensor size [2, 0, 2] should match
+    # pytorch 2.1.0 does not support this case
+    # input: (2,), batch1: (2, 0, 4), batch2: (2, 4, 2)
+    'baddbmm_without_inplace': dict(
+        name=["baddbmm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [Skip((2,))],
+                },
+            ],
+        ),
+    ),
 
     # temp for 910B
     'uniform': dict(
@@ -403,18 +417,6 @@ device_configs = {
         ),
     ),
 
-    'one_hot': dict(
-        name=['one_hot'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
-
     'sigmoid_focal_loss': dict(
         name=['sigmoid_focal_loss'],
         tensor_para=dict(
@@ -590,7 +592,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),
@@ -1451,17 +1453,11 @@ device_configs = {
         ),
     ),
     
-    # aclnnNorm not support float64
-    # TODO(zhangqiu): skip float64 temporarily, as norm can not pass the test with float64 cast to float32
+    # aclnnNorm currently only supports p=0,1,2,3
     'norm': dict(
         name=['norm'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64),],
-                },
-            ]
+        para=dict(
+            p = [Skip(2.5), Skip(float('inf')), Skip(-float('inf')), Skip(-2)],
         ),
     ),
 }
