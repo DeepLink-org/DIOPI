@@ -60,8 +60,11 @@
 
 #### 配置 DIOPI 转换逻辑（可选）
 
+  当`impl/${DEVICE}`下存在文件`convert_config.yaml`时，DIOPI自动转换功能（adaptor）将会开启。
+  此功能默认会把diopi中的非连续tensor转为连续tensor后，再去调用`impl/${DEVICE}`下的算子。
+  对与elementwise类算子，可能不需要转为连续，此时可layout可设置为ND. 如不需要adaptor转为功能，则删除`impl/${DEVICE}`下的`convert_config.yaml`.
 
-  如果某些算子支持的数据类型(dtype)或者数据格式(layout)有限制，例如仅支持某些数据类型或数据格式，可以通过编写配置文件实现调用接口前后的自动转换，从而对数据类型或数据格式进行转换。转换依赖两个DIOPI接口：`diopiDtypeCast`和`diopiCopyInp`、 `diopiContiguous`，因此必须实现这三个接口。需要注意的是，由于这种转换是通过copy来完成的，所以会有一定的性能损耗。
+  如果某些算子支持的数据类型(dtype)或者数据格式(layout)有限制，例如仅支持某些数据类型或数据格式，可以通过编写配置文件实现调用接口前后的自动转换，从而对数据类型或数据格式进行转换。转换依赖3个DIOPI接口：`diopiDtypeCast`和`diopiCopyInp`、 `diopiContiguous`，因此必须实现这3个接口。需要注意的是，由于这种转换是通过copy来完成的，所以会有一定的性能损耗。
   此功能的代码逻辑在[adaptor](../adaptor)中，并且在diopi函数接口实现时，需要满足一下条件：
 
   * 所有包含的diopi函数实现的cpp文件需要放在`impl/${DEVICE}/functions/`目录下 <sup>*</sup>
@@ -70,7 +73,7 @@
 
   [*] 其中${DEVICE}为编译adaptor时，指定的厂商名。
 
-  
+
   每个厂商的设备(device)有自己对应的转换规则，具体位于`impl/${DEVICE}/convert_config.yaml`文件，配置内容参考：
 
   ```
@@ -105,7 +108,9 @@
 
   2. **layout**
 
-  layout可配置的选项包括NCHW、NCL、NCDHW、NLC、NHWC、NDHWC和ND(具体可以参考adaptor/codegen/gen.py中的str_to_diopi_format字典），后续若有其他layout，DIOPI支持后也可配置。配置中两个可同时包含，表示两种类型都支持，默认值即为都支持，对layout没有特殊要求。layout也可以配置算子和参数粒度的，配置形式如下：
+  layout可配置的选项包括NCHW、NCL、NCDHW、NLC、NHWC、NDHWC和ND(具体可以参考adaptor/codegen/gen.py中的str_to_diopi_format字典），其中ND表示对tensor不做任何layout相关处理。后续若有其他layout，DIOPI支持后也可配置。配置中两个可同时包含，表示两种类型都支持，默认值即为都支持，对layout没有特殊要求。layout也可以配置算子和参数粒度的，配置形式如下：
   ```
-  layout: NCHW，input(NHWC)
+  layout: NCHW，input(NHWC) # 表示除input这个tensor进行NHWC转化外，其余tensor进行NCHW转化。
   ```
+
+  限制：diopi接口的输入参数为执行diopiTensorHandle_t的指针时，表示此参数是希望在diopi实现内部申请空间，故此diopi接口不会做任何adaptor相关逻辑（包含memory_format转化和dtype转化）
