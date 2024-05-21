@@ -30,10 +30,12 @@ diopiError_t diopiOneHot(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     }
 
     diopiTensorHandle_t onValue, offValue;
-    diopiScalar_t onValueScalar = constructDiopiScalarT(diopi_dtype_int64, 1);
-    diopiScalar_t offValueScalar = constructDiopiScalarT(diopi_dtype_int64, 0);
-    makeTensorFromScalar(ctx, &onValueScalar, &onValue, diopi_device);
-    makeTensorFromScalar(ctx, &offValueScalar, &offValue, diopi_device);
+    int64_t sizeTmp[1] = {1};
+    diopiSize_t sSize = arrayToDiopiSize(sizeTmp, 1);
+    diopiRequireTensor(ctx, &onValue, &sSize, nullptr, diopi_dtype_int64, diopi_device);
+    diopiRequireTensor(ctx, &offValue, &sSize, nullptr, diopi_dtype_int64, diopi_device);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceOne, ctx, onValue);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, offValue);
 
     diopiSize_t inputShape;
     diopiGetTensorShape(input, &inputShape);
