@@ -144,6 +144,7 @@ ascend:
 - diopiLogInp
 - diopiNeg
 - diopiNegInp
+- diopiNonzero
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -208,7 +209,6 @@ ascend_npu:
 - diopiAddcmulInp
 - diopiBatchNorm
 - diopiBatchNormBackward
-- diopiNonzero
 - diopiCat
 - diopiDropout
 - diopiDropoutInp
