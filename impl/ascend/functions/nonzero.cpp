@@ -30,7 +30,7 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     aclGetViewShape(std::get<1>(params.params()), &dims, &dimsNum);
 
     std::vector<int64_t> outShape(dims, dims + dimsNum);
-    diopiSize_t outSize = {outShape.data(), dimsNum};
+    diopiSize_t outSize = {outShape.data(), static_cast<int64_t>(dimsNum)};
     diopiRequireTensor(ctx, out, &outSize, nullptr, diopi_dtype_int64, diopi_device);
     DIOPI_ASCEND_CALL_ACLNN(aclnnSlice, ctx, output, 0, 0, dims[0], 1, *out);
 
