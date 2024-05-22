@@ -56,13 +56,23 @@ const char* diopiGetImplVersion() {
     return version;
 }
 
-// only new context need setCurStream
-void setCurStreamV1(diopiContextHandle_t ctx) {
-    static thread_local diopiContextHandle_t last_ctx = nullptr;
+static const size_t MAX_NUM_GPUS = 1024;
+static thread_local std::array<int64_t, MAX_NUM_GPUS> device_streams;
+static thread_local std::array<bool, MAX_NUM_GPUS> stream_flags{};
 
-    if (ctx != last_ctx) {
+// If the stream flag for the current device is not set (i.e., this is the first time we're setting the stream for this device),
+// or if the current stream is different from the stream we're trying to set,
+// then we update the current stream and set the stream flag.
+void setCurStreamV1(diopiContextHandle_t ctx) {
+    int device_id = c10::cuda::current_device();
+
+    diopiStreamHandle_t stream_handle;
+    diopiGetStream(ctx, &stream_handle);
+
+    if (!stream_flags[device_id] || device_streams[device_id] != reinterpret_cast<int64_t>(stream_handle)) {
         impl::aten::setCurStream(ctx);
-        last_ctx = ctx;
+        device_streams[device_id] = reinterpret_cast<int64_t>(stream_handle);
+        stream_flags[device_id] = true;
     }
 }
 
