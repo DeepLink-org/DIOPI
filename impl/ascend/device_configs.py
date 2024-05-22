@@ -417,18 +417,6 @@ device_configs = {
         ),
     ),
 
-    'one_hot': dict(
-        name=['one_hot'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
-
     'sigmoid_focal_loss': dict(
         name=['sigmoid_focal_loss'],
         tensor_para=dict(
