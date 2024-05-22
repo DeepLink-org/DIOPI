@@ -1,10 +1,8 @@
 ascend:
-- diopiAdaptiveAvgPool2d
-- diopiAdaptiveAvgPool2dBackward
-- diopiAddcdiv
-- diopiAddcdivInp
 - diopiAbs
 - diopiAbsInp
+- diopiAdaptiveAvgPool2d
+- diopiAdaptiveAvgPool2dBackward
 - diopiAddmm
 - diopiAdd
 - diopiAddInp
