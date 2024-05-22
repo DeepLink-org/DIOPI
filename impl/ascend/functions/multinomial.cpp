@@ -5,15 +5,14 @@
  */
 
 #include "../aclnn/adaptor.hpp"
+#include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
 diopiError_t diopiMultinomial(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t numSamples, bool replacement,
                               diopiGeneratorHandle_t generator) {
-    uint64_t seed = 0;
-    uint64_t offset = 0;
-    diopiGeneratorGetSeedAndOffset(generator, &seed, &offset);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnMultinomial, ctx, input, numSamples, replacement, seed, offset, out);
+    auto pair = getSeedAndOffset(ctx, generator, 10);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnMultinomial, ctx, input, numSamples, replacement, pair.first, pair.second, out);
     return diopiSuccess;
 }
 
