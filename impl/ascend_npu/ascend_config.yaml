@@ -117,6 +117,8 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
+- diopiMaskedSelect
+- diopiMaskedSelectBackward
 - diopiMatmul
 - diopiMax
 - diopiMaxAll
@@ -239,8 +241,6 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiTensorDestructionHook
-- diopiMaskedSelect
-- diopiMaskedSelectBackward
 - diopiMm
 - diopiNLLLoss
 - diopiNLLLossBackward

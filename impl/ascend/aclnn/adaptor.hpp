@@ -71,7 +71,10 @@ inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
 }
 
 inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor) {
-    ASCEND_CHECK_NULLPTR_ABORT(tensor);
+    // The Ascend kernel can handle the case that the input tensor is nullptr.
+    if (tensor == nullptr) {
+        return nullptr;
+    }
     diopiSize_t shape{};
     diopiGetTensorShape(tensor, &shape);
     diopiSize_t stride{};
@@ -107,6 +110,16 @@ inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
 }
 
 inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) { return ::aclCreateIntArray(size.data, size.len); }
+template <size_t N>
+inline aclBoolArray* createAclBoolArrayFromVector(const std::array<bool, N>& vec) {
+    return ::aclCreateBoolArray(vec.data(), vec.size());
+}
+
+template <typename T>
+struct IsBoolStdArray : std::false_type {};
+
+template <std::size_t N>
+struct IsBoolStdArray<std::array<bool, N>> : std::true_type {};
 
 inline aclIntArray* createAclIntArrayFromIntVector(const std::vector<int64_t>& vec) { return ::aclCreateIntArray(vec.data(), vec.size()); }
 
@@ -144,6 +157,8 @@ decltype(auto) convertType(T&& param) {
         return createAclIntArrayFromIntVector(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiDtype_t>) {
         return diopiDtypeToAclDataType(std::forward<T>(param));
+    } else if constexpr (IsBoolStdArray<U>::value) {
+        return createAclBoolArrayFromVector<std::tuple_size_v<U>>(std::forward<T>(param));
     } else {
         static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
         return std::forward<T>(param);
