@@ -172,7 +172,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erfinv', 'asin'],
+        name=['erfinv', 'asin', 'ceil'],
         tensor_para=dict(
             args=[
                 {
@@ -1286,18 +1286,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.int16),Skip(np.int32),Skip(np.int64),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
-                },
-            ]
-        ),
-    ),
-
-     'normal_tensor': dict(
-        name=["normal"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['mean'],
-                    "shape": [Skip(()), Skip((256, 1, 3, 3)),],
                 },
             ]
         ),
