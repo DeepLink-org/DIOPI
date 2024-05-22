@@ -18,7 +18,7 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
     AscendTensor stepTensor;
     makeTensorFromScalar(ctx, stepTensor, &stepScalar);
 
-    // maxExpAvgSqAt is optional when amsgrad is false
+    // maxExpAvgSq is optional when amsgrad is false
     if (amsgrad) {
         DIOPI_ASCEND_CALL_ACLNN(
             aclnnApplyAdamWV2, ctx, input, expAvg, expAvgSq, maxExpAvgSq, grad, stepTensor, lr, beta1, beta2, weightDecay, eps, amsgrad, maximize);
