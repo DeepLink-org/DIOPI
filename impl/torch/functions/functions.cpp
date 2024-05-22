@@ -61,14 +61,18 @@ static const size_t MAX_NUM_GPUS = 32;
 // each device(gpu) has a current stream
 static thread_local std::array<diopiStreamHandle_t, MAX_NUM_GPUS> current_streams = {};
 
-// If the current_streams[device_id] is nullptr means is the first time we're setting the stream for this device,
-// or current_streams[device_id] is not equal to the stream_handle, then we update the current stream and set the stream flag.
+/**
+ * Optimized version of setCurStream.
+ * This function reduces the number of calls to impl::aten::setCurStream(ctx) by checking if the stream to be set is the same as the current stream.
+ */
 void setLocalCurStream(diopiContextHandle_t ctx) {
     int device_id = c10::cuda::current_device();
 
     diopiStreamHandle_t stream_handle;
     diopiGetStream(ctx, &stream_handle);
 
+    // If the current_streams[device_id] is nullptr(means is the first time we set the stream for this device),
+    // or current_streams[device_id] is not equal to the stream_handle, then we update the current stream.
     if (!current_streams[device_id] || current_streams[device_id] != stream_handle) {
         // call c10::cuda::setCurrentCUDAStream to set the current stream.
         impl::aten::setCurStream(ctx);
