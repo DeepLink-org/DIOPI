@@ -15,7 +15,7 @@ diopiError_t diopiGather(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
 
     if (inputAt.numel() == 0 || indexAt.numel() == 0) {
         return diopiSuccess;
-    } 
+    }
 
     // alcnnGather requires that the dimensions of input, output, and index match.
     while (inputAt.dim() < indexAt.dim()) {
@@ -30,7 +30,7 @@ diopiError_t diopiGather(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         outAt.unsqueeze(0);
     }
 
-    for(int64_t i = 0; i < inputAt.dim() ; i++) {
+    for (int64_t i = 0; i < inputAt.dim(); i++) {
         if (inputAt.shape(i) == 0 || indexAt.shape(i) == 0) {
             return diopiSuccess;
         }
@@ -49,7 +49,7 @@ diopiError_t diopiGatherBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 
     if (inputAt.numel() == 0 || indexAt.numel() == 0) {
         return diopiSuccess;
-    } 
+    }
 
     // alcnnScatter requires that the dimensions of input, output, and index match.
     while (indexAt.dim() < gradOutputAt.dim()) {
@@ -63,10 +63,10 @@ diopiError_t diopiGatherBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     while (gradInputAt.dim() < gradOutputAt.dim()) {
         gradInputAt.unsqueeze(0);
     }
-    
+
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradInputAt);
     // the gradOutput will accumulate in gradInput according to index.
-    DIOPI_ASCEND_CALL_ACLNN(aclnnAddScatter, ctx, gradInputAt, dim, indexAt, gradOutputAt, gradInput);                       
+    DIOPI_ASCEND_CALL_ACLNN(aclnnScatterAdd, ctx, gradInputAt, dim, indexAt, gradOutputAt, gradInput);
     return diopiSuccess;
 }
 
