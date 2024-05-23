@@ -36,6 +36,10 @@ ascend_npu:
 - diopiArange
 - diopiAtan
 - diopiAtanInp
+- diopiAttention
+- diopiAttentionBackward
+- diopiAttentionVarLen
+- diopiAttentionVarLenBackward
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiBatchNorm
