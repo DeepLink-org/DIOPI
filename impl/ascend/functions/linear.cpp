@@ -4,111 +4,67 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <numeric>
-
-#include "../common/acloprunner.hpp"
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                          diopiConstTensorHandle_t bias) {
-    // convert inputs to AscendTensor
-    AscendTensor inputCopy(input);
-    AscendTensor outputCopy(out);
-    AscendTensor weightCopy(weight);
-    const std::vector<int64_t> outputPrimaryShape = outputCopy.shape();
+    diopiTensorHandle_t weightT;
+    diopiSize_t weightShape;
+    diopiGetTensorShape(weight, &weightShape);
+    diopiDtype_t weightDtype;
+    diopiGetTensorDtype(weight, &weightDtype);
+    std::vector<int64_t> weightSize(weightShape.data, weightShape.data + weightShape.len);
+    weightSize[weightShape.len - 1] = weightShape.data[weightShape.len - 2];
+    weightSize[weightShape.len - 2] = weightShape.data[weightShape.len - 1];
+    diopiSize_t weightTShape = {weightSize.data(), weightSize.size()};
+    diopiRequireTensor(ctx, &weightT, &weightTShape, nullptr, weightDtype, diopi_device);
+    std::vector<int64_t> dims = {weightShape.len - 1, weightShape.len - 2};
+    DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, weight, dims, weightT);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnMatmul, ctx, input, weightT, out, 0);
 
-    if (inputCopy.numel() == 0 || weightCopy.numel() == 0) {
-        diopiScalar_t zero = constructDiopiScalarT(outputCopy.dtype(), 0.0);
-        diopiFill(ctx, out, &zero);
-        return diopiSuccess;
+    if (nullptr != bias) {
+        diopiScalar_t alpha = constructDiopiScalarT(diopi_dtype_int64, 1);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceAdd, ctx, out, bias, &alpha);
     }
-
-    // mm's input matrix must be 2D, it needs to be converted if it isn't
-    if (inputCopy.shape().size() > 2) {
-        transTensorTo2D(ctx, inputCopy);
-    }
-    if (outputCopy.shape().size() > 2) {
-        transTensorTo2D(ctx, outputCopy);
-    }
-
-    AclOpRunner<3, 1> runner("MatMulV2", ctx);
-    runner.addInput(inputCopy).addInput(weightCopy).setAttr<uint8_t>("transpose_x1", false).setAttr<uint8_t>("transpose_x2", true).addOutput(outputCopy);
-
-    // if bias is not nullptr, also add bias to input
-    if (bias) {
-        runner.addInput(bias);
-    }
-    runner.run();
 
     return diopiSuccess;
 }
 
 diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                  diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight) {
-    AscendTensor gradWeightCopy(gradWeight);
-    AscendTensor gradOutputCopy(gradOutput);
-    AscendTensor inputCopy(input);
-    AscendTensor weightCopy(weight);
-
-    const std::vector<int64_t> gradInputPrimaryShape = inputCopy.shape();
-    bool transTensorTo2DFalg = false;
-
-    if (gradOutputCopy.numel() == 0 || weightCopy.numel() == 0 || inputCopy.numel() == 0) {
-        diopiScalar_t zero = constructDiopiScalarT(inputCopy.dtype(), 0.0);
-        diopiFill(ctx, gradInput, &zero);
-        diopiFill(ctx, gradWeight, &zero);
-        diopiFill(ctx, gradBias, &zero);
-        return diopiSuccess;
-    }
-
-    if (weightCopy.shape().size() > 2) transTensorTo2D(ctx, weightCopy);
-    if (gradOutputCopy.shape().size() > 2) transTensorTo2D(ctx, gradOutputCopy);
-
     if (nullptr != gradInput) {
-        AscendTensor gradInputCopy(gradInput);
-        if (inputCopy.shape().size() > 2) {
-            transTensorTo2DFalg = true;
-            transTensorTo2D(ctx, gradInputCopy);
-        }
-
-        AclOpRunner<2, 1>("MatMul", ctx)
-            .addInput(gradOutputCopy)
-            .addInput(weightCopy)
-            .setAttr<uint8_t>("transpose_x1", false)
-            .setAttr<uint8_t>("transpose_x2", false)
-            .addOutput(gradInputCopy)
-            .run();
-
-        if (transTensorTo2DFalg) {
-            gradInputCopy.view(gradInputPrimaryShape);
-        }
+        DIOPI_ASCEND_CALL_ACLNN(aclnnMatmul, ctx, gradOutput, weight, gradInput, 0);
     }
-
-    if (inputCopy.shape().size() > 2) transTensorTo2D(ctx, inputCopy);
 
     if (nullptr != gradWeight) {
-        if (gradWeightCopy.shape().size() > 2) transTensorTo2D(ctx, gradWeightCopy);
-
-        AclOpRunner<2, 1>("MatMul", ctx)
-            .addInput(gradOutputCopy)
-            .addInput(inputCopy)
-            .setAttr<uint8_t>("transpose_x1", true)
-            .setAttr<uint8_t>("transpose_x2", false)
-            .addOutput(gradWeightCopy)
-            .run();
+        diopiTensorHandle_t gradOutputT;
+        diopiSize_t gradOutputShape;
+        diopiGetTensorShape(gradOutput, &gradOutputShape);
+        diopiDtype_t gradOutputDtype;
+        diopiGetTensorDtype(gradOutput, &gradOutputDtype);
+        std::vector<int64_t> gradOutputSize(gradOutputShape.data, gradOutputShape.data + gradOutputShape.len);
+        gradOutputSize[gradOutputShape.len - 1] = gradOutputShape.data[gradOutputShape.len - 2];
+        gradOutputSize[gradOutputShape.len - 2] = gradOutputShape.data[gradOutputShape.len - 1];
+        diopiSize_t gradOutputTShape = {gradOutputSize.data(), gradOutputSize.size()};
+        diopiRequireTensor(ctx, &gradOutputT, &gradOutputTShape, nullptr, gradOutputDtype, diopi_device);
+        std::vector<int64_t> dims = {gradOutputShape.len - 1, gradOutputShape.len - 2};
+        DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, gradOutput, dims, gradOutputT);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnMatmul, ctx, gradOutputT, input, gradWeight, 0);
     }
 
-    AscendTensor reshapedGradOutputCopy;
-    makeTensorLike(ctx, reshapedGradOutputCopy, gradOutputCopy, gradOutputCopy.dtype());
-    reshape(ctx, gradOutputCopy, reshapedGradOutputCopy, gradOutputCopy.shape());
+    if (nullptr != gradBias) {
+        diopiSize_t gradOutputSize;
+        diopiGetTensorShape(gradOutput, &gradOutputSize);
+        std::vector<int64_t> dims(gradOutputSize.len - 1);
+        std::iota(std::begin(dims), std::end(dims), 0);
 
-    diopiTensorHandle_t diopiGradOutputCopy = const_cast<diopiTensorHandle_t>(reshapedGradOutputCopy.tensorHandle());
-    if (gradBias) {
-        std::vector<int64_t> dimVec(gradOutputCopy.shape().size() - 1);
-        std::iota(std::begin(dimVec), std::end(dimVec), 0);
-        diopiSize_t dim = vectorToDiopiSize(dimVec);
-        diopiSum(ctx, gradBias, diopiGradOutputCopy, dim);
+        diopiDtype_t biasDtype;
+        diopiGetTensorDtype(gradBias, &biasDtype);
+        aclDataType dtype = getAclDataType(biasDtype);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnReduceSum, ctx, gradOutput, dims, false, dtype, gradBias);
     }
 
     return diopiSuccess;
