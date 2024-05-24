@@ -2,7 +2,7 @@
 import numpy as np
 from skip import Skip
 
-# topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
+# scatter, topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
 
 device_configs = {
     # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.

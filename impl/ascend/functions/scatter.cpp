@@ -15,7 +15,7 @@ static int64_t getReduce(const char* reduce) {
         return 1;
     } else if (strcmp(reduce, "multiply") == 0) {
         return 2;
-    } else {
+    } else {  // replace
         return 0;
     }
 }
