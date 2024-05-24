@@ -50,14 +50,14 @@ namespace ascend {
         }                                                             \
     } while (0);
 
-#define ASCEND_CHECK_ABORT(condition, ...)                            \
-    do {                                                              \
-        if (!(condition)) {                                           \
-            printf("[%s:%s:%d]: ", __FILE__, __FUNCTION__, __LINE__); \
-            printf(__VA_ARGS__);                                      \
-            printf("\n");                                             \
-            std::abort();                                             \
-        }                                                             \
+#define ASCEND_CHECK_ABORT(condition, ...)                                                      \
+    do {                                                                                        \
+        if (!(condition)) {                                                                     \
+            printf("[%s:%s:%d]: ", __FILE__, __FUNCTION__, __LINE__);                           \
+            printf(__VA_ARGS__);                                                                \
+            printf("\n");                                                                       \
+            throw std::runtime_error(std::string("recent error msg: ") + aclGetRecentErrMsg()); \
+        }                                                                                       \
     } while (0);
 
 #define ASCEND_CHECK_NULLPTR_ABORT(ptr) ASCEND_CHECK_ABORT(ptr, "Variable is nullptr, pls check.")
