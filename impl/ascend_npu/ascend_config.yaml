@@ -1,6 +1,8 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiAddcmul
+- diopiAddcmulInp
 - diopiAddmm
 - diopiAdd
 - diopiAddInp
@@ -59,7 +61,6 @@ ascend:
 - diopiDropoutInp
 - diopiEmbedding
 - diopiEmbeddingBackward
-- diopiFlip
 - diopiEq
 - diopiEqInp
 - diopiEqInpScalar
@@ -71,6 +72,7 @@ ascend:
 - diopiExp
 - diopiExpInp
 - diopiFill
+- diopiFlip
 - diopiFloor
 - diopiFloorInp
 - diopiGather
@@ -117,6 +119,13 @@ ascend:
 - diopiLtInp
 - diopiLtInpScalar
 - diopiLtScalar
+- diopiLinspace
+- diopiLog
+- diopiLog10
+- diopiLog10Inp
+- diopiLog2
+- diopiLog2Inp
+- diopiLogInp
 - diopiMatmul
 - diopiMax
 - diopiMaxAll
@@ -138,13 +147,6 @@ ascend:
 - diopiNorm
 - diopiNormal
 - diopiNormalInp
-- diopiLinspace
-- diopiLog
-- diopiLog10
-- diopiLog10Inp
-- diopiLog2
-- diopiLog2Inp
-- diopiLogInp
 - diopiNeg
 - diopiNegInp
 - diopiNormalScalarTensor
@@ -175,6 +177,13 @@ ascend:
 - diopiScatterInp
 - diopiScatterScalar
 - diopiScatterInpScalar
+- diopiSilu
+- diopiSiluInp
+- diopiSiluBackward
+- diopiSin
+- diopiSinInp
+- diopiSoftmax
+- diopiSoftmaxBackward
 - diopiSlice
 - diopiSliceBackward
 - diopiSplitWithSizes
@@ -189,13 +198,6 @@ ascend:
 - diopiTanh
 - diopiTanhBackward
 - diopiTanhInp
-- diopiSilu
-- diopiSiluInp
-- diopiSiluBackward
-- diopiSin
-- diopiSinInp
-- diopiSoftmax
-- diopiSoftmaxBackward
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
@@ -212,8 +214,6 @@ ascend_npu:
 - diopiAdamW
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
-- diopiAddcmul
-- diopiAddcmulInp
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiNonzero
