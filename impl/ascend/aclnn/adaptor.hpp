@@ -12,6 +12,7 @@
 #include <dlfcn.h>
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
