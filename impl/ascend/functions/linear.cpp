@@ -44,7 +44,7 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
         if (inputCopy.dim() > 2) transTensorTo2D(ctx, inputCopy);
         AscendTensor gradOutputCopy(gradOutput);
         if (gradOutputCopy.dim() > 2) transTensorTo2D(ctx, gradOutputCopy);
-        
+
         diopiTensorHandle_t gradOutputCopyT;
         std::vector<int64_t> gradOutputCopyTShape = {gradOutputCopy.shape()[1], gradOutputCopy.shape()[0]};
         diopiSize_t gradOutputCopyTSize = {gradOutputCopyTShape.data(), gradOutputCopyTShape.size()};
