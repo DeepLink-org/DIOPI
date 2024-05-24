@@ -137,6 +137,7 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
+- diopiMultinomial
 - diopiMin
 - diopiMinAll
 - diopiMinimum
