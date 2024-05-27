@@ -170,19 +170,18 @@ int64_t AscendTensor::getAclMemBufferSize() const {
 
 aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* stride) {
     aclFormat format = ACL_FORMAT_ND;
-    switch (dim)
-    {
-    case 3:
-        format = ACL_FORMAT_NCL;
-        break;
-    case 4:
-        format = ACL_FORMAT_NCHW;
-        break;
-    case 5:
-        format = ACL_FORMAT_NCDHW;
-        break;
-    default:
-        break;
+    switch (dim) {
+        case 3:
+            format = ACL_FORMAT_NCL;
+            break;
+        case 4:
+            format = ACL_FORMAT_NCHW;
+            break;
+        case 5:
+            format = ACL_FORMAT_NCDHW;
+            break;
+        default:
+            break;
     }
 
     return format;
