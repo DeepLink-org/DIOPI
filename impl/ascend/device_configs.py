@@ -1092,11 +1092,8 @@ device_configs = {
     # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.
     'interpolate': dict(
         name=['interpolate'],
-        dtype=[Skip(np.float64),],
-        para=dict(
-            # support bilinear, nearest
-            mode=[Skip('bicubic'),Skip('trilinear'),Skip('linear'),],
-        ),
+        atol=1e-3,
+        rtol=1e-3,
     ),
 
     'im2col': dict(

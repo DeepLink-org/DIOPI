@@ -287,9 +287,15 @@
     dtype: (float64)->float32
 
 - diopiUpsampleLinear:
-    dtype: (float64)->float32
+    dtype: (float64, float16)->float32
 
 - diopiUpsampleLinearBackward:
+    dtype: (float64, float16)->float32
+
+- diopiUpsampleNearest:
+    dtype: (float64)->float32
+
+- diopiUpsampleNearestBackward:
     dtype: (float64)->float32
 
 - diopiRelu:
