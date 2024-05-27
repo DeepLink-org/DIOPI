@@ -565,5 +565,263 @@ diopiError_t diopiSmoothL1LossBackward(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
+diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t totalWeight, diopiConstTensorHandle_t input,
+                            diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignoreIndex) {
+    DiopiTensor inputTensor(input);
+    DiopiTensor outTensor(out);
+    DiopiTensor targetTensor(target);
+    DiopiTensor weightTensor(weight);
+    DiopiTensor totalWeightTensor(totalWeight);
+    if (inputTensor.numel() == 0) {
+        // Case in empty tensor
+        diopiScalar_t scalar = constructDiopiScalarT(inputTensor.dtype(), reduction == 1 ? std::numeric_limits<float>::quiet_NaN() : 0);
+        DIOPI_CALL(diopiFill(ctx, out, &scalar));
+        return diopiSuccess;
+    }
+
+    DIOPI_CHECK(inputTensor.isContiguous(), "input tensor should be contiguous");
+    DIOPI_CHECK(targetTensor.isContiguous(), "target tensor should be contiguous");
+    if (ReductionMean == reduction || ReductionSum == reduction) {
+        DIOPI_CHECK(outTensor.dim() <= 1, "output.dim should be <= 1 when the redcution is %s.", reductionStr(reduction));
+    }
+
+    std::vector<DiopiTensor*> pTensors{&inputTensor};
+    if (weightTensor.defined()) {
+        DIOPI_CHECK(weightTensor.isContiguous(), "weight tensor should be contiguous");
+        pTensors.push_back(&weightTensor);
+    }
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
+    if (targetTensor.dtype() != diopi_dtype_int32 || targetTensor.dtype() != diopi_dtype_int64) {
+        DIOPI_CALL(dataTypeCast(ctx, targetTensor, diopi_dtype_int32));
+    }
+
+    DiopiTensor outTmpTensor = outTensor;
+    if (inputTensor.dtype() != outTensor.dtype()) {
+        outTmpTensor = requiresTensor(ctx, outTensor.shape(), inputTensor.dtype());
+    }
+
+    auto dim = inputTensor.dim();
+    if (dim == 1) {
+        DIOPI_CHECK(targetTensor.dim() == 0, "0D target_tr tensor expected, multi-target_tr not supported");
+    } else if (dim == 2) {
+        DIOPI_CHECK(targetTensor.dim() == 1, "1D target_tr tensor expected, multi-target_tr not supported");
+        DIOPI_CHECK(inputTensor.shape()[0] == targetTensor.shape()[0], "size mismatch ");
+        DIOPI_CHECK(!weightTensor.defined() || weightTensor.numel() == inputTensor.shape()[1],
+                    "weight_tr tensor should be defined either for all classes or no classes");
+    } else if (dim == 4) {
+        DIOPI_CALL(contiguous(ctx, inputTensor, diopiMemoryFormat_t::ChannelsLast));
+    } else if (dim >= 3) {
+        int64_t inputLastSize = 1;
+        for (int i = 2; i < inputTensor.dim(); ++i) {
+            inputLastSize *= inputTensor.shape()[i];
+        }
+        inputTensor.view({inputTensor.shape()[0], inputTensor.shape()[1], 1, inputLastSize});
+
+        DIOPI_CALL(contiguous(ctx, inputTensor, diopiMemoryFormat_t::ChannelsLast));
+    } else {
+        DIOPI_CHECK(false, "Expected dim >= 2, but got: %d", dim);
+    }
+
+    auto inputSize = inputTensor.shape();
+    int c = dim == 1 ? inputSize[0] : inputSize[1];
+    int n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
+    DIOPI_CHECK(n == targetTensor.numel(), "Target size need be equal as input N*H*W.");
+    std::vector<int64_t> outputSize(inputSize.begin(), inputSize.end());
+
+    cnnlNlllossAlgorithm_t reductionMode;
+    switch (reduction) {
+        case 0: {
+            reductionMode = CNNL_REDUCTION_NONE;
+            outputSize = {n};
+            break;
+        }
+        case 1: {
+            reductionMode = CNNL_REDUCTION_MEAN;
+            outputSize = {1};
+            break;
+        }
+        case 2: {
+            reductionMode = CNNL_REDUCTION_SUM;
+            outputSize = {1};
+            break;
+        }
+        default:
+            DIOPI_CHECK(false, "Expected reduction in [0, 2], but got %d", reduction);
+    }
+
+    outTmpTensor.asStrided(outputSize, {1});
+    CnnlTensorDesc inputDesc;
+    CnnlTensorDesc targetDesc;
+    CnnlTensorDesc weightDesc;
+    if (weightTensor.defined()) {
+        DIOPI_CHECK(c == weightTensor.numel(), "Weight size need be equal as input C.");
+        weightDesc.set(weightTensor, CNNL_LAYOUT_ARRAY);
+    }
+    CnnlTensorDesc twDesc(totalWeightTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc outputDesc(outTmpTensor, CNNL_LAYOUT_ARRAY);
+    inputDesc.set(inputTensor, CNNL_LAYOUT_ARRAY, {n, c});
+    targetDesc.set(targetTensor, CNNL_LAYOUT_ARRAY, {n});
+
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    size_t workspaceSize = 0;
+    DIOPI_CALL_CNNL(cnnlGetNlllossWorkspaceSize(handle, inputDesc.get(), &workspaceSize));
+    void* workspacePtr = workspaceSize == 0 ? nullptr : requiresBuffer(ctx, workspaceSize).data();
+
+    DIOPI_CALL_CNNL(cnnlNlllossForward_v2(handle,
+                                          reductionMode,
+                                          inputDesc.get(),
+                                          inputTensor.data(),
+                                          targetDesc.get(),
+                                          targetTensor.data(),
+                                          static_cast<int>(ignoreIndex),
+                                          weightTensor.defined() ? weightDesc.get() : nullptr,
+                                          weightTensor.defined() ? weightTensor.data() : nullptr,
+                                          workspacePtr,
+                                          workspaceSize,
+                                          twDesc.get(),
+                                          totalWeightTensor.data(),
+                                          outputDesc.get(),
+                                          outTmpTensor.data()));
+
+    // outTmpTensor is channel-last now
+    if (outTmpTensor.dtype() != outTensor.dtype()) {
+        DIOPI_CALL(dataTypeCast(ctx, outTensor, outTmpTensor));
+    }
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiNLLLossV2Backward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+                                    diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
+                                    diopiConstTensorHandle_t totalWeight, diopiReduction_t reduction, int64_t ignoreIndex) {
+    DiopiTensor inputTensor(input);
+    DiopiTensor gradInputTensor(gradInput);
+    DiopiTensor gradOutputTensor(gradOutput);
+    DiopiTensor targetTensor(target);
+    DiopiTensor weightTensor(weight);
+    DiopiTensor totalWeightTensor(totalWeight);
+
+    if (gradInputTensor.numel() == 0) {
+        return diopiSuccess;
+    }
+
+    DIOPI_CHECK(inputTensor.isContiguous(), "input tensor should be contiguous");
+    DIOPI_CHECK(targetTensor.isContiguous(), "target tensor should be contiguous");
+    if (ReductionMean == reduction || ReductionSum == reduction) {
+        DIOPI_CHECK(gradOutputTensor.dim() <= 1, "grad_output.dim should be <= 1 when the redcution is %s.", reductionStr(reduction));
+    }
+    std::vector<DiopiTensor*> pTensors{&gradOutputTensor, &inputTensor};
+    if (weightTensor.defined()) {
+        DIOPI_CHECK(weightTensor.isContiguous(), "weight tensor should be contiguous");
+        pTensors.push_back(&weightTensor);
+    }
+    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32};
+    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
+
+    if (targetTensor.dtype() != diopi_dtype_int32 || targetTensor.dtype() != diopi_dtype_int64) {
+        DIOPI_CALL(dataTypeCast(ctx, targetTensor, diopi_dtype_int32));
+    }
+
+    auto dim = inputTensor.dim();
+    if (dim == 1) {
+        DIOPI_CHECK(targetTensor.dim() == 0, "0D target_tr tensor expected, multi-target_tr not supported");
+    } else if (dim == 2) {
+        DIOPI_CHECK(targetTensor.dim() == 1, "1D target_tr tensor expected, multi-target_tr not supported");
+        DIOPI_CHECK(inputTensor.shape()[0] == targetTensor.shape()[0], "size mismatch ");
+        DIOPI_CHECK(!weightTensor.defined() || weightTensor.numel() == inputTensor.shape()[1],
+                    "weight_tr tensor should be defined either for all classes or no classes");
+    } else if (dim >= 3) {
+        int64_t inputLastSize = 1;
+        for (int i = 2; i < inputTensor.dim(); ++i) {
+            inputLastSize *= inputTensor.shape()[i];
+        }
+        inputTensor.view({inputTensor.shape()[0], inputTensor.shape()[1], 1, inputLastSize});
+
+    } else {
+        DIOPI_CHECK(false, "Expected dim >= 2, but got: %d", dim);
+    }
+
+    auto inputSize = inputTensor.shape();
+    int c = dim == 1 ? inputSize[0] : inputSize[1];
+    int n = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
+    DIOPI_CHECK(n == targetTensor.numel(), "Target size need be equal as input N*H*W.");
+
+    cnnlNlllossAlgorithm_t reductionMode;
+    switch (reduction) {
+        case 0:
+            reductionMode = CNNL_REDUCTION_NONE;
+            break;
+        case 1:
+            reductionMode = CNNL_REDUCTION_MEAN;
+            break;
+        case 2:
+            reductionMode = CNNL_REDUCTION_SUM;
+            break;
+        default:
+            DIOPI_CHECK(false, "Expected reduction in [0, 2], but got %d", reduction);
+    }
+
+    auto gradInputRealTensor = requiresTensor(ctx, {n, c}, inputTensor.dtype());
+
+    // Create a maskTensor corresponding to ignoreIndex if it's provided
+
+    CnnlTensorDesc gradOutputDesc;
+    CnnlTensorDesc targetDesc;
+    CnnlTensorDesc weightDesc;
+    if (weightTensor.defined()) {
+        DIOPI_CHECK(c == weightTensor.numel(), "Weight size need be equal as input C.");
+        weightDesc.set(weightTensor, CNNL_LAYOUT_ARRAY);
+    }
+    CnnlTensorDesc twDesc(totalWeightTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradInputDesc(gradInputRealTensor, CNNL_LAYOUT_ARRAY);
+    targetDesc.set(targetTensor, CNNL_LAYOUT_ARRAY, {n});
+    reduction == 0 ? gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY, {n}) : gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY);
+
+    cnnlHandle_t handle = cnnlHandlePool.get(ctx);
+    DIOPI_CALL_CNNL(cnnlNlllossBackward_v2(handle,
+                                           reductionMode,
+                                           gradOutputDesc.get(),
+                                           gradOutputTensor.data(),
+                                           targetDesc.get(),
+                                           targetTensor.data(),
+                                           static_cast<int>(ignoreIndex),
+                                           weightTensor.defined() ? weightDesc.get() : nullptr,
+                                           weightTensor.defined() ? weightTensor.data() : nullptr,
+                                           twDesc.get(),
+                                           totalWeightTensor.data(),
+                                           gradInputDesc.get(),
+                                           gradInputRealTensor.data()));
+    if (dim > 2) {
+        // NHWC -> NCHW and dealing with data type
+        // shape(2,3,4,5) should be viewed as stride(60,1,15,3)
+        gradInputRealTensor.view(inputTensor.shape());
+        gradInputTensor.view(inputTensor.shape());
+        std::vector<int64_t> realInputStride = {1, 1, 1, 1};
+        realInputStride[3] = inputTensor.shape()[1] * realInputStride[1];
+        realInputStride[2] = inputTensor.shape()[3] * realInputStride[3];
+        realInputStride[0] = inputTensor.shape()[2] * realInputStride[2];
+
+        gradInputRealTensor.asStrided(inputTensor.shape(), realInputStride);
+
+        DiopiTensor gradInputTmpTensor = gradInputTensor;
+        if (gradInputTensor.dtype() != gradInputRealTensor.dtype()) {
+            gradInputTmpTensor = requiresTensor(ctx, gradInputTensor.shape(), gradInputRealTensor.dtype());
+        }
+
+        DIOPI_CALL(permuteCopy(ctx, gradInputRealTensor, gradInputTmpTensor));
+
+        if (gradInputTmpTensor.dtype() != gradInputTensor.dtype()) {
+            DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTmpTensor));
+        }
+
+    } else {
+        DIOPI_CALL(diopiCopyInp(ctx, gradInputRealTensor.tensorHandle(), gradInputTensor.tensorHandle()));
+    }
+
+    return diopiSuccess;
+}
+
 }  // namespace camb
 }  // namespace impl
