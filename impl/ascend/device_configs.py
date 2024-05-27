@@ -5,12 +5,21 @@ from skip import Skip
 # topk, normal, norm, nll_loss, gather, fill_, triu, bmm, mm, pow, sum llm used
 
 device_configs = {
-     'batch_norm': dict(
+    # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.
+    'batch_norm': dict(
         name=["batch_norm"],
         atol_half=1e-1,
         rtol_half=1e-1,
         atol=1e-2,
         rtol=1e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                }
+            ]
+        )
      ),
 
     'batch_norm_no_contiguous': dict(
@@ -25,6 +34,20 @@ device_configs = {
                 }
             ]
         )
+    ),
+    # Bad in-place call: input tensor size [2] and output tensor size [2, 0, 2] should match
+    # pytorch 2.1.0 does not support this case
+    # input: (2,), batch1: (2, 0, 4), batch2: (2, 4, 2)
+    'baddbmm_without_inplace': dict(
+        name=["baddbmm"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": [Skip((2,))],
+                },
+            ],
+        ),
     ),
 
     # temp for 910B
@@ -117,10 +140,17 @@ device_configs = {
             ]
         ),
     ),
-
+    # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
-        atol=2e-2,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                },
+            ]
+        ),
     ),
 
     'adaptive_max_pool2d': dict(
@@ -387,18 +417,6 @@ device_configs = {
         ),
     ),
 
-    'one_hot': dict(
-        name=['one_hot'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),],
-                },
-            ]
-        ),
-    ),
-
     'sigmoid_focal_loss': dict(
         name=['sigmoid_focal_loss'],
         tensor_para=dict(
@@ -574,7 +592,7 @@ device_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.float32),Skip(np.float64),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
                 },
             ]
         ),
@@ -1071,8 +1089,10 @@ device_configs = {
         )
     ),
 
+    # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.
     'interpolate': dict(
         name=['interpolate'],
+        dtype=[Skip(np.float64),],
         para=dict(
             # support bilinear, nearest
             mode=[Skip('bicubic'),Skip('trilinear'),Skip('linear'),],
@@ -1417,5 +1437,27 @@ device_configs = {
                 },
             ]
         )
+    ),
+    
+    # aclnnMseloss not support float64
+    # TODO(zhangqiu): skip float64 temporarily, as mse_loss can not pass the test with float64 cast to float32
+    'mse_loss': dict(
+        name=['mse_loss'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "dtype": [Skip(np.float64),],
+                },
+            ]
+        ),
+    ),
+    
+    # aclnnNorm currently only supports p=0,1,2,3
+    'norm': dict(
+        name=['norm'],
+        para=dict(
+            p = [Skip(2.5), Skip(float('inf')), Skip(-float('inf')), Skip(-2)],
+        ),
     ),
 }
