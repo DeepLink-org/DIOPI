@@ -26,7 +26,9 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     DIOPI_ASCEND_CALL_ACLNN(aclnnMatmul, ctx, input, weightT, out, 0);
 
     if (nullptr != bias) {
-        diopiScalar_t alpha = constructDiopiScalarT(diopi_dtype_int64, 1);
+        diopiDtype_t outDtype;
+        diopiGetTensorDtype(out, &outDtype);
+        diopiScalar_t alpha = constructDiopiScalarT(outDtype, 1);
         DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceAdd, ctx, out, bias, &alpha);
     }
 
@@ -40,19 +42,19 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
     }
 
     if (nullptr != gradWeight) {
-        AscendTensor inputCopy(input);
-        if (inputCopy.dim() > 2) transTensorTo2D(ctx, inputCopy);
-        AscendTensor gradOutputCopy(gradOutput);
-        if (gradOutputCopy.dim() > 2) transTensorTo2D(ctx, gradOutputCopy);
+        AscendTensor input2D(input);
+        if (input2D.dim() > 2) transTensorTo2D(ctx, input2D);
+        AscendTensor gradOutput2D(gradOutput);
+        if (gradOutput2D.dim() > 2) transTensorTo2D(ctx, gradOutput2D);
 
-        diopiTensorHandle_t gradOutputCopyT;
-        std::vector<int64_t> gradOutputCopyTShape = {gradOutputCopy.shape()[1], gradOutputCopy.shape()[0]};
-        diopiSize_t gradOutputCopyTSize = {gradOutputCopyTShape.data(), gradOutputCopyTShape.size()};
-        diopiRequireTensor(ctx, &gradOutputCopyT, &gradOutputCopyTSize, nullptr, gradOutputCopy.dtype(), diopi_device);
+        diopiTensorHandle_t gradOutput2DT;
+        std::vector<int64_t> gradOutput2DTShape = {gradOutput2D.shape()[1], gradOutput2D.shape()[0]};
+        diopiSize_t gradOutput2DTSize = {gradOutput2DTShape.data(), gradOutput2DTShape.size()};
+        diopiRequireTensor(ctx, &gradOutput2DT, &gradOutput2DTSize, nullptr, gradOutput2D.dtype(), diopi_device);
 
         std::vector<int64_t> dims = {1, 0};
-        DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, gradOutputCopy, dims, gradOutputCopyT);
-        DIOPI_ASCEND_CALL_ACLNN(aclnnMatmul, ctx, gradOutputCopyT, inputCopy, gradWeight, 0);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, gradOutput2D, dims, gradOutput2DT);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnMatmul, ctx, gradOutput2DT, input2D, gradWeight, 0);
     }
 
     if (nullptr != gradBias) {
