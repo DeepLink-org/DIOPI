@@ -16,10 +16,6 @@ ascend:
 - diopiArgmax
 - diopiAtan
 - diopiAtanInp
-- diopiAttention
-- diopiAttentionBackward
-- diopiAttentionVarLen
-- diopiAttentionVarLenBackward
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiBitwiseNot
@@ -215,6 +211,10 @@ ascend_npu:
 - diopiAdamW
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
+- diopiAttention
+- diopiAttentionBackward
+- diopiAttentionVarLen
+- diopiAttentionVarLenBackward
 - diopiBatchNorm
 - diopiBatchNormBackward
 - diopiNonzero
