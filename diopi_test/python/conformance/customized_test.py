@@ -746,6 +746,5 @@ class CustomizedTest(object):
         return out
 
     def nll_loss_v2(input, target, weight=None, ignore_index=-100, reduction="mean"):
-        loss = torch.nn.NLLLoss(weight, None, ignore_index, None, reduction)
-        out = loss(input,target)
+        out = torch.nn.functional.nll_loss(input, target, weight, None, ignore_index, None, reduction)
         return out
