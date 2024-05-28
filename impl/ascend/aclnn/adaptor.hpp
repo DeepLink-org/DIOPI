@@ -12,6 +12,7 @@
 #include <dlfcn.h>
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -110,6 +111,17 @@ inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
 }
 
 inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) { return ::aclCreateIntArray(size.data, size.len); }
+template <size_t N>
+inline aclBoolArray* createAclBoolArrayFromVector(const std::array<bool, N>& vec) {
+    return ::aclCreateBoolArray(vec.data(), vec.size());
+}
+
+template <typename T>
+struct IsBoolStdArray : std::false_type {};
+
+template <std::size_t N>
+struct IsBoolStdArray<std::array<bool, N>> : std::true_type {};
+
 template <size_t N>
 inline aclBoolArray* createAclBoolArrayFromVector(const std::array<bool, N>& vec) {
     return ::aclCreateBoolArray(vec.data(), vec.size());
