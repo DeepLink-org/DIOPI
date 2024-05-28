@@ -1,9 +1,12 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 project(torch_impl)
 
 option(HIP "Whether to use HIP when available" OFF)
 
-find_package(Torch 2.0 REQUIRED)
+
+add_compile_definitions(USE_MACA=1)
+set(USE_MACA ON)
+find_package(Torch REQUIRED)
 if (Torch_FOUND)
     message(STATUS "TORCH_CXX_FLAGS: ${TORCH_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
