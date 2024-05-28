@@ -17,24 +17,23 @@ diopiError_t diopiGather(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         return diopiSuccess;
     }
 
-    // alcnnGather requires that the dimensions of input, output, and index match.
-    while (inputAt.dim() < indexAt.dim()) {
+    if (inputAt.dim() == 0) {
         inputAt.unsqueeze(0);
     }
 
-    while (indexAt.dim() < inputAt.dim()) {
+    if (indexAt.dim() == 0) {
         indexAt.unsqueeze(0);
     }
 
-    while (outAt.dim() < inputAt.dim()) {
+    if (outAt.dim() == 0) {
         outAt.unsqueeze(0);
     }
 
-    for (int64_t i = 0; i < inputAt.dim(); i++) {
-        if (inputAt.shape(i) == 0 || indexAt.shape(i) == 0) {
-            return diopiSuccess;
-        }
-    }
+    // alcnnGather requires that the dimensions of input and index match.
+    ASCEND_CHECK_ABORT(inputAt.dim() == indexAt.dim(), "alcnnGather requires that the dimensions of input and index match.");
+    // aclnnGather requires that the shape of index and out must be the same.
+    ASCEND_CHECK_ABORT(indexAt.shape() == outAt.shape(), "aclnnGather requires that the shape of index and out must be the same.");
+
 
     DIOPI_ASCEND_CALL_ACLNN(aclnnGather, ctx, inputAt, dim, indexAt, outAt);
     return diopiSuccess;
@@ -51,22 +50,28 @@ diopiError_t diopiGatherBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
         return diopiSuccess;
     }
 
-    // alcnnScatter requires that the dimensions of input, output, and index match.
-    while (indexAt.dim() < gradOutputAt.dim()) {
+    if (indexAt.dim() == 0) {
         indexAt.unsqueeze(0);
     }
 
-    while (gradOutputAt.dim() < indexAt.dim()) {
-        gradOutputAt.unsqueeze(0);
-    }
-
-    while (gradInputAt.dim() < gradOutputAt.dim()) {
+    if (gradInputAt.dim() == 0) {
         gradInputAt.unsqueeze(0);
     }
 
+    if (gradOutputAt.dim() == 0) {
+        gradOutputAt.unsqueeze(0);
+    }
+
+    // alcnnScatter requires that the dimensions of input and index match.
+    ASCEND_CHECK_ABORT(gradInputAt.dim() == indexAt.dim(), 
+        "alcnnScatter requires that the dimensions of input and index match.");
+    // aclnnScatter requires that the shape of index and out must be the same.
+    ASCEND_CHECK_ABORT(indexAt.shape() == gradOutputAt.shape(), 
+        "aclnnScatter requires that the shape of index and out must be the same.");
+
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradInputAt);
     // the gradOutput will accumulate in gradInput according to index.
-    DIOPI_ASCEND_CALL_ACLNN(aclnnScatterAdd, ctx, gradInputAt, dim, indexAt, gradOutputAt, gradInput);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnScatterAdd, ctx, gradInputAt, dim, indexAt, gradOutputAt, gradInputAt);
     return diopiSuccess;
 }
 
