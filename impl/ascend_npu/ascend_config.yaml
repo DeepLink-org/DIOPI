@@ -16,6 +16,10 @@ ascend:
 - diopiArgmax
 - diopiAtan
 - diopiAtanInp
+- diopiAttention
+- diopiAttentionBackward
+- diopiAttentionVarLen
+- diopiAttentionVarLenBackward
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiBitwiseNot
