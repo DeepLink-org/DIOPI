@@ -3426,7 +3426,7 @@ diopi_configs = {
                           79, 0, 79, 100,
                           -100, 94, 62, 0],
         ),
-        dtype=[np.float32, np.float64],
+        dtype=[np.float16, np.float32, np.float64],
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
