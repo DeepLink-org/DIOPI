@@ -92,6 +92,7 @@ ascend:
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
+- diopiIndexPut
 - diopiIndexPutInp
 - diopiIsNan
 - diopiLayerNorm
@@ -230,7 +231,6 @@ ascend_npu:
 - diopiMultinomial
 - diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
-- diopiIndexPut
 - diopiIndexSelect
 - diopiIndexSelectBackward
 - diopiIndex
