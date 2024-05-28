@@ -22,13 +22,13 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
 
     for (int i = 0; i < indicesCounts; i++) {
         if (indices[i] != nullptr) {
-            indicesVec[i] = indices[i];
+            indicesVec.emplace_back(indices[i]);
         } else {
             int64_t array[1] = {0};
             diopiSize_t size = {array, 1};
             diopiTensorHandle_t emptyTensor = nullptr;
             diopiRequireTensor(ctx, &emptyTensor, &size, nullptr, inputTensor.dtype(), diopi_device);
-            indicesVec[i] = emptyTensor;
+            indicesVec.emplace_back(emptyTensor);
         }
     }
 
@@ -50,13 +50,13 @@ diopiError_t diopiIndexPutInp(diopiContextHandle_t ctx, diopiTensorHandle_t inpu
 
     for (int i = 0; i < indicesCounts; i++) {
         if (indices[i] != nullptr) {
-            indicesVec[i] = indices[i];
+            indicesVec.emplace_back(indices[i]);
         } else {
             int64_t array[1] = {0};
             diopiSize_t size = {array, 1};
             diopiTensorHandle_t emptyTensor = nullptr;
             diopiRequireTensor(ctx, &emptyTensor, &size, nullptr, inputTensor.dtype(), diopi_device);
-            indicesVec[i] = emptyTensor;
+            indicesVec.emplace_back(emptyTensor);
         }
     }
 
