@@ -8,6 +8,8 @@
 #include "../aclnn/adaptor.hpp"
 #include "../common/utils.hpp"
 
+#include <cmath>
+
 namespace impl {
 namespace ascend {
 
@@ -22,7 +24,6 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
     int64_t n = inputAt.shape(0);
     int64_t c = inputAt.shape(1);
     int64_t hw = inputAt.numel() / (n * c);
-    eps = (eps < 1e-5) ? 1e-5 : eps;
 
     DIOPI_ASCEND_CALL_ACLNN(aclnnGroupNorm, ctx, input, weight, bias, n, c, hw, numGroups, eps, out, saveMean, saveInvstd);
     return diopiSuccess;
@@ -38,28 +39,21 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         return diopiSuccess;
     }
 
+    diopiScalar_t nanScalar = constructDiopiScalarT(diopi_dtype_float32, std::nanf(""));
+
     if (inputAt.numel() == 0) {
         DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradBias);
-        if (inputAt.shape()[0] == 0) {
+        if (inputAt.shape(0) == 0 || inputAt.shape(1) == 0) {
             DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradWeight);
         } else {
-            fillNan(ctx, gradWeightAt);
+            DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, gradWeightAt, &nanScalar);
         }
     } else {
         int64_t n = inputAt.shape(0);
         int64_t c = inputAt.shape(1);
         int64_t hw = inputAt.numel() / (n * c);
 
-        std::array<bool, 3> gradMask = {true, true, true};
-        if (nullptr == gradInput) {
-            gradMask[0] = false;
-        }
-        if (nullptr == gradWeight) {
-            gradMask[1] = false;
-        }
-        if (nullptr == gradBias) {
-            gradMask[2] = false;
-        }
+        std::array<bool, 3> gradMask = {gradInput != nullptr, gradWeight != nullptr, gradBias != nullptr};
         DIOPI_ASCEND_CALL_ACLNN(
             aclnnGroupNormBackward, ctx, gradOutput, inputAt, mean, rstd, weight, n, c, hw, numGroups, gradMask, gradInput, gradWeightAt, gradBias);
     }
