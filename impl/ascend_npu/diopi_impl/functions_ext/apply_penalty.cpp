@@ -44,9 +44,9 @@ diopiError_t diopiApplyPenaltyV2(diopiContextHandle_t ctx, diopiTensorHandle_t l
         int curBatchStartIndex = pCumsumSeqLenCpu[i].item<int>();
         int curBatchEndIndex = pCumsumSeqLenCpu[i + 1].item<int>();
         at::Tensor slice = op_api::arange(curBatchStartIndex, curBatchEndIndex, at::kLong, layout, device);
-        at::Tensor curTokenIds = at::index(pTokenIdsAt, {slice});
-        at::Tensor curTokenCounts = at::index(pTokenCountsAt, {slice});
-        at::Tensor curLogits = logitsAt[i].index_select(0, curTokenIds);
+        at::Tensor curTokenIds = op_api::index(pTokenIdsAt, {slice});
+        at::Tensor curTokenCounts = op_api::index(pTokenCountsAt, {slice});
+        at::Tensor curLogits = op_api::index_select(logitsAt[i], 0, curTokenIds);
         at::Tensor repoLogits = at_npu::native::OpPreparation::apply_tensor_without_format(curLogits);
         at::Tensor zero = at_npu::native::OpPreparation::apply_tensor_without_format(curLogits);
         op_api::zero_(zero);
@@ -54,7 +54,7 @@ diopiError_t diopiApplyPenaltyV2(diopiContextHandle_t ctx, diopiTensorHandle_t l
         op_api::gt_out(curLogits, zero, cand);
         op_api::where_out(cand, curLogits / repetitionPenaltyAt[i], curLogits * repetitionPenaltyAt[i], repoLogits);
         repoLogits = repoLogits - curTokenCounts * frequencyPenaltyAt[i] - presencePenaltyAt[i];
-        at::index_put_(logitsAt, {torch::scalar_to_tensor(i), curTokenIds}, repoLogits);
+        op_api::index_put_(logitsAt, {torch::scalar_to_tensor(i), curTokenIds}, repoLogits);
     }
     END_CALL_ACL_OP();
 }

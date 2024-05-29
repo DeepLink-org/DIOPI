@@ -75,14 +75,18 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
 }
 
 DIOPI_API diopiError_t diopiRotaryEmbeddingV2(diopiContextHandle_t ctx, diopiTensorHandle_t query, diopiTensorHandle_t key, diopiConstTensorHandle_t cos,
-                                            diopiConstTensorHandle_t sin) {
+                                            diopiConstTensorHandle_t sin, int64_t dim) {
     BEGIN_CALL_ACL_OP(query, key, cos, sin);
     int64_t lay_out = 1;
-    at::Tensor queryView = viewAs4D(queryAt);
-    at::Tensor keyView = viewAs4D(keyAt);
-    at::Tensor cosView = viewAs4D(cosAt);
-    at::Tensor sinView = viewAs4D(sinAt);
-    EXEC_NPU_CMD(aclnnApplyRotaryPosEmb, queryView, keyView, cosView, sinView, lay_out);    
+    if (queryAt.dim() == 2) {
+        queryAt = impl::aten::viewStorage(queryAt, {1, queryAt.size(0), queryAt.size(1) / dim, dim});
+    }
+    if (keyAt.dim() == 2) {
+        keyAt = impl::aten::viewStorage(keyAt, {1, keyAt.size(0), keyAt.size(1) / dim, dim});
+    }
+    cosAt = viewAs4D(cosAt);
+    sinAt = viewAs4D(sinAt);
+    EXEC_NPU_CMD(aclnnApplyRotaryPosEmb, queryAt, keyAt, cosAt, sinAt, lay_out);    
     END_CALL_ACL_OP();                                    
 }
 

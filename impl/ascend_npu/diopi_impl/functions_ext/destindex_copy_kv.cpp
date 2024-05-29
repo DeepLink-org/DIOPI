@@ -12,15 +12,16 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t destLoc) {
     BEGIN_CALL_ACL_OP(out, k, destLoc);
-    auto shape = at::DimVector();
     auto orig_shape = destLocAt.sizes();
     if (destLocAt.sizes().size() != 1) {
         set_last_error_string("only support destLoc.rank == 1");
         return diopiNoImplement;
     }
-    shape.append(orig_shape.begin(),orig_shape.end());
-    shape.append(shape.size(),1);
-    auto destLocReshapeAt = destLocAt.reshape(shape);
+    std::vector<int64_t> shape(destLocAt.dim() + 1, 1);
+    for (int64_t i = 0; i < destLocAt.dim(); i++) {
+        shape[i] = destLocAt.size(i);
+    }
+    auto destLocReshapeAt = impl::aten::viewStorage(destLocAt, shape);
     EXEC_NPU_CMD(aclnnScatterNd, outAt, destLocReshapeAt, kAt, outAt);
     END_CALL_ACL_OP();
 }

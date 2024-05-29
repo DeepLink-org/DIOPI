@@ -29,6 +29,12 @@ diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t o
                                                 int64_t block_size, int64_t inner_precise) {
     BEGIN_CALL_ACL_OP(out, q, k, v, paddingMask, attenMask, block_table);
     at::IntArrayRef actSeqLen(actualSeqLengths.data, actualSeqLengths.len);
+    if (qAt.dim() == 2 && strcmp(inputLayout, "BSH") == 0) {
+        qAt = impl::aten::viewStorage(qAt, {qAt.size(0), (int64_t)1, qAt.size(1)});
+        outAt = impl::aten::viewStorage(outAt, {outAt.size(0), (int64_t)1, outAt.size(1)});
+        kAt = impl::aten::viewStorage(kAt, {kAt.size(0), (int64_t)1, kAt.size(1)});
+        vAt = impl::aten::viewStorage(vAt, {vAt.size(0), (int64_t)1, vAt.size(1)});
+    }
     at::TensorList keyTensors = kAt;
     at::TensorList valueTensors = vAt;
 
