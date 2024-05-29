@@ -744,3 +744,7 @@ class CustomizedTest(object):
             actual_seq_len = end_idx - start_idx
             out[start_idx:end_idx, :, :] = out_paded[i, :actual_seq_len, :, :] # BSND->TND
         return out
+
+    def nll_loss_v2(input, target, weight=None, ignore_index=-100, reduction="mean"):
+        out = torch.nn.functional.nll_loss(input, target, weight, None, ignore_index, None, reduction)
+        return out

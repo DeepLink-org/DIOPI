@@ -2003,6 +2003,38 @@ def nll_loss(input, target, weight=None, ignore_index=-100, reduction="mean"):
     check_returncode(ret)
     return out
 
+def nll_loss_v2(input, target, weight=None, ignore_index=-100, reduction="mean"):
+    assert reduction in [
+        "mean",
+        "sum",
+        "none",
+    ], "reduction must be one of (mean, sum, none)"
+
+    if weight is not None:
+        assert isinstance(weight, Tensor), "weigth must be a Tensor"
+
+    if reduction == "none":
+        out = Tensor(target.size().data, input.get_dtype())
+    else:
+        out = Tensor((), input.get_dtype())
+
+    totalWeight = Tensor((1,), input.get_dtype())
+
+    reduction_mode = convert_reduction(reduction)
+    func = check_function("diopiNLLLossV2")
+    ret = func(
+        input.context(),
+        out,
+        totalWeight,
+        input,
+        target,
+        weight,
+        reduction_mode,
+        ignore_index,
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["nll_loss_v2_totalWeight"] = totalWeight
+    return out
 
 def sigmoid_focal_loss(
     inputs, targets, alpha=0.25, gamma=2, reduction="none"
@@ -2798,6 +2830,38 @@ def nll_loss_backward(
     check_returncode(ret)
     return {"input": grad_input}
 
+def nll_loss_v2_backward(
+    input,
+    grad_outputs,
+    target,
+    weight=None,
+    ignore_index=-100,
+    reduction="mean",
+    **kwargs,
+) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+
+    if weight is not None:
+        assert isinstance(weight, Tensor), "weigth must be a Tensor"
+
+    reduction_mode = convert_reduction(reduction)
+
+    totalWeight = GLOBAL_STATE.pop('nll_loss_v2_totalWeight')
+    func = check_function("diopiNLLLossV2Backward")
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_outputs[0],
+        input,
+        target,
+        weight,
+        totalWeight,
+        reduction_mode,
+        ignore_index,
+    )
+    check_returncode(ret)
+    return {"input": grad_input}
 
 def max_pool2d_backward(
     input,
