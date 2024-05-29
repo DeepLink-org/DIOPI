@@ -7,8 +7,10 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 #include <ATen/EmptyTensor.h>
+#include <ATen/core/Generator.h>
 #include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
+#include <c10/util/Exception.h>
 #include <torch/library.h>
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
@@ -2928,9 +2930,11 @@ std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t in
     return ret;
 }
 
+at::Generator defaultGenerator;
+
 namespace detail {
 
-const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL; }
+const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { return defaultGenerator; }
 
 }  // namespace detail
 
@@ -3010,12 +3014,13 @@ namespace impl {
 
 namespace aten {
 
-// We can use reinterpret_cast directly in the dipu,
-// but we cannot use this method directly in the consistency test,
-// although the performance will be worse.
-#define DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST 1
-
-#if DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST
+at::Generator buildATen(diopiGeneratorHandle_t generator) {
+    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
+    auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
+    impl->generator_ = generator;
+    at_npu::defaultGenerator = gen;
+    return gen;
+}
 
 class FakeAllocator : public c10::Allocator {
     void* ptr_ = nullptr;
@@ -3064,6 +3069,10 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
     return tensor;
 }
 
+// We can use reinterpret_cast directly in the dipu,
+// but we cannot use this method directly in the consistency test,
+// although the performance will be worse.
+#if defined(DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST)
 const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
 
@@ -3092,29 +3101,6 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     return out;
 }
 
-at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
-
-#else
-
-inline at::Tensor buildATen(diopiTensorHandle_t tensor) {
-    if (tensor == nullptr) return at::Tensor();
-    return *reinterpret_cast<at::Tensor*>(tensor);
-}
-
-inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
-    if (tensor == nullptr) return at::Tensor();
-    return *reinterpret_cast<const at::Tensor*>(tensor);
-}
-
-#endif
-
-at::Generator buildATen(diopiGeneratorHandle_t generator) {
-    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
-    auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
-    impl->generator_ = generator;
-    return gen;
-}
-
 void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     TORCH_CHECK(out != nullptr);
     diopiTensorHandle_t diopiHandle = torch_npu::NPUBridge::GetNpuStorageImpl(input)->npu_desc_.diopi_tensor_;
@@ -3134,6 +3120,18 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
     diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
     updateATen2Tensor(ctx, input, *out);
 }
+
+#else
+const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
+    if (tensor == nullptr) return at::Tensor();
+    return *reinterpret_cast<const at::Tensor*>(tensor);
+}
+
+void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) { *out = reinterpret_cast<diopiTensorHandle_t>(&input); }
+
+#endif
+
+at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
     // TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());

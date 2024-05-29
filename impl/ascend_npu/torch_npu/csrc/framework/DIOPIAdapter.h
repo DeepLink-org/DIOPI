@@ -917,31 +917,13 @@ namespace env {
 /**
   check if the autotuen is enabled, return true or false.
   */
-inline bool AutoTuneEnabled() {
-    INTERFACE_NOT_IMPL;
-    return false;
-}
-inline bool CheckBmmV2Enable() {
-    INTERFACE_NOT_IMPL;
-    return false;
-}
-inline bool CheckJitDisable() {
-    INTERFACE_NOT_IMPL;
-    return true;
-}
-inline bool CheckProfilingEnable() {
-    INTERFACE_NOT_IMPL;
-    return false;
-}
-inline bool CheckMmBmmNDDisable() {
-    INTERFACE_NOT_IMPL;
-    return true;
-}
+inline bool AutoTuneEnabled() { return false; }
+inline bool CheckBmmV2Enable() { return false; }
+inline bool CheckJitDisable() { return true; }
+inline bool CheckProfilingEnable() { return false; }
+inline bool CheckMmBmmNDDisable() { return true; }
 inline bool CheckForbidInternalFormat() { return false; }
-inline bool IsAllowFP32ToFP16() {
-    INTERFACE_NOT_IMPL;
-    return false;
-}
+inline bool IsAllowFP32ToFP16() { return true; }
 inline bool IsAllowConvHF32() {
     // INTERFACE_NOT_IMPL;
     return false;
