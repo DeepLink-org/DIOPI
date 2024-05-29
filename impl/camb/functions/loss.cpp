@@ -8,7 +8,6 @@
 
 #include "../cnnl_helper.hpp"
 #include "../common/common.hpp"
-#include "../common/debug.hpp"
 
 namespace impl {
 namespace camb {
@@ -216,7 +215,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
             DIOPI_CHECK(false, "Expected reduction in [0, 2], but got %d", reduction);
     }
 
-    auto gradInputTmpTensor = requiresTensor(ctx, {n, c}, inputTensor.dtype());
+    auto gradInputRealTensor = requiresTensor(ctx, {n, c}, inputTensor.dtype());
     auto totalWeightTensor = requiresTensor(ctx, {1}, weightTensor.dtype());
 
     // The appropriate calculation for nll loss:
@@ -251,7 +250,7 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     CnnlTensorDesc targetDesc;
     CnnlTensorDesc weightDesc(weightTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc twDesc(totalWeightTensor, CNNL_LAYOUT_ARRAY);
-    CnnlTensorDesc gradInputDesc(gradInputTmpTensor, CNNL_LAYOUT_ARRAY);
+    CnnlTensorDesc gradInputDesc(gradInputRealTensor, CNNL_LAYOUT_ARRAY);
     targetDesc.set(targetTensor, CNNL_LAYOUT_ARRAY, {n});
     reduction == 0 ? gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY, {n}) : gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY);
 
@@ -268,10 +267,10 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
                                            twDesc.get(),
                                            totalWeightTensor.data(),
                                            gradInputDesc.get(),
-                                           gradInputTmpTensor.data()));
+                                           gradInputRealTensor.data()));
     if (dim > 2) {
         // NHWC -> NCHW and dealing with data type
-        gradInputTmpTensor.view(inputTensor.shape());
+        gradInputRealTensor.view(inputTensor.shape());
         gradInputTensor.view(inputTensor.shape());
         std::vector<int64_t> realInputStride = inputTensor.stride();
         for (int i = 2; i < dim - 1; i++) {
@@ -279,23 +278,23 @@ diopiError_t diopiNLLLossBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         }
         realInputStride[dim - 1] = inputTensor.shape()[2];
 
-        gradInputTmpTensor.asStrided(inputTensor.shape(), realInputStride);
+        gradInputRealTensor.asStrided(inputTensor.shape(), realInputStride);
 
         DiopiTensor gradInputTmpTensor = gradInputTensor;
-        if (gradInputTensor.dtype() != gradInputTmpTensor.dtype()) {
-            gradInputTmpTensor = requiresTensor(ctx, gradInputTensor.shape(), gradInputTmpTensor.dtype());
+        if (gradInputTensor.dtype() != gradInputRealTensor.dtype()) {
+            gradInputTmpTensor = requiresTensor(ctx, gradInputTensor.shape(), gradInputRealTensor.dtype());
         }
 
-        DIOPI_CALL(permuteCopy(ctx, gradInputTmpTensor, gradInputTmpTensor));
+        DIOPI_CALL(permuteCopy(ctx, gradInputRealTensor, gradInputTmpTensor));
 
-        // DIOPI_CALL(transpose(ctx, handle, gradInputTmpTensor, gradInputTmpTensor, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
+        // DIOPI_CALL(transpose(ctx, handle, gradInputRealTensor, gradInputTmpTensor, CNNL_LAYOUT_NHWC, CNNL_LAYOUT_NCHW));
 
         if (gradInputTmpTensor.dtype() != gradInputTensor.dtype()) {
             DIOPI_CALL(dataTypeCast(ctx, gradInputTensor, gradInputTmpTensor));
         }
 
     } else {
-        DIOPI_CALL(diopiCopyInp(ctx, gradInputTmpTensor.tensorHandle(), gradInputTensor.tensorHandle()));
+        DIOPI_CALL(diopiCopyInp(ctx, gradInputRealTensor.tensorHandle(), gradInputTensor.tensorHandle()));
     }
 
     return diopiSuccess;
