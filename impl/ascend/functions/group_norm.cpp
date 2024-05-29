@@ -4,11 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <cmath>
+
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
 #include "../common/utils.hpp"
-
-#include <cmath>
 
 namespace impl {
 namespace ascend {
