@@ -44,7 +44,7 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
         if (inputAt.shape(0) == 0 || inputAt.shape(1) == 0) {
             DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradWeight);
         } else {
-            diopiScalar_t nanScalar = constructDiopiScalarT(diopi_dtype_float32, std::nanf(""));
+            diopiScalar_t nanScalar = constructDiopiScalarT(gradWeightAt.dtype(), std::nanf(""));
             DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, gradWeightAt, &nanScalar);
         }
     } else {
