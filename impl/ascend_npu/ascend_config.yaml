@@ -128,6 +128,10 @@ ascend:
 - diopiLog2
 - diopiLog2Inp
 - diopiLogInp
+- diopiMaskedFill
+- diopiMaskedFillInp
+- diopiMaskedFillInpScalar
+- diopiMaskedFillScalar
 - diopiMatmul
 - diopiMax
 - diopiMaxAll
@@ -217,10 +221,6 @@ ascend_npu:
 - diopiNonzero
 - diopiCat
 - diopiCopyInp
-- diopiMaskedFill
-- diopiMaskedFillInp
-- diopiMaskedFillInpScalar
-- diopiMaskedFillScalar
 - diopiStack
 - diopiMultinomial
 - diopiMaxPool2dWithIndices
