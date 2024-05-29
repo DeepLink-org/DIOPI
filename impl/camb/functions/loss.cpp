@@ -614,11 +614,11 @@ diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         DIOPI_CHECK(!weightTensor.defined() || weightTensor.numel() == inputTensor.shape()[1],
                     "weight_tr tensor should be defined either for all classes or no classes");
     } else if (dim >= 3) {
-        int64_t HW = 1;
+        int64_t hw = 1;
         for (int i = 2; i < inputTensor.dim(); ++i) {
-            HW *= inputTensor.shape()[i];
+            hw *= inputTensor.shape()[i];
         }
-        inputTensor.view({inputTensor.shape()[0], inputTensor.shape()[1], HW});
+        inputTensor.view({inputTensor.shape()[0], inputTensor.shape()[1], hw});
 
         DIOPI_CALL(contiguous(ctx, inputTensor, diopiMemoryFormat_t::ChannelsLast1d));
     } else {
@@ -627,15 +627,15 @@ diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 
     auto inputSize = inputTensor.shape();
     int c = dim == 1 ? inputSize[0] : inputSize[1];
-    int NHW = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
-    DIOPI_CHECK(NHW == targetTensor.numel(), "Target size need be equal as input N*H*W.");
+    int nhw = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
+    DIOPI_CHECK(nhw == targetTensor.numel(), "Target size need be equal as input N*H*W.");
     std::vector<int64_t> outputSize;
 
     cnnlNlllossAlgorithm_t reductionMode;
     switch (reduction) {
         case 0: {
             reductionMode = CNNL_REDUCTION_NONE;
-            outputSize = {NHW};
+            outputSize = {nhw};
             break;
         }
         case 1: {
@@ -662,8 +662,8 @@ diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     }
     CnnlTensorDesc twDesc(totalWeightTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc outputDesc(outTmpTensor, CNNL_LAYOUT_ARRAY);
-    inputDesc.set(inputTensor, CNNL_LAYOUT_ARRAY, {NHW, c});
-    targetDesc.set(targetTensor, CNNL_LAYOUT_ARRAY, {NHW});
+    inputDesc.set(inputTensor, CNNL_LAYOUT_ARRAY, {nhw, c});
+    targetDesc.set(targetTensor, CNNL_LAYOUT_ARRAY, {nhw});
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     size_t workspaceSize = 0;
@@ -733,19 +733,19 @@ diopiError_t diopiNLLLossV2Backward(diopiContextHandle_t ctx, diopiTensorHandle_
         DIOPI_CHECK(!weightTensor.defined() || weightTensor.numel() == inputTensor.shape()[1],
                     "weight_tr tensor should be defined either for all classes or no classes");
     } else if (dim >= 3) {
-        int64_t HW = 1;
+        int64_t hw = 1;
         for (int i = 2; i < inputTensor.dim(); ++i) {
-            HW *= inputTensor.shape()[i];
+            hw *= inputTensor.shape()[i];
         }
-        inputTensor.view({inputTensor.shape()[0], inputTensor.shape()[1], HW});
+        inputTensor.view({inputTensor.shape()[0], inputTensor.shape()[1], hw});
     } else {
         DIOPI_CHECK(false, "Expected dim >= 2, but got: %d", dim);
     }
 
     auto inputSize = inputTensor.shape();
     int c = dim == 1 ? inputSize[0] : inputSize[1];
-    int NHW = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
-    DIOPI_CHECK(NHW == targetTensor.numel(), "Target size need be equal as input N*H*W.");
+    int nhw = std::accumulate(inputSize.begin(), inputSize.end(), 1, std::multiplies<>()) / c;
+    DIOPI_CHECK(nhw == targetTensor.numel(), "Target size need be equal as input N*H*W.");
 
     cnnlNlllossAlgorithm_t reductionMode;
     switch (reduction) {
@@ -765,9 +765,9 @@ diopiError_t diopiNLLLossV2Backward(diopiContextHandle_t ctx, diopiTensorHandle_
     // only need a new tensor, 1)different dtype 2)need a nhwc format
     DiopiTensor gradInputTmpTensor = gradInputTensor;
     if (dim > 2 || gradInputTensor.dtype() != inputTensor.dtype()) {
-        gradInputTmpTensor = requiresTensor(ctx, {NHW, c}, inputTensor.dtype());
+        gradInputTmpTensor = requiresTensor(ctx, {nhw, c}, inputTensor.dtype());
     } else {
-        gradInputTmpTensor.asStrided({NHW, c}, {c, 1});
+        gradInputTmpTensor.asStrided({nhw, c}, {c, 1});
     }
 
     CnnlTensorDesc gradOutputDesc;
@@ -779,8 +779,8 @@ diopiError_t diopiNLLLossV2Backward(diopiContextHandle_t ctx, diopiTensorHandle_
     }
     CnnlTensorDesc twDesc(totalWeightTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradInputDesc(gradInputTmpTensor, CNNL_LAYOUT_ARRAY);
-    targetDesc.set(targetTensor, CNNL_LAYOUT_ARRAY, {NHW});
-    reduction == 0 ? gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY, {NHW}) : gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY);
+    targetDesc.set(targetTensor, CNNL_LAYOUT_ARRAY, {nhw});
+    reduction == 0 ? gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY, {nhw}) : gradOutputDesc.set(gradOutputTensor, CNNL_LAYOUT_ARRAY);
 
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
     DIOPI_CALL_CNNL(cnnlNlllossBackward_v2(handle,
