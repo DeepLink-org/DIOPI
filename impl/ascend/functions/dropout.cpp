@@ -4,84 +4,118 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 
-namespace {
-aclDataType dtypeConvertor(diopiDtype_t type) {
-    auto dtype = getAclDataType(type);
-    if (dtype == ACL_BOOL) {
-        return ACL_UINT8;
-    }
-    return dtype;
+static const int64_t bitNumber = 128;
+static const int64_t uInt8BitNumber = 8;
+
+diopiError_t npuDropoutOut(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
+                           diopiGeneratorHandle_t generator) {
+    AscendTensor inAt(input);
+    int64_t length = (inAt.numel() + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
+    std::vector<int64_t> szVec(1, length);
+    diopiSize_t maskSize = vectorToDiopiSize(szVec);
+    diopiTensorHandle_t maskNpu;
+    diopiError_t ret = diopiRequireTensor(ctx, &maskNpu, &maskSize, nullptr, diopi_dtype_uint8, diopi_device);
+    ASCEND_CHECK_ABORT(ret == diopiSuccess, "[npuDropoutOut] require tensor for mask failed.");
+
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, &seed, &offset));
+
+    DIOPI_ASCEND_CALL_ACLNN(aclnnDropoutGenMask, ctx, inAt.shape(), p, seed, offset, maskNpu);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnDropoutDoMask, ctx, input, maskNpu, p, out);
+
+    diopiScalar_t ref = constructDiopiScalarT(inAt.dtype(), 0.0);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnNeScalar, ctx, out, &ref, mask);
+
+    return diopiSuccess;
 }
 
-}  // namespace
-
-void dropoutTrainCore(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
-                      diopiGeneratorHandle_t generator) {
+diopiError_t npuDropout2dOut(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
+                             diopiGeneratorHandle_t generator) {
     AscendTensor inputAt(input);
-    diopiTensorHandle_t maskTempTensor;
-    uint32_t length = (inputAt.numel() + 128 - 1) / 128 * 128;
-    int64_t maskTempShape[1] = {length / 8};
-    diopiSize_t maskTempSize = arrayToDiopiSize(maskTempShape, 1);
-    diopiRequireTensor(ctx, &maskTempTensor, &maskTempSize, nullptr, diopi_dtype_bool, diopi_device);
+    AscendTensor maskAt(mask);
+    std::vector<int64_t> maskShape(maskAt.shape());
+    const diopiSize_t maskDiopiSize = vectorToDiopiSize(maskShape);
 
-    diopiSize_t inputSize;
-    diopiGetTensorShape(input, &inputSize);
+    diopiTensorHandle_t input2d;
+    diopiRequireTensor(ctx, &input2d, &maskDiopiSize, nullptr, inputAt.dtype(), diopi_device);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceOne, ctx, input2d);
+    diopiTensorHandle_t out2d;
+    diopiRequireTensor(ctx, &out2d, &maskDiopiSize, nullptr, inputAt.dtype(), diopi_device);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, out2d);
 
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    int64_t offsetList[2] = {0, pair.second};
-    diopiSize_t offset = arrayToDiopiSize(offsetList, 2);
+    AscendTensor inAt(input2d);
+    int64_t length = (inAt.numel() + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
+    std::vector<int64_t> szVec(1, length);
+    diopiSize_t maskNpuSize = vectorToDiopiSize(szVec);
+    diopiTensorHandle_t maskNpu;
+    diopiError_t ret = diopiRequireTensor(ctx, &maskNpu, &maskNpuSize, nullptr, diopi_dtype_uint8, diopi_device);
+    ASCEND_CHECK_ABORT(ret == diopiSuccess, "[npuDropout2dOut] require tensor for mask failed.");
 
-    float prob = 1. - p;
-    AclOpRunner<5, 1, dtypeConvertor>("StatelessDropOutGenMask", ctx)
-        .addConstInput(inputSize)
-        .addConstInput(prob, inputAt.dtype())
-        .addConstInput(pair.first, diopi_dtype_int32)
-        .addConstInput(0, diopi_dtype_int32)
-        .addConstInput(offset)
-        .addOutput(maskTempTensor)
-        .run();
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, &seed, &offset));
 
-    diopiScalar_t oneScalar = constructDiopiScalarT(inputAt.dtype(), 1);
-    AclOpRunner<3, 1, dtypeConvertor>("DropOutDoMask", ctx).addInput(input).addInput(maskTempTensor).addConstInput(oneScalar).addOutput(out).run();
+    DIOPI_ASCEND_CALL_ACLNN(aclnnDropoutGenMask, ctx, inAt.shape(), p, seed, offset, maskNpu);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnDropoutDoMask, ctx, input2d, maskNpu, p, out2d);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnMul, ctx, input, out2d, out);
 
-    diopiEq(ctx, mask, input, out);
-    diopiScalar_t probReciprocalScalar = constructDiopiScalarT(inputAt.dtype(), 1. / prob);
-    diopiMulInpScalar(ctx, out, &probReciprocalScalar);
+    diopiScalar_t ref = constructDiopiScalarT(inputAt.dtype(), 0.0);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnNeScalar, ctx, out2d, &ref, mask);
+
+    return diopiSuccess;
 }
 
 diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p, bool train,
                           diopiGeneratorHandle_t generator) {
-    if (train) {
-        AscendTensor inputAt(input);
-        if (inputAt.shape() != AscendTensor(mask).shape()) {
-            diopiTensorHandle_t inputFor2d;
-            makeOnesLike(ctx, &inputFor2d, mask, inputAt.dtype());
-            diopiTensorHandle_t outFor2d;
-            makeTensorLike(ctx, &outFor2d, mask, inputAt.dtype());
-            dropoutTrainCore(ctx, outFor2d, mask, inputFor2d, p, generator);
-            diopiMul(ctx, out, input, outFor2d);
-        } else {
-            dropoutTrainCore(ctx, out, mask, input, p, generator);
-        }
-    } else {
-        ::impl::ascend_npu::diopiCopyInp(ctx, input, out);
+    if (p == 0 || train == false) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, out, input);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceOne, ctx, mask);
+        return diopiSuccess;
     }
+
+    if (p == 1) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, input);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, mask);
+        return diopiSuccess;
+    }
+
+    AscendTensor inAt(input);
+    AscendTensor maskAt(mask);
+    if (inAt.shape() != maskAt.shape()) {
+        npuDropout2dOut(ctx, out, mask, input, p, generator);
+    } else {
+        npuDropoutOut(ctx, out, mask, input, p, generator);
+    }
+
     return diopiSuccess;
 }
 
 diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiTensorHandle_t mask, double p, bool train,
                              diopiGeneratorHandle_t generator) {
-    if (train) {
-        diopiTensorHandle_t inputCopy;
-        makeTensorLike(ctx, &inputCopy, input);
-        ::impl::ascend_npu::diopiCopyInp(ctx, input, inputCopy);
-        diopiDropout(ctx, input, mask, inputCopy, p, train, generator);
+    if (p == 0 || train == false) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceOne, ctx, mask);
+        return diopiSuccess;
     }
+
+    if (p == 1) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, input);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, mask);
+        return diopiSuccess;
+    }
+
+    AscendTensor inAt(input);
+    AscendTensor maskAt(mask);
+    if (inAt.shape() != maskAt.shape()) {
+        npuDropout2dOut(ctx, input, mask, input, p, generator);
+    } else {
+        npuDropoutOut(ctx, input, mask, input, p, generator);
+    }
+
     return diopiSuccess;
 }
 

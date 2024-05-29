@@ -12,6 +12,7 @@
 #include <dlfcn.h>
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -107,7 +108,35 @@ inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
 }
 
 inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) { return ::aclCreateIntArray(size.data, size.len); }
-inline aclIntArray* createAclIntArrayFromVector(const std::vector<int64_t>& vec) { return ::aclCreateIntArray(vec.data(), vec.size()); }
+
+template <size_t N>
+inline aclBoolArray* createAclBoolArrayFromVector(const std::array<bool, N>& vec) {
+    return ::aclCreateBoolArray(vec.data(), vec.size());
+}
+
+template <typename T>
+struct IsBoolStdArray : std::false_type {};
+
+template <std::size_t N>
+struct IsBoolStdArray<std::array<bool, N>> : std::true_type {};
+
+inline aclIntArray* createAclIntArrayFromIntVector(const std::vector<int64_t>& vec) { return ::aclCreateIntArray(vec.data(), vec.size()); }
+
+inline aclTensorList* createAclTensorListFromDiopiTensorVector(const std::vector<diopiTensorHandle_t>& tensorsVec) {
+    std::vector<const aclTensor*> tensorList(tensorsVec.size());
+    for (size_t i = 0; i < tensorsVec.size(); i++) {
+        tensorList[i] = createAclTensorFromDiopiTensor(tensorsVec[i]);
+    }
+    return ::aclCreateTensorList(tensorList.data(), tensorList.size());
+}
+
+inline aclTensorList* createAclTensorListFromConstDiopiTensorVector(const std::vector<diopiConstTensorHandle_t>& tensorsVec) {
+    std::vector<const aclTensor*> tensorList(tensorsVec.size());
+    for (size_t i = 0; i < tensorsVec.size(); i++) {
+        tensorList[i] = createAclTensorFromDiopiTensor(tensorsVec[i]);
+    }
+    return ::aclCreateTensorList(tensorList.data(), tensorList.size());
+}
 
 template <class T, class U = std::remove_cv_t<std::remove_reference_t<T>>>
 decltype(auto) convertType(T&& param) {
@@ -115,14 +144,20 @@ decltype(auto) convertType(T&& param) {
         return createAclTensorFromAscendTensor(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiTensorHandle_t> || std::is_same_v<U, diopiConstTensorHandle_t>) {
         return createAclTensorFromDiopiTensor(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, std::vector<diopiConstTensorHandle_t>>) {
+        return createAclTensorListFromConstDiopiTensorVector(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, std::vector<diopiTensorHandle_t>>) {
+        return createAclTensorListFromDiopiTensorVector(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiScalar_t*> || std::is_same_v<U, const diopiScalar_t*>) {
         return createAclScalarFromDiopiScalar(std::forward<T>(param));
-    } else if constexpr (std::is_same_v<U, diopiSize_t> || std::is_same_v<U, const diopiSize_t>) {
+    } else if constexpr (std::is_same_v<U, diopiSize_t>) {
         return createAclIntArrayFromDiopiSize(std::forward<T>(param));
-    } else if constexpr (std::is_same_v<U, std::vector<int64_t>> || std::is_same_v<U, const std::vector<int64_t>>) {
-        return createAclIntArrayFromVector(std::forward<T>(param));
-    } else if constexpr (std::is_same_v<U, diopiDtype_t> || std::is_same_v<U, const diopiDtype_t>) {
+    } else if constexpr (std::is_same_v<U, std::vector<int64_t>>) {
+        return createAclIntArrayFromIntVector(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, diopiDtype_t>) {
         return diopiDtypeToAclDataType(std::forward<T>(param));
+    } else if constexpr (IsBoolStdArray<U>::value) {
+        return createAclBoolArrayFromVector<std::tuple_size_v<U>>(std::forward<T>(param));
     } else {
         static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
         return std::forward<T>(param);

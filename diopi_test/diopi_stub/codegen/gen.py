@@ -50,6 +50,7 @@ def get_func_info(content):
     paras_can_be_none = []
     ins_vector, outs_vector = {}, {}
     out_ptr = []
+    var_len_array_out = {}
     type_change = False
     row = content.replace('\n', '').replace('(', ',').replace(')', '')
     arg_define = row.split(',')
@@ -72,6 +73,16 @@ def get_func_info(content):
                         type_change = True
                         out_ptr.append(arg_index)
                         arg_type = 'PtrWrapper<diopiTensor>'
+                        break
+                    elif next_arg[0] == 'int64_t*':
+                        type_change = True
+                        next_arg_process = '(*static_cast<int64_t*>(' + next_arg[1] + '))'
+                        if arg_type == 'diopiTensorHandle_t*':
+                            outs_vector[arg_index] = next_arg_process
+                        else:
+                            ins_vector[arg_index] = next_arg_process
+                        arg_type = 'py::list&'
+                        var_len_array_out[arg_index] = ({"param": arg, "param_num": next_arg_process})
                         break
                     elif next_arg[0] == 'int64_t':
                         type_change = True
@@ -98,7 +109,7 @@ def get_func_info(content):
             if arg_type in can_be_none:
                 paras_can_be_none.append(len(args) - 1)
             arg_index += 1
-    return type_change, args, attr_types, paras_can_be_none, ins_vector, outs_vector, out_ptr
+    return type_change, args, attr_types, paras_can_be_none, ins_vector, outs_vector, out_ptr, var_len_array_out
 
 
 def get_export(content, ft, exports):
@@ -116,7 +127,7 @@ def get_export(content, ft, exports):
                 idx2 = row1.find(")")
                 temp_content += row1.replace(';', '')
                 idx += 1
-            type_change, args, attr_types, paras_none, ins_vector, outs_vector, out_ptr = get_func_info(temp_content)
+            type_change, args, attr_types, paras_none, ins_vector, outs_vector, out_ptr, var_len_array_out = get_func_info(temp_content)
             call_args = copy.deepcopy(args)
             type_change = True
             if type_change:
@@ -142,6 +153,8 @@ def get_export(content, ft, exports):
                     out_copy += "if ({param}.get() != nullptr && {param}Handle != nullptr)\n \
     *{param} = *{param}Handle;\n".format(param=call_args[out])
                     call_args[out] = '&' + call_args[out] + 'Handle'
+                for out_array in var_len_array_out.values():
+                    out_copy += OT.var_len_array_out_template.substitute(param=out_array['param'], param_num=out_array['param_num'])
                 call_func = func_name + '(' + ', '.join(call_args) + ')'
                 exports.append(ft.substitute(env=dict(func_name=func_name, attrs=', '.join(attrs), convert=convert,
                                                       out_copy=out_copy, call_func=call_func)))
