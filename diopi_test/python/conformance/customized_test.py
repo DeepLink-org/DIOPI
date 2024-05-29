@@ -400,7 +400,9 @@ class CustomizedTest(object):
         v_padded = torch.zeros(padded_shape, dtype=v.dtype, device=device)
 
         # Initialize the key_padding_mask as a Boolean mask with False values
-        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
+        key_padding_mask = torch.zeros(
+            (batch_size, max_seqlen), dtype=torch.bool, device=device
+        )
         # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
         for i in range(batch_size):
             start_idx = cu_seqlens[i]
@@ -477,7 +479,16 @@ class CustomizedTest(object):
         return output
 
     def flash_attention_varlen(
-        q, k, v, cu_seqlens_q, cu_seqlens_kv, max_seqlen_q, max_seqlen_kv, p_dropout, softmax_scale, is_causal
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        max_seqlen_q,
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
+        is_causal,
     ):
         # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
         cu_seqlens = cu_seqlens_q
@@ -493,7 +504,9 @@ class CustomizedTest(object):
         v_padded = torch.zeros(padded_shape, dtype=v.dtype, device=device)
 
         # Initialize the key_padding_mask as a Boolean mask with False values
-        key_padding_mask = torch.zeros((batch_size, max_seqlen), dtype=torch.bool, device=device)
+        key_padding_mask = torch.zeros(
+            (batch_size, max_seqlen), dtype=torch.bool, device=device
+        )
         # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
         for i in range(batch_size):
             start_idx = cu_seqlens[i]
@@ -611,4 +624,123 @@ class CustomizedTest(object):
                 head,
                 dim,
             )
+        return out
+
+    def attention(
+        query,
+        key,
+        value,
+        attn_mask=None,
+        attn_bias=None,
+        dropout_p=0.0,
+        is_causal=False,
+        scale=None,
+    ):
+        query = query.permute(0, 2, 1, 3)  # BSND -> BNSD
+        key = key.permute(0, 2, 1, 3)  # BSND -> BNSD
+        value = value.permute(0, 2, 1, 3)  # BSND -> BNSD
+        half_use_float = query.is_cpu and (
+            query.dtype == torch.float16 or query.dtype == torch.bfloat16
+        )
+        raw_dtype = query.dtype
+        device = query.device
+        if half_use_float:
+            query = query.float()
+            key = key.float()
+            value = value.float()
+        batch_size, seq_len_q, seq_len_kv = query.size(0), query.size(-2), key.size(-2)
+        scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
+        attn_bias_temp = torch.zeros(
+            seq_len_q, seq_len_kv, dtype=query.dtype, device=device
+        )
+        if is_causal:
+            assert attn_mask is None
+            temp_mask = torch.ones(
+                seq_len_q, seq_len_kv, dtype=torch.bool, device=device
+            ).tril(diagonal=0)
+            attn_bias_temp.masked_fill_(temp_mask.logical_not(), -10000.0)
+
+        if attn_mask is not None:
+            if attn_mask.dtype == torch.bool:
+                attn_bias_temp.masked_fill_(attn_mask.logical_not(), -10000.0)
+            else:
+                assert False, "atten_mask dtype is not bool"
+
+        attn_weight = query @ key.transpose(-2, -1) * scale_factor
+        attn_weight += attn_bias_temp
+        if attn_bias is not None:
+            attn_weight += attn_bias
+        attn_weight = torch.softmax(attn_weight, dim=-1)
+        attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
+        out = attn_weight @ value
+        if half_use_float:
+            out = out.to(raw_dtype)
+        out = out.permute(0, 2, 1, 3)  # BNSD -> BSND
+        return out
+
+    def attention_varlen(
+        query,
+        key,
+        value,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        max_seqlen_q,
+        max_seqlen_kv,
+        attn_mask=None,
+        attn_bias=None,
+        dropout_p=0.0,
+        is_causal=False,
+        scale=None,
+    ):
+
+        batch_size = cu_seqlens_q.numel() - 1
+        _, head_num, head_dim = query.size()
+        device = query.device
+        padded_q_shape = (batch_size, max_seqlen_q, head_num, head_dim)  # BSND
+        padded_kv_shape = (batch_size, max_seqlen_kv, head_num, head_dim)  # BSND
+
+        query_padded = torch.zeros(padded_q_shape, dtype=query.dtype, device=device)
+        key_padded = torch.zeros(padded_kv_shape, dtype=key.dtype, device=device)
+        value_padded = torch.zeros(padded_kv_shape, dtype=value.dtype, device=device)
+
+        padded_attn_bias = torch.zeros(
+            batch_size, 1, max_seqlen_q, max_seqlen_kv, dtype=query.dtype, device=device
+        )  # BNSS
+        # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
+        for i in range(batch_size):
+            actual_q_seq_len = cu_seqlens_q[i + 1] - cu_seqlens_q[i]
+            actual_kv_seq_len = cu_seqlens_kv[i + 1] - cu_seqlens_kv[i]
+            padded_attn_bias[i, :, actual_q_seq_len:, :] = -10000.0
+            padded_attn_bias[i, :, :, actual_kv_seq_len:] = -10000.0
+            query_padded[i, :actual_q_seq_len, :, :] = query[
+                cu_seqlens_q[i] : cu_seqlens_q[i + 1], :, :
+            ]  # BSND
+            key_padded[i, :actual_kv_seq_len, :, :] = key[
+                cu_seqlens_kv[i] : cu_seqlens_kv[i + 1], :, :
+            ]  # BSND
+            value_padded[i, :actual_kv_seq_len, :, :] = value[
+                cu_seqlens_kv[i] : cu_seqlens_kv[i + 1], :, :
+            ]
+
+            actual_q_seq_len = cu_seqlens_q[i + 1] - cu_seqlens_q[i]
+        if attn_bias is None:
+            attn_bias = padded_attn_bias
+        else:
+            attn_bias += padded_attn_bias
+        out_paded = CustomizedTest.attention(
+            query=query_padded,
+            key=key_padded,
+            value=value_padded,
+            dropout_p=dropout_p,
+            is_causal=is_causal,
+            scale=scale,
+            attn_bias=attn_bias,
+        )  # BSND
+
+        out = torch.zeros(query.shape, dtype=query.dtype, device=device)
+        for i in range(batch_size):
+            start_idx = cu_seqlens_q[i]
+            end_idx = cu_seqlens_q[i + 1]
+            actual_seq_len = end_idx - start_idx
+            out[start_idx:end_idx, :, :] = out_paded[i, :actual_seq_len, :, :] # BSND->TND
         return out

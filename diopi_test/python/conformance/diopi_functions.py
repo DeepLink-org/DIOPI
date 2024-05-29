@@ -5476,7 +5476,7 @@ def flash_attention_varlen(q, k, v, max_seqlen_q, max_seqlen_kv, cu_seqlens_q, c
         dropout_mask = None
         generator = None
     else:
-        assert 0, "The p_dropout value must be in range of [0, 1]"    
+        assert 0, "The p_dropout value must be in range of [0, 1]"
     softmax_max = Tensor()
     softmax_sum = Tensor()
     softmax_out = Tensor()
@@ -5500,7 +5500,7 @@ def flash_attention_varlen(q, k, v, max_seqlen_q, max_seqlen_kv, cu_seqlens_q, c
         v,
         cu_seqlens_q,
         cu_seqlens_kv,
-        max_seqlen_q, 
+        max_seqlen_q,
         max_seqlen_kv,
         p_dropout,
         softmax_scale,
@@ -5547,13 +5547,197 @@ def flash_attention_varlen_backward(q, k, v, out, grad_outputs, max_seqlen_q, ma
         softmax_max,
         softmax_sum,
         softmax_out,
-        max_seqlen_q, 
+        max_seqlen_q,
         max_seqlen_kv,
         p_dropout,
         softmax_scale,
     )
     check_returncode(ret)
     return out
+
+def attention(query, key, value, attn_mask=None, attn_bias=None, dropout_p=0.0, is_causal=False, scale=None):
+    func = check_function("diopiAttention")
+    attn_out = raw_like(query)
+    max_tensor_num_for_backward = 16
+    save_for_backward_array = [Tensor() for i in range(max_tensor_num_for_backward)]
+    save_for_backward = [TensorP(tensor) for tensor in save_for_backward_array]
+    save_tensor_num = ctypes.c_long(max_tensor_num_for_backward)
+    generator = Generator(build_generator_state(query.context()))
+    if scale is None:
+        scale = 1.0 / math.sqrt(query.size().data[-1])
+    ret = func(query.context(), attn_out, save_for_backward, get_capsule(byref(save_tensor_num)),
+               query, key, value, attn_mask, attn_bias, dropout_p, generator, scale, is_causal)
+    check_returncode(ret)
+    save_for_backward_tensor_list = []
+    for i in range(save_tensor_num.value):
+        save_for_backward_tensor_list.append(save_for_backward[i])
+
+    GLOBAL_STATE["attn_bias"] = attn_bias
+    GLOBAL_STATE["attention_save_tensor_num"] = save_tensor_num.value
+    GLOBAL_STATE["save_for_backward_tensor_list"] = save_for_backward_tensor_list
+    return attn_out
+
+
+def attention_backward(
+    query,
+    key,
+    value,
+    out,
+    grad_outputs,
+    dropout_p,
+    scale,
+    is_causal,
+    attn_bias
+):
+    call = "diopiAttentionBackward"
+    func = check_function(call)
+    assert (
+        dropout_p >= 0 and dropout_p <= 1
+    ), "The p_dropout value must be in range of [0, 1]"
+    grad_q = raw_like(query)
+    grad_k = raw_like(key)
+    grad_v = raw_like(value)
+    grad_attn_bias = None
+    if attn_bias is not None:
+        grad_attn_bias = raw_like(attn_bias)
+    save_tensor_num = GLOBAL_STATE.pop("attention_save_tensor_num")
+    save_for_backward_tensor_list = GLOBAL_STATE.pop("save_for_backward_tensor_list")
+
+    save_for_backward = [TensorP(tensor) for tensor in save_for_backward_tensor_list]
+    generator = Generator(build_generator_state(query.context()))
+    head_dim = query.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not scale else scale
+    ret = func(
+        query.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_attn_bias,
+        grad_outputs[0],
+        query,
+        key,
+        value,
+        out,
+        save_for_backward,
+        save_tensor_num,
+        dropout_p,
+        generator,
+        softmax_scale
+    )
+    check_returncode(ret)
+    return {"query": grad_q, "key": grad_k, "value": grad_v}
+
+
+def attention_varlen(
+    query,
+    key,
+    value,
+    cu_seqlens_q,
+    cu_seqlens_kv,
+    max_seqlen_q,
+    max_seqlen_kv,
+    attn_mask=None,
+    attn_bias=None,
+    dropout_p=0.0,
+    is_causal=False,
+    scale=None,
+):
+    func = check_function("diopiAttentionVarLen")
+    attn_out = raw_like(query)
+    max_tensor_num_for_backward = 16
+    save_for_backward_array = [Tensor() for i in range(max_tensor_num_for_backward)]
+    save_for_backward = [TensorP(tensor) for tensor in save_for_backward_array]
+    save_tensor_num = ctypes.c_long(max_tensor_num_for_backward)
+    generator = Generator(build_generator_state(query.context()))
+    if scale is None:
+        scale = 1.0 / math.sqrt(query.size().data[-1])
+    ret = func(
+        query.context(),
+        attn_out,
+        save_for_backward,
+        get_capsule(byref(save_tensor_num)),
+        query,
+        key,
+        value,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        max_seqlen_q,
+        max_seqlen_kv,
+        attn_mask,
+        attn_bias,
+        dropout_p,
+        generator,
+        scale,
+        is_causal,
+    )
+    check_returncode(ret)
+    save_for_backward_tensor_list = []
+    for i in range(save_tensor_num.value):
+        save_for_backward_tensor_list.append(save_for_backward[i])
+
+    GLOBAL_STATE["attn_bias"] = attn_bias
+    GLOBAL_STATE["attention_save_tensor_num"] = save_tensor_num.value
+    GLOBAL_STATE["save_for_backward_tensor_list"] = save_for_backward_tensor_list
+    return attn_out
+
+
+def attention_varlen_backward(
+    query,
+    key,
+    value,
+    out,
+    cu_seqlens_q,
+    cu_seqlens_kv,
+    max_seqlen_q,
+    max_seqlen_kv,
+    grad_outputs,
+    attn_mask=None,
+    attn_bias=None,
+    dropout_p=0.0,
+    is_causal=False,
+    scale=None,
+):
+    call = "diopiAttentionVarLenBackward"
+    func = check_function(call)
+    assert (
+        dropout_p >= 0 and dropout_p <= 1
+    ), "The p_dropout value must be in range of [0, 1]"
+    grad_q = raw_like(query)
+    grad_k = raw_like(key)
+    grad_v = raw_like(value)
+    grad_attn_bias = None
+    if attn_bias is not None:
+        #grad_attn_bias = raw_like(attn_bias)
+        pass
+    save_tensor_num = GLOBAL_STATE.pop("attention_save_tensor_num")
+    save_for_backward_tensor_list = GLOBAL_STATE.pop("save_for_backward_tensor_list")
+
+    save_for_backward = [TensorP(tensor) for tensor in save_for_backward_tensor_list]
+    generator = Generator(build_generator_state(query.context()))
+    head_dim = query.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not scale else scale
+    ret = func(
+        query.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_attn_bias,
+        grad_outputs[0],
+        query,
+        key,
+        value,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        out,
+        save_for_backward,
+        save_tensor_num,
+        dropout_p,
+        generator,
+        softmax_scale
+    )
+    check_returncode(ret)
+    return {"query": grad_q, "key": grad_k, "value": grad_v}
+
 
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
