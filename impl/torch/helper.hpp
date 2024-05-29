@@ -54,16 +54,16 @@ namespace impl {
 namespace aten {
 
 
-static const size_t MAX_NUM_GPUS = 32;
+static const size_t MAX_GPU_NUMS = 32;
 
 inline void setCurStream(diopiContextHandle_t ctx) {
-    static thread_local std::array<diopiStreamHandle_t, MAX_NUM_GPUS> current_streams = {};
+    static thread_local std::array<diopiStreamHandle_t, MAX_GPU_NUMS> current_streams = {};
 
     diopiStreamHandle_t stream_handle;
     diopiGetStream(ctx, &stream_handle);
 
     int device_id = c10::cuda::current_device();
-    TORCH_CHECK(device_id >= 0 && device_id < MAX_NUM_GPUS, "device_id is out of range");
+    TORCH_CHECK(device_id >= 0 && device_id < MAX_GPU_NUMS, "device_id is out of range");
 
     if (!current_streams[device_id] || current_streams[device_id] != stream_handle) {
         c10::cuda::CUDAStream cur_stream = c10::cuda::getStreamFromExternal(static_cast<cudaStream_t>(stream_handle), device_id);
