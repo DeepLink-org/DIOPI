@@ -456,8 +456,8 @@ DIOPI_API diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiConstTensorHandle_t p_token_counts, diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch);
 
 DIOPI_API diopiError_t diopiApplyPenaltyV2(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presence_penalty,
-                                         diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t repetition_penalty, diopiConstTensorHandle_t p_token_ids,
-                                         diopiConstTensorHandle_t p_token_counts, diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch);
+                                         diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t repetition_penalty,
+                                         diopiConstTensorHandle_t p_token_ids, diopiConstTensorHandle_t p_token_counts);
 
 /**
  * @brief Copies the elements from k tensor into out tensor according to dest_loc tensor. It can be expressed in detail as: out[dest_loc] = k. During
