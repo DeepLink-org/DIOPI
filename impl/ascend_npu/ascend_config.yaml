@@ -16,10 +16,6 @@ ascend:
 - diopiArgmax
 - diopiAtan
 - diopiAtanInp
-- diopiAttention
-- diopiAttentionBackward
-- diopiAttentionVarLen
-- diopiAttentionVarLenBackward
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiBitwiseNot
@@ -130,6 +126,10 @@ ascend:
 - diopiLog2
 - diopiLog2Inp
 - diopiLogInp
+- diopiMaskedFill
+- diopiMaskedFillInp
+- diopiMaskedFillInpScalar
+- diopiMaskedFillScalar
 - diopiMatmul
 - diopiMax
 - diopiMaxAll
@@ -224,10 +224,6 @@ ascend_npu:
 - diopiCopyInp
 - diopiGroupNorm
 - diopiGroupNormBackward
-- diopiMaskedFill
-- diopiMaskedFillInp
-- diopiMaskedFillInpScalar
-- diopiMaskedFillScalar
 - diopiStack
 - diopiMultinomial
 - diopiRotaryEmbedding
@@ -272,3 +268,7 @@ ascend_npu:
 - diopiFlashAttentionVarLenBackward
 - diopiScaledMaskedSoftmax
 - diopiScaledMaskedSoftmaxBackward
+- diopiAttention
+- diopiAttentionBackward
+- diopiAttentionVarLen
+- diopiAttentionVarLenBackward
