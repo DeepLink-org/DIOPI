@@ -27,13 +27,13 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     at::Tensor outAt2D = (outAt.dim() > 2) ? transTensorTo2D(outAt) : outAt;
     at::Tensor weightAt2D = (weightAt.dim() > 2) ? transTensorTo2D(weightAt) : weightAt;
     at::Tensor weightAt2DT = weightAt2D.t();
+
     int8_t cubeMathType = at_npu::native::OpPreparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
+    EXEC_NPU_CMD(aclnnMatmul, inputAt2D, weightAt2DT, outAt2D, cubeMathType);
+
     if (biasAt.defined()) {
-        at::Scalar beta = 1;
         at::Scalar alpha = 1;
-        EXEC_NPU_CMD(aclnnAddmm, biasAt, inputAt2D, weightAt2DT, beta, alpha, outAt2D, cubeMathType);
-    } else {
-        EXEC_NPU_CMD(aclnnMm, inputAt2D, weightAt2DT, outAt2D, cubeMathType);
+        EXEC_NPU_CMD(aclnnInplaceAdd, outAt, biasAt, alpha);
     }
 
     END_CALL_ACL_OP();
@@ -43,17 +43,14 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
                                  diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight) {
     BEGIN_CALL_ACL_OP(input, weight, gradOutput, gradInput, gradWeight, gradBias);
 
-    at::Tensor inputAt2D = (inputAt.dim() > 2) ? transTensorTo2D(inputAt) : inputAt;
-    at::Tensor weightAt2D = (weightAt.dim() > 2) ? transTensorTo2D(weightAt) : weightAt;
-    at::Tensor gradOutputAt2D = (gradOutputAt.dim() > 2) ? transTensorTo2D(gradOutputAt) : gradOutputAt;
-    at::Tensor gradInputAt2D = (gradInputAt.dim() > 2) ? transTensorTo2D(gradInputAt) : gradInputAt;
-    at::Tensor gradWeightAt2D = (gradWeightAt.dim() > 2) ? transTensorTo2D(gradWeightAt) : gradWeightAt;
-
     int8_t cubeMathType = at_npu::native::OpPreparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-    EXEC_NPU_CMD(aclnnMm, gradOutputAt2D, weightAt2D, gradInputAt2D, cubeMathType);
+    EXEC_NPU_CMD(aclnnMatmul, gradOutputAt, weightAt, gradInputAt, cubeMathType);
 
+    at::Tensor inputAt2D = (inputAt.dim() > 2) ? transTensorTo2D(inputAt) : inputAt;
+    at::Tensor gradOutputAt2D = (gradOutputAt.dim() > 2) ? transTensorTo2D(gradOutputAt) : gradOutputAt;
+    at::Tensor gradWeightAt2D = (gradWeightAt.dim() > 2) ? transTensorTo2D(gradWeightAt) : gradWeightAt;
     at::Tensor gradOutputAt2DT = gradOutputAt2D.t();
-    EXEC_NPU_CMD(aclnnMm, gradOutputAt2DT, inputAt2D, gradWeightAt2D, cubeMathType);
+    EXEC_NPU_CMD(aclnnMatmul, gradOutputAt2DT, inputAt2D, gradWeightAt2D, cubeMathType);
 
     if (gradBiasAt.defined()) {
         auto outDim = gradOutputAt.dim();
