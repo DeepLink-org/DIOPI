@@ -61,28 +61,23 @@ extern "C" DIOPI_API diopiError_t diopiModulatedDeformConvMmcv(diopiContextHandl
     impl::camb::CnnlTensorDesc biasDesc(biasTensor, CNNL_LAYOUT_ARRAY);
 
     int32_t batchSize = static_cast<int32_t>(inputTensor.size(0));
+
     // im2col_step should be set in cnnl kernel.
     int32_t im2colStep = batchSize;
-    int32_t stride[2] = {static_cast<int32_t>(strideH), static_cast<int32_t>(strideW)};
-    int32_t padding[4] = {static_cast<int32_t>(padH), static_cast<int32_t>(padH), static_cast<int32_t>(padW), static_cast<int32_t>(padW)};
-    int32_t dilation[2] = {static_cast<int32_t>(dilationH), static_cast<int32_t>(dilationW)};
-
-    std::vector<int64_t> csShape2 = {2};
-    std::vector<int64_t> csShape4 = {4};
-    impl::camb::DiopiTensor strideTensor = impl::camb::requiresTensor(ctx, csShape2, diopi_dtype_int32, diopiDevice_t::diopi_host);
-    impl::camb::DiopiTensor paddingTensor = impl::camb::requiresTensor(ctx, csShape4, diopi_dtype_int32, diopiDevice_t::diopi_host);
-    impl::camb::DiopiTensor dilationTensor = impl::camb::requiresTensor(ctx, csShape2, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    impl::camb::DiopiTensor strideTensor = impl::camb::requiresTensor(ctx, {2}, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    impl::camb::DiopiTensor paddingTensor = impl::camb::requiresTensor(ctx, {4}, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    impl::camb::DiopiTensor dilationTensor = impl::camb::requiresTensor(ctx, {2}, diopi_dtype_int32, diopiDevice_t::diopi_host);
     int32_t* strideTensorPtr = (int32_t*)strideTensor.data();
     int32_t* paddingTensorPtr = (int32_t*)paddingTensor.data();
     int32_t* dilationTensorPtr = (int32_t*)dilationTensor.data();
-    strideTensorPtr[0] = stride[0];
-    strideTensorPtr[1] = stride[1];
-    paddingTensorPtr[0] = padding[0];
-    paddingTensorPtr[1] = padding[1];
-    paddingTensorPtr[2] = padding[2];
-    paddingTensorPtr[3] = padding[3];
-    dilationTensorPtr[0] = dilation[0];
-    dilationTensorPtr[1] = dilation[1];
+    strideTensorPtr[0] = static_cast<int32_t>(strideH);
+    strideTensorPtr[1] = static_cast<int32_t>(strideW);
+    paddingTensorPtr[0] = static_cast<int32_t>(padH);
+    paddingTensorPtr[1] = static_cast<int32_t>(padH);
+    paddingTensorPtr[2] = static_cast<int32_t>(padW);
+    paddingTensorPtr[3] = static_cast<int32_t>(padW);
+    dilationTensorPtr[0] = static_cast<int32_t>(dilationH);
+    dilationTensorPtr[1] = static_cast<int32_t>(dilationW);
 
     cnnlDCNDescriptor_t dcnDesc;
     DIOPI_CALL_CNNL(cnnlCreateDCNDescriptor(&dcnDesc));
@@ -224,26 +219,20 @@ extern "C" DIOPI_API diopiError_t diopiModulatedDeformConvBackwardMmcv(
     int32_t batchSize = static_cast<int32_t>(inputTensor.size(0));
     // im2col_step should be set in cnnl kernel.
     int32_t im2colStep = batchSize;
-    int32_t stride[2] = {static_cast<int32_t>(strideH), static_cast<int32_t>(strideW)};
-    int32_t padding[4] = {static_cast<int32_t>(padH), static_cast<int32_t>(padH), static_cast<int32_t>(padW), static_cast<int32_t>(padW)};
-    int32_t dilation[2] = {static_cast<int32_t>(dilationH), static_cast<int32_t>(dilationW)};
-
-    std::vector<int64_t> csShape2 = {2};
-    std::vector<int64_t> csShape4 = {4};
-    impl::camb::DiopiTensor strideTensor = impl::camb::requiresTensor(ctx, csShape2, diopi_dtype_int32, diopiDevice_t::diopi_host);
-    impl::camb::DiopiTensor paddingTensor = impl::camb::requiresTensor(ctx, csShape4, diopi_dtype_int32, diopiDevice_t::diopi_host);
-    impl::camb::DiopiTensor dilationTensor = impl::camb::requiresTensor(ctx, csShape2, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    impl::camb::DiopiTensor strideTensor = impl::camb::requiresTensor(ctx, {2}, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    impl::camb::DiopiTensor paddingTensor = impl::camb::requiresTensor(ctx, {4}, diopi_dtype_int32, diopiDevice_t::diopi_host);
+    impl::camb::DiopiTensor dilationTensor = impl::camb::requiresTensor(ctx, {2}, diopi_dtype_int32, diopiDevice_t::diopi_host);
     int32_t* strideTensorPtr = (int32_t*)strideTensor.data();
     int32_t* paddingTensorPtr = (int32_t*)paddingTensor.data();
     int32_t* dilationTensorPtr = (int32_t*)dilationTensor.data();
-    strideTensorPtr[0] = stride[0];
-    strideTensorPtr[1] = stride[1];
-    paddingTensorPtr[0] = padding[0];
-    paddingTensorPtr[1] = padding[1];
-    paddingTensorPtr[2] = padding[2];
-    paddingTensorPtr[3] = padding[3];
-    dilationTensorPtr[0] = dilation[0];
-    dilationTensorPtr[1] = dilation[1];
+    strideTensorPtr[0] = static_cast<int32_t>(strideH);
+    strideTensorPtr[1] = static_cast<int32_t>(strideW);
+    paddingTensorPtr[0] = static_cast<int32_t>(padH);
+    paddingTensorPtr[1] = static_cast<int32_t>(padH);
+    paddingTensorPtr[2] = static_cast<int32_t>(padW);
+    paddingTensorPtr[3] = static_cast<int32_t>(padW);
+    dilationTensorPtr[0] = static_cast<int32_t>(dilationH);
+    dilationTensorPtr[1] = static_cast<int32_t>(dilationW);
 
     cnnlDCNDescriptor_t dcnDesc;
     DIOPI_CALL_CNNL(cnnlCreateDCNDescriptor(&dcnDesc));
