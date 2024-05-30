@@ -130,6 +130,10 @@ extern "C" DIOPI_API diopiError_t diopiModulatedDeformConvMmcv(diopiContextHandl
         DIOPI_CALL(impl::camb::dataTypeCast(ctx, outputTensor, outputTensorTmp));
     }
 
+    // TODO: replace cnrtQueueSync with asynchronous code
+    // padding,stride,dilation is host tensor, may be released ealier
+    cnrtQueueSync(getStream(ctx));
+
     return diopiSuccess;
 }
 
@@ -346,7 +350,8 @@ extern "C" DIOPI_API diopiError_t diopiModulatedDeformConvBackwardMmcv(
     }
 
     // TODO: replace cnrtQueueSync with asynchronous code
+    // padding,stride,dilation is host tensor, may be released ealier
     cnrtQueueSync(getStream(ctx));
-    
+
     return diopiSuccess;
 }
