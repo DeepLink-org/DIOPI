@@ -201,6 +201,8 @@ static diopiError_t indexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
                                  true,
                                  outputDesc.get(),
                                  outputTensor.data()));
+    // TODO: replace cnrtQueueSync with asynchronous code
+    cnrtQueueSync(getStream(ctx));
     return diopiSuccess;
 }
 
