@@ -202,6 +202,7 @@ static diopiError_t indexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
                                  outputDesc.get(),
                                  outputTensor.data()));
     // TODO: replace cnrtQueueSync with asynchronous code
+    // indicesPtrList is likely to be the problem host tensor
     cnrtQueueSync(getStream(ctx));
     return diopiSuccess;
 }
