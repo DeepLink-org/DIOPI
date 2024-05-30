@@ -64,7 +64,7 @@ inline void setCurStream(diopiContextHandle_t ctx) {
     int device_id = c10::cuda::current_device();
     TORCH_CHECK(device_id >= 0 && device_id < MAX_GPU_NUMS, "device_id is out of range");
 
-    // Reduce the number of calls to c10::cuda::setCurrentCUDAStream. Only the current stream for the device is not the same as the stream_handle, set the stream. 
+    // Reduce the number of calls to setCurrentCUDAStream. Only the current stream for the device is not the same as the stream_handle, set the stream.
     if (current_streams[device_id] != stream_handle) {
         c10::cuda::CUDAStream cur_stream = c10::cuda::getStreamFromExternal(static_cast<cudaStream_t>(stream_handle), device_id);
         c10::cuda::setCurrentCUDAStream(cur_stream);
