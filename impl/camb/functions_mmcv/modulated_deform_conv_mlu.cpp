@@ -345,5 +345,8 @@ extern "C" DIOPI_API diopiError_t diopiModulatedDeformConvBackwardMmcv(
         DIOPI_CALL(impl::camb::dataTypeCast(ctx, gradBiasTensor, gradBiasTensorTmp));
     }
 
+    // TODO: replace cnrtQueueSync with asynchronous code
+    cnrtQueueSync(getStream(ctx));
+    
     return diopiSuccess;
 }
