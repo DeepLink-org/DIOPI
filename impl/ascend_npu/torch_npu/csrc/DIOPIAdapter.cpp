@@ -2391,7 +2391,6 @@ private:
 void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N>& sync_index, c10::SmallVector<at::Tensor, N>& outputTensor) {
     NPU_LOGD("Op %s start run.", opName.c_str());
     // RECORD_FUNCTION(opName, std::vector<c10::IValue>({}));
-    diopi::GilScopedRelease gilReleaeGuard;
     ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
     NPU_LOGD("Op %s run over.", opName.c_str());
 }
@@ -2496,6 +2495,7 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
         }
 #endif
         diopi::StreamLockGuard streamLockGuard(stream.stream());
+        diopi::GilScopedRelease gilReleaeGuard;
         if (sync) {
             ret = AclopCompileAndExecuteV2(name.c_str(),
                                            inputSize,
