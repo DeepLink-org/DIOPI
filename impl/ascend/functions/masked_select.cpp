@@ -53,11 +53,11 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
     int64_t broadcastDim = std::max(inputAt.dim(), maskAt.dim());
     std::cout << "broadcastDim = " << broadcastDim << std::endl;
 
-    while(inputAt.dim() < broadcastDim) {
+    while (inputAt.dim() < broadcastDim) {
         inputAt.unsqueeze(0);
     }
 
-    while(maskAt.dim() < broadcastDim) {
+    while (maskAt.dim() < broadcastDim) {
         maskAt.unsqueeze(0);
     }
 
@@ -68,7 +68,7 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
         std::cout << "broadcastShapeData[" << i << "] = " << broadcastShapeData[i] << std::endl;
         outputNumel *= broadcastShapeData[i];
     }
-    
+
     diopiSize_t outputShape{&outputNumel, 1};
     std::cout << "outputNumel = " << outputNumel << std::endl;
 
@@ -80,10 +80,7 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
     std::cout << "out dataFormat = " << outAt.getAclDataFormat() << std::endl;
     std::cout << "out.dim = " << outAt.dim() << std::endl;
 
-    std::vector<int64_t> broadcastShape {broadcastShapeData, broadcastShapeData + broadcastDim};
-    inputAt.view(broadcastShape);
-    maskAt.view(broadcastShape);
-
+    std::vector<int64_t> broadcastShape{broadcastShapeData, broadcastShapeData + broadcastDim};
 
     printVector(inputAt.shape());
     printVector(maskAt.shape());
@@ -94,13 +91,12 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
     std::cout << "FLAG 2" << std::endl;
     *out = outTmp;
     std::cout << "FLAG 3" << std::endl;
-    
+
     return diopiSuccess;
 }
 
 DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
                                                  diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask) {
-    
     AscendTensor inputAt(input);
     AscendTensor maskAt(mask);
     AscendTensor gradInputAt(gradInput);
@@ -109,8 +105,6 @@ DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopi
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradInput);
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceMaskedScatter, ctx, gradInput, maskAt, gradOutputAt);
 
-
-    
     return diopiSuccess;
 }
 }  // namespace ascend
