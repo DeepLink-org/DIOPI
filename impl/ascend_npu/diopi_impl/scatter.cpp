@@ -32,7 +32,7 @@ diopiError_t diopiScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     TORCH_CHECK((inputAt.dim() == srcAt.dim() && inputAt.dim() == indexAt.dim()) || indexAt.dim() == 0,
                 "input,src,index must have same ndim! only exception is index is empty");
     if (indexAt.dim() == 0) {
-        outAt.copy_(inputAt);
+        outAt.copy_(inputAt, true);
         return diopiSuccess;
     }
     // input to output type
@@ -89,7 +89,7 @@ diopiError_t diopiScatterScalar(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     }
     // check index
     TORCH_CHECK(inputAt.dim() == indexAt.dim() || indexAt.dim() == 0, "input,index must have same ndim! only exception is index is empty");
-    outAt.copy_(inputAt);
+    outAt.copy_(inputAt, true);
     if (indexAt.dim() == 0) {
         return diopiSuccess;
     }

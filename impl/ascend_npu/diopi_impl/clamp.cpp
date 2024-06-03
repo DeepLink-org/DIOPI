@@ -58,8 +58,6 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
                 return diopiSuccess;
             }
             at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
-            // at::Tensor tmp = op_api::clamp_max(inputTmp, maxAt);
-            // outAt.copy_(tmp);
             EXEC_NPU_CMD(aclnnClampMaxTensor, inputTmp, maxAt, outAt);
             END_CALL_ACL_OP();
         }
@@ -174,8 +172,6 @@ diopiError_t diopiClampMaxScalar(diopiContextHandle_t ctx, diopiTensorHandle_t o
         return diopiSuccess;
     }
     at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
-    // at::Tensor tmp = op_api::clamp_max(inputTmp, maxAt);
-    // outAt.copy_(tmp);
     EXEC_NPU_CMD(aclnnClampMaxTensor, inputTmp, maxAt, outAt);
     END_CALL_ACL_OP();
 }
