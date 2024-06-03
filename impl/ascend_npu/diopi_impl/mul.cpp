@@ -16,7 +16,6 @@ diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         return diopiSuccess;
     }
 
-    // op_api::mul_out(inputAt, otherAt, outAt);
     EXEC_NPU_CMD(aclnnMul, inputAt, otherAt, outAt);
     END_CALL_ACL_OP();
 }

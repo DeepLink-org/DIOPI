@@ -6,6 +6,7 @@
 
 #include "helper.hpp"
 #include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace OP_IMPL_NS {
 
@@ -16,8 +17,10 @@ diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto alphaAt = at::Scalar(alpha);
 
     if (batch1At.numel() == 0 || batch2At.numel() == 0) {
-        auto outMul = op_api::mul(inputAt, betaAt);
-        outAt.copy_(outMul);
+        // auto outMul = op_api::mul(inputAt, betaAt);
+        // outAt.copy_(outMul);
+        EXEC_NPU_CMD(aclnnMuls, inputAt, betaAt, outAt);
+
         END_CALL_ACL_OP();
     }
 

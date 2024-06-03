@@ -9,6 +9,7 @@
 #include "helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace OP_IMPL_NS {
 diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t min,
@@ -57,8 +58,9 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
                 return diopiSuccess;
             }
             at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
-            at::Tensor tmp = op_api::clamp_max(inputTmp, maxAt);
-            outAt.copy_(tmp);
+            // at::Tensor tmp = op_api::clamp_max(inputTmp, maxAt);
+            // outAt.copy_(tmp);
+            EXEC_NPU_CMD(aclnnClampMaxTensor, inputTmp, maxAt, outAt);
             END_CALL_ACL_OP();
         }
     }
@@ -172,8 +174,9 @@ diopiError_t diopiClampMaxScalar(diopiContextHandle_t ctx, diopiTensorHandle_t o
         return diopiSuccess;
     }
     at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
-    at::Tensor tmp = op_api::clamp_max(inputTmp, maxAt);
-    outAt.copy_(tmp);
+    // at::Tensor tmp = op_api::clamp_max(inputTmp, maxAt);
+    // outAt.copy_(tmp);
+    EXEC_NPU_CMD(aclnnClampMaxTensor, inputTmp, maxAt, outAt);
     END_CALL_ACL_OP();
 }
 
