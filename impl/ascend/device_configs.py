@@ -119,6 +119,10 @@ device_configs = {
 
     'max_pool2d': dict(
         name=['max_pool2d'],
+        para=dict(
+            # aclnnMaxPool only support that the value of dilation is 1
+            dilation=[Skip((4, 3)), Skip((2, 3)), Skip((2, 3)), Skip((2,))],
+        ),
         tensor_para=dict(
             args=[
                 {
@@ -131,6 +135,10 @@ device_configs = {
 
     'max_pool2d_return_indices': dict(
         name=['max_pool2d'],
+        para=dict(
+            # aclnnMaxPool2dWithMask only support that the value of dilation is 1
+            dilation=[Skip((4, 3)), Skip((2, 3)), Skip((2, 3)),],
+        ),
         tensor_para=dict(
             args=[
                 {
