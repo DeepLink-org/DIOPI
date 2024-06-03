@@ -200,6 +200,7 @@ jobs:
     name: Gen-Data-Op-Test-A100
     runs-on: tps-diopi-ci
     needs: [Build-Nvidia-A100]
+    if: ${{ contains( needs.Rsync.outputs.output, 'NV' ) }}
     steps:
       - name: gen-test-data
         run: |
