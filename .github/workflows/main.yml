@@ -295,11 +295,11 @@ jobs:
     if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
     steps:
       - name: COPY Source
-          run: |
-            set -e
-            source ~/Aoss_env.sh
-            ads-cli cp s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss-internal.cn-sh-01c.sensecoreapi-oss.cn${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/
-            ads-cli  --dryrun --deleteSrc cp  s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss-internal.cn-sh-01c.sensecoreapi-oss.cn${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ /dev/null 2>&1 >/dev/null
+        run: |
+           set -e
+           source ~/Aoss_env.sh
+           ads-cli cp s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss-internal.cn-sh-01c.sensecoreapi-oss.cn${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/
+           ads-cli  --dryrun --deleteSrc cp  s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss-internal.cn-sh-01c.sensecoreapi-oss.cn${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ /dev/null 2>&1 >/dev/null
       - name: build
         run: |
           set -e
