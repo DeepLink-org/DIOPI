@@ -128,6 +128,7 @@ aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_
 }  // namespace
 
 thread_local diopiContextHandle_t context = nullptr;
+thread_local int context_use_counter = 0;
 thread_local std::map<void*, diopiTensorHandle_t> requiredTensorMap;
 
 namespace c10_npu {
@@ -3172,15 +3173,32 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 }
 
 void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
+    DEBUG_ARGS(input);
     TORCH_CHECK(out != nullptr);
     if (!input.defined()) {
         *out = nullptr;
     }
-    *out = requiredTensorMap.at(input.data_ptr());
-    auto outAt = buildATen(*out);
-    if (outAt.sizes() != outAt.sizes()) {
-        outAt = outAt.view_as(input);
+    //*out = requiredTensorMap.at(input.data_ptr());
+    auto iter = requiredTensorMap.find(input.data_ptr());
+    if (iter != requiredTensorMap.end() && 0) {
+        *out = iter->second;
+        auto outAt = buildATen(*out);
+        if (outAt.sizes() != input.sizes()) {
+            outAt = outAt.view_as(input);
+        }
+    } else {
+        at::IntArrayRef atSize = input.sizes();
+        at::IntArrayRef atStride = input.strides();
+        diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
+        diopiSize_t stride{atStride.data(), static_cast<int64_t>(atStride.size())};
+        diopiDtype_t dtype = getDIOPITensorType(input);
+        diopiDevice_t device = getDIOPIDevice(input.device().type());
+        diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
+        updateATen2Tensor(ctx, input, *out);
+        DEBUG_ARGS(*out);
     }
+
+
 }
 
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
@@ -3208,14 +3226,19 @@ c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List
     return result;
 }
 
-void setCurCtx(diopiContextHandle_t ctx) {
-    context = ctx;
-    at_npu::native::markedOutputs.clear();
+ContextManger::ContextManger(diopiContextHandle_t ctx) {
+    if (context_use_counter == 0) {
+        context = ctx;
+    }
+    context_use_counter++;
 }
 
-void unsetCurCtx() {
-    context = nullptr;
-    requiredTensorMap.clear();
+ContextManger::~ContextManger() {
+    context_use_counter--;
+    if (context_use_counter == 0) {
+        context == nullptr;
+        requiredTensorMap.clear();
+    }
 }
 
 }  // namespace aten

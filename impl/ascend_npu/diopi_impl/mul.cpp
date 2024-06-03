@@ -11,12 +11,11 @@
 namespace OP_IMPL_NS {
 
 diopiError_t diopiMul(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other) {
-    BEGIN_CALL_ACL_OP(input, other);
+    BEGIN_CALL_ACL_OP(input, other, out);
     if (!inputAt.defined() || inputAt.numel() == 0 || !otherAt.defined() || otherAt.numel() == 0) {
         return diopiSuccess;
     }
 
-    BEGIN_CALL_ACL_OP(out);
     // op_api::mul_out(inputAt, otherAt, outAt);
     EXEC_NPU_CMD(aclnnMul, inputAt, otherAt, outAt);
     END_CALL_ACL_OP();
@@ -34,12 +33,11 @@ diopiError_t diopiMulInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, di
 }
 
 diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* other) {
-    BEGIN_CALL_ACL_OP(input, other);
+    BEGIN_CALL_ACL_OP(input, other, out);
     if (!inputAt.defined() || inputAt.numel() == 0) {
         return diopiSuccess;
     }
 
-    BEGIN_CALL_ACL_OP(out);
     EXEC_NPU_CMD(aclnnMuls, inputAt, otherAt, outAt);
     END_CALL_ACL_OP();
 }

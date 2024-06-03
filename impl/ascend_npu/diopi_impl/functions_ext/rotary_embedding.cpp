@@ -43,7 +43,6 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
 
     if (xAt.dim() >= 5) {
         set_last_error_string("rotary embedding not support 5D tensor yet");
-        impl::aten::unsetCurCtx();
         return diopi5DNotSupported;
     }
 
