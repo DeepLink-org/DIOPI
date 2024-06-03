@@ -89,11 +89,10 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
  * @param[out] debug_attn_mask Debugging tensor for the attention mask (returned if return_debug_mask is true). shape = [batch_size, num_heads, q_seq_len,
  * k_seq_len]. type = [bool].
  */
-[[deprecated("use diopiAttention instead")]] DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle_t q,
-                                                                                            diopiTensorHandle_t k, diopiTensorHandle_t v, double dropout_p,
-                                                                                            bool is_causal, bool return_debug_mask, double scale,
-                                                                                            diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse,
-                                                                                            diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
+[[deprecated("use diopiAttention instead")]]
+DIOPI_API diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v, double dropout_p,
+                                               bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse,
+                                               diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
 
 // This interface has been deprecated, please use a more suitable diopiFlashAttention series interface.
 /**
@@ -114,10 +113,11 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
  * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [float32, float16, float64].
  * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [float32, float16, float64].
  */
-[[deprecated("use diopiAttentionBackward instead")]] DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(
-    diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-    diopiConstTensorHandle_t out, diopiConstTensorHandle_t softmax_lse, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen, double scale,
-    diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v);
+[[deprecated("use diopiAttentionBackward instead")]]
+DIOPI_API diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                                       diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
+                                                       diopiConstTensorHandle_t softmax_lse, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen,
+                                                       double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v);
 
 // This interface has been deprecated, please use a more suitable diopiFlashAttention series interface.
 /**
@@ -146,10 +146,11 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
  * @param[out] debug_attn_mask Debugging tensor for the attention mask (returned if return_debug_mask is true). shape = [batch_size, num_heads, max_q, max_k].
  * type = [bool].
  */
-[[deprecated("use diopiAttentionVarLen instead")]] DIOPI_API diopiError_t diopiMultiHeadAttentionVarLen(
-    diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q,
-    diopiConstTensorHandle_t cum_seq_k, int64_t max_q, int64_t max_k, double dropout_p, bool is_causal, bool return_debug_mask, double scale,
-    diopiTensorHandle_t out, diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
+[[deprecated("use diopiAttentionVarLen instead")]]
+DIOPI_API diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t q, diopiTensorHandle_t k, diopiTensorHandle_t v,
+                                                     diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t max_q, int64_t max_k,
+                                                     double dropout_p, bool is_causal, bool return_debug_mask, double scale, diopiTensorHandle_t out,
+                                                     diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiTensorHandle_t debug_attn_mask);
 
 // This interface has been deprecated, please use a more suitable diopiFlashAttention series interface.
 /**
@@ -174,11 +175,13 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
  * @param[out] grad_k The gradient of the key tensor. shape = [k_nums, head_num, head_dim]. type = [float32, float16, float64].
  * @param[out] grad_v The gradient of the value tensor. shape = [v_nums, head_num, head_dim]. type = [float32, float16, float64].
  */
-[[deprecated("use diopiAttentionVarLenBackward instead")]] DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(
-    diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-    diopiConstTensorHandle_t out, diopiConstTensorHandle_t softmax_lse, diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_k, int64_t max_q,
-    int64_t max_k, double dropout_p, bool is_causal, diopiGeneratorHandle_t gen, double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
-    diopiTensorHandle_t grad_v);
+[[deprecated("use diopiAttentionVarLenBackward instead")]]
+DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                                             diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t out,
+                                                             diopiConstTensorHandle_t softmax_lse, diopiConstTensorHandle_t cum_seq_q,
+                                                             diopiConstTensorHandle_t cum_seq_k, int64_t max_q, int64_t max_k, double dropout_p, bool is_causal,
+                                                             diopiGeneratorHandle_t gen, double scale, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
+                                                             diopiTensorHandle_t grad_v);
 
 /**
  * @brief Compute the forward pass for Flash Attention.
@@ -203,13 +206,12 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
  * @param[out] softmax_sum Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
  * @param[out] softmax_out Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
  */
-[[deprecated("use diopiAttention instead")]] DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out,
-                                                                                        diopiTensorHandle_t* attention_mask, diopiTensorHandle_t* dropout_mask,
-                                                                                        diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum,
-                                                                                        diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen,
-                                                                                        diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                                                                        diopiConstTensorHandle_t v, double p_dropout, double softmax_scale,
-                                                                                        bool is_causal, int64_t head_num, const char* input_layout);
+[[deprecated("use diopiAttention instead")]]
+DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* attention_mask,
+                                           diopiTensorHandle_t* dropout_mask, diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum,
+                                           diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+                                           diopiConstTensorHandle_t v, double p_dropout, double softmax_scale, bool is_causal, int64_t head_num,
+                                           const char* input_layout);
 
 /**
  * @brief Compute the backward pass for Flash Attention.
@@ -240,11 +242,13 @@ DIOPI_API diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTenso
  * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, v_seq_len, head_num, head_dim] or [batch_size, head_num, v_seq_len, head_dim] or
  * [batch_size, v_seq_len, hidden_size] or [v_seq_len, batch_size, hidden_size]. type = [bfloat16, float16].
  */
-[[deprecated("use diopiAttentionBackward instead")]] DIOPI_API diopiError_t diopiFlashAttentionBackward(
-    diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out,
-    diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
-    diopiConstTensorHandle_t attention_mask, diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max, diopiConstTensorHandle_t softmax_sum,
-    diopiConstTensorHandle_t softmax_out, double p_dropout, double softmax_scale, int64_t head_num, const char* input_layout);
+[[deprecated("use diopiAttentionBackward instead")]]
+DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
+                                                   diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+                                                   diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
+                                                   diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
+                                                   diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, double p_dropout,
+                                                   double softmax_scale, int64_t head_num, const char* input_layout);
 
 /**
  * @brief Computes attention on query, key and value tensors, using an optional attention mask if passed,
@@ -396,10 +400,12 @@ DIOPI_API diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, di
  * @param[out] softmax_sum Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
  * @param[out] softmax_out Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
  */
-[[deprecated("use diopiAttention instead")]] DIOPI_API diopiError_t diopiFlashAttentionV2(
-    diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* dropout_mask, diopiTensorHandle_t* softmax_max,
-    diopiTensorHandle_t* softmax_sum, diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-    diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_mask, double p_dropout, double softmax_scale, int64_t head_num, const char* input_layout);
+[[deprecated("use diopiAttention instead")]]
+DIOPI_API diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* dropout_mask,
+                                             diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum, diopiTensorHandle_t* softmax_out,
+                                             diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                             diopiConstTensorHandle_t attention_mask, double p_dropout, double softmax_scale, int64_t head_num,
+                                             const char* input_layout);
 
 // The difference between this interface and v1 v2 is that it is more suitable for devices integrating dropout mask and casual attention mask into the flash
 // attention kernel.
@@ -418,11 +424,10 @@ DIOPI_API diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, di
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [bfloat16,
  * float16].
  */
-[[deprecated("use diopiAttention instead")]] DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out,
-                                                                                          diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen,
-                                                                                          diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                                                                          diopiConstTensorHandle_t v, double p_dropout, double softmax_scale,
-                                                                                          bool is_causal);
+[[deprecated("use diopiAttention instead")]]
+DIOPI_API diopiError_t diopiFlashAttentionV3(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t softmax_lse,
+                                             diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                             double p_dropout, double softmax_scale, bool is_causal);
 
 /**
  * @brief Compute the backward pass for Flash Attention.
@@ -442,10 +447,12 @@ DIOPI_API diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, di
  * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  */
-[[deprecated("use diopiAttentionBackward instead")]] DIOPI_API diopiError_t diopiFlashAttentionV3Backward(
-    diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out,
-    diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
-    diopiConstTensorHandle_t softmax_lse, double p_dropout, double softmax_scale, bool is_causal);
+[[deprecated("use diopiAttentionBackward instead")]]
+DIOPI_API diopiError_t diopiFlashAttentionV3Backward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
+                                                     diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiGeneratorHandle_t gen,
+                                                     diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                                     diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t softmax_lse, double p_dropout,
+                                                     double softmax_scale, bool is_causal);
 
 /**
  * @brief Compute the forward pass for the variable length version of Flash Attention.
@@ -469,11 +476,12 @@ DIOPI_API diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, di
  * @param[out] softmax_sum Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
  * @param[out] softmax_out Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
  */
-[[deprecated("use diopiAttentionVarLen instead")]] DIOPI_API diopiError_t
-diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* attention_mask, diopiTensorHandle_t* dropout_mask,
-                          diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum, diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen,
-                          diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiSize_t cum_seq_q, diopiSize_t cum_seq_kv,
-                          int64_t max_seqlen_q, int64_t max_seqlen_kv, double p_dropout, double softmax_scale, bool is_causal);
+[[deprecated("use diopiAttentionVarLen instead")]]
+DIOPI_API diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* attention_mask,
+                                                 diopiTensorHandle_t* dropout_mask, diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum,
+                                                 diopiTensorHandle_t* softmax_out, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q,
+                                                 diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiSize_t cum_seq_q, diopiSize_t cum_seq_kv,
+                                                 int64_t max_seqlen_q, int64_t max_seqlen_kv, double p_dropout, double softmax_scale, bool is_causal);
 
 /**
  * @brief Compute the backward pass for the variable length version of Flash Attention.
@@ -501,12 +509,14 @@ diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attentio
  * @param[out] grad_v The gradient of the value tensor. shape = [total_v, head_num, head_dim], where total_v = total number of value tokens in the batch. type =
  * [bfloat16, float16].
  */
-[[deprecated("use diopiAttentionVarLenBackward instead")]] DIOPI_API diopiError_t diopiFlashAttentionVarLenBackward(
-    diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out,
-    diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiSize_t cum_seq_q, diopiSize_t cum_seq_kv,
-    diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask, diopiConstTensorHandle_t dropout_mask,
-    diopiConstTensorHandle_t softmax_max, diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, int64_t max_seqlen_q,
-    int64_t max_seqlen_kv, double p_dropout, double softmax_scale);
+[[deprecated("use diopiAttentionVarLenBackward instead")]]
+DIOPI_API diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
+                                                         diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                                         diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiSize_t cum_seq_q, diopiSize_t cum_seq_kv,
+                                                         diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
+                                                         diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
+                                                         diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, int64_t max_seqlen_q,
+                                                         int64_t max_seqlen_kv, double p_dropout, double softmax_scale);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
