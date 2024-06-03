@@ -3202,14 +3202,12 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 }
 
 void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
-    DEBUG_ARGS(input);
     TORCH_CHECK(out != nullptr);
     if (!input.defined()) {
         *out = nullptr;
     }
-    //*out = requiredTensorMap.at(input.data_ptr());
     auto iter = requiredTensorMap.find(input.data_ptr());
-    if (iter != requiredTensorMap.end() && 0) {
+    if (iter != requiredTensorMap.end()) {
         *out = iter->second;
         auto outAt = buildATen(*out);
         if (outAt.sizes() != input.sizes()) {
@@ -3224,7 +3222,6 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
         diopiDevice_t device = getDIOPIDevice(input.device().type());
         diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
         updateATen2Tensor(ctx, input, *out);
-        DEBUG_ARGS(*out);
     }
 }
 

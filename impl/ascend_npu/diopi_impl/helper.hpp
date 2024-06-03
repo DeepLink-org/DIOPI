@@ -407,6 +407,7 @@ inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
 
 inline void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     if (out != nullptr) {
+        TORCH_WARN(false, "can be optimized: there is no need copy");
         at::Tensor atOutput = buildATen(out);
         atOutput.reshape_as(atOut).copy_(atOut, true);
     }
