@@ -42,29 +42,8 @@ diopiError_t diopiMaxPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     int64_t dW = dilation.len == 1 ? dH : dilation.data[1];
     int64_t dilationData[2]{dH, dW};
 
-    int64_t nBatch = inputAt.dim() == 4 ? inputAt.shape(-4) : 1;
-    int64_t nInputPlane = inputAt.shape(-3);
-    int64_t inputHeight = inputAt.shape(-2);
-    int64_t inputWidth = inputAt.shape(-1);
-
-    const int64_t blockSize = 16;
-    int64_t outHeight = outAt.shape(-2);
-    int64_t outWidth = outAt.shape(-1);
-
-    int64_t maskH = kernelSizeData[0] * kernelSizeData[1];
-    int64_t maskW = (outHeight * outWidth) / blockSize + 1;
-
-    std::vector<int64_t> indicesShape;
-    if (inputAt.dim() == 4) {
-        indicesShape = std::vector<int64_t>{nBatch, nInputPlane, maskH, maskW * 32};
-    } else {
-        indicesShape = std::vector<int64_t>{nInputPlane, maskH, maskW * 32};
-    }
-
     maxPool2dCheck(inputAt, diopiSize_t{kernelSizeData, 2}, diopiSize_t{strideData, 2}, diopiSize_t{paddingData, 2}, diopiSize_t{dilationData, 2});
 
-    AscendTensor indicesAt;
-    makeTensor(ctx, indicesAt, indicesShape, diopi_dtype_int8);
     DIOPI_ASCEND_CALL_ACLNN(aclnnMaxPool,
                             ctx,
                             inputAt,
@@ -105,23 +84,11 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     int64_t inputHeight = inputAt.shape(-2);
     int64_t inputWidth = inputAt.shape(-1);
 
-    const int64_t blockSize = 16;
-    int64_t outHeight = outAt.shape(-2);
-    int64_t outWidth = outAt.shape(-1);
-
-    int64_t maskH = kernelSizeData[0] * kernelSizeData[1];
-    int64_t maskW = (outHeight * outWidth) / blockSize + 1;
-
-    std::vector<int64_t> indicesShape;
-    if (inputAt.dim() == 4) {
-        indicesShape = std::vector<int64_t>{nBatch, nInputPlane, maskH, maskW * 32};
-    } else {
-        indicesShape = std::vector<int64_t>{nInputPlane, maskH, maskW * 32};
-    }
-
-    indicesAt.view(indicesShape);
-
     maxPool2dCheck(inputAt, diopiSize_t{kernelSizeData, 2}, diopiSize_t{strideData, 2}, diopiSize_t{paddingData, 2}, diopiSize_t{dilationData, 2});
+    ASCEND_CHECK_ABORT(inputAt.dtype() == diopi_dtype_float32, "aclnnMaxPool2dWithIndices only support float input");
+    ASCEND_CHECK_ABORT(outAt.dtype() == diopi_dtype_float32, "aclnnMaxPool2dWithIndices only support float out");
+    ;
+    ASCEND_CHECK_ABORT(indicesAt.dtype() == diopi_dtype_int32, "aclnnMaxPool2dWithIndices only support int32 indices");
 
     DIOPI_ASCEND_CALL_ACLNN(aclnnMaxPool2dWithIndices,
                             ctx,
@@ -141,6 +108,7 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
                                     bool ceilMode, diopiConstTensorHandle_t indices) {
     AscendTensor inputAt(input);
     AscendTensor indicesAt(indices);
+    AscendTensor gradInputAt(gradInput);
     AscendTensor gradOutputAt(gradOutput);
 
     int64_t kH = kernelSize.data[0];
@@ -164,22 +132,13 @@ diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     int64_t inputHeight = inputAt.shape(-2);
     int64_t inputWidth = inputAt.shape(-1);
 
-    const int64_t blockSize = 16;
-    int64_t outHeight = gradOutputAt.shape(-2);
-    int64_t outWidth = gradOutputAt.shape(-1);
+    maxPool2dCheck(inputAt, diopiSize_t{kernelSizeData, 2}, diopiSize_t{strideData, 2}, diopiSize_t{paddingData, 2}, diopiSize_t{dilationData, 2});
+    ASCEND_CHECK_ABORT(inputAt.dtype() == diopi_dtype_float32, "aclnnMaxPool2dWithIndicesBackward only support float input");
+    ASCEND_CHECK_ABORT(gradOutputAt.dtype() == diopi_dtype_float32, "aclnnMaxPool2dWithIndicesBackward only support float gradOutput");
+    ASCEND_CHECK_ABORT(gradInputAt.dtype() == diopi_dtype_float32, "aclnnMaxPool2dWithIndicesBackward only support float gradInput");
+    ASCEND_CHECK_ABORT(indicesAt.dtype() == diopi_dtype_int32, "aclnnMaxPool2dWithIndicesBackward only support int32 indices");
 
-    int64_t maskH = kernelSizeData[0] * kernelSizeData[1];
-    int64_t maskW = (outHeight * outWidth) / blockSize + 1;
-
-    std::vector<int64_t> indicesShape;
-    if (inputAt.dim() == 4) {
-        indicesShape = std::vector<int64_t>{nBatch, nInputPlane, maskH, maskW * 32};
-    } else {
-        indicesShape = std::vector<int64_t>{nInputPlane, maskH, maskW * 32};
-    }
-
-    indicesAt.view(indicesShape);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnMaxPool2dWithMaskBackward,
+    DIOPI_ASCEND_CALL_ACLNN(aclnnMaxPool2dWithIndicesBackward,
                             ctx,
                             gradOutput,
                             input,
