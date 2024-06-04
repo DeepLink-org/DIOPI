@@ -34,6 +34,7 @@ c10::optional<at::Generator> buildGeneratorForMha(diopiContextHandle_t ctx, diop
 
 namespace impl {
 namespace cuda {
+
 diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x, diopiConstTensorHandle_t cos,
                                   diopiConstTensorHandle_t sin, const bool conj, const bool interleaved) {
     if (interleaved) {
@@ -115,19 +116,11 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle
     TORCH_CHECK(headSize % 8 == 0, "DIOPI now only support head sizes which are multiple of 8");
 
     std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_fwd, atQ, atK, atV, optOut, dropout_p, scale, is_causal, -1, -1, return_debug_mask, atGen);
-    // const auto& atOutput = result[0];
-    // const auto& atQPaded = result[1];
-    // const auto& atKPaded = result[2];
-    // const auto& atVPaded = result[3];
-    // const auto& atOutPaded = result[4];
-    const auto& atLogSumexp = result[5];
-    const auto& atDebugAttnMask = result[6];
-    // const auto& atRngState = result[7];
 
     // PERF: these copy can be eliminated by modifying the flash_attn api
-    impl::aten::updateATen2Tensor(ctx, atLogSumexp, softmax_lse);
+    impl::aten::updateATen2Tensor(ctx, result[fa::mha_fwd_ret_idx::SOFTMAX_LSE], softmax_lse);
     if (return_debug_mask) {
-        impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
+        impl::aten::updateATen2Tensor(ctx, result[fa::mha_fwd_ret_idx::DEBUG_ATTN_MASK], debug_attn_mask);
     }
 
     return diopiSuccess;
@@ -176,19 +169,11 @@ diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiTensor
 
     std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(
         mha_varlen_fwd, atQ, atK, atV, optOut, atCumSeqQ, atCumSeqK, max_q, max_k, dropout_p, scale, false, is_causal, -1, -1, return_debug_mask, atGen);
-    // auto atOutput = result[0];
-    // auto atQPadded = result[1];
-    // auto atKPadded = result[2];
-    // auto atVPadded = result[3];
-    // auto atOutPadded = result[4];
-    auto atLogSumexp = result[5];
-    auto atDebugAttnMask = result[6];
-    // auto atRngState = result[7];
 
     // PERF: these copy can be eliminated by modifying the flash_attn api
-    impl::aten::updateATen2Tensor(ctx, atLogSumexp, softmax_lse);
+    impl::aten::updateATen2Tensor(ctx, result[fa::mha_fwd_ret_idx::SOFTMAX_LSE], softmax_lse);
     if (return_debug_mask) {
-        impl::aten::updateATen2Tensor(ctx, atDebugAttnMask, debug_attn_mask);
+        impl::aten::updateATen2Tensor(ctx, result[fa::mha_fwd_ret_idx::DEBUG_ATTN_MASK], debug_attn_mask);
     }
 
     return diopiSuccess;
@@ -240,5 +225,205 @@ diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_t ctx, dio
 
     return diopiSuccess;
 }
+
+namespace {
+namespace attention_cache_idx {
+enum {
+    SOFTMAX_LSE,
+    TOTAL_NUM,
+};
+}  // namespace attention_cache_idx
+}  // namespace
+
+diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward, int64_t* save_tensor_num,
+                            diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t opt_attention_mask,
+                            diopiConstTensorHandle_t opt_attention_bias, double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale,
+                            bool is_causal) {
+    impl::aten::setCurStream(ctx);
+
+    // handle param[out]
+    c10::optional<at::Tensor> optOut(impl::aten::buildATen(attention_out));
+
+    // handle param[in]
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
+    DIOPI_CHECK(opt_attention_mask == nullptr, "opt_attention_mask is not supported in DIOPI torch impl");
+    DIOPI_CHECK(opt_attention_bias == nullptr, "opt_attention_bias is not supported in DIOPI torch impl");
+    auto atGen = buildGeneratorForMha(ctx, gen_dropout, p_dropout);
+
+    auto headSize = atQ.sizes()[3];
+    DIOPI_CHECK(headSize % 8 == 0, "DIOPI torch impl now only support head sizes which are multiple of 8");
+
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_fwd,
+                                                          atQ,
+                                                          atK,
+                                                          atV,
+                                                          optOut,
+                                                          p_dropout,
+                                                          softmax_scale,
+                                                          is_causal,
+                                                          /*window_size_left=*/-1,
+                                                          /*window_size_right=*/-1,
+                                                          /*return_softmax=*/false,
+                                                          atGen);
+
+    // PERF: these copy can be eliminated by modifying the flash_attn api
+    aten::buildDiopiTensor(ctx, result[fa::mha_fwd_ret_idx::SOFTMAX_LSE], &save_for_backward[attention_cache_idx::SOFTMAX_LSE]);
+    *save_tensor_num = attention_cache_idx::TOTAL_NUM;
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
+                                    diopiTensorHandle_t opt_grad_attn_bias, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                    diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
+                                    diopiConstTensorHandle_t opt_attention_mask, const diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
+                                    double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal) {
+    impl::aten::setCurStream(ctx);
+
+    // handle param[out]
+    c10::optional<at::Tensor> optGradQ(impl::aten::buildATen(grad_q));
+    c10::optional<at::Tensor> optGradK(impl::aten::buildATen(grad_k));
+    c10::optional<at::Tensor> optGradV(impl::aten::buildATen(grad_v));
+    DIOPI_CHECK(opt_grad_attn_bias == nullptr, "opt_grad_attn_bias is not supported in DIOPI torch impl");
+
+    // handle param[in]
+    auto atGradOut = impl::aten::buildATen(grad_out);
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
+    auto atOut = impl::aten::buildATen(attention_out);
+    DIOPI_CHECK(opt_attention_mask == nullptr, "opt_attention_mask is not supported in DIOPI torch impl");
+    auto atGen = buildGeneratorForMha(ctx, gen_dropout, p_dropout);
+
+    DIOPI_CHECK(saved_tensor_num == attention_cache_idx::TOTAL_NUM, "saved_tensor_num is not correct");
+    auto atSoftmaxLse = impl::aten::buildATen(saved_for_backward[attention_cache_idx::SOFTMAX_LSE]);
+
+    c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_bwd,
+                                                          atGradOut,
+                                                          atQ,
+                                                          atK,
+                                                          atV,
+                                                          atOut,
+                                                          atSoftmaxLse,
+                                                          optGradQ,
+                                                          optGradK,
+                                                          optGradV,
+                                                          p_dropout,
+                                                          softmax_scale,
+                                                          is_causal,
+                                                          /*window_size_left=*/-1,
+                                                          /*window_size_right=*/-1,
+                                                          atGen,
+                                                          nullOpt);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward, int64_t* save_tensor_num,
+                                  diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cu_seqlens_q,
+                                  diopiConstTensorHandle_t cu_seqlens_kv, int64_t max_seqlen, int64_t max_kvlen, diopiConstTensorHandle_t opt_attention_mask,
+                                  diopiConstTensorHandle_t opt_attention_bias, double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale,
+                                  bool is_causal) {
+    impl::aten::setCurStream(ctx);
+
+    // handle param[out]
+    c10::optional<at::Tensor> optOut(impl::aten::buildATen(attention_out));
+
+    // handle param[in]
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
+    auto atCuSeqlensQ = impl::aten::buildATen(cu_seqlens_q);
+    auto atCuSeqlensK = impl::aten::buildATen(cu_seqlens_kv);
+    DIOPI_CHECK(opt_attention_mask == nullptr, "opt_attention_mask is not supported in DIOPI torch impl");
+    DIOPI_CHECK(opt_attention_bias == nullptr, "opt_attention_bias is not supported in DIOPI torch impl");
+    auto atGen = buildGeneratorForMha(ctx, gen_dropout, p_dropout);
+
+    auto headSize = atQ.sizes()[3];
+    DIOPI_CHECK(headSize % 8 == 0, "DIOPI torch impl now only support head sizes which are multiple of 8");
+
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_varlen_fwd,
+                                                          atQ,
+                                                          atK,
+                                                          atV,
+                                                          optOut,
+                                                          atCuSeqlensQ,
+                                                          atCuSeqlensK,
+                                                          max_seqlen,
+                                                          max_kvlen,
+                                                          p_dropout,
+                                                          softmax_scale,
+                                                          /*zero_tensors=*/false,
+                                                          is_causal,
+                                                          /*window_size_left=*/-1,
+                                                          /*window_size_right=*/-1,
+                                                          /*return_softmax=*/false,
+                                                          atGen);
+
+    // PERF: these copy can be eliminated by modifying the flash_attn api
+    impl::aten::buildDiopiTensor(ctx, result[fa::mha_fwd_ret_idx::SOFTMAX_LSE], &save_for_backward[attention_cache_idx::SOFTMAX_LSE]);
+    *save_tensor_num = attention_cache_idx::TOTAL_NUM;
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
+                                          diopiTensorHandle_t opt_grad_attn_bias, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
+                                          diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cu_seqlens_q,
+                                          diopiConstTensorHandle_t cu_seqlens_kv, int64_t max_seqlen, int64_t max_kvlen, diopiConstTensorHandle_t attention_out,
+                                          diopiConstTensorHandle_t opt_attention_mask, diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
+                                          double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal) {
+    impl::aten::setCurStream(ctx);
+
+    // handle param[out]
+    c10::optional<at::Tensor> optGradQ(impl::aten::buildATen(grad_q));
+    c10::optional<at::Tensor> optGradK(impl::aten::buildATen(grad_k));
+    c10::optional<at::Tensor> optGradV(impl::aten::buildATen(grad_v));
+    DIOPI_CHECK(opt_grad_attn_bias == nullptr, "opt_grad_attn_bias is not supported in DIOPI torch impl");
+
+    // handle param[in]
+    auto atGradOut = impl::aten::buildATen(grad_out);
+    auto atQ = impl::aten::buildATen(q);
+    auto atK = impl::aten::buildATen(k);
+    auto atV = impl::aten::buildATen(v);
+    auto atCuSeqlensQ = impl::aten::buildATen(cu_seqlens_q);
+    auto atCuSeqlensK = impl::aten::buildATen(cu_seqlens_kv);
+    auto atOut = impl::aten::buildATen(attention_out);
+    DIOPI_CHECK(opt_attention_mask == nullptr, "opt_attention_mask is not supported in DIOPI torch impl");
+    auto atGen = buildGeneratorForMha(ctx, gen_dropout, p_dropout);
+
+    DIOPI_CHECK(saved_tensor_num == attention_cache_idx::TOTAL_NUM, "saved_tensor_num is not correct");
+    auto atSoftmaxLse = impl::aten::buildATen(saved_for_backward[attention_cache_idx::SOFTMAX_LSE]);
+
+    c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
+    std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(mha_varlen_bwd,
+                                                          atGradOut,
+                                                          atQ,
+                                                          atK,
+                                                          atV,
+                                                          atOut,
+                                                          atSoftmaxLse,
+                                                          optGradQ,
+                                                          optGradK,
+                                                          optGradV,
+                                                          atCuSeqlensQ,
+                                                          atCuSeqlensK,
+                                                          max_seqlen,
+                                                          max_kvlen,
+                                                          p_dropout,
+                                                          softmax_scale,
+                                                          /*zero_tensors=*/false,
+                                                          is_causal,
+                                                          /*window_size_left=*/-1,
+                                                          /*window_size_right=*/-1,
+                                                          atGen,
+                                                          nullOpt);
+
+    return diopiSuccess;
+}
+
 }  // namespace cuda
 }  // namespace impl
