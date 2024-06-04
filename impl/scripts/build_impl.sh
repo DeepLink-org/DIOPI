@@ -35,6 +35,12 @@ case $1 in
       -DCMAKE_PREFIX_PATH=$(python -c 'import torch;print(torch.utils.cmake_prefix_path)') && make -j8
     mkdir -p ${DIOPI_TEST_PATH}/lib && ln -sf ${CURRENT_DIR}/../lib/libdiopi_real_impl.so ${DIOPI_TEST_PATH}/lib
     ;;
+  muxi)
+    mkdir -p build && cd build
+    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=muxi -DCMAKE_BUILD_TYPE=Release -DTEST=ON \
+      -DENABLE_COVERAGE=${USE_COVERAGE} -DCMAKE_PREFIX_PATH=$(python -c 'import torch;print(torch.utils.cmake_prefix_path)')
+    make -j8
+    ;;
   camb_pytorch)
     mkdir -p build && cd build
     cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=camb_pytorch -DCMAKE_BUILD_TYPE=Release -DTEST=ON \
