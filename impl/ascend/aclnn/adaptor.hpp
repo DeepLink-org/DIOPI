@@ -94,15 +94,7 @@ inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor
     auto type = diopiDtypeToAclDataType(dtype);
     auto format = inferAclDataFormat(shape.len, shape.data, stride.data);
     auto storageSize = static_cast<int64_t>(storageNbytes / elemsize);
-    return ::aclCreateTensor(shape.data,
-                             shape.len,
-                             type,
-                             stride.data,
-                             storageOffset,
-                             format,
-                             &storageSize,
-                             /*storageDimsNum=*/1,
-                             const_cast<void*>(tensorData));
+    return ::aclCreateTensor(shape.data, shape.len, type, stride.data, storageOffset, format, shape.data, shape.len, const_cast<void*>(tensorData));
 }
 
 inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {

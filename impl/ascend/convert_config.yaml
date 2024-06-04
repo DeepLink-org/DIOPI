@@ -444,3 +444,6 @@
 - diopiLerpScalar:
     # aclnnLerps doesn't support float64
     dtype: (float64)->float32
+
+- diopiSlice:
+    dtype: (float64)->float32, (int16)->int32
