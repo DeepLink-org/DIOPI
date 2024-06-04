@@ -23,7 +23,7 @@ add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
 
 # find python3
-find_package(Python COMPONENTS Interpreter Development)
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
 MESSAGE(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
 MESSAGE(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
 include_directories(SYSTEM ${Python_INCLUDE_DIRS})
