@@ -4,7 +4,11 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include <cmath>
+
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
+#include "../common/utils.hpp"
 
 namespace impl {
 namespace ascend {
@@ -12,23 +16,46 @@ namespace ascend {
 DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
                                       diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t numGroups,
                                       double eps) {
-    if (0 == AscendTensor(input).numel()) {
-        AclOpRunner<1, 1>("Fills", ctx).addInput(out).setAttr<float>("value", 0).addOutput(out).run();
+    AscendTensor inputAt(input);
+    if (!inputAt.defined() || inputAt.numel() == 0) {
         return diopiSuccess;
     }
 
-    AclOpRunner<3, 3>("GroupNorm", ctx)
-        .addInput(input)
-        .addInput(weight)
-        .addInput(bias)
-        .setAttr("num_groups", static_cast<int32_t>(numGroups))
-        .setAttr("epsilon", static_cast<float>(eps))
-        .setAttr("data_format", std::string{getAclDataFormat(input) == ACL_FORMAT_ND ? "ND" : "NCHW"})
-        .setAttr("is_training", true)
-        .addOutput(out)
-        .addOutput(saveMean)
-        .addOutput(saveInvstd)
-        .run();
+    int64_t n = inputAt.shape(0);
+    int64_t c = inputAt.shape(1);
+    int64_t hw = inputAt.numel() / (n * c);
+
+    DIOPI_ASCEND_CALL_ACLNN(aclnnGroupNorm, ctx, input, weight, bias, n, c, hw, numGroups, eps, out, saveMean, saveInvstd);
+    return diopiSuccess;
+}
+
+diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
+                                    diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                    diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, int64_t numGroups) {
+    AscendTensor inputAt(input);
+    AscendTensor gradWeightAt(gradWeight);
+
+    if (!inputAt.defined()) {
+        return diopiSuccess;
+    }
+
+    if (inputAt.numel() == 0) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradBias);
+        if (inputAt.shape(0) == 0 || inputAt.shape(1) == 0) {
+            DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradWeight);
+        } else {
+            diopiScalar_t nanScalar = constructDiopiScalarT(gradWeightAt.dtype(), std::nanf(""));
+            DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, gradWeightAt, &nanScalar);
+        }
+    } else {
+        int64_t n = inputAt.shape(0);
+        int64_t c = inputAt.shape(1);
+        int64_t hw = inputAt.numel() / (n * c);
+
+        std::array<bool, 3> gradMask = {gradInput != nullptr, gradWeight != nullptr, gradBias != nullptr};
+        DIOPI_ASCEND_CALL_ACLNN(
+            aclnnGroupNormBackward, ctx, gradOutput, inputAt, mean, rstd, weight, n, c, hw, numGroups, gradMask, gradInput, gradWeightAt, gradBias);
+    }
     return diopiSuccess;
 }
 

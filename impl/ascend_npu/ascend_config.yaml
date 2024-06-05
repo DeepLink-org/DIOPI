@@ -82,6 +82,8 @@ ascend:
 - diopiGelu
 - diopiGeluBackward
 - diopiGeScalar
+- diopiGroupNorm
+- diopiGroupNormBackward
 - diopiGt
 - diopiGtInp
 - diopiGtInpScalar
@@ -222,8 +224,6 @@ ascend_npu:
 - diopiNonzero
 - diopiCat
 - diopiCopyInp
-- diopiGroupNorm
-- diopiGroupNormBackward
 - diopiStack
 - diopiMultinomial
 - diopiRotaryEmbedding
