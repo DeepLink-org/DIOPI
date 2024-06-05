@@ -93,16 +93,16 @@ jobs:
           mkdir -p ${DATA_DIR}/source/${GEN_DATA}
           rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
           """
-#          ssh ${CLUSTER_ASCEND_910B} """
-#          mkdir -p ${DATA_DIR}/source/${GEN_DATA}
-#          rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
-#          """
+          # ssh ${CLUSTER_ASCEND_910B} """
+          # mkdir -p ${DATA_DIR}/source/${GEN_DATA}
+          # rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
+          # """
           source ~/Aoss_env.sh
           ads-cli  --dryrun --deleteSrc cp  s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss.cn-sh-01c.sensecoreapi-oss.cn${DATA_DIR}/source/${GEN_DATA}/diopi/ /dev/null 2>&1 >/dev/null
           ads-cli cp ${DATA_DIR}/source/${GEN_DATA}/diopi/ s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss.cn-sh-01c.sensecoreapi-oss.cn${DATA_DIR}/source/${GEN_DATA}/diopi/
-#          ssh ${CLUSTER_SUPA} """
-#          rsync -a ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
-#          """
+          # ssh ${CLUSTER_SUPA} """
+          # rsync -a ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
+          # """
 
   Copy-Gen-Data-Ascend-910b:
     name: Copy-Gen-Data-Ascend-910b
