@@ -100,8 +100,8 @@ inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor
                              stride.data,
                              storageOffset,
                              format,
-                             /*storageDims*/ shape.data,
-                             /*storageDimsNum=*/shape.len,
+                             /*storageDims*/ &storageSize,
+                             /*storageDimsNum=*/1,
                              const_cast<void*>(tensorData));
 }
 
