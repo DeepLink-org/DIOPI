@@ -20,6 +20,8 @@ ascend:
 - diopiAtanInp
 - diopiBaddbmm
 - diopiBaddbmmInp
+- diopiBatchNorm
+- diopiBatchNormBackward
 - diopiBitwiseNot
 - diopiBitwiseNotInp
 - diopiBitwiseAnd
@@ -219,8 +221,6 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiAdamW
-- diopiBatchNorm
-- diopiBatchNormBackward
 - diopiNonzero
 - diopiCat
 - diopiCopyInp
