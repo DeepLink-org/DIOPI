@@ -134,6 +134,9 @@ ascend:
 - diopiMax
 - diopiMaxAll
 - diopiMaximum
+- diopiMaxPool2d
+- diopiMaxPool2dWithIndices
+- diopiMaxPool2dBackward
 - diopiMean
 - diopiMSELoss
 - diopiMSELossBackward
@@ -223,7 +226,6 @@ ascend_npu:
 - diopiGroupNormBackward
 - diopiStack
 - diopiMultinomial
-- diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiIndexPut
 - diopiIndexPutInp

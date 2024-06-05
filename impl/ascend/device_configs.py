@@ -119,11 +119,16 @@ device_configs = {
 
     'max_pool2d': dict(
         name=['max_pool2d'],
+        para=dict(
+            # aclnnMaxPool only support that the value of dilation is 1
+            dilation=[Skip((4, 3)), Skip((2, 3)), Skip((2))],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16), Skip(np.float64),],
+                    "shape": [Skip((2, 64, 352, 528))],
                 },
             ]
         ),
@@ -131,15 +136,20 @@ device_configs = {
 
     'max_pool2d_return_indices': dict(
         name=['max_pool2d'],
+        para=dict(
+            # aclnnMaxPool2dWithMask only support that the value of dilation is 1
+            dilation=[Skip((4, 3)), Skip((2, 3))],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16),Skip(np.float64),],
                 },
             ]
         ),
     ),
+    
     # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
