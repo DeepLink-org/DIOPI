@@ -47,4 +47,36 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     END_CALL_ACL_OP();
 }
 
+diopiError_t diopiPromptFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t query, diopiConstTensorHandle_t key,
+                                       diopiConstTensorHandle_t value, diopiConstTensorHandle_t attenMask, diopiSize_t actualSeqLengths, int64_t maxInputLen,
+                                       int64_t numHeads, int64_t numKeyValueHeads, int64_t dim) {
+    BEGIN_CALL_ACL_OP(out, query, key, value, attenMask);
+    at::IntArrayRef actSeqLen(actualSeqLengths.data, actualSeqLengths.len);
+    if (queryAt.dim() == 2) {
+        queryAt = impl::aten::viewStorage(queryAt, {actualSeqLengths.len, maxInputLen, queryAt.size(1)});
+        outAt = impl::aten::viewStorage(outAt, {actualSeqLengths.len, maxInputLen, outAt.size(1)});
+        keyAt = impl::aten::viewStorage(keyAt, {actualSeqLengths.len, maxInputLen, keyAt.size(1)});
+        valueAt = impl::aten::viewStorage(valueAt, {actualSeqLengths.len, maxInputLen, valueAt.size(1)});
+    }
+    double scaleValue = 1 / std::sqrt(dim);
+    int64_t preTokens = 2147473647;
+    int64_t nextTokens = 0;
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttention,
+                                 queryAt,
+                                 keyAt,
+                                 valueAt,
+                                 c10::nullopt,
+                                 attenMaskAt,
+                                 actSeqLen,
+                                 numHeads,
+                                 scaleValue,
+                                 preTokens,
+                                 nextTokens,
+                                 "BSH",
+                                 numKeyValueHeads,
+                                 outAt);
+
+    END_CALL_ACL_OP();
+}
+
 }  // namespace OP_IMPL_NS

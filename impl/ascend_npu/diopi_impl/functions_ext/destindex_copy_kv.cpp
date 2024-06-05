@@ -12,7 +12,6 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t k, diopiConstTensorHandle_t destLoc) {
     BEGIN_CALL_ACL_OP(out, k, destLoc);
-    auto orig_shape = destLocAt.sizes();
     if (destLocAt.sizes().size() != 1) {
         set_last_error_string("only support destLoc.rank == 1");
         return diopiNoImplement;

@@ -33,8 +33,8 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
 }
 
 diopiError_t diopiApplyPenaltyV2(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presencePenalty,
-                               diopiConstTensorHandle_t frequencyPenalty, diopiConstTensorHandle_t repetitionPenalty,
-                               diopiConstTensorHandle_t pTokenIds, diopiConstTensorHandle_t pTokenCounts) {
+                                 diopiConstTensorHandle_t frequencyPenalty, diopiConstTensorHandle_t repetitionPenalty, diopiConstTensorHandle_t pTokenIds,
+                                 diopiConstTensorHandle_t pTokenCounts) {
     BEGIN_CALL_ACL_OP(logits, presencePenalty, frequencyPenalty, repetitionPenalty, pTokenIds, pTokenCounts);
     logitsAt = impl::aten::viewStorage(logitsAt, {logitsAt.numel()});
     at::Tensor curLogits = op_api::index_select(logitsAt, 0, pTokenIdsAt);

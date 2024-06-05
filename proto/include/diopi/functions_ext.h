@@ -546,27 +546,6 @@ DIOPI_API diopiError_t diopiScaledMaskedSoftmax(diopiContextHandle_t ctx, diopiT
 DIOPI_API diopiError_t diopiScaledMaskedSoftmaxBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                                         diopiConstTensorHandle_t output, diopiConstTensorHandle_t mask, double scale, bool fixed_triu_mask);
 
-/**
- * @brief Function PromptFlashAttention.
- * @param[in] query: A matrix Tensor. The type support float16, bf16, float32 .
- * @param[in] key: A matrix Tensor. The type support float16, bf16, float32.
- * @param[in] value: A matrix Tensor. The type support float16, bf16, float32.
- * @param[in] padding_mask: A matrix Tensor. The type support float16, bf16, float32.
- * @param[in] atten_mask: A matrix Tensor. The type support float16, bf16, float32.
- * @param[in] actual_seq_lengths: A Tensor. The type support INT64.
- * @param[in] num_heads: A int. The number of the heads.
- * @param[in] scale_value: A float. The scale value. Default: 1.0.
- * @param[in] pre_tokens: A int. Previous tokens. Default: 214748647
- * @param[in] next_tokens: A int. Next tokens. Default: 0
- * @param[in] input_layout: A string. Specifies the layout of `query`, the value must be one of ["BSH", "SBH"]. Default: "BSH".
- * @param[in] num_key_value_heads: key value num heads. Default: 1
- * @param[out] out: A matrix Tensor. The type support float16, float32, int8. \n
- */
-DIOPI_API diopiError_t diopiPromptFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t query,
-                                                 diopiConstTensorHandle_t key, diopiConstTensorHandle_t value, diopiConstTensorHandle_t padding_mask,
-                                                 diopiConstTensorHandle_t atten_mask, diopiSize_t actual_seq_lengths, int64_t num_heads, double scale,
-                                                 int64_t pre_tokens, int64_t next_tokens, const char* input_layout, int64_t num_key_value_heads);
-
 // ============================================lightllm begin========================================
 
 /**
@@ -593,8 +572,8 @@ DIOPI_API diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiConstTensorHandle_t p_token_counts, diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch);
 
 DIOPI_API diopiError_t diopiApplyPenaltyV2(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presence_penalty,
-                                         diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t repetition_penalty,
-                                         diopiConstTensorHandle_t p_token_ids, diopiConstTensorHandle_t p_token_counts);
+                                           diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t repetition_penalty,
+                                           diopiConstTensorHandle_t p_token_ids, diopiConstTensorHandle_t p_token_counts);
 
 /**
  * @brief Copies the elements from k tensor into out tensor according to dest_loc tensor. It can be expressed in detail as: out[dest_loc] = k. During
@@ -646,16 +625,9 @@ DIOPI_API diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ct
                                                          diopiConstTensorHandle_t v, diopiConstTensorHandle_t b_loc, diopiConstTensorHandle_t b_start_loc,
                                                          diopiConstTensorHandle_t b_seq_len, int max_input_len, int other_kv_index);
 
-
-DIOPI_API diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q,
-                                                diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t paddingMask, diopiConstTensorHandle_t attenMask,
-                                                diopiSize_t actualSeqLengths, diopiConstTensorHandle_t antiquant_scale, diopiConstTensorHandle_t antiquant_offset,
-                                                diopiConstTensorHandle_t block_table,
-                                                diopiConstTensorHandle_t dequant_scale1, diopiConstTensorHandle_t quant_scale1,
-                                                diopiConstTensorHandle_t dequant_scale2, diopiConstTensorHandle_t quant_scale2,
-                                                diopiConstTensorHandle_t quant_offset2, diopiConstTensorHandle_t kv_padding_size,
-                                                int64_t numHeads, double scaleValue, const char* inputLayout, int64_t numKeyValueHeads,
-                                                int64_t block_size, int64_t inner_precise);
+DIOPI_API diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+                                           diopiConstTensorHandle_t v, diopiSize_t actual_seq_lengths, int64_t num_heads, int64_t num_kv_heads, int64_t dim,
+                                           diopiConstTensorHandle_t block_table, int64_t block_size);
 /**
  * @brief The no pad implementation of
  * \text{context_attention_out}(\mathrm{q},\mathrm{k},\mathrm{v})=\text{softmax}(\frac{\mathrm{qk}^\mathrm{T}}{\sqrt{\mathrm{d_k}}})\mathrm{v}. For details,
@@ -678,10 +650,12 @@ DIOPI_API diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, 
 DIOPI_API diopiError_t diopiRotaryEmbeddingV2(diopiContextHandle_t ctx, diopiTensorHandle_t query, diopiTensorHandle_t key, diopiConstTensorHandle_t cos,
                                               diopiConstTensorHandle_t sin, int64_t dim);
 
-DIOPI_API diopiError_t diopiMatmulAllReduce(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x1,
-                                            diopiConstTensorHandle_t x2, diopiConstTensorHandle_t bias, const char* group,
-                                            const char* reduceOp, int64_t commTurn, int64_t streamMode);
-                                            
+DIOPI_API diopiError_t diopiMatmulAllReduce(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x1, diopiConstTensorHandle_t x2,
+                                            diopiConstTensorHandle_t bias, const char* group, const char* reduceOp, int64_t commTurn, int64_t streamMode);
+
+DIOPI_API diopiError_t diopiPromptFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t query,
+                                                 diopiConstTensorHandle_t key, diopiConstTensorHandle_t value, diopiConstTensorHandle_t atten_mask,
+                                                 diopiSize_t actual_seq_lengths, int64_t max_input_len, int64_t num_heads, int64_t num_kv_heads, int64_t dim);
 // ============================================lightllm end========================================
 
 #if defined(__cplusplus)
