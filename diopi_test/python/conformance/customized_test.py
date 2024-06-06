@@ -626,6 +626,115 @@ class CustomizedTest(object):
             )
         return out
 
+    def prompt_flash_attention(
+        out,
+        query,
+        key,
+        value,
+        attenMask,
+        actualSeqLengths,
+        maxInputLen,
+        numHeads,
+        numKeyValueHeads,
+        dim,
+    ):
+        bs = len(actualSeqLengths)
+        xq = query.view(bs, maxInputLen, numHeads, dim).cuda()
+        keys = key.view(bs, maxInputLen, numKeyValueHeads, dim).cuda()
+        values = value.view(bs, maxInputLen, numKeyValueHeads, dim).cuda()
+        mask = (
+            torch.tril(torch.ones(maxInputLen, maxInputLen), diagonal=0)
+            .unsqueeze(0)
+            .unsqueeze(0)
+            .cuda()
+        )
+        mask = mask.masked_fill(mask == 0.0, -100000000.0)
+        mask = mask.repeat(bs, numHeads, 1, 1)
+        xq = xq.transpose(1, 2)
+        keys = keys.transpose(1, 2)
+        values = values.transpose(1, 2)
+        scores = torch.matmul(xq, keys.transpose(2, 3)) / math.sqrt(dim)
+        scores = F.softmax(scores.float() + mask, dim=-1).type_as(xq)
+        out.copy_(
+            torch.matmul(scores, values)
+            .transpose(1, 2)
+            .contiguous()
+            .reshape(bs * maxInputLen, numHeads * dim)
+        )
+        return out
+
+    def paged_attention(
+        out,
+        query,
+        key,
+        value,
+        actualSeqLengths,
+        numHeads,
+        numKeyValueHeads,
+        dim,
+        blockTable,
+        blockSize,
+    ):
+        # q: BSH
+        b_loc = torch.arange(key.shape[0], dtype=torch.int32).reshape(1, -1).cuda()
+        batch = b_loc.shape[0]
+        xq = query.view(batch, 1, numHeads, dim).transpose(1, 2).cuda()
+        k = key.view(-1, numKeyValueHeads, dim).cuda()
+        v = value.view(-1, numKeyValueHeads, dim).cuda()
+        out = out.view(batch, numHeads, dim).cuda()
+        max_input_len = max(actualSeqLengths)
+        b_seq_len = torch.tensor(actualSeqLengths, dtype=torch.int32).cuda()
+        for i in range(batch):
+            k_loc = b_loc[i][
+                max_input_len
+                - b_seq_len[i]
+                + torch.arange(0, b_seq_len[i], device="cuda", dtype=torch.int32)
+            ]
+            key = k[k_loc, :].view(1, b_seq_len[i], numHeads, dim).transpose(1, 2)
+            logics = (
+                torch.matmul(xq[i, :], key.transpose(2, 3)) / math.sqrt(dim)
+            ).reshape(numHeads, b_seq_len[i])
+            v_loc = b_loc[i][
+                max_input_len
+                - b_seq_len[i]
+                + torch.arange(0, b_seq_len[i], device=logics.device, dtype=torch.int32)
+            ]
+            P = logics.softmax(-1).reshape(1, numHeads, 1, b_seq_len[i])
+            V = v[v_loc, :].view(1, b_seq_len[i], numHeads, dim).transpose(1, 2)
+            out[i, :] = torch.matmul(P, V).view(numHeads, dim)
+        return out.view(-1, numHeads * dim)
+
+    def apply_penalty_v2(
+        logits,
+        presence_penalty,
+        frequency_penalty,
+        repetition_penalty,
+        p_token_ids,
+        p_token_counts,
+    ):
+        batch = logits.shape[0]
+        logits = logits.view(-1)
+        cur_logits = logits.index_select(0, p_token_ids)
+        rep_logits = torch.where(
+            cur_logits > 0,
+            cur_logits / repetition_penalty,
+            cur_logits * repetition_penalty,
+        )
+        rep_logits = rep_logits - p_token_counts * frequency_penalty - presence_penalty
+        logits[p_token_ids] = rep_logits
+        return logits.view(batch, -1)
+
+    def rotary_emb_v2(query, key, cos, sin, dim):
+        query = query.view(query.shape[0], -1, dim)
+        key = key.view(key.shape[0], -1, dim)
+        q1, q2 = query.chunk(2, dim=-1)
+        query_rotate = torch.cat((-q2, q1), dim=-1)
+        query = query * cos + query_rotate * sin
+        k1, k2 = key.chunk(2, dim=-1)
+        key_rotate = torch.cat((-k2, k1), dim=-1)
+        key = key * cos + key_rotate * sin
+        return query.view(query.shape[0], -1), key.view(key.shape[0], -1)
+
     def attention(
         query,
         key,
@@ -742,9 +851,13 @@ class CustomizedTest(object):
             start_idx = cu_seqlens_q[i]
             end_idx = cu_seqlens_q[i + 1]
             actual_seq_len = end_idx - start_idx
-            out[start_idx:end_idx, :, :] = out_paded[i, :actual_seq_len, :, :] # BSND->TND
+            out[start_idx:end_idx, :, :] = out_paded[
+                i, :actual_seq_len, :, :
+            ]  # BSND->TND
         return out
 
     def nll_loss_v2(input, target, weight=None, ignore_index=-100, reduction="mean"):
-        out = torch.nn.functional.nll_loss(input, target, weight, None, ignore_index, None, reduction)
+        out = torch.nn.functional.nll_loss(
+            input, target, weight, None, ignore_index, None, reduction
+        )
         return out

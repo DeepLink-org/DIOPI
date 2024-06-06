@@ -5938,3 +5938,61 @@ def context_attention(q, k, v, out, b_start_loc, b_seq_len, max_input_len):
     ret = func(q.context(), out, q, k, v, b_start_loc, b_seq_len, max_input_len)
     check_returncode(ret)
     return out
+
+
+def prompt_flash_attention(out, query, key, value, attenMask, actualSeqLengths, maxInputLen, numHeads, numKeyValueHeads, dim):
+    call = "diopiPromptFlashAttention"
+    func = check_function(call)
+    actualSeqLengths = Sizes(actualSeqLengths)
+
+    ret = func(query.context(), out, query, key, value, attenMask, actualSeqLengths, maxInputLen, numHeads, numKeyValueHeads, dim)
+    check_returncode(ret)
+    return out
+
+def paged_attention(out, query, key, value, actualSeqLengths, numHeads, numKeyValueHeads, dim, blockTable, blockSize):
+    call = "diopiPagedAttention"
+    func = check_function(call)
+    actualSeqLengths = Sizes(actualSeqLengths)
+
+    ret = func(query.context(), out, query, key, value, actualSeqLengths, numHeads, numKeyValueHeads, dim, blockTable, blockSize)
+    check_returncode(ret)
+    return out
+
+
+def apply_penalty_v2(
+    logits,
+    presence_penalty,
+    frequency_penalty,
+    repetition_penalty,
+    p_token_ids,
+    p_token_counts
+):
+    call = "diopiApplyPenaltyV2"
+    func = check_function(call)
+    # some checks
+    p_token_ids_shape = list(p_token_ids.size().data)
+    p_token_counts_shape = list(p_token_counts.size().data)
+
+    assert (
+        p_token_ids_shape == p_token_counts_shape
+    ), "The shape of p_token_ids must be equal to the shape of p_token_counts."
+
+    ret = func(
+        logits.context(),
+        logits,
+        presence_penalty,
+        frequency_penalty,
+        repetition_penalty,
+        p_token_ids,
+        p_token_counts
+    )
+    out = logits
+    check_returncode(ret)
+    return out
+
+def rotary_emb_v2(query, key, cos, sin, dim):
+    call = "diopiRotaryEmbeddingV2"
+    func = check_function(call)
+    ret = func(query.context(), query, key, cos, sin, dim)
+    check_returncode(ret)
+    return query, key
