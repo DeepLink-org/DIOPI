@@ -277,8 +277,8 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
 
 diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
                                     diopiTensorHandle_t opt_grad_attn_bias, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
-                                    diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
-                                    diopiConstTensorHandle_t opt_attention_mask, const diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
+                                    diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t opt_attention_mask,
+                                    diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
                                     double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal) {
     impl::aten::setCurStream(ctx);
 
@@ -324,7 +324,7 @@ diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_
 
 diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward, int64_t* save_tensor_num,
                                   diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cu_seqlens_q,
-                                  diopiConstTensorHandle_t cu_seqlens_kv, int64_t max_seqlen, int64_t max_kvlen, diopiConstTensorHandle_t opt_attention_mask,
+                                  diopiConstTensorHandle_t cu_seqlens_kv, int32_t max_seqlen, int32_t max_kvlen, diopiConstTensorHandle_t opt_attention_mask,
                                   diopiConstTensorHandle_t opt_attention_bias, double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale,
                                   bool is_causal) {
     impl::aten::setCurStream(ctx);
@@ -373,9 +373,10 @@ diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t 
 diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
                                           diopiTensorHandle_t opt_grad_attn_bias, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
                                           diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cu_seqlens_q,
-                                          diopiConstTensorHandle_t cu_seqlens_kv, int64_t max_seqlen, int64_t max_kvlen, diopiConstTensorHandle_t attention_out,
-                                          diopiConstTensorHandle_t opt_attention_mask, diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
-                                          double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal) {
+                                          diopiConstTensorHandle_t cu_seqlens_kv, int32_t max_seqlen, int32_t max_kvlen,
+                                          diopiConstTensorHandle_t opt_attention_mask, diopiConstTensorHandle_t attention_out,
+                                          diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num, double p_dropout,
+                                          diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal) {
     impl::aten::setCurStream(ctx);
 
     // handle param[out]

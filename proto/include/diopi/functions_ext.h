@@ -285,9 +285,9 @@ DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandl
  * @param[in] q Query tensor. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] k k Key tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] v Value tensor. shape = [batch_size, kv_seq_len, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
+ * @param[in] opt_attention_mask (optional Tensor) – Attention mask. shape (batch_size, q_seq_len, kv_seq_len)
  * @param[in] attention_out Tensor storing the result after attention. shape = [batch_size, q_seq_len, q_head_num, head_dim]. type = [bfloat16, float16,
  * float32].
- * @param[in] opt_attention_mask (optional Tensor) – Attention mask. shape (batch_size, q_seq_len, kv_seq_len)
  * @param[in] save_for_backward The intermediate results saved in forward
  * @param[out] save_tensor_num The number of the intermediate results saved in forward
  * @param[in] p_dropout The probability of dropout op.
@@ -297,10 +297,9 @@ DIOPI_API diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandl
  */
 DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k, diopiTensorHandle_t grad_v,
                                               diopiTensorHandle_t opt_grad_attn_bias, diopiConstTensorHandle_t grad_out, diopiConstTensorHandle_t q,
-                                              diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t attention_out,
-                                              diopiConstTensorHandle_t opt_attention_mask, const diopiConstTensorHandle_t* saved_for_backward,
-                                              int64_t saved_tensor_num, double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale,
-                                              bool is_causal);
+                                              diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t opt_attention_mask,
+                                              diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num,
+                                              double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal);
 
 /**
  * @brief Computes attention on query, key and value tensors, using an optional attention mask if passed,
@@ -315,10 +314,10 @@ DIOPI_API diopiError_t diopiAttentionBackward(diopiContextHandle_t ctx, diopiTen
  * @param[in] q Query tensor. shape = [total_q, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] k Key tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] v Value tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
- * @param[in] cu_seqlens_q cu_seqlens_q tensor. shape = [batch_size + 1]. type = [int64_t]. cu_seqlens_q[:total_q] contains the position of the first token in
+ * @param[in] cu_seqlens_q cu_seqlens_q tensor. shape = [batch_size + 1]. type = [int32_t]. cu_seqlens_q[:total_q] contains the position of the first token in
 query for each batch. And cu_seqlens_q[batch_size] contains the total length of query. Note that cu_seqlens_q[i+1]-cu_seqlens_q[i] can calculate out the
 sequence length of batch i.
- * @param[in] cu_seqlens_kv cu_seqlens_kv tensor. shape = [batch_size + 1]. type = [int64_t]. cu_seqlens_kv[:total_kv] contains the position of the first token
+ * @param[in] cu_seqlens_kv cu_seqlens_kv tensor. shape = [batch_size + 1]. type = [int32_t]. cu_seqlens_kv[:total_kv] contains the position of the first token
 in key/value for each batch. And cu_seqlens_kv[batch_size] contains the total length of key/value. Note that cu_seqlens_kv[i+1]-cu_seqlens_kv[i] can calculate
 out the sequence length of batch i.
  * @param[in] max_seqlen Maximum possible sequence length of all queries in the batch.
@@ -334,8 +333,8 @@ added to the attention score.
  */
 DIOPI_API diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t* save_for_backward,
                                             int64_t* save_tensor_num, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                            diopiConstTensorHandle_t cu_seqlens_q, diopiConstTensorHandle_t cu_seqlens_kv, int64_t max_seqlen,
-                                            int64_t max_kvlen, diopiConstTensorHandle_t opt_attention_mask, diopiConstTensorHandle_t opt_attention_bias,
+                                            diopiConstTensorHandle_t cu_seqlens_q, diopiConstTensorHandle_t cu_seqlens_kv, int32_t max_seqlen,
+                                            int32_t max_kvlen, diopiConstTensorHandle_t opt_attention_mask, diopiConstTensorHandle_t opt_attention_bias,
                                             double p_dropout, diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal);
 
 /**
@@ -352,17 +351,17 @@ DIOPI_API diopiError_t diopiAttentionVarLen(diopiContextHandle_t ctx, diopiTenso
  * @param[in] q Query tensor. shape = [total_q, q_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] k k Key tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
  * @param[in] v Value tensor. shape = [total_kv, kv_head_num, head_dim]. type = [bfloat16, float16, float32].
- * @param[in] cu_seqlens_q cu_seqlens_q tensor. shape = [batch_size + 1]. type = [int64_t]. cu_seqlens_q[:total_q] contains the position of the first token in
+ * @param[in] cu_seqlens_q cu_seqlens_q tensor. shape = [batch_size + 1]. type = [int32_t]. cu_seqlens_q[:total_q] contains the position of the first token in
 query for each batch. And cu_seqlens_q[batch_size] contains the total length of query. Note that cu_seqlens_q[i+1]-cu_seqlens_q[i] can calculate out the
 sequence length of batch i.
- * @param[in] cu_seqlens_kv cu_seqlens_kv tensor. shape = [batch_size + 1]. type = [int64_t]. cu_seqlens_kv[:total_kv] contains the position of the first token
+ * @param[in] cu_seqlens_kv cu_seqlens_kv tensor. shape = [batch_size + 1]. type = [int32_t]. cu_seqlens_kv[:total_kv] contains the position of the first token
 in key/value for each batch. And cu_seqlens_kv[batch_size] contains the total length of key/value. Note that cu_seqlens_kv[i+1]-cu_seqlens_kv[i] can calculate
 out the sequence length of batch i.
  * @param[in] max_seqlen Maximum possible sequence length of all queries in the batch.
  * @param[in] max_kvlen Maximum possible sequence length of all keys/values in the batch.
+ * @param[in] opt_attention_mask (optional Tensor) – Attention mask. shape = [total_q, total_kv]
  * @param[in] attention_out Tensor storing the result after applying flash attention. shape = [total_q, q_head_num, head_dim]. type = [bfloat16,
  * float16, float32].
- * @param[in] opt_attention_mask (optional Tensor) – Attention mask. shape = [total_q, total_kv]
  * @param[in] save_for_backward The intermediate results saved in forward
  * @param[out] save_tensor_num The number of the intermediate results saved in forward
  * @param[in] p_dropout The probability of dropout op.
@@ -373,8 +372,8 @@ out the sequence length of batch i.
 DIOPI_API diopiError_t diopiAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                     diopiTensorHandle_t grad_v, diopiTensorHandle_t opt_grad_attn_bias, diopiConstTensorHandle_t grad_out,
                                                     diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                                    diopiConstTensorHandle_t cu_seqlens_q, diopiConstTensorHandle_t cu_seqlens_kv, int64_t max_seqlen,
-                                                    int64_t max_kvlen, diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t opt_attention_mask,
+                                                    diopiConstTensorHandle_t cu_seqlens_q, diopiConstTensorHandle_t cu_seqlens_kv, int32_t max_seqlen,
+                                                    int32_t max_kvlen, diopiConstTensorHandle_t opt_attention_mask, diopiConstTensorHandle_t attention_out,
                                                     diopiConstTensorHandle_t* saved_for_backward, int64_t saved_tensor_num, double p_dropout,
                                                     diopiGeneratorHandle_t gen_dropout, double softmax_scale, bool is_causal);
 
