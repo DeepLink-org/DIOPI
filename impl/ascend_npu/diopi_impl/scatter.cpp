@@ -38,7 +38,7 @@ diopiError_t diopiScatter(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     // input to output type
     at::Tensor inputTmpAt = inputAt;
     if (outAt.scalar_type() != inputAt.scalar_type()) {
-        inputTmpAt = inputAt.to(outAt.scalar_type());
+        inputTmpAt = inputAt.to(outAt.scalar_type(), true);
     }
     int64_t reduction = getReduce(reduce);
     EXEC_NPU_CMD(aclnnScatter, inputTmpAt, dim, indexAt, srcAt, reduction, outAt);
