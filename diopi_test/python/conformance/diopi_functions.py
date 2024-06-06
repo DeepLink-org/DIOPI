@@ -5646,6 +5646,7 @@ def attention_backward(
     query,
     key,
     value,
+    attn_mask,
     out,
     grad_outputs,
     dropout_p,
@@ -5682,11 +5683,13 @@ def attention_backward(
         key,
         value,
         out,
+        attn_mask,
         save_for_backward,
         save_tensor_num,
         dropout_p,
         generator,
-        softmax_scale
+        softmax_scale,
+        is_causal
     )
     check_returncode(ret)
     return {"query": grad_q, "key": grad_k, "value": grad_v}
@@ -5792,12 +5795,16 @@ def attention_varlen_backward(
         value,
         cu_seqlens_q,
         cu_seqlens_kv,
+        max_seqlen_q,
+        max_seqlen_kv,
+        attn_mask,
         out,
         save_for_backward,
         save_tensor_num,
         dropout_p,
         generator,
-        softmax_scale
+        softmax_scale,
+        is_causal,
     )
     check_returncode(ret)
     return {"query": grad_q, "key": grad_k, "value": grad_v}

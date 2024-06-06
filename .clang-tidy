@@ -50,6 +50,8 @@ CheckOptions:
     value:           "_"
   - key:             readability-identifier-naming.ParameterCase
     value:           "camelBack"
+  - key:             readability-identifier-naming.ParameterIgnoredRegexp
+    value:           "^([a-z]+_)*[a-z]+$"
   - key:             readability-identifier-naming.UnionCase
     value:           "camelBack"
   - key:             readability-identifier-naming.VariableCase
