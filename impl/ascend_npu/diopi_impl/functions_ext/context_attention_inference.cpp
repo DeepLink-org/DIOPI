@@ -61,11 +61,12 @@ diopiError_t diopiPromptFlashAttention(diopiContextHandle_t ctx, diopiTensorHand
     double scaleValue = 1 / std::sqrt(dim);
     int64_t preTokens = 2147473647;
     int64_t nextTokens = 0;
+    at::Tensor paddingMask;
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttention,
                                  queryAt,
                                  keyAt,
                                  valueAt,
-                                 c10::nullopt,
+                                 paddingMask,
                                  attenMaskAt,
                                  actSeqLen,
                                  numHeads,
