@@ -130,6 +130,7 @@ ascend_npu:
 - diopiSum
 - diopiSigmoidBackward
 - diopiSigmoidInp
+- diopiStd
 - diopiTanh
 - diopiTanhBackward
 - diopiTanhInp

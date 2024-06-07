@@ -273,18 +273,6 @@ device_configs = {
         rtol=1e-4,
     ),
 
-    'reduce_partial_op_1': dict(
-        name=['std'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
     'cross_entropy': dict(
         name=['cross_entropy'],
         tensor_para=dict(
