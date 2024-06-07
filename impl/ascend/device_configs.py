@@ -63,8 +63,17 @@ device_configs = {
         ),
     ),
 
+    # None_bias cases will raise segment fault on Ascend 8.0.RC2.alpha002
     'conv_2d': dict(
         name=['conv2d'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["bias"],
+                    "shape": [Skip(None)],
+                },
+            ],
+        ),
         atol=1e-1,
         rtol=1e-2,
     ),
@@ -75,8 +84,13 @@ device_configs = {
             args=[
                 {
                     "ins": ["input"],
-                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
+                    "dtype": [Skip(np.float64)],
                 },
+                {
+                    "ins": ["bias"],
+                    "shape": [Skip(None)],
+                },
+                
             ]
         ),
     ),
