@@ -66,9 +66,9 @@ target_link_libraries(${DEVICEIMPL} ${CUDA_LIBRARIES})
 target_link_libraries(${DEVICEIMPL} ${CUDNN_LIBRARIES})
 
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
-    set(ADAPTOR_GEN_PATH "${CMAKE_SOURCE_DIR}/../DIOPI-ADAPTOR/codegen")
+    set(ADAPTOR_GEN_PATH "${DIOPI_IMPL_DIR}/../DIOPI-ADAPTOR/codegen")
     add_custom_target(adaptor_code_gen COMMAND python3 ${ADAPTOR_GEN_PATH}/gen.py
-        --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../proto/include/diopi/
+        --diopi_dir=${DIOPI_IMPL_DIR}/../ --output_dir=${CMAKE_SOURCE_DIR}/../proto/include/diopi/
         --config_device=torch)
     set(USE_ADAPTOR "true")
     add_dependencies(${DEVICEIMPL} adaptor_code_gen)
