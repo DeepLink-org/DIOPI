@@ -1,6 +1,10 @@
 - common_config:
     layout: NCHW
 
+- diopiAdamW:
+    dtype: (float64)->float32
+    layout: ND
+
 - diopiSoftmax:
     dtype: (float64)->float32
     layout: ND
@@ -471,9 +475,5 @@
 
 - diopiStd:
     # aclnnStd doesn't support float64
-    dtype: (float64)->float32
-    layout: ND
-
-- diopiAdamW:
     dtype: (float64)->float32
     layout: ND
