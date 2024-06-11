@@ -169,23 +169,74 @@ int64_t AscendTensor::getAclMemBufferSize() const {
 }
 
 aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* stride) {
-    aclFormat format = ACL_FORMAT_ND;
-    switch (dim) {
-        case 3:
-            format = ACL_FORMAT_NCL;
-            break;
-        case 4:
-            format = ACL_FORMAT_NCHW;
-            break;
-        case 5:
-            format = ACL_FORMAT_NCDHW;
-            break;
-        default:
-            break;
+    static std::once_flag warningFlag;
+    auto warnOnUnsupportedFormat = [dim, shape, stride](const char* file, int line, const char* func) {
+        std::string msg = "Acl only support NCHW or NHWC format! but get shape = [";
+        for (int64_t i = 0; i < dim; i++) {
+            msg += std::to_string(shape[i]) + (i == dim - 1 ? "]" : ", ");
+        }
+        msg += ", stride = [";
+        for (int64_t i = 0; i < dim; i++) {
+            msg += std::to_string(stride[i]) + (i == dim - 1 ? "]" : ", ");
+        }
+        warning(file, line, func, msg.c_str());
+    };
+    if (dim == 5) {
+        std::array<int64_t, 5> thStride{stride[0], stride[1], stride[2], stride[3], stride[4]};
+        int st = 1;
+        std::array<int64_t, 5> ncdhwStride;
+        for (auto k : {4, 3, 2, 1, 0}) {
+            ncdhwStride[k] = st;
+            if (shape[k] == 0) continue;
+            if (shape[k] == -1) st = -1;
+            if (st != -1) st *= shape[k];
+        }
+        if (thStride == ncdhwStride) {
+            return ACL_FORMAT_NCDHW;
+        }
+
+        st = 1;
+        std::array<int64_t, 5> ndhwcStride;
+        for (auto k : {1, 4, 3, 2, 0}) {
+            ndhwcStride[k] = st;
+            if (shape[k] == 0) continue;
+            if (shape[k] == -1) st = -1;
+            if (st != -1) st *= shape[k];
+        }
+        if (thStride == ndhwcStride) {
+            return ACL_FORMAT_NDHWC;
+        }
+        std::call_once(warningFlag, warnOnUnsupportedFormat, __FILE__, __LINE__, __FUNCTION__);
+    } else if (dim == 4) {
+        std::array<int64_t, 4> thStride{stride[0], stride[1], stride[2], stride[3]};
+        {
+            std::array<int64_t, 4> nchwStride;
+            int st = 1;
+            for (auto k : {3, 2, 1, 0}) {
+                nchwStride[k] = st;
+                if (shape[k] == 0) continue;
+                if (shape[k] == -1) st = -1;
+                if (st != -1) st *= shape[k];
+            }
+            if (thStride == nchwStride) {
+                return ACL_FORMAT_NCHW;
+            }
+        }
+        std::array<int64_t, 4> nhwcStride;
+        int st = 1;
+        for (auto k : {1, 3, 2, 0}) {
+            nhwcStride[k] = st;
+            if (shape[k] == 0) continue;
+            if (shape[k] == -1) st = -1;
+            if (st != -1) st *= shape[k];
+        }
+        if (thStride == nhwcStride) {
+            return ACL_FORMAT_NHWC;
+        }
+        std::call_once(warningFlag, warnOnUnsupportedFormat, __FILE__, __LINE__, __FUNCTION__);
+    } else if (dim == 3) {
+        return ACL_FORMAT_NCL;
     }
-
-    return format;
 }
-
 }  // namespace ascend
 }  // namespace impl
