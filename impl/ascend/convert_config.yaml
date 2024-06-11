@@ -473,3 +473,7 @@
     # aclnnStd doesn't support float64
     dtype: (float64)->float32
     layout: ND
+
+- diopiAdamW:
+    dtype: (float64)->float32
+    layout: ND
