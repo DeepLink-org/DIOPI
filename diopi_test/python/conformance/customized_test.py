@@ -627,7 +627,6 @@ class CustomizedTest(object):
         return out
 
     def prompt_flash_attention(
-        out,
         query,
         key,
         value,
@@ -655,16 +654,10 @@ class CustomizedTest(object):
         values = values.transpose(1, 2)
         scores = torch.matmul(xq, keys.transpose(2, 3)) / math.sqrt(dim)
         scores = F.softmax(scores.float() + mask, dim=-1).type_as(xq)
-        out.copy_(
-            torch.matmul(scores, values)
-            .transpose(1, 2)
-            .contiguous()
-            .reshape(bs * maxInputLen, numHeads * dim)
-        )
-        return out
+        out = torch.matmul(scores, values).transpose(1, 2).contiguous()
+        return out.reshape(bs * maxInputLen, numHeads * dim)
 
     def paged_attention(
-        out,
         query,
         key,
         value,
@@ -681,7 +674,7 @@ class CustomizedTest(object):
         xq = query.view(batch, 1, numHeads, dim).transpose(1, 2).cuda()
         k = key.view(-1, numKeyValueHeads, dim).cuda()
         v = value.view(-1, numKeyValueHeads, dim).cuda()
-        out = out.view(batch, numHeads, dim).cuda()
+        out = torch.empty([batch, numHeads, dim], device="cuda", dtype=query.dtype)
         max_input_len = max(actualSeqLengths)
         b_seq_len = torch.tensor(actualSeqLengths, dtype=torch.int32).cuda()
         for i in range(batch):

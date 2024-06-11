@@ -8350,9 +8350,7 @@ diopi_configs = {
     'rotary_emb_v2': dict(
         name=['rotary_emb_v2'],
         interface=['CustomizedTest'],
-        dtype=[np.float32],
-        atol=1e-2,
-        rtol=1e-2,
+        dtype=[np.float32, np.float16],
         para=dict(
             dim=[128,]
         ),
@@ -8640,11 +8638,6 @@ diopi_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['out'],
-                    "shape": ((4, 4096),),
-                    "dtype": [np.float16,],
-                },
-                {
                     "ins": ["query"],
                     "shape": ((4, 4096),),
                     "dtype": [np.float16,],
@@ -8686,11 +8679,6 @@ diopi_configs = {
         ),
         tensor_para=dict(
             args=[
-                {
-                    "ins": ['out'],
-                    "shape": ((1, 4096),),
-                    "dtype": [np.float16,],
-                },
                 {
                     "ins": ["query"],
                     "shape": ((1, 4096),),
