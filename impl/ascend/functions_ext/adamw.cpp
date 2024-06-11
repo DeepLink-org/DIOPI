@@ -14,7 +14,8 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t input, dio
                         int64_t step, bool amsgrad) {
     // maximize is not supported in diopi for now
     bool maximize = false;
-    diopiScalar_t stepScalar = constructDiopiScalarT(diopi_dtype_int64, step);
+    // dtype of step supports int64、float32
+    diopiScalar_t stepScalar = constructDiopiScalarT(diopi_dtype_float32, step);
     AscendTensor stepTensor;
     makeTensorFromScalar(ctx, stepTensor, &stepScalar);
 
