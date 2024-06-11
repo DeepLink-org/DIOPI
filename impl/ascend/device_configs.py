@@ -1440,19 +1440,6 @@ device_configs = {
         skip_all = True
     ),
 
-    # TODO(wangxing) When amsgrad is False and input is Scalar, upgrading the software stack to 8.0 RC1 will trigger an inner error.
-    'adam': dict(
-        name=['adamw'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['param'],
-                    "shape": [Skip(())],
-                },
-            ]
-        ),
-    ),
-
     # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend
     'flash_attention_varlen': dict(
         name=['flash_attention_varlen'],
