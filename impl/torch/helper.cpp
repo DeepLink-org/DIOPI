@@ -7,6 +7,8 @@
 
 #include <ATen/cuda/EmptyTensor.h>
 
+thread_local int diopiNestedScopeDepth=0;
+
 namespace impl {
 
 namespace aten {
@@ -108,6 +110,14 @@ public:
 
 template <class DeviceImpl>
 at::Tensor buildATenImpl(diopiConstTensorHandle_t tensor) {
+    DeviceImpl::lazyInitDevice();
+    auto atTensorHandle = const_cast<at::Tensor*>(reinterpret_cast<const at::Tensor*>(tensor));
+    atTensorHandle->unsafeGetTensorImpl()->set_custom_device(true);
+    return *atTensorHandle;
+}
+
+template <class DeviceImpl>
+at::Tensor buildATenImplSlow(diopiConstTensorHandle_t tensor) {
     diopiSize_t shape;
     diopiGetTensorShape(tensor, &shape);
     at::IntArrayRef atSizes(shape.data, shape.len);
@@ -166,6 +176,24 @@ at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
             return buildATenImpl<BuildATenDeviceImpl<diopi_host>>(tensor);
         case diopi_device:
             return buildATenImpl<BuildATenDeviceImpl<diopi_device>>(tensor);
+        default:
+            TORCH_CHECK(false, "Invalid device type encountered in buildATen: ", device);
+            return {};
+    }
+}
+
+at::Tensor buildATenSlow(diopiConstTensorHandle_t tensor) {
+    if (tensor == nullptr) {
+        return at::Tensor();
+    }
+
+    diopiDevice_t device;
+    diopiGetTensorDevice(tensor, &device);
+    switch (device) {
+        case diopi_host:
+            return buildATenImplSlow<BuildATenDeviceImpl<diopi_host>>(tensor);
+        case diopi_device:
+            return buildATenImplSlow<BuildATenDeviceImpl<diopi_device>>(tensor);
         default:
             TORCH_CHECK(false, "Invalid device type encountered in buildATen: ", device);
             return {};

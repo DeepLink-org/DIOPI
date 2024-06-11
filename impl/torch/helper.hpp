@@ -49,9 +49,26 @@
 
 using diopi_tensor_list = std::vector<diopiTensorHandle_t>;
 
+extern "C" thread_local int diopiNestedScopeDepth;
+
 namespace impl {
 
 namespace aten {
+
+class DiopiScopeGuardImpl {
+public:
+    DiopiScopeGuardImpl() {
+        diopiNestedScopeDepth++;
+        std::cout << "DiopiNestedDepth is " << diopiNestedScopeDepth << std::endl;
+    };
+
+    ~DiopiScopeGuardImpl() {
+        diopiNestedScopeDepth--;
+        std::cout << "DiopiNestedDepth is " << diopiNestedScopeDepth << std::endl;
+    };
+};
+
+#define DIOPI_SCOPE_GUARD [[maybe_unused]] impl::aten::DiopiScopeGuardImpl diopi_scope_guard;
 
 constexpr size_t MAX_GPU_NUMS = 16;
 
@@ -97,6 +114,7 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
 }
 
 at::Tensor buildATen(diopiConstTensorHandle_t tensor);
+at::Tensor buildATenSlow(diopiConstTensorHandle_t tensor);
 
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 
@@ -117,9 +135,18 @@ inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
     return vecAtTensor;
 }
 
+template <typename T>
+inline decltype(auto) buildATenListSlow(T* tensors, int64_t numTensors) {
+    std::vector<at::Tensor> vecAtTensor;
+    for (size_t i = 0; i < numTensors; ++i) {
+        vecAtTensor.emplace_back(buildATenSlow(tensors[i]));
+    }
+    return vecAtTensor;
+}
+
 inline void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     if (out != nullptr) {
-        at::Tensor atOutput = buildATen(out).reshape_as(atOut);
+        at::Tensor atOutput = buildATenSlow(out).reshape_as(atOut);
         // Set non_blocking=true to improve performance.
         // The data is not ready when this function returns.
         at::native::copy_(atOutput, atOut, true);
