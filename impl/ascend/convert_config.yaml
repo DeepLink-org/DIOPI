@@ -448,3 +448,11 @@
 - diopiLerpScalar:
     # aclnnLerps doesn't support float64
     dtype: (float64)->float32
+
+- diopiMaxPool2dWithIndices:
+    tensor_dtype:
+        indices: (int64)->int32 
+
+- diopiMaxPool2dBackward:
+    tensor_dtype:
+        indices: (int64)->int32 

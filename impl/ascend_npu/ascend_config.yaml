@@ -2,6 +2,8 @@ ascend:
 - diopiAbs
 - diopiAbsInp
 - diopiAdamW
+- diopiAdaptiveAvgPool2d
+- diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
 - diopiAddcmulInp
 - diopiAddmm
@@ -19,6 +21,8 @@ ascend:
 - diopiAtanInp
 - diopiBaddbmm
 - diopiBaddbmmInp
+- diopiBatchNorm
+- diopiBatchNormBackward
 - diopiBitwiseNot
 - diopiBitwiseNotInp
 - diopiBitwiseAnd
@@ -83,6 +87,8 @@ ascend:
 - diopiGelu
 - diopiGeluBackward
 - diopiGeScalar
+- diopiGroupNorm
+- diopiGroupNormBackward
 - diopiGt
 - diopiGtInp
 - diopiGtInpScalar
@@ -127,10 +133,17 @@ ascend:
 - diopiLog2
 - diopiLog2Inp
 - diopiLogInp
+- diopiMaskedFill
+- diopiMaskedFillInp
+- diopiMaskedFillInpScalar
+- diopiMaskedFillScalar
 - diopiMatmul
 - diopiMax
 - diopiMaxAll
 - diopiMaximum
+- diopiMaxPool2d
+- diopiMaxPool2dWithIndices
+- diopiMaxPool2dBackward
 - diopiMean
 - diopiMSELoss
 - diopiMSELossBackward
@@ -208,22 +221,11 @@ ascend:
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
-- diopiAdaptiveAvgPool2d
-- diopiAdaptiveAvgPool2dBackward
-- diopiBatchNorm
-- diopiBatchNormBackward
 - diopiNonzero
 - diopiCat
 - diopiCopyInp
-- diopiGroupNorm
-- diopiGroupNormBackward
-- diopiMaskedFill
-- diopiMaskedFillInp
-- diopiMaskedFillInpScalar
-- diopiMaskedFillScalar
 - diopiStack
 - diopiMultinomial
-- diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiIndexPut
 - diopiIndexPutInp
@@ -266,3 +268,7 @@ ascend_npu:
 - diopiFlashAttentionVarLenBackward
 - diopiScaledMaskedSoftmax
 - diopiScaledMaskedSoftmaxBackward
+- diopiAttention
+- diopiAttentionBackward
+- diopiAttentionVarLen
+- diopiAttentionVarLenBackward
