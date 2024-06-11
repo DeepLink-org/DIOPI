@@ -60,6 +60,10 @@ inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
     const auto& shape = input.shape();
     const auto& stride = input.stride();
     const auto storageSize = static_cast<int64_t>(input.storageNbytes() / input.elemsize());
+
+    void* storagePtr = nullptr;
+    diopiGetTensorStoragePtr(input.tensorHandle(), &storagePtr);
+
     return ::aclCreateTensor(shape.data(),
                              shape.size(),
                              input.getAclDataType(),
@@ -68,7 +72,7 @@ inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
                              input.getAclDataFormat(),  // TODO(lljbash): op_plugin assume non-channel-last, why?
                              &storageSize,
                              /*storageDimsNum=*/1,
-                             const_cast<void*>(input.data()));
+                             const_cast<void*>(storagePtr));
 }
 
 inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor) {
@@ -90,20 +94,15 @@ inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor
     diopiGetTensorStorageOffset(tensor, &storageOffset);
     std::size_t storageNbytes{};
     diopiGetTensorStorageNbytes(tensor, &storageNbytes);
-    const void* tensorData = nullptr;
-    diopiGetTensorDataConst(tensor, &tensorData);
+
+    void* storagePtr = nullptr;
+    diopiGetTensorStoragePtr(tensor, &storagePtr);
+
     auto type = diopiDtypeToAclDataType(dtype);
     auto format = inferAclDataFormat(shape.len, shape.data, stride.data);
     auto storageSize = static_cast<int64_t>(storageNbytes / elemsize);
-    return ::aclCreateTensor(shape.data,
-                             shape.len,
-                             type,
-                             stride.data,
-                             storageOffset,
-                             format,
-                             &storageSize,
-                             /*storageDimsNum=*/1,
-                             const_cast<void*>(tensorData));
+
+    return ::aclCreateTensor(shape.data, shape.len, type, stride.data, storageOffset, format, &storageSize, 1, const_cast<void*>(storagePtr));
 }
 
 inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
