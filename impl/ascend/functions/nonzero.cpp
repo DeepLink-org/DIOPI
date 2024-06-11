@@ -27,10 +27,10 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** viewDims, uint64_t* viewDimsNum);
     aclGetViewShapeFunc aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(impl::ascend::aclnn_adaptor::getOpApiFuncAddr("aclGetViewShape"));
     aclGetViewShape(std::get<1>(params.params()), &dims, &dimsNum);
-
-    // copy outTmp to out
     std::vector<int64_t> outShape(dims, dims + dimsNum);
     diopiSize_t outSize = {outShape.data(), static_cast<int64_t>(dimsNum)};
+
+    // copy outTmp to out
     diopiRequireTensor(ctx, out, &outSize, nullptr, diopi_dtype_int64, diopi_device);
     AscendTensor outTmpAt(outTmp);
     AscendTensor outAt(*out);
@@ -38,9 +38,6 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     outAt.view(outShape);
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, outAt, outTmpAt);
 
-    diopiStreamHandle_t stream;
-    diopiGetStream(ctx, &stream);
-    aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream));
     return diopiSuccess;
 }
 }  // namespace ascend

@@ -76,6 +76,7 @@ inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor
     if (tensor == nullptr) {
         return nullptr;
     }
+
     diopiSize_t shape{};
     diopiGetTensorShape(tensor, &shape);
     diopiSize_t stride{};
@@ -100,7 +101,7 @@ inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor
                              stride.data,
                              storageOffset,
                              format,
-                             /*storageDims*/ &storageSize,
+                             &storageSize,
                              /*storageDimsNum=*/1,
                              const_cast<void*>(tensorData));
 }
