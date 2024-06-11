@@ -468,3 +468,8 @@
 - diopiLerpScalar:
     # aclnnLerps doesn't support float64
     dtype: (float64)->float32
+
+- diopiStd:
+    # aclnnStd doesn't support float64
+    dtype: (float64)->float32
+    layout: ND
