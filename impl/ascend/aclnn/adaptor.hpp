@@ -316,11 +316,15 @@ auto callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
         ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, __VA_ARGS__); \
     } while (false)
 
-#define DIOPI_ASECND_CALL_ACLNN_SYNC(api, ctx, ...)                                                     \
-    [](diopiContextHandle_t ctx, auto&... args) -> auto {                                               \
-        static constexpr const char kApiName[] = #api;                                                  \
-        static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                      \
-        return ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, args...); \
+#define DIOPI_ASECND_CALL_ACLNN_SYNC(api, ctx, ...)                                                         \
+    [](diopiContextHandle_t ctx, auto&... args) -> auto {                                                   \
+        static constexpr const char kApiName[] = #api;                                                      \
+        static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                          \
+        auto res = ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, args...); \
+        diopiStreamHandle_t stream;                                                                         \
+        diopiGetStream(ctx, &stream);                                                                       \
+        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));                          \
+        return res;                                                                                         \
     }(ctx, __VA_ARGS__)
 
 }  // namespace aclnn_adaptor
