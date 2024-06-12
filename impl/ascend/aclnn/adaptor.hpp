@@ -200,7 +200,6 @@ public:
         if (this == &other) {
             return;
         }
-
         convertedParams_ = std::move(other.convertedParams_);
     }
 
