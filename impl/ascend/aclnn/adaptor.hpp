@@ -214,7 +214,13 @@ public:
     }
     ConvertedParamsHolder(const ConvertedParamsHolder&) = delete;
     ConvertedParamsHolder& operator=(const ConvertedParamsHolder&) = delete;
-    ConvertedParamsHolder(ConvertedParamsHolder&&) = delete;
+    ConvertedParamsHolder(ConvertedParamsHolder&& other) {
+        if (this == &other) {
+            return;
+        }
+        convertedParams_ = std::move(other.convertedParams_);
+    }
+
     ConvertedParamsHolder& operator=(ConvertedParamsHolder&&) = delete;
     const auto& params() const noexcept { return convertedParams_; }
 
@@ -282,7 +288,7 @@ private:
 };
 
 template <const char* api, const char* workspaceApi, class... Args>
-void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
+auto callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
     if (isDebugAclOpRunnerOn()) {
         std::cout << "ACLNN_ADAPTOR for " << api << '\n';
     }
@@ -318,6 +324,7 @@ void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
 
     auto ret = opApiFunc(workspace.addr(), workspaceSize, executor, stream);
     ASCEND_CHECK_THROW(ret == ACL_SUCCESS, "[%s] failed. aclnnStatus is %d.", api, ret);
+    return convertedParams;
 }
 
 #define DIOPI_ASCEND_CALL_ACLNN(api, ctx, ...)                                                       \
@@ -326,6 +333,17 @@ void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
         static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                   \
         ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, __VA_ARGS__); \
     } while (false)
+
+#define DIOPI_ASECND_CALL_ACLNN_SYNC(api, ctx, ...)                                                         \
+    [](diopiContextHandle_t ctx, auto&... args) -> auto {                                                   \
+        static constexpr const char kApiName[] = #api;                                                      \
+        static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                          \
+        auto res = ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, args...); \
+        diopiStreamHandle_t stream;                                                                         \
+        diopiGetStream(ctx, &stream);                                                                       \
+        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));                          \
+        return res;                                                                                         \
+    }(ctx, __VA_ARGS__)
 
 }  // namespace aclnn_adaptor
 

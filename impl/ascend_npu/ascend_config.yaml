@@ -167,6 +167,7 @@ ascend:
 - diopiNormalInp
 - diopiNeg
 - diopiNegInp
+- diopiNonzero
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -239,7 +240,6 @@ ascend:
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
-- diopiNonzero
 - diopiCopyInp
 - diopiRotaryEmbedding
 - diopiIndexPut
