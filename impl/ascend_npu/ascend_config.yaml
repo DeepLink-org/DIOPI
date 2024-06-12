@@ -237,7 +237,9 @@ ascend_npu:
 - diopiTokenAttentionInference
 - diopiTokenSoftmaxReduceVInference
 - diopiApplyPenalty
+- diopiApplyPenaltyV2
 - diopiContextAttentionInference
+- diopiPromptFlashAttention
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiTensorDestructionHook
@@ -272,3 +274,6 @@ ascend_npu:
 - diopiAttentionBackward
 - diopiAttentionVarLen
 - diopiAttentionVarLenBackward
+- diopiPagedAttention
+- diopiRotaryEmbeddingV2
+- diopiMatmulAllReduce
