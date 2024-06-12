@@ -562,6 +562,26 @@ DIOPI_API diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiConstTensorHandle_t p_token_counts, diopiConstTensorHandle_t p_cumsum_seq_len, int p_max_len_in_batch);
 
 /**
+ * @brief This function applies a penalty to the given logits based on the presence and frequency of certain tokens in the input sequence to suppress
+ * generating tokens repeatedly.
+ * For each token，the final logit = logit - corresponding_presence_penalty * token_counts - corresponding_presence_penalty.
+ * @param[in] ctx The diopi context.
+ * @param[inout] logits Tensor representing the logits. Shape: [batch_size, voc_len]. It contains the predicted scores for each token in the input sequences.
+ * It will be penalized by frequency_penalty and presence_penalty.
+ * @param[in] presence_penalty Tensor representing the presence penalty for each batch. Shape: [batch_size,]. It contains the penalty values to be subtracted
+ * from the logits.
+ * @param[in] frequency_penalty Tensor representing the frequency penalty for each batch. Shape: [batch_size,]. It contains the penalty values to be subtracted
+ * from the logits.
+ * @param[in] repetition_penalty Tensor representing the repetition penalty for each batch. Shape: [batch_size,]. It contains the penalty values to be
+ * subtracted from the logits.
+ * @param[in] p_token_ids Tensor representing the token_ids for generated tokens. Shape:[generated_tokens_num].
+ * @param[in] p_token_counts Tensor representing the count of each token for generated tokens. Shape:[generated_tokens_num].
+ */
+DIOPI_API diopiError_t diopiApplyPenaltyV2(diopiContextHandle_t ctx, diopiTensorHandle_t logits, diopiConstTensorHandle_t presence_penalty,
+                                           diopiConstTensorHandle_t frequency_penalty, diopiConstTensorHandle_t repetition_penalty,
+                                           diopiConstTensorHandle_t p_token_ids, diopiConstTensorHandle_t p_token_counts);
+
+/**
  * @brief Copies the elements from k tensor into out tensor according to dest_loc tensor. It can be expressed in detail as: out[dest_loc] = k. During
  * model initialization, the KV cache is pre-allocated based on the user-set max_total_token_num and a Token Table is created to record the actual storage
  * locations of input tokens. For details, please refer to the official implementation using the triton kernel:
@@ -612,6 +632,23 @@ DIOPI_API diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ct
                                                          diopiConstTensorHandle_t b_seq_len, int max_input_len, int other_kv_index);
 
 /**
+ * @brief The implementation of pagedAttention, for more details please refer to https://blog.vllm.ai/2023/06/20/vllm.html
+ * @param[in] ctx diopi context.
+ * @param[in] out The output tensor of page attention operation. shape = [sum_batch_seq_len, head_num * head_dim]
+ * @param[in] q Tensor representing the query matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num * head_dim].
+ * @param[in] k Tensor representing the key matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num * head_dim]
+ * @param[in] v Tensor representing the value matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num * head_dim]
+ * @param[in] actual_seq_lengths Tensor representing the sequence length in each batch. shape = [batch_size]
+ * @param[in] num_heads head number of q and out.
+ * @param[in] num_kv_heads head number of key and value.
+ * @param[in] dim dimension of the transformer.
+ * @param[in] block_table Tensor representing the used blocks in each batch. shape = [batch_size, max_length_of_block_list]
+ * @param[in] block_size Size of eatch block unit.
+ */
+DIOPI_API diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+                                           diopiConstTensorHandle_t v, diopiSize_t actual_seq_lengths, int64_t num_heads, int64_t num_kv_heads, int64_t dim,
+                                           diopiConstTensorHandle_t block_table, int64_t block_size);
+/**
  * @brief The no pad implementation of
  * \text{context_attention_out}(\mathrm{q},\mathrm{k},\mathrm{v})=\text{softmax}(\frac{\mathrm{qk}^\mathrm{T}}{\sqrt{\mathrm{d_k}}})\mathrm{v}. For details,
  * please refer to the official implementation using the triton kernel:
@@ -630,6 +667,55 @@ DIOPI_API diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, 
                                                       diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t b_start_loc,
                                                       diopiConstTensorHandle_t b_seq_len, int max_input_len);
 
+/**
+ * @brief The no pad implementation of apply rotary embedding operation. For details, please refer to the official implementation using the triton kernel:
+ * https://github.com/ModelTC/lightllm/blob/main/lightllm/models/llama/triton_kernel/rotary_emb.py
+ * @param[in] ctx The diopi context.
+ * @param[out] out The output tensor containing the rotary embeddings. type = [bfloat16, float16, float32, float64].
+ * @param[in] query The query tensor which rotary embedding will be applied. type = [bfloat16, float16, float32, float64].
+ * @param[in] key The key tensor which rotary embedding will be applied. type = [bfloat16, float16, float32, float64].
+ * @param[in] cos The cosine values. type = [bfloat16, float16, float32, float64].
+ * @param[in] sin The sine values. type = [bfloat16, float16, float32, float64].
+ * @param[in] dim dimension of the transformer.
+ */
+DIOPI_API diopiError_t diopiRotaryEmbeddingV2(diopiContextHandle_t ctx, diopiTensorHandle_t query, diopiTensorHandle_t key, diopiConstTensorHandle_t cos,
+                                              diopiConstTensorHandle_t sin, int64_t dim);
+
+/**
+ * @brief The fused operation of Matmul and AllReduce.
+ * @param[in] ctx The diopi context.
+ * @param[out] out The output tensor of Matmul and AllReduce.
+ * @param[in] x1 The x1 tensor of matmul. type = [bfloat16, float16, float32, float64].
+ * @param[in] x2 The x2 tensor of matmul. type = [bfloat16, float16, float32, float64].
+ * @param[in] bias The bias tensor of matmul. type = [bfloat16, float16, float32, float64].
+ * @param[in] group The group string of AllReduce.
+ * @param[in] reduceOp The reduce op string of AllReduce.
+ * @param[in] commTurn communication turn.
+ * @param[in] streamMode The stream mode for communication.
+ */
+DIOPI_API diopiError_t diopiMatmulAllReduce(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t x1, diopiConstTensorHandle_t x2,
+                                            diopiConstTensorHandle_t bias, const char* group, const char* reduce_op, int64_t comm_turn, int64_t stream_mode);
+
+/**
+ * @brief The no pad implementation of
+ * \text{context_attention_out}(\mathrm{q},\mathrm{k},\mathrm{v})=\text{softmax}(\frac{\mathrm{qk}^\mathrm{T}}{\sqrt{\mathrm{d_k}}})\mathrm{v}. For details,
+ * please refer to the official implementation using the triton kernel:
+ * https://github.com/ModelTC/lightllm/blob/main/lightllm/models/llama/triton_kernel/context_flashattention_nopad.py.
+ * @param[in] ctx diopi context.
+ * @param[in] out The output tensor of prompt flash attention operation. shape = [sum_batch_seq_len, head_num * head_dim]
+ * @param[in] query Tensor representing the query matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num * head_dim].
+ * @param[in] key Tensor representing the key matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num * head_dim]
+ * @param[in] value Tensor representing the value matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num * head_dim]
+ * @param[in] atten_mask Tensor representing the mask matrix in the attention mechanism.
+ * @param[in] actual_seq_lengths Tensor representing the sequence length in each batch. shape = [batch_size]
+ * @param[in] max_input_len The maximum length of all batch corresponding sequences.
+ * @param[in] num_heads head number of query and out.
+ * @param[in] num_kv_heads head number of key and value.
+ * @param[in] dim dimension of the transformer.
+ */
+DIOPI_API diopiError_t diopiPromptFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t query,
+                                                 diopiConstTensorHandle_t key, diopiConstTensorHandle_t value, diopiConstTensorHandle_t atten_mask,
+                                                 diopiSize_t actual_seq_lengths, int64_t max_input_len, int64_t num_heads, int64_t num_kv_heads, int64_t dim);
 // ============================================lightllm end========================================
 
 #if defined(__cplusplus)
