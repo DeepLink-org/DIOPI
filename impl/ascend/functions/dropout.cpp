@@ -23,8 +23,9 @@ diopiError_t npuDropoutOut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     diopiError_t ret = diopiRequireTensor(ctx, &maskNpu, &maskSize, nullptr, diopi_dtype_uint8, diopi_device);
     ASCEND_CHECK_ABORT(ret == diopiSuccess, "[npuDropoutOut] require tensor for mask failed.");
 
-    uint64_t seed, offset;
-    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, &seed, &offset));
+    const std::pair<uint64_t, uint64_t> gen = getSeedAndOffset(ctx, generator, 10);
+    const uint64_t seed = gen.first;
+    const uint64_t offset = gen.second;
 
     DIOPI_ASCEND_CALL_ACLNN(aclnnDropoutGenMask, ctx, inAt.shape(), p, seed, offset, maskNpu);
     DIOPI_ASCEND_CALL_ACLNN(aclnnDropoutDoMask, ctx, input, maskNpu, p, out);
@@ -57,8 +58,9 @@ diopiError_t npuDropout2dOut(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
     diopiError_t ret = diopiRequireTensor(ctx, &maskNpu, &maskNpuSize, nullptr, diopi_dtype_uint8, diopi_device);
     ASCEND_CHECK_ABORT(ret == diopiSuccess, "[npuDropout2dOut] require tensor for mask failed.");
 
-    uint64_t seed, offset;
-    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, &seed, &offset));
+    const std::pair<uint64_t, uint64_t> gen = getSeedAndOffset(ctx, generator, 10);
+    const uint64_t seed = gen.first;
+    const uint64_t offset = gen.second;
 
     DIOPI_ASCEND_CALL_ACLNN(aclnnDropoutGenMask, ctx, inAt.shape(), p, seed, offset, maskNpu);
     DIOPI_ASCEND_CALL_ACLNN(aclnnDropoutDoMask, ctx, input2d, maskNpu, p, out2d);
