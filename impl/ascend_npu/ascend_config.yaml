@@ -157,6 +157,7 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
+- diopiMultinomial
 - diopiMin
 - diopiMinAll
 - diopiMinimum
@@ -198,6 +199,10 @@ ascend:
 - diopiRemainderScalar
 - diopiRemainderTensor
 - diopiRepeat
+- diopiScatter
+- diopiScatterInp
+- diopiScatterScalar
+- diopiScatterInpScalar
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
@@ -234,9 +239,7 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiNonzero
-- diopiCat
 - diopiCopyInp
-- diopiMultinomial
 - diopiRotaryEmbedding
 - diopiIndex
 - diopiDestIndexCopyKV
@@ -256,10 +259,6 @@ ascend_npu:
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
-- diopiScatter
-- diopiScatterInp
-- diopiScatterScalar
-- diopiScatterInpScalar
 - diopiUpsampleLinear
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
