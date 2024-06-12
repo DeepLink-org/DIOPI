@@ -195,6 +195,10 @@ ascend:
 - diopiRemainderScalar
 - diopiRemainderTensor
 - diopiRepeat
+- diopiScatter
+- diopiScatterInp
+- diopiScatterScalar
+- diopiScatterInpScalar
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
@@ -256,10 +260,6 @@ ascend_npu:
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
-- diopiScatter
-- diopiScatterInp
-- diopiScatterScalar
-- diopiScatterInpScalar
 - diopiUpsampleLinear
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
