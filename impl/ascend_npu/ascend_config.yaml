@@ -232,7 +232,6 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiNonzero
-- diopiCat
 - diopiCopyInp
 - diopiRotaryEmbedding
 - diopiIndexPut
