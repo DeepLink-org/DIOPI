@@ -19,7 +19,7 @@ diopiError_t diopiLinear(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     std::vector<int64_t> weightTShape(weightSize.data, weightSize.data + weightSize.len);
     weightTShape[weightSize.len - 1] = weightSize.data[weightSize.len - 2];
     weightTShape[weightSize.len - 2] = weightSize.data[weightSize.len - 1];
-    diopiSize_t weightTSize = {weightTShape.data(), weightTShape.size()};
+    diopiSize_t weightTSize = {weightTShape.data(), static_cast<int64_t>(weightTShape.size())};
     diopiRequireTensor(ctx, &weightT, &weightTSize, nullptr, weightDtype, diopi_device);
     std::vector<int64_t> dims = {1, 0};
     DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, weight, dims, weightT);
@@ -49,7 +49,7 @@ diopiError_t diopiLinearBackward(diopiContextHandle_t ctx, diopiTensorHandle_t g
 
         diopiTensorHandle_t gradOutput2DT;
         std::vector<int64_t> gradOutput2DTShape = {gradOutput2D.shape()[1], gradOutput2D.shape()[0]};
-        diopiSize_t gradOutput2DTSize = {gradOutput2DTShape.data(), gradOutput2DTShape.size()};
+        diopiSize_t gradOutput2DTSize = {gradOutput2DTShape.data(), static_cast<int64_t>(gradOutput2DTShape.size())};
         diopiRequireTensor(ctx, &gradOutput2DT, &gradOutput2DTSize, nullptr, gradOutput2D.dtype(), diopi_device);
 
         std::vector<int64_t> dims = {1, 0};
