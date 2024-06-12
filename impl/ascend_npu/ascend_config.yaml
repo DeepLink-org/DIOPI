@@ -231,6 +231,10 @@ ascend:
 - diopiTriuInp
 - diopiTopk
 - diopiUniformInp
+- diopiUpsampleLinear
+- diopiUpsampleLinearBackward
+- diopiUpsampleNearest
+- diopiUpsampleNearestBackward
 - diopiWhere
 - diopiZeroInp
 - diopiZeros
@@ -259,10 +263,6 @@ ascend_npu:
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
-- diopiUpsampleLinear
-- diopiUpsampleLinearBackward
-- diopiUpsampleNearest
-- diopiUpsampleNearestBackward
 - diopiFlashAttention
 - diopiFlashAttentionBackward
 - diopiFlashAttentionV2
