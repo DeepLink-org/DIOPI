@@ -1,6 +1,9 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiAdamW
+- diopiAdaptiveAvgPool2d
+- diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
 - diopiAddcmulInp
 - diopiAddmm
@@ -18,6 +21,8 @@ ascend:
 - diopiAtanInp
 - diopiBaddbmm
 - diopiBaddbmmInp
+- diopiBatchNorm
+- diopiBatchNormBackward
 - diopiBitwiseNot
 - diopiBitwiseNotInp
 - diopiBitwiseAnd
@@ -30,6 +35,7 @@ ascend:
 - diopiBitwiseOrInpScalar
 - diopiBmm
 - diopiCastDtype
+- diopiCat
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
@@ -82,6 +88,8 @@ ascend:
 - diopiGelu
 - diopiGeluBackward
 - diopiGeScalar
+- diopiGroupNorm
+- diopiGroupNormBackward
 - diopiGt
 - diopiGtInp
 - diopiGtInpScalar
@@ -96,6 +104,8 @@ ascend:
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIsNan
+- diopiIndexSelect
+- diopiIndexSelectBackward
 - diopiLayerNorm
 - diopiLayerNormBackward
 - diopiLeakyRelu
@@ -129,10 +139,17 @@ ascend:
 - diopiLog2
 - diopiLog2Inp
 - diopiLogInp
+- diopiMaskedFill
+- diopiMaskedFillInp
+- diopiMaskedFillInpScalar
+- diopiMaskedFillScalar
 - diopiMatmul
 - diopiMax
 - diopiMaxAll
 - diopiMaximum
+- diopiMaxPool2d
+- diopiMaxPool2dWithIndices
+- diopiMaxPool2dBackward
 - diopiMean
 - diopiMSELoss
 - diopiMSELossBackward
@@ -171,6 +188,11 @@ ascend:
 - diopiSigmoidInp
 - diopiOnes
 - diopiPermute
+- diopiPow
+- diopiPowInp
+- diopiPowInpTensor
+- diopiPowScalar
+- diopiPowTensor
 - diopiProd
 - diopiRemainder
 - diopiRemainderScalar
@@ -194,6 +216,7 @@ ascend:
 - diopiSort
 - diopiSqrt
 - diopiSqrtInp
+- diopiStack
 - diopiTanh
 - diopiTanhBackward
 - diopiTanhInp
@@ -210,27 +233,10 @@ ascend:
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
-- diopiAdamW
-- diopiAdaptiveAvgPool2d
-- diopiAdaptiveAvgPool2dBackward
-- diopiAttention
-- diopiAttentionBackward
-- diopiAttentionVarLen
-- diopiAttentionVarLenBackward
-- diopiBatchNorm
-- diopiBatchNormBackward
 - diopiNonzero
 - diopiCat
 - diopiCopyInp
-- diopiGroupNorm
-- diopiGroupNormBackward
-- diopiMaskedFill
-- diopiMaskedFillInp
-- diopiMaskedFillInpScalar
-- diopiMaskedFillScalar
-- diopiStack
 - diopiMultinomial
-- diopiMaxPool2dWithIndices
 - diopiRotaryEmbedding
 - diopiIndexSelect
 - diopiIndexSelectBackward
@@ -239,7 +245,9 @@ ascend_npu:
 - diopiTokenAttentionInference
 - diopiTokenSoftmaxReduceVInference
 - diopiApplyPenalty
+- diopiApplyPenaltyV2
 - diopiContextAttentionInference
+- diopiPromptFlashAttention
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiTensorDestructionHook
@@ -258,11 +266,6 @@ ascend_npu:
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
-- diopiPow
-- diopiPowInp
-- diopiPowInpTensor
-- diopiPowScalar
-- diopiPowTensor
 - diopiFlashAttention
 - diopiFlashAttentionBackward
 - diopiFlashAttentionV2
@@ -270,3 +273,10 @@ ascend_npu:
 - diopiFlashAttentionVarLenBackward
 - diopiScaledMaskedSoftmax
 - diopiScaledMaskedSoftmaxBackward
+- diopiAttention
+- diopiAttentionBackward
+- diopiAttentionVarLen
+- diopiAttentionVarLenBackward
+- diopiPagedAttention
+- diopiRotaryEmbeddingV2
+- diopiMatmulAllReduce

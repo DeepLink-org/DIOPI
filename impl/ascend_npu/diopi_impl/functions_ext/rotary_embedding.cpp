@@ -9,6 +9,7 @@
 #include "../helper.hpp"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace OP_IMPL_NS {
 
@@ -70,6 +71,22 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     at::Tensor result = op_api::mul(cosCat, xView) + op_api::mul(sinCat, xNew);
     outView.copy_(result);
 
+    END_CALL_ACL_OP();
+}
+
+DIOPI_API diopiError_t diopiRotaryEmbeddingV2(diopiContextHandle_t ctx, diopiTensorHandle_t query, diopiTensorHandle_t key, diopiConstTensorHandle_t cos,
+                                              diopiConstTensorHandle_t sin, int64_t dim) {
+    BEGIN_CALL_ACL_OP(query, key, cos, sin);
+    int64_t layOut = 1;
+    if (queryAt.dim() == 2) {
+        queryAt = impl::aten::viewStorage(queryAt, {1, queryAt.size(0), queryAt.size(1) / dim, dim});
+    }
+    if (keyAt.dim() == 2) {
+        keyAt = impl::aten::viewStorage(keyAt, {1, keyAt.size(0), keyAt.size(1) / dim, dim});
+    }
+    cosAt = viewAs4D(cosAt);
+    sinAt = viewAs4D(sinAt);
+    EXEC_NPU_CMD(aclnnApplyRotaryPosEmb, queryAt, keyAt, cosAt, sinAt, layOut);
     END_CALL_ACL_OP();
 }
 

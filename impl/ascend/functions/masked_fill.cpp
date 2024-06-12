@@ -4,80 +4,61 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include <set>
-
-#include "../common/acloprunner.hpp"
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
                              diopiConstTensorHandle_t value) {
-    int64_t numel = 0;
-    diopiGetTensorNumel(input, &numel);
-    if (0 == numel) {
+    AscendTensor inputAt(input);
+    AscendTensor outAt(out);
+    if (input == nullptr || inputAt.numel() == 0) {
         return diopiSuccess;
     }
 
-    std::set<diopiDtype_t> typeSet{diopi_dtype_bool, diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int8, diopi_dtype_int32, diopi_dtype_int64};
-
-    diopiDtype_t valueDtype;
-    diopiGetTensorDtype(value, &valueDtype);
-    diopiTensorHandle_t valueTemp = const_cast<diopiTensorHandle_t>(value);
-    if (typeSet.find(valueDtype) == typeSet.end()) {
-        makeTensorLike(ctx, &valueTemp, value, diopi_dtype_float32);
-        diopiCastDtype(ctx, valueTemp, value);
+    // step1 copy inputAt to outAt
+    if (outAt.data() != inputAt.data()) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, outAt, inputAt);
     }
-
-    diopiDtype_t inputDtype;
-    diopiGetTensorDtype(input, &inputDtype);
-    if (typeSet.find(inputDtype) == typeSet.end()) {
-        diopiTensorHandle_t inputTemp, outTemp;
-        makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
-        diopiCastDtype(ctx, inputTemp, input);
-        makeTensorLike(ctx, &outTemp, out, diopi_dtype_float32);
-        diopiCastDtype(ctx, outTemp, out);
-        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(inputTemp).addInput(mask).addInput(valueTemp).addOutput(outTemp).run();
-        diopiCastDtype(ctx, out, outTemp);
-    } else {
-        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(input).addInput(mask).addInput(valueTemp).addOutput(out).run();
-    }
+    // step2 call aclnnInplaceMaskedFillTensor on outAt
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceMaskedFillTensor, ctx, outAt, mask, value);
     return diopiSuccess;
 }
 
 diopiError_t diopiMaskedFillInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, diopiConstTensorHandle_t value) {
-    return diopiMaskedFill(ctx, input, input, mask, value);
+    AscendTensor inputAt(input);
+    if (input == nullptr || inputAt.numel() == 0) {
+        return diopiSuccess;
+    }
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceMaskedFillTensor, ctx, inputAt, mask, value);
 }
 
 diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask,
                                    const diopiScalar_t* value) {
-    int64_t numel = 0;
-    diopiGetTensorNumel(input, &numel);
-    if (0 == numel) {
+    AscendTensor inputAt(input);
+    AscendTensor outAt(out);
+    if (input == nullptr || inputAt.numel() == 0) {
         return diopiSuccess;
     }
 
-    diopiDtype_t inputDtype;
-    diopiGetTensorDtype(input, &inputDtype);
-    std::set<diopiDtype_t> typeSet{diopi_dtype_bool, diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_int8, diopi_dtype_int32, diopi_dtype_int64};
-    if (typeSet.find(inputDtype) == typeSet.end()) {
-        diopiTensorHandle_t inputTemp, outTemp;
-        makeTensorLike(ctx, &inputTemp, input, diopi_dtype_float32);
-        diopiCastDtype(ctx, inputTemp, input);
-        makeTensorLike(ctx, &outTemp, out, diopi_dtype_float32);
-        diopiCastDtype(ctx, outTemp, out);
-
-        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(inputTemp).addInput(mask).addConstInput(*value, diopi_dtype_float32).addOutput(outTemp).run();
-        diopiCastDtype(ctx, out, outTemp);
-    } else {
-        AclOpRunner<3, 1>("MaskedFill", ctx).addInput(input).addInput(mask).addConstInput(*value, inputDtype).addOutput(out).run();
+    // step1 copy inputAt to outAt
+    if (outAt.data() != inputAt.data()) {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, outAt, inputAt);
     }
-
+    // step2 call aclnnInplaceMaskedFillScalar on outAt
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceMaskedFillScalar, ctx, outAt, mask, value);
     return diopiSuccess;
 }
 
 diopiError_t diopiMaskedFillInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t mask, const diopiScalar_t* value) {
-    return diopiMaskedFillScalar(ctx, input, input, mask, value);
+    AscendTensor inputAt(input);
+    if (input == nullptr || inputAt.numel() <= 0) {
+        return diopiSuccess;
+    }
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceMaskedFillScalar, ctx, inputAt, mask, value);
+    return diopiSuccess;
 }
 
 }  // namespace ascend

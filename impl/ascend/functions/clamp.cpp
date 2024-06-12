@@ -6,8 +6,6 @@
 
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
-#include "../common/acloprunner.hpp"
-#include "../common/utils.hpp"
 
 namespace impl {
 namespace ascend {
