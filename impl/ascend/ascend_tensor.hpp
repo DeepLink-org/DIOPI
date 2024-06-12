@@ -60,6 +60,16 @@ namespace ascend {
         }                                                             \
     } while (0);
 
+#define ASCEND_CHECK_THROW(condition, ...)                                                        \
+    do {                                                                                          \
+        if (!(condition)) {                                                                       \
+            printf("[%s:%s:%d]: ", __FILE__, __FUNCTION__, __LINE__);                             \
+            printf(__VA_ARGS__);                                                                  \
+            printf("\n");                                                                         \
+            throw std::runtime_error(std::string("ascend device error:") + aclGetRecentErrMsg()); \
+        }                                                                                         \
+    } while (0);
+
 #define ASCEND_CHECK_NULLPTR_ABORT(ptr) ASCEND_CHECK_ABORT(ptr, "Variable is nullptr, pls check.")
 
 inline void error(const char* file, int lineNum, const char* funcName, const char* format, ...) {

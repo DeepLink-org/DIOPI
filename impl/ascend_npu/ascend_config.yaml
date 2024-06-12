@@ -1,6 +1,7 @@
 ascend:
 - diopiAbs
 - diopiAbsInp
+- diopiAdamW
 - diopiAdaptiveAvgPool2d
 - diopiAdaptiveAvgPool2dBackward
 - diopiAddcmul
@@ -34,6 +35,7 @@ ascend:
 - diopiBitwiseOrInpScalar
 - diopiBmm
 - diopiCastDtype
+- diopiCat
 - diopiClamp
 - diopiClampInp
 - diopiClampInpScalar
@@ -99,6 +101,8 @@ ascend:
 - diopiHardtanhBackward
 - diopiHardtanhInp
 - diopiIsNan
+- diopiIndexSelect
+- diopiIndexSelectBackward
 - diopiLayerNorm
 - diopiLayerNormBackward
 - diopiLeakyRelu
@@ -150,6 +154,7 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
+- diopiMultinomial
 - diopiMin
 - diopiMinAll
 - diopiMinimum
@@ -182,11 +187,20 @@ ascend:
 - diopiSigmoidInp
 - diopiOnes
 - diopiPermute
+- diopiPow
+- diopiPowInp
+- diopiPowInpTensor
+- diopiPowScalar
+- diopiPowTensor
 - diopiProd
 - diopiRemainder
 - diopiRemainderScalar
 - diopiRemainderTensor
 - diopiRepeat
+- diopiScatter
+- diopiScatterInp
+- diopiScatterScalar
+- diopiScatterInpScalar
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
@@ -205,6 +219,7 @@ ascend:
 - diopiSort
 - diopiSqrt
 - diopiSqrtInp
+- diopiStack
 - diopiTanh
 - diopiTanhBackward
 - diopiTanhInp
@@ -221,23 +236,19 @@ ascend:
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
-- diopiAdamW
-- diopiCat
 - diopiCopyInp
-- diopiStack
-- diopiMultinomial
 - diopiRotaryEmbedding
 - diopiIndexPut
 - diopiIndexPutInp
-- diopiIndexSelect
-- diopiIndexSelectBackward
 - diopiIndex
 - diopiIndexBackward
 - diopiDestIndexCopyKV
 - diopiTokenAttentionInference
 - diopiTokenSoftmaxReduceVInference
 - diopiApplyPenalty
+- diopiApplyPenaltyV2
 - diopiContextAttentionInference
+- diopiPromptFlashAttention
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiTensorDestructionHook
@@ -248,19 +259,10 @@ ascend_npu:
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
-- diopiScatter
-- diopiScatterInp
-- diopiScatterScalar
-- diopiScatterInpScalar
 - diopiUpsampleLinear
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
 - diopiUpsampleNearestBackward
-- diopiPow
-- diopiPowInp
-- diopiPowInpTensor
-- diopiPowScalar
-- diopiPowTensor
 - diopiFlashAttention
 - diopiFlashAttentionBackward
 - diopiFlashAttentionV2
@@ -272,3 +274,6 @@ ascend_npu:
 - diopiAttentionBackward
 - diopiAttentionVarLen
 - diopiAttentionVarLenBackward
+- diopiPagedAttention
+- diopiRotaryEmbeddingV2
+- diopiMatmulAllReduce
