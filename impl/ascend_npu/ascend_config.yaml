@@ -238,8 +238,6 @@ ascend_npu:
 - diopiCopyInp
 - diopiMultinomial
 - diopiRotaryEmbedding
-- diopiIndexSelect
-- diopiIndexSelectBackward
 - diopiIndex
 - diopiDestIndexCopyKV
 - diopiTokenAttentionInference
