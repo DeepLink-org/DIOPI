@@ -306,6 +306,7 @@ auto callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
 
     auto ret = opApiFunc(workspace.addr(), workspaceSize, executor, stream);
     ASCEND_CHECK_THROW(ret == ACL_SUCCESS, "[%s] failed. aclnnStatus is %d.", api, ret);
+    return convertedParams;
 }
 
 #define DIOPI_ASCEND_CALL_ACLNN(api, ctx, ...)                                                       \
