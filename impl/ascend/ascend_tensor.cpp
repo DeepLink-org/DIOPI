@@ -239,6 +239,5 @@ aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* s
     }
     return ACL_FORMAT_ND;
 }
-
 }  // namespace ascend
 }  // namespace impl

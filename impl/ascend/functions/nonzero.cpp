@@ -4,40 +4,41 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 
-std::vector<int64_t> nonzeroNpuMaxOutputSize(diopiConstTensorHandle_t input) {
-    int64_t inputNumEl;
-    diopiGetTensorNumel(input, &inputNumEl);
-    diopiSize_t inputSize;
-    diopiGetTensorShape(input, &inputSize);
-    int64_t inputDim = inputSize.len;
-    std::vector<int64_t> maxOutputSize({inputNumEl, inputDim});
-    return maxOutputSize;
-}
-
 diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input) {
-    auto outputSizeVec = nonzeroNpuMaxOutputSize(input);
-    diopiSize_t outputSize = vectorToDiopiSize(outputSizeVec);
+    // In the case where all elements of the input are non-zero, calculate the maximum out size.
+    AscendTensor inputAt(input);
+    int64_t maxOutSizeData[2]{inputAt.numel(), inputAt.dim()};
+    const int64_t outLen = 2;
+    diopiSize_t maxOutSize = {maxOutSizeData, outLen};
 
-    diopiTensorHandle_t output;
-    diopiRequireTensor(ctx, &output, &outputSize, nullptr, diopi_dtype_int64, diopi_device);
+    // build outTmp with maxOutSize and call aclnnNonZero to update outTmp
+    diopiTensorHandle_t outTmp;
+    diopiRequireTensor(ctx, &outTmp, &maxOutSize, nullptr, diopi_dtype_int64, diopi_device);
+    auto params = DIOPI_ASECND_CALL_ACLNN_SYNC(aclnnNonzero, ctx, input, outTmp);
 
-    AscendTensor inputTensor(input);
-    if (diopi_dtype_uint8 == inputTensor.dtype() && inputTensor.shape().size() > 4) {
-        // Ascend kernel not support input dtype is uint8 when input dim more than 4.
-        diopiTensorHandle_t inputCopy;
-        makeTensorLike(ctx, &inputCopy, input, diopi_dtype_int8);
-        diopiCastDtype(ctx, inputCopy, input);
-        AclOpRunner<1, 1>("NonZero", ctx).addInput(inputCopy).setAttr("transpose", false).addSyncOutput(&output, ACL_FORMAT_NCHW).run();
-    } else {
-        AclOpRunner<1, 1>("NonZero", ctx).addInput(input).setAttr("transpose", false).addSyncOutput(&output, ACL_FORMAT_NCHW).run();
-    }
+    // get the true out Shape
+    int64_t* dims = nullptr;
+    uint64_t dimsNum = 0;
+    using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** viewDims, uint64_t* viewDimsNum);
+    aclGetViewShapeFunc aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(impl::ascend::aclnn_adaptor::getOpApiFuncAddr("aclGetViewShape"));
+    aclGetViewShape(std::get<1>(params.params()), &dims, &dimsNum);
+    std::vector<int64_t> outShape(dims, dims + dimsNum);
+    diopiSize_t outSize = {outShape.data(), static_cast<int64_t>(dimsNum)};
 
-    *out = output;
+    // copy outTmp to out
+    diopiRequireTensor(ctx, out, &outSize, nullptr, diopi_dtype_int64, diopi_device);
+    AscendTensor outTmpAt(outTmp);
+    AscendTensor outAt(*out);
+    outTmpAt.view(outShape);
+    outAt.view(outShape);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, outAt, outTmpAt);
+
     return diopiSuccess;
 }
 }  // namespace ascend
