@@ -237,6 +237,7 @@ aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* s
     } else if (dim == 3) {
         return ACL_FORMAT_NCL;
     }
+    return ACL_FORMAT_ND;
 }
 }  // namespace ascend
 }  // namespace impl

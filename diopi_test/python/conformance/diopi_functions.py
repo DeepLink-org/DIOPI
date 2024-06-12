@@ -4354,7 +4354,7 @@ def interpolate(
     input, size=None, scale_factor=None, mode="nearest", align_corners=False
 ) -> Tensor:
     assert (
-        size is None or scale_factor is None
+        (size is None) != (scale_factor is None)
     ), "only one of size or scale_factor should be defined"
     sizeI = list(input.size().data)
     if size is not None:
