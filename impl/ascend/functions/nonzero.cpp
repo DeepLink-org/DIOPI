@@ -14,7 +14,8 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     // In the case where all elements of the input are non-zero, calculate the maximum out size.
     AscendTensor inputAt(input);
     int64_t maxOutSizeData[2]{inputAt.numel(), inputAt.dim()};
-    diopiSize_t maxOutSize = {maxOutSizeData, 2};
+    const int64_t outLen = 2;
+    diopiSize_t maxOutSize = {maxOutSizeData, outLen};
 
     // build outTmp with maxOutSize and call aclnnNonZero to update outTmp
     diopiTensorHandle_t outTmp;
