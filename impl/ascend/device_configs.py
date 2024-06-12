@@ -1435,20 +1435,6 @@ device_configs = {
         skip_all = True
     ),
 
-    'adam': dict(
-        name=['adamw'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['param'],
-                    # float64 not supported yet on ascend
-                    # temporarily skip all test cases due to software stack version
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-
     # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend
     'flash_attention_varlen': dict(
         name=['flash_attention_varlen'],
