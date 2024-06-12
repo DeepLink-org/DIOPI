@@ -8305,6 +8305,36 @@ diopi_configs = {
         ),
     ),
 
+    'rotary_emb_v2': dict(
+        name=['rotary_emb_v2'],
+        interface=['CustomizedTest'],
+        dtype=[np.float32, np.float16],
+        para=dict(
+            dim=[128,]
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['query'],
+                    "shape": ((8, 4096),),
+                },
+                {
+                    "ins": ['key'],
+                    "shape": ((8, 4096),),
+                },
+                {
+                    "ins": ['cos'],
+                    "shape": ((8, 1, 128),),
+                },
+                {
+                    "ins": ['sin'],
+                    "shape": ((8, 1, 128),),
+                },
+            ],
+        ),
+    ),
+
     'rms_norm_default': dict(
         name=['rms_norm'],
         atol=1e-4,
@@ -8549,6 +8579,134 @@ diopi_configs = {
                 },
             ]
         ),
+    ),
+
+    'prompt_flash_attention': dict(
+        name=['prompt_flash_attention'],
+        interface=['CustomizedTest'],
+        atol=1e-2,
+        rtol=1e-2,
+        para=dict(
+            maxInputLen=[2,],
+            actualSeqLengths=[[2,2],],
+            numHeads=[32,],
+            numKeyValueHeads=[32,],
+            dim=[128,],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["query"],
+                    "shape": ((4, 4096),),
+                    "dtype": [np.float16,],
+                },
+                {
+                    "ins": ["key"],
+                    "shape": ((4, 4096),),
+                    "dtype": [np.float16,],
+                },
+                {
+                    "ins": ["value"],
+                    "shape": ((4, 4096),),
+                    "dtype": [np.float16,],
+                },
+                {
+                    "ins": ["attenMask"],
+                    "value": ([[[False, True], 
+                              [False, False]], 
+                              [[False, True],
+                              [False, False]]],),
+                    "dtype": [np.bool_,],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+            ]
+        ),
+    ),
+
+    'paged_attention': dict(
+        name=['paged_attention'],
+        interface=['CustomizedTest'],
+        atol=1e-2,
+        rtol=1e-2,
+        para=dict(
+            actualSeqLengths=[[150,],],
+            numHeads=[32,],
+            numKeyValueHeads=[32,],
+            dim=[128,],
+            blockSize=[128,],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["query"],
+                    "shape": ((1, 4096),),
+                    "dtype": [np.float16,],
+                },
+                {
+                    "ins": ["key"],
+                    "shape": ((1026, 4096),),
+                    "dtype": [np.float16,],
+                },
+                {
+                    "ins": ["value"],
+                    "shape": ((1026, 4096),),
+                    "dtype": [np.float16,],
+                },
+                {
+                    "ins": ["blockTable"],
+                    "value": ([[0, 1],],),
+                    "dtype": [np.int32,],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+            ]
+        ),
+    ),
+
+    'apply_penalty_v2': dict(
+        name=['apply_penalty_v2'],
+        interface=['CustomizedTest'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['logits'],
+                    "value": ([[0.1, 0.5, 0.4, 0.3, 0.5],
+                              [0.2, 0.4, 0.0, 0.0, 0.0],
+                              [0.3, 0.4, 0.5, 0.3, 0.0]],),
+                    "dtype": [np.float16, np.float32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["presence_penalty"],
+                    "value": ([0.1, 0.1, 0.1, 0.1, 0.8, 0.8, 0.8, 0.8, 1.0, 1.0, 1.0],),
+                    "dtype": [np.float16, np.float32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["frequency_penalty"],
+                    "value": ([0.1, 0.1, 0.1, 0.1, 0.8, 0.8, 0.8, 0.8, 1.0, 1.0, 1.0],),
+                    "dtype": [np.float16, np.float32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["repetition_penalty"],
+                    "value": ([0.1, 0.1, 0.1, 0.1, 0.8, 0.8, 0.8, 0.8, 1.0, 1.0, 1.0],),
+                    "dtype": [np.float16, np.float32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["p_token_ids"],
+                    "value": ([0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11],),
+                    "dtype": [np.int32, np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+                {
+                    "ins": ["p_token_counts"],
+                    "value": ([3, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2],),
+                    "dtype": [np.int32, np.int32],
+                    "gen_policy": "gen_tensor_by_value"
+                },
+            ]
+        )
     ),
 
     'token_attention': dict(
@@ -8974,6 +9132,170 @@ diopi_configs = {
         ),
     ),
 
+    'attention': dict(
+        name=['attention'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        atol_half=5e-2,
+        rtol_half=5e-2,
+        para=dict(
+            dropout_p=[0, 0, 0, 0,
+                       0, 0, 0, 0,
+                       0, 0, 0, 0,
+                       0, 0, 0, 0,
+                       0, 0, 0, 0,
+                       0, 0, 0, 0],
+            is_causal=[True, False, True, False,
+                       True, False, True, True,
+                       True, True, True, False,
+                       False, True, False, True,
+                       True, False, True, False,
+                       False, True, False, True,],
+            scale=[0.0883, None, 0.125, None,
+                   0.0883, None, 0.125, 0.0625,
+                   0.0883, 0.0221, None, 0.0625,
+                   None, None, None, None,
+                   None, None, None, None,
+                   None, None, None, None],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.rand',
+            args=[
+                {
+                    "ins": ['query'],
+                    "shape": ((1, 64, 64, 128), (1, 64, 32, 128), (1, 32, 64, 512), (8, 128, 32, 256),
+                              (2, 64, 128, 128), (4, 16, 256, 128), (6, 32, 32, 128), (8, 8, 256, 64),
+                              (2, 128, 64, 128), (4, 512, 128, 64), (6, 32, 128, 256), (8, 1024, 8, 64),
+                              (2, 64, 128, 128), (4, 16, 256, 128), (6, 128, 32, 128), (8, 8, 256, 64),
+                              (64, 8, 8, 16), (8, 32, 256, 512), (16, 8, 256, 128), (8, 16, 256, 64),
+                              (1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64),),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['key'],
+                    "shape": ((1, 64, 64, 128), (1, 64, 32, 128), (1, 32, 64, 512), (8, 128, 32, 256),
+                              (2, 64, 128, 128), (4, 16, 256, 128), (6, 32, 32, 128), (8, 8, 256, 64),
+                              (2, 128, 64, 128), (4, 512, 128, 64), (6, 32, 128, 256), (8, 512, 8, 64),
+                              (2, 64, 128, 128), (4, 16, 256, 128), (6, 32, 32, 128), (8, 8, 256, 64),
+                              (64, 8, 8, 16), (8, 32, 256, 512), (16, 8, 256, 128), (8, 16, 256, 64),
+                              (1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64),),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['value'],
+                    "shape": ((1, 64, 64, 128), (1, 64, 32, 128), (1, 32, 64, 512), (8, 128, 32, 256),
+                              (2, 64, 128, 128), (4, 16, 256, 128), (6, 32, 32, 128), (8, 8, 256, 64),
+                              (2, 128, 64, 128), (4, 512, 128, 64), (6, 32, 128, 256), (8, 512, 8, 64),
+                              (2, 64, 128, 128), (4, 16, 256, 128), (6, 32, 32, 128), (8, 8, 256, 64),
+                              (64, 8, 8, 16), (8, 32, 256, 512), (16, 8, 256, 128), (8, 16, 256, 64),
+                              (1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64),),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['attn_bias'],
+                    "shape": (None, None, None, (8, 32, 128, 128),
+                              None, None, None, None,
+                               None, None, None, None,
+                              None, None, None, None,
+                              None, None, None, None,
+                               None, None, None, None,),
+                    "requires_grad": [False],
+                },
+            ],
+        ),
+    ),
+
+    'attention_varlen': dict(
+        name=['attention_varlen'],
+        interface=['CustomizedTest'],
+        dtype=[np.float16],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            dropout_p=[0, 0, 0, 0,
+                       0, 0, 0, 0,
+                       0, 0, 0, 0,
+                       0, 0, 0, 0,
+                       0, 0, 0, 0],
+            is_causal=[False, True, False, True,
+                       True, False, True, False,
+                       True, False, True, True,
+                       True, True, False, True,
+                       False, True, False, False],
+            scale=[None, 0.0883, None, 0.125,
+                   None, None, None, None,
+                   None, None, None, None,
+                   None, None, None, None,
+                   None, None, None, None],
+            max_seqlen_q=[32, 32, 128, 64,
+                          32, 32, 128, 64,
+                          384, 384, 64, 53,
+                          400, 200, 64, 131,
+                          1024, 1024, 256, 72],
+            max_seqlen_kv=[32, 32, 128, 64,
+                           32, 32, 128, 64,
+                           384, 384, 64, 53,
+                           400, 200, 64, 131,
+                           1024, 1024, 256, 72],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['query'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64),
+                              (32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64),
+                              (1098, 64, 256), (128, 64, 128), (128, 16, 128), (128, 8, 32),
+                              (2048, 32, 128), (2048, 32, 8), (256, 256, 128), (512, 256, 128),
+                              (4096, 128, 64), (4096, 128, 64), (512, 128, 8), (256, 128, 128),),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['key'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64),
+                              (32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64),
+                              (1098, 64, 256), (128, 64, 128), (128, 16, 128), (128, 8, 32),
+                              (2048, 32, 128), (2048, 32, 8), (256, 256, 128), (512, 256, 128),
+                              (4096, 128, 64), (4096, 128, 64), (512, 128, 8), (256, 128, 128),),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['value'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64),
+                              (32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64),
+                              (1098, 64, 256), (128, 64, 128), (128, 16, 128), (128, 8, 32),
+                              (2048, 32, 128), (2048, 32, 8), (256, 256, 128), (512, 256, 128),
+                              (4096, 128, 64), (4096, 128, 64), (512, 128, 8), (256, 128, 128),),
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['cu_seqlens_q'],
+                    "value": ([0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128],
+                              [0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128],
+                              [0, 200, 352, 600, 616, 1000, 1098], [0, 16, 48, 64, 128], [0, 16, 48, 64, 128], [0, 16, 48, 64, 75, 128],
+                              [0, 100, 300, 600, 1000, 1250, 1490, 1800, 1900, 2048], [0, 100, 150, 300, 500, 600, 800, 1000, 1150, 1250, 1300, 1490, 1600, 1800, 1900, 2048], [0, 32, 64, 96, 128, 160, 192, 256], [0, 2, 7, 19, 32, 64, 96, 128, 256, 387, 512],
+                              [0, 1024, 2048, 3072, 4000, 4096], [0, 1024, 2048, 3072, 4096], [0, 26, 52, 79, 112, 128, 256, 512], [0, 11, 32, 90, 128, 200, 256],),
+                    "gen_policy": "gen_tensor_by_value",
+                    "dtype": [np.int64],
+                    "requires_grad": [False],
+                },
+                {
+                    "ins": ['cu_seqlens_kv'],
+                    "value": ([0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128],
+                              [0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128],
+                              [0, 200, 352, 600, 616, 1000, 1098], [0, 16, 48, 64, 128], [0, 16, 48, 64, 128], [0, 16, 48, 64, 75, 128],
+                              [0, 100, 300, 600, 1000, 1250, 1490, 1800, 1900, 2048], [0, 100, 150, 300, 500, 600, 800, 1000, 1150, 1250, 1300, 1490, 1600, 1800, 1900, 2048], [0, 32, 64, 96, 128, 160, 192, 256], [0, 2, 7, 19, 32, 64, 96, 128, 256, 387, 512],
+                              [0, 1024, 2048, 3072, 4000, 4096], [0, 1024, 2048, 3072, 4096], [0, 26, 52, 79, 112, 128, 256, 512], [0, 11, 32, 90, 128, 200, 256],),
+                    "dtype": [np.int64],
+                    "gen_policy": "gen_tensor_by_value",
+                    "requires_grad": [False],
+                },
+            ],
+        ),
+    ),
+
     'flash_attention_varlen': dict(
         name=['flash_attention_varlen'],
         interface=['CustomizedTest'],
@@ -8982,28 +9304,28 @@ diopi_configs = {
         atol=1e-3,
         rtol=1e-4,
         para=dict(
-            p_dropout=[0, 0, 0, 0],
-            is_causal=[True, True, False, True],
-            softmax_scale=[None, 0.0883, None, 0.125],
-            max_seqlen_q=[32, 32, 128, 64],
-            max_seqlen_kv=[32, 32, 128, 64],
-            cu_seqlens_q=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128]],
-            cu_seqlens_kv=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128]],
+            p_dropout=[0, 0, 0, 0, 0],
+            is_causal=[True, True, False, True, False],
+            softmax_scale=[None, 0.0883, None, 0.125, None],
+            max_seqlen_q=[32, 32, 128, 64, 256],
+            max_seqlen_kv=[32, 32, 128, 64, 256],
+            cu_seqlens_q=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128], [0, 2, 7, 19, 32, 64, 96, 128, 256, 512]],
+            cu_seqlens_kv=[[0, 32], [0, 16, 48, 64], [0, 32, 64, 128, 256], [0, 16, 48, 64, 128], [0, 2, 7, 19, 32, 64, 96, 128, 256, 512]],
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
             args=[
                 {
                     "ins": ['q'],
-                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64), (512, 8, 64)),
                 },
                 {
                     "ins": ['k'],
-                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64), (512, 8, 64)),
                 },
                 {
                     "ins": ['v'],
-                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64)),
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64), (512, 8, 64)),
                 },
             ],
         ),

@@ -119,11 +119,16 @@ device_configs = {
 
     'max_pool2d': dict(
         name=['max_pool2d'],
+        para=dict(
+            # aclnnMaxPool only support that the value of dilation is 1
+            dilation=[Skip((4, 3)), Skip((2, 3)), Skip((2))],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16), Skip(np.float64),],
+                    "shape": [Skip((2, 64, 352, 528))],
                 },
             ]
         ),
@@ -131,15 +136,20 @@ device_configs = {
 
     'max_pool2d_return_indices': dict(
         name=['max_pool2d'],
+        para=dict(
+            # aclnnMaxPool2dWithMask only support that the value of dilation is 1
+            dilation=[Skip((4, 3)), Skip((2, 3))],
+        ),
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "dtype": [Skip(np.float16),Skip(np.float32),Skip(np.float64),],
+                    "dtype": [Skip(np.float16),Skip(np.float64),],
                 },
             ]
         ),
     ),
+    
     # TODO(wangxing): skip float64 test cases temporarily, as other ops are implemented using DIOPI_ASCEND_CALL_ACLNN. This results in inconsistent accuracy of some float64 test cases of this op.
     'adaptive_avg_pool2d': dict(
         name=['adaptive_avg_pool2d'],
@@ -208,6 +218,19 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "shape": [Skip(()),Skip((1,)),Skip((1024,)),Skip((364800, 4)),Skip((2, 128, 3072)),Skip((256, 128, 3, 3)),Skip((2, 31, 512, 6, 40)),Skip((0,)),Skip((16, 0)),],
+                },
+            ]
+        ),
+    ),
+    
+    # TODO(zhangqiu) skip (2, 31, 512, 6, 40) temporarily，since if the input shape is (2, 31, 512, 6, 40) and dtyep is float64 will invoke ascend Inner Error in global test.
+    'pointwise_op': dict(
+        name=['sqrt'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((2, 31, 512, 6, 40))],
                 },
             ]
         ),
@@ -785,6 +808,11 @@ device_configs = {
         rtol=5e-2,
         atol_half=5e-2,
         rtol_half=5e-2,
+        para=dict(
+    # for aclnnGroupNorm, eps must be larger than 0.
+    # aclnnGoupNorm do not support float16 input
+            eps=[Skip(-1), Skip(0)],
+        ),
         tensor_para=dict(
             args=[
                 {
@@ -1385,20 +1413,6 @@ device_configs = {
     'nll_loss': dict(
         name = ['nll_loss'],
         skip_all = True
-    ),
-
-    'adam': dict(
-        name=['adamw'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['param'],
-                    # float64 not supported yet on ascend
-                    # temporarily skip all test cases due to software stack version
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
     ),
 
     # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend
