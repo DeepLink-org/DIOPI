@@ -154,6 +154,7 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
+- diopiMultinomial
 - diopiMin
 - diopiMinAll
 - diopiMinimum
@@ -235,9 +236,7 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiNonzero
-- diopiCat
 - diopiCopyInp
-- diopiMultinomial
 - diopiRotaryEmbedding
 - diopiIndexPut
 - diopiIndexPutInp
