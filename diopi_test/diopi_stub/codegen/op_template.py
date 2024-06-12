@@ -49,3 +49,9 @@ for (int i = 0; i < ${param_num}; ++i)
     ${param}V[i] = ${param}[i].cast<PtrWrapper<diopiTensor>>().get();
 auto ${param}DIOPI = ${param}V.data();
 """)
+
+    var_len_array_out_template = CodeTemplate("""\
+for (int i = 0; i < ${param_num}; ++i) {
+    ${param}[i] = ${param}DIOPI[i];
+}
+""")
