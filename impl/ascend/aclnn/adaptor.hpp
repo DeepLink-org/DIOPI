@@ -56,7 +56,7 @@ inline void* getOpApiFuncAddr(const char* apiName) {
     return getOpApiFuncAddrInLib(opApiHandler, kOpApiLibName, apiName);
 }
 
-inline aclFormat getStorageFormat(int64_t dimNum) {
+inline aclFormat storageFormatByDimNum(int64_t dimNum) {
     aclFormat format = ACL_FORMAT_ND;
     switch (dimNum) {
         case 3:
@@ -71,6 +71,7 @@ inline aclFormat getStorageFormat(int64_t dimNum) {
         default:
             format = ACL_FORMAT_ND;
     }
+    return format;
 }
 
 inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
@@ -80,7 +81,7 @@ inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
 
     void* storagePtr = nullptr;
     diopiGetTensorStoragePtr(input.tensorHandle(), &storagePtr);
-    auto format = getStorageFormat(input.dim());
+    auto format = storageFormatByDimNum(input.dim());
 
     return ::aclCreateTensor(shape.data(),
                              shape.size(),
@@ -117,7 +118,7 @@ inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor
     diopiGetTensorStoragePtr(tensor, &storagePtr);
 
     auto type = diopiDtypeToAclDataType(dtype);
-    auto format = getStorageFormat(shape.len);
+    auto format = storageFormatByDimNum(shape.len);
     auto storageSize = static_cast<int64_t>(storageNbytes / elemsize);
 
     return ::aclCreateTensor(shape.data, shape.len, type, stride.data, storageOffset, format, &storageSize, 1, const_cast<void*>(storagePtr));
