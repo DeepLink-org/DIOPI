@@ -156,6 +156,7 @@ ascend:
 - diopiMulInp
 - diopiMulInpScalar
 - diopiMulScalar
+- diopiMultinomial
 - diopiMin
 - diopiMinAll
 - diopiMinimum
@@ -168,6 +169,7 @@ ascend:
 - diopiNormalInp
 - diopiNeg
 - diopiNegInp
+- diopiNonzero
 - diopiNormalScalarTensor
 - diopiNormalTensor
 - diopiNormalTensorScalar
@@ -197,6 +199,10 @@ ascend:
 - diopiRemainderScalar
 - diopiRemainderTensor
 - diopiRepeat
+- diopiScatter
+- diopiScatterInp
+- diopiScatterScalar
+- diopiScatterInpScalar
 - diopiSilu
 - diopiSiluInp
 - diopiSiluBackward
@@ -228,14 +234,15 @@ ascend:
 - diopiTriuInp
 - diopiTopk
 - diopiUniformInp
+- diopiUpsampleLinear
+- diopiUpsampleLinearBackward
+- diopiUpsampleNearest
+- diopiUpsampleNearestBackward
 - diopiWhere
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
-- diopiNonzero
-- diopiCat
 - diopiCopyInp
-- diopiMultinomial
 - diopiRotaryEmbedding
 - diopiIndexPut
 - diopiIndexPutInp
@@ -256,14 +263,6 @@ ascend_npu:
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
-- diopiScatter
-- diopiScatterInp
-- diopiScatterScalar
-- diopiScatterInpScalar
-- diopiUpsampleLinear
-- diopiUpsampleLinearBackward
-- diopiUpsampleNearest
-- diopiUpsampleNearestBackward
 - diopiFlashAttention
 - diopiFlashAttentionBackward
 - diopiFlashAttentionV2

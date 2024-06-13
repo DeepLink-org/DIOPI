@@ -14,6 +14,7 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
     AscendTensor inputAt(input);
     AscendTensor maskAt(mask);
 
+    // handle the corner cases
     if (input == nullptr || inputAt.numel() == 0 || mask == nullptr || maskAt.numel() == 0) {
         int64_t zero = 0;
         diopiSize_t emptyShape{&zero, 0};
@@ -21,7 +22,7 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
         return diopiSuccess;
     }
 
-    // calculate the broadcastShape of inputAt and maskAt and the number of elements
+    // calculate the broadcastShape of inputAt and maskAt, and the number of elements
     if (inputAt.dim() == 0) {
         inputAt.unsqueeze(0);
     }
@@ -47,49 +48,59 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
         broadcastNumel *= broadcastShapeData[i];
     }
 
-    diopiTensorHandle_t outTmp = nullptr;
-    diopiTensorHandle_t nonZero = nullptr;
-    diopiTensorHandle_t maskBroadcast = nullptr;
-    diopiSize_t broadcastShape{broadcastShapeData, broadcastDim};
-
     // broadcast input and mask
-    maskAt.view(std::vector<int64_t>(broadcastShape.data, broadcastShape.data + broadcastDim));
-    inputAt.view(std::vector<int64_t>(broadcastShape.data, broadcastShape.data + broadcastDim));
+    diopiSize_t broadcastShape{broadcastShapeData, broadcastDim};
+    diopiSize_t outShapeTmp{&broadcastNumel, 1};
+    diopiTensorHandle_t expandInput = nullptr;
+    diopiTensorHandle_t expandMask = nullptr;
 
-    diopiRequireTensor(ctx, &outTmp, &broadcastShape, nullptr, inputAt.dtype(), diopi_device);
-    AscendTensor outTmpAt(outTmp);
+    diopiRequireTensor(ctx, &expandInput, &broadcastShape, nullptr, inputAt.dtype(), diopi_device);
+    diopiRequireTensor(ctx, &expandMask, &broadcastShape, nullptr, maskAt.dtype(), diopi_device);
 
-    auto params = DIOPI_ASECND_CALL_ACLNN_SYNC(aclnnMaskedSelect, ctx, inputAt, maskAt, outTmp);
-    int64_t *viewDims = nullptr;
+    DIOPI_ASCEND_CALL_ACLNN(aclnnExpand, ctx, input, broadcastShape, expandInput);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnExpand, ctx, mask, broadcastShape, expandMask);
+
+    AscendTensor expandInputAt(expandInput);
+    AscendTensor expandMaskAt(expandMask);
+
+    // call aclnnMaskedSelect to do the calculation
+    diopiTensorHandle_t outTmp = nullptr;
+    diopiRequireTensor(ctx, &outTmp, &outShapeTmp, nullptr, inputAt.dtype(), diopi_device);
+    auto params = DIOPI_ASECND_CALL_ACLNN_SYNC(aclnnMaskedSelect, ctx, expandInputAt, expandMaskAt, outTmp);
+
+    // get true outShape by aclGetViewShape
+    int64_t* viewDims = nullptr;
     uint64_t viewDimNum = 0;
+    using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** viewDims, uint64_t* viewDimsNum);
+    aclGetViewShapeFunc aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(impl::ascend::aclnn_adaptor::getOpApiFuncAddr("aclGetViewShape"));
     int ret = aclGetViewShape(std::get<2>(params.params()), &viewDims, &viewDimNum);
     ASCEND_CHECK_ABORT(ret == 0, "aclGetViewShape failed");
-    std::vector<int64_t> outputShapeSize;
-    for (uint64_t i = 0; i < viewDimNum; i++) {
-        outputShapeSize.push_back(viewDims[i]);
-    }
+    diopiSize_t outShape{viewDims, static_cast<int64_t>(viewDimNum)};
 
-    outTmpAt.view(outputShapeSize);
-    *out = outTmp;
-    delete viewDims;
+    // require out tensor from true outShape
+    diopiRequireTensor(ctx, out, &outShape, nullptr, inputAt.dtype(), diopi_device);
 
+    // copy outTmp to out
+    AscendTensor outAt(*out);
+    AscendTensor outTmpAt(outTmp);
+    outTmpAt.view({outShape.data, outShape.data + outShape.len});
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, outAt, outTmpAt);
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput,
+DIOPI_API diopiError_t diopiMaskedSelectBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradout,
                                                  diopiConstTensorHandle_t input, diopiConstTensorHandle_t mask) {
     AscendTensor inputAt(input);
     AscendTensor maskAt(mask);
     AscendTensor gradInputAt(gradInput);
-    AscendTensor gradOutputAt(gradOutput);
+    AscendTensor gradoutAt(gradout);
 
     if (input == nullptr || inputAt.numel() == 0 || mask == nullptr || maskAt.numel() == 0) {
         return diopiSuccess;
     }
 
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, gradInput);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceMaskedScatter, ctx, gradInput, maskAt, gradOutputAt);
-
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceMaskedScatter, ctx, gradInput, maskAt, gradoutAt);
     return diopiSuccess;
 }
 }  // namespace ascend
