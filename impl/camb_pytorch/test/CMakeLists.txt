@@ -24,9 +24,9 @@ add_library(diopirt SHARED ${RUNTIME_SRC})
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 target_link_libraries(diopirt ${DEVICEIMPL})
 
-set(FUNCTION_SAVE_PATH "${DIOPI_IMPL_DIR}/../diopi_test/diopi_stub/csrc")
+set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/diopi_stub/csrc")
 
-set(TEST_GEN_PATH "${DIOPI_IMPL_DIR}/../diopi_test/diopi_stub/codegen")
+set(TEST_GEN_PATH "${DIOPI_TEST_DIR}/diopi_stub/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=torch --use_adaptor=${USE_ADAPTOR})
 add_custom_target(functions_copy ALL
@@ -47,8 +47,8 @@ if(${USE_ADAPTOR} STREQUAL "true")
 endif()
 
 
-file(MAKE_DIRECTORY ${DIOPI_IMPL_DIR}/../diopi_test/python)
+file(MAKE_DIRECTORY ${DIOPI_TEST_DIR}/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${DIOPI_IMPL_DIR}/../diopi_test/python/diopilib
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${DIOPI_IMPL_DIR}/../diopi_test/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${DIOPI_TEST_DIR}/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${DIOPI_TEST_DIR}/python/diopilib
     DEPENDS ${DIOPIFUNCTIONS} ${DIOPIRT})

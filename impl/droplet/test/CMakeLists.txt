@@ -17,7 +17,7 @@ find_program(DROPLET_CLANG_EXECUTABLE
     HINTS ${DROPLET_INSTALL}/bin
 )
 
-set(DIOPI_TEST_DIR "${DIOPI_IMPL_DIR}/../diopi_test")
+set(DIOPI_TEST_DIR "${DIOPI_TEST_DIR}")
 
 include_directories(SYSTEM "${DROPLET_INSTALL}/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
@@ -77,8 +77,8 @@ if(${USE_ADAPTOR} STREQUAL "true")
 endif()
 
 
-file(MAKE_DIRECTORY ${DIOPI_IMPL_DIR}/../diopi_test/python)
+file(MAKE_DIRECTORY ${DIOPI_TEST_DIR}/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_FUNCTIONS}> ${DIOPI_IMPL_DIR}/../diopi_test/python/diopilib
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_RT}> ${DIOPI_IMPL_DIR}/../diopi_test/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_FUNCTIONS}> ${DIOPI_TEST_DIR}/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPI_EXPORT_RT}> ${DIOPI_TEST_DIR}/python/diopilib
     DEPENDS ${DIOPI_EXPORT_FUNCTIONS} ${DIOPI_EXPORT_RT})

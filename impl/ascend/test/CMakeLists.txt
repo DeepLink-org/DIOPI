@@ -4,11 +4,11 @@ set(DIOPIFUNCTIONS export_functions)
 add_compile_options(-fno-elide-constructors)
 add_subdirectory(${DIOPI_IMPL_DIR}/third_party/pybind11 build)
 
-include_directories(SYSTEM "${DIOPI_IMPL_DIR}/../diopi_test/diopi_stub/include")
+include_directories(SYSTEM "${DIOPI_TEST_DIR}/diopi_stub/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
 
-set(FUNCTION_SAVE_PATH "${DIOPI_IMPL_DIR}/../diopi_test/diopi_stub/csrc")
-set(TEST_GEN_PATH "${DIOPI_IMPL_DIR}/../diopi_test/diopi_stub/codegen")
+set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/diopi_stub/csrc")
+set(TEST_GEN_PATH "${DIOPI_TEST_DIR}/diopi_stub/codegen")
 
 set(RUNTIME_SRC
     ${FUNCTION_SAVE_PATH}/litert.cpp
@@ -45,8 +45,8 @@ if(${USE_ADAPTOR} STREQUAL "true")
 endif()
 
 
-file(MAKE_DIRECTORY ${DIOPI_IMPL_DIR}/../diopi_test/python)
+file(MAKE_DIRECTORY ${DIOPI_TEST_DIR}/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${DIOPI_IMPL_DIR}/../diopi_test/python/diopilib
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${EXPORT_RT}> ${DIOPI_IMPL_DIR}/../diopi_test/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${DIOPI_TEST_DIR}/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${EXPORT_RT}> ${DIOPI_TEST_DIR}/python/diopilib
     DEPENDS ${DIOPIFUNCTIONS} ${EXPORT_RT})

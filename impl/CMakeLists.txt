@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(diopi_impl)
 
-# Determine if fmt is built as a subproject (using add_subdirectory)
-# or if it is the master project.
-set(MASTER_PROJECT OFF)
-if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  set(MASTER_PROJECT ON)
-endif ()
-
 option(TEST "Whether to compile DIOPI with runtime" OFF)
 option(DYLOAD "Whether to load so in runtime by dlopen" OFF)
 
@@ -53,14 +46,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAG}")
 
 set(DEVICEIMPL diopi_impl)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-if(NOT MASTER_PROJECT)
-    if(DEFINED DIOPI_IMPL_TARGET)
-        set(DEVICEIMPL ${DIOPI_IMPL_TARGET})
-    endif()
-    if(DEFINED DIOPI_IMPL_LIB_DIR)
-        set(LIBRARY_OUTPUT_PATH ${DIOPI_IMPL_LIB_DIR})
-    endif()
-endif()
 
 list(APPEND IMPL_CUDA "CUDA" "cuda")
 list(APPEND IMPL_TORCH "TORCH" "LIBTORCH" "ATEN" "PYTORCH" "torch" "libtorch" "aten" "pytorch" "PyTorch")
