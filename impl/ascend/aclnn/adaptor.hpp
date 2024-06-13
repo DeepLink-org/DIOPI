@@ -88,7 +88,7 @@ inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
                              input.getAclDataType(),
                              stride.data(),
                              input.storageOffset(),
-                             format,  // input.getAclDataFormat(),  // TODO(lljbash): op_plugin assume non-channel-last, why?
+                             format,
                              &storageSize,
                              /*storageDimsNum=*/1,
                              const_cast<void*>(storagePtr));
