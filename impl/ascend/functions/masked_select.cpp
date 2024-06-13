@@ -52,25 +52,26 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
     diopiTensorHandle_t maskBroadcast = nullptr;
     diopiSize_t broadcastShape{broadcastShapeData, broadcastDim};
 
-    // make maskBroadCast Tensor and calculate the number of non-zero elements
-    diopiRequireTensor(ctx, &maskBroadcast, &broadcastShape, nullptr, diopi_dtype_bool, diopi_device);
-    diopiExpand(ctx, maskBroadcast, mask);
-    diopiNonzero(ctx, &nonZero, maskBroadcast);
+    // broadcast input and mask
+    maskAt.view(std::vector<int64_t>(broadcastShape.data, broadcastShape.data + broadcastDim));
+    inputAt.view(std::vector<int64_t>(broadcastShape.data, broadcastShape.data + broadcastDim));
 
-    // The actual number of output elements is the number of non-zero elements in the mask.
-    AscendTensor nonZeroAt(nonZero);
-    int64_t nonZeroNumel = nonZeroAt.shape(0);
-    diopiSize_t outputShape{&nonZeroNumel, 1};
-    diopiRequireTensor(ctx, &outTmp, &outputShape, nullptr, inputAt.dtype(), diopi_device);
+    diopiRequireTensor(ctx, &outTmp, &broadcastShape, nullptr, inputAt.dtype(), diopi_device);
+    AscendTensor outTmpAt(outTmp);
 
-    // reshape the AscendTensor outAt because aclnnMaskedSelect limitation
-    // for aclnnMaskedSelect, the shape of out is one-dimensional,
-    // with the number of elements equal to the broadcasted shape size of mask and self.
-    // the shape of input and mask must be broadcastable.
-    AscendTensor outAt(outTmp);
-    outAt.view({broadcastNumel});
-    DIOPI_ASCEND_CALL_ACLNN(aclnnMaskedSelect, ctx, inputAt, maskAt, outAt);
+    auto params = DIOPI_ASECND_CALL_ACLNN_SYNC(aclnnMaskedSelect, ctx, inputAt, maskAt, outTmp);
+    int64_t *viewDims = nullptr;
+    uint64_t viewDimNum = 0;
+    int ret = aclGetViewShape(std::get<2>(params.params()), &viewDims, &viewDimNum);
+    ASCEND_CHECK_ABORT(ret == 0, "aclGetViewShape failed");
+    std::vector<int64_t> outputShapeSize;
+    for (uint64_t i = 0; i < viewDimNum; i++) {
+        outputShapeSize.push_back(viewDims[i]);
+    }
+
+    outTmpAt.view(outputShapeSize);
     *out = outTmp;
+    delete viewDims;
 
     return diopiSuccess;
 }
