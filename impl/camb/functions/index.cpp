@@ -250,6 +250,7 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     DiopiTensor outTensor = requiresTensor(ctx, outTensorShape, inputTensorTmp.dtype());
     CnnlTensorDesc outDesc(outTensor, CNNL_LAYOUT_ARRAY);
     DiopiTensor outputDims = requiresTensor(ctx, {static_cast<int64_t>(outTensorShape.size())}, diopi_dtype_int64);
+    syncStreamInCtx(ctx);
     cnrtMemcpy(outputDims.data(), outTensorShape.data(), sizeof(int64_t) * outTensorShape.size(), cnrtMemcpyHostToDev);
     DiopiTensor outputDim = requiresTensor(ctx, {1}, diopi_dtype_int32);
     cnrtMemcpy(outputDim.data(), &outputDescDim, sizeof(int32_t), cnrtMemcpyHostToDev);
