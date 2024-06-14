@@ -24,21 +24,21 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
 
     // calculate the broadcastShape of inputAt and maskAt, and the number of elements
     if (inputAt.dim() == 0) {
-        inputAt.unsqueeze(0);
+        inputAt = inputAt.unsqueeze(0);
     }
 
     if (maskAt.dim() == 0) {
-        maskAt.unsqueeze(0);
+        maskAt = maskAt.unsqueeze(0);
     }
 
     int64_t broadcastDim = std::max(inputAt.dim(), maskAt.dim());
 
     while (inputAt.dim() < broadcastDim) {
-        inputAt.unsqueeze(0);
+        inputAt = inputAt.unsqueeze(0);
     }
 
     while (maskAt.dim() < broadcastDim) {
-        maskAt.unsqueeze(0);
+        maskAt = maskAt.unsqueeze(0);
     }
 
     int64_t broadcastShapeData[broadcastDim];
@@ -51,17 +51,21 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
     // broadcast input and mask
     diopiSize_t broadcastShape{broadcastShapeData, broadcastDim};
     diopiSize_t outShapeTmp{&broadcastNumel, 1};
-    diopiTensorHandle_t expandInput = nullptr;
-    diopiTensorHandle_t expandMask = nullptr;
 
-    diopiRequireTensor(ctx, &expandInput, &broadcastShape, nullptr, inputAt.dtype(), diopi_device);
-    diopiRequireTensor(ctx, &expandMask, &broadcastShape, nullptr, maskAt.dtype(), diopi_device);
+    std::vector<int64_t> inputStride{inputAt.stride()};
+    std::vector<int64_t> maskStride{maskAt.stride()};
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnExpand, ctx, input, broadcastShape, expandInput);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnExpand, ctx, mask, broadcastShape, expandMask);
-
-    AscendTensor expandInputAt(expandInput);
-    AscendTensor expandMaskAt(expandMask);
+    for (int64_t i = 0; i < broadcastDim; i++) {
+        if (broadcastShape.data[i] != inputAt.shape(i)) {
+            inputStride[i] = 0;
+        }
+        if (broadcastShape.data[i] != maskAt.shape(i)) {
+            maskStride[i] = 0;
+        }
+    }
+    
+    AscendTensor expandInputAt = inputAt.asStrided({broadcastShapeData, broadcastShapeData+broadcastDim}, inputStride);
+    AscendTensor expandMaskAt = maskAt.asStrided({broadcastShapeData, broadcastShapeData+broadcastDim}, maskStride);
 
     // call aclnnMaskedSelect to do the calculation
     diopiTensorHandle_t outTmp = nullptr;

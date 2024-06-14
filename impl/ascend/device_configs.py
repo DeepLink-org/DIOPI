@@ -1446,29 +1446,4 @@ device_configs = {
             p = [Skip(2.5), Skip(float('inf')), Skip(-float('inf')), Skip(-2)],
         ),
     ),
-    
-    # diopiMaskedSelect used aclnnExpand, but aclnnExpand do not support float64, int16
-    'masked_select': dict(
-        name=['masked_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-    
-    'masked_select_not_float': dict(
-        name=['masked_select'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int16)],
-                },
-            ]
-        ),
-    ),
 }
