@@ -63,9 +63,9 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
             maskStride[i] = 0;
         }
     }
-    
-    AscendTensor expandInputAt = inputAt.asStrided({broadcastShapeData, broadcastShapeData+broadcastDim}, inputStride);
-    AscendTensor expandMaskAt = maskAt.asStrided({broadcastShapeData, broadcastShapeData+broadcastDim}, maskStride);
+
+    AscendTensor expandInputAt = inputAt.asStrided({broadcastShapeData, broadcastShapeData + broadcastDim}, inputStride);
+    AscendTensor expandMaskAt = maskAt.asStrided({broadcastShapeData, broadcastShapeData + broadcastDim}, maskStride);
 
     // call aclnnMaskedSelect to do the calculation
     diopiTensorHandle_t outTmp = nullptr;
