@@ -12,8 +12,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # add stdc++ but not gnuc++
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set (ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
-set (DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
+set(DIOPI_IMPL_DIR "${PROJECT_SOURCE_DIR}")
+set(ADAPTOR_DIR "${DIOPI_IMPL_DIR}/../adaptor")
+set(DIOPI_TEST_DIR "${DIOPI_IMPL_DIR}/../diopi_test")
 
 if (TEST)
     # find the file Python.h and add it in the include path.
@@ -37,14 +38,12 @@ if (ENABLE_COVERAGE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
 
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
 set(COMMON_FLAG "-Wall -Wno-sign-compare")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAG}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAG}")
 
-
 set(DEVICEIMPL diopi_impl)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 list(APPEND IMPL_CUDA "CUDA" "cuda")
 list(APPEND IMPL_TORCH "TORCH" "LIBTORCH" "ATEN" "PYTORCH" "torch" "libtorch" "aten" "pytorch" "PyTorch")
@@ -79,5 +78,5 @@ else()
 endif()
 
 # install
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/../proto/include/ TYPE INCLUDE)
+install(DIRECTORY ${DIOPI_IMPL_DIR}/../proto/include/ TYPE INCLUDE)
 install(FILES lib/lib${DEVICEIMPL}.so TYPE LIB)
