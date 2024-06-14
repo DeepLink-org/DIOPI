@@ -661,6 +661,7 @@ class CustomizedTest(object):
         query,
         key,
         value,
+        attenMask,
         actualSeqLengths,
         numHeads,
         numKeyValueHeads,

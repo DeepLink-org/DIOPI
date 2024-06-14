@@ -8671,7 +8671,7 @@ diopi_configs = {
         atol=1e-2,
         rtol=1e-2,
         para=dict(
-            actualSeqLengths=[[150,],],
+            actualSeqLengths=[[5,],],
             numHeads=[32,],
             numKeyValueHeads=[32,],
             dim=[128,],
@@ -8693,6 +8693,12 @@ diopi_configs = {
                     "ins": ["value"],
                     "shape": ((1026, 4096),),
                     "dtype": [np.float16,],
+                },
+                {
+                    "ins": ["attenMask"],
+                    "value": [[False, False, False, False, False]],
+                    "dtype": [np.bool_,],
+                    "gen_policy": "gen_tensor_by_value",
                 },
                 {
                     "ins": ["blockTable"],
