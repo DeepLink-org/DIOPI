@@ -18,7 +18,8 @@ diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     AscendTensor inputAt(input);
     if (inputAt.numel() <= 0) {
         if (diopiReduction_t::ReductionMean == reduction) {
-            DIOPI_ASCEND_CALL_ACLNN(aclnnInpalceFillScalar, ctx, out, std::nanf(""));
+            diopiScalar_t nans{diopi_dtype_float64, std::nanf("")};
+            DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, out, &nans);
         } else if (diopiReduction_t::ReductionSum == reduction || diopiReduction_t::ReductionNone == reduction) {
             DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, out);
         }
@@ -44,6 +45,7 @@ diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         AscendTensor inputView = inputAt.view({inputAt.shape(0), inputAt.shape(1), inputAt.numel() / inputAt.shape(0) / inputAt.shape(1), 1});
         AscendTensor outView = (outAt.numel() > 1) ? outAt.view({outAt.shape(0), outAt.numel() / outAt.shape(0), 1}) : outAt;
         AscendTensor targetView = targetAt.view({targetAt.shape(0), targetAt.numel() / targetAt.shape(0), 1});
+        DIOPI_ASCEND_CALL_ACLNN(aclnnNLLLoss2d, ctx, inputView, targetView, weightTmp, reduction, ignoreIndex, outView, totalWeight);
     }
 
     return diopiSuccess;
@@ -85,7 +87,7 @@ diopiError_t diopiNLLLossV2Backward(diopiContextHandle_t ctx, diopiTensorHandle_
             gradInputAt.view({gradInputAt.shape(0), gradInputAt.shape(1), gradInputAt.numel() / gradInputAt.shape(0) / gradInputAt.shape(1), 1});
         AscendTensor gradOutputView;
         if (gradOutputAt.numel() > 1) {
-            gradOutputView.view({gradOutputAt.shape(0), gradOutputAt.numel() / gradOutputAt.shape(0), 1});
+            gradOutputView = gradOutputAt.view({gradOutputAt.shape(0), gradOutputAt.numel() / gradOutputAt.shape(0), 1});
         } else {
             gradOutputView = gradOutputAt;
         }
