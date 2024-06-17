@@ -1555,7 +1555,7 @@ at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const
         markedOutputs.pop_front();
         return out;
     }
-    TORCH_WARN(options.device().type() == at_npu::key::NativeDeviceType,
+    TORCH_WARN(options.device().type() != at::DeviceType::CPU,
                "Expected all tensors to be on the same device. "
                "Expected NPU tensor, please check whether the input tensor device is correct. but got ",
                options);
@@ -3214,6 +3214,7 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
             outAt = outAt.view_as(input);
         }
     } else {
+        TORCH_WARN("op can be optimized: there is redundant copy op");
         at::IntArrayRef atSize = input.sizes();
         at::IntArrayRef atStride = input.strides();
         diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
