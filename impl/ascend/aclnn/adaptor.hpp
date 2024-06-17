@@ -289,12 +289,14 @@ private:
     void* workspaceAddr_ = nullptr;
 };
 
+// std::true_type if it's one of the types listed, otherwise std::false_type
 template <typename T>
 struct IsAclnnBuildInType
     : std::disjunction<std::is_same<T, aclTensor*>, std::is_same<T, aclScalar*>, std::is_same<T, aclIntArray*>, std::is_same<T, aclFloatArray*>,
                        std::is_same<T, aclBoolArray*>, std::is_same<T, aclTensorList*>, std::is_same<T, aclScalarList*>, std::is_same<T, aclDataType>,
                        std::is_same<T, aclFormat>, std::is_fundamental<std::decay_t<T>>> {};
 
+// enable if all the args meet the conditions
 template <const char* workspaceApi, typename... Args, std::enable_if_t<std::conjunction_v<IsAclnnBuildInType<Args>...>, void*> = nullptr>
 static std::pair<uint64_t, aclOpExecutor*> computeWorkspaceSize(const std::tuple<Args...>& tupleArgs) {
     static const auto workspaceSizeFuncAddr = getOpApiFuncAddr(workspaceApi);
