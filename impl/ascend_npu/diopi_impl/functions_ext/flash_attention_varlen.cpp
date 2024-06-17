@@ -69,6 +69,8 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     int64_t sparseMode = 0;
     at::Tensor attentionMaskAt = at::Tensor();
     if (isCausal) {
+        // According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
+        // https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
         if (maxSeqLenQ > 2048 && maxSeqLenKV > 2048) {
             maxSeqLenQ = 2048;
             maxSeqLenKV = 2048;
