@@ -16,7 +16,7 @@ namespace ascend {
 class AclScalar final {
 public:
     explicit AclScalar(const diopiScalar_t* scalar, diopiDtype_t dtype) {
-        uint64_t buff = 0;  // just for store the value with the different type.
+        char buff[8];  // just for store the value with the different type.
         switch (dtype) {
             case diopi_dtype_bool: {
                 *reinterpret_cast<bool*>(&buff) = getValue<bool>(scalar);
