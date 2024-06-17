@@ -348,16 +348,20 @@ void callAclnnImpl(diopiContextHandle_t ctx, const std::tuple<Args...>& tuple) {
         ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, convertedParams.params()); \
     } while (false)
 
-#define DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(api, ctx, ...)                                         \
-    static constexpr const char kApiName[] = #api;                                               \
-    static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                   \
-    ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, __VA_ARGS__); \
-    diopiStreamHandle_t stream;                                                                  \
-    diopiGetStream(ctx, &stream);                                                                \
-    CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+#define DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(api, ctx, ...)                                             \
+    do {                                                                                             \
+        static constexpr const char kApiName[] = #api;                                               \
+        static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                   \
+        ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, __VA_ARGS__); \
+        diopiStreamHandle_t stream;                                                                  \
+        diopiGetStream(ctx, &stream);                                                                \
+        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));                   \
+    } while (false)
 
-#define DIOPI_ASCEND_CALL_ACLNN_SYNC(api, ctx, ...)                                   \
-    auto convertedParams = ::impl::ascend::aclnn_adaptor::convertParams(__VA_ARGS__); \
-    DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(api, ctx, convertedParams.params())
+#define DIOPI_ASCEND_CALL_ACLNN_SYNC(api, ctx, ...)                                       \
+    do {                                                                                  \
+        auto convertedParams = ::impl::ascend::aclnn_adaptor::convertParams(__VA_ARGS__); \
+        DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(api, ctx, convertedParams.params())             \
+    } while (false)
 
 #endif  // IMPL_ASCEND_ACLNN_ADAPTOR_HPP_
