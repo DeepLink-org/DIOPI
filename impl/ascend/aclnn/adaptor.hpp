@@ -289,17 +289,11 @@ private:
     void* workspaceAddr_ = nullptr;
 };
 
-template <typename T>
-struct IsAclnnBuildInType
-    : std::disjunction<std::is_same<T, aclTensor*>, std::is_same<T, aclScalar*>, std::is_same<T, aclIntArray*>, std::is_same<T, aclFloatArray*>,
-                       std::is_same<T, aclBoolArray*>, std::is_same<T, aclTensorList*>, std::is_same<T, aclScalarList*>, std::is_same<T, aclDataType>,
-                       std::is_same<T, aclFormat>, std::is_fundamental<std::decay_t<T>>> {};
-
-template <const char* workspaceApi, typename... Args, std::enable_if_t<std::conjunction_v<IsAclnnBuildInType<Args>...>, void> = 0>
+template <const char* workspaceApi, typename... Args>
 static std::pair<uint64_t, aclOpExecutor*> computeWorkspaceSize(const std::tuple<Args...>& tupleArgs) {
     static const auto workspaceSizeFuncAddr = getOpApiFuncAddr(workspaceApi);
     using WorkspaceSizeFunc = int (*)(Args..., uint64_t*, aclOpExecutor**);
-    WorkspaceSizeFunc workspaceSizeFunc = reinterpret_cast<WorkspaceSizeFunc>(workspaceSizeFuncAddr);
+    static WorkspaceSizeFunc workspaceSizeFunc = reinterpret_cast<WorkspaceSizeFunc>(workspaceSizeFuncAddr);
     uint64_t workspaceSize = 0;
     aclOpExecutor* executor = nullptr;
     auto tupleWorkspaceSizeFuncArgs = std::tuple_cat(tupleArgs, std::make_tuple(&workspaceSize, &executor));
