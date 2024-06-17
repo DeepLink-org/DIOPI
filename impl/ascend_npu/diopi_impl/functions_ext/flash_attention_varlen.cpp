@@ -66,8 +66,14 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
         }
     }
 
+    int64_t sparseMode = 0;
     at::Tensor attentionMaskAt = at::Tensor();
     if (isCausal) {
+        if (maxSeqLenQ > 2048 && maxSeqLenKV > 2048) {
+            maxSeqLenQ = 2048;
+            maxSeqLenKV = 2048;
+            sparseMode = 2;
+        }
         attentionMaskAt = npu_preparation::apply_tensor_without_format({maxSeqLenQ, maxSeqLenKV}, qAt.options().dtype(at::kBool));
         EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskAt);
         int64_t diagonal = 1;
@@ -77,7 +83,6 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     int64_t preTokens = kAt.size(0);
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
-    int64_t sparseMode = 0;
 
     at::Tensor softmaxMaxAt;
     at::Tensor softmaxSumAt;
