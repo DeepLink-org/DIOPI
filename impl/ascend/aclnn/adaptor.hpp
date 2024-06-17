@@ -295,7 +295,6 @@ struct IsAclnnBuildInType
                        std::is_same<T, aclBoolArray*>, std::is_same<T, aclTensorList*>, std::is_same<T, aclScalarList*>, std::is_same<T, aclDataType>,
                        std::is_same<T, aclFormat>, std::is_fundamental<std::decay_t<T>>> {};
 
-
 template <const char* workspaceApi, typename... Args, std::enable_if_t<std::conjunction_v<IsAclnnBuildInType<Args>...>, void> = 0>
 static std::pair<uint64_t, aclOpExecutor*> computeWorkspaceSize(const std::tuple<Args...>& tupleArgs) {
     static const auto workspaceSizeFuncAddr = getOpApiFuncAddr(workspaceApi);
@@ -312,7 +311,7 @@ static std::pair<uint64_t, aclOpExecutor*> computeWorkspaceSize(const std::tuple
 template <const char* api, const char* workspaceApi, typename... Args>
 void callAclnnImpl(diopiContextHandle_t ctx, const std::tuple<Args...>& tuple) {
     if (isDebugAclOpRunnerOn()) {
-        std::cout << "ACLNN_ADAPTOR for " << api << '\n';
+        std::cout << "ACLNN_ADAPTOR for " << api << std::endl;
     }
 
     /* 0. get aclrtStream */

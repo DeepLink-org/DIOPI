@@ -42,5 +42,6 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
 
     return diopiSuccess;
 }
+
 }  // namespace ascend
 }  // namespace impl
