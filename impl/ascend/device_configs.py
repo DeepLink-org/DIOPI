@@ -273,18 +273,6 @@ device_configs = {
         rtol=1e-4,
     ),
 
-    'reduce_partial_op_1': dict(
-        name=['std'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
     'cross_entropy': dict(
         name=['cross_entropy'],
         tensor_para=dict(
@@ -1378,20 +1366,6 @@ device_configs = {
     'nll_loss': dict(
         name = ['nll_loss'],
         skip_all = True
-    ),
-
-    'adam': dict(
-        name=['adamw'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['param'],
-                    # float64 not supported yet on ascend
-                    # temporarily skip all test cases due to software stack version
-                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
-                },
-            ]
-        ),
     ),
 
     # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend

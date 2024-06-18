@@ -2,9 +2,9 @@ set(DIOPIRT export_runtime)
 set(DIOPIFUNCTIONS export_functions)
 
 add_compile_options(-fno-elide-constructors -fpermissive)
-add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
+add_subdirectory(${DIOPI_IMPL_DIR}/third_party/pybind11 build)
 
-set(DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
+set(DIOPI_TEST_DIR "${DIOPI_TEST_DIR}")
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
@@ -36,7 +36,7 @@ target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 # target_link_libraries(${DIOPIRT} -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 target_link_libraries(diopirt -Wl,--no-as-needed ${DEVICEIMPL} -Wl,--as-needed)
 
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
+set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/diopi_stub/csrc")
 
 file(GLOB TEST_TEMPLATE_CODE ${DIOPI_TEST_DIR}/diopi_stub/codegen/*.py)
 add_custom_target(test_gen_dependency DEPENDS ${TEST_TEMPLATE_CODE})
@@ -57,8 +57,8 @@ if(${USE_ADAPTOR} STREQUAL "true")
     add_dependencies(${DIOPIFUNCTIONS} adaptor_code_gen)
 endif()
 
-file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
+file(MAKE_DIRECTORY ${DIOPI_TEST_DIR}/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${DIOPI_TEST_DIR}/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${DIOPI_TEST_DIR}/python/diopilib
     DEPENDS ${DIOPIFUNCTIONS} ${DIOPIRT})

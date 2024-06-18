@@ -65,6 +65,7 @@ inp_config = {
     "IndexPut": ["out"],
     "Adadelta": ["input", "grad", "square_avg", "acc_delta"],
     "IndexBackward": ["zeros_like_input"],
+    "AdamW": ["param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"],
 }
 
 def remap_impl_device(device):

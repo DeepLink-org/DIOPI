@@ -50,14 +50,14 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
     set(USE_ADAPTOR ON)
 endif()
 if(USE_ADAPTOR)
-    set(ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
+    set(ADAPTOR_DIR "${DIOPI_IMPL_DIR}/../adaptor")
     # dependency
     file(GLOB ADAPTOR_TEMPLATE_CODE ${ADAPTOR_DIR}/codegen/*.py)
     add_custom_target(adaptor_gen_dependency DEPENDS ${ADAPTOR_TEMPLATE_CODE})
     set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
     set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
     add_custom_target(adaptor_code_gen
-        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=topsrider
+        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${DIOPI_IMPL_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=topsrider
         BYPRODUCTS ${GEN_FILES}
         DEPENDS adaptor_gen_dependency)
     list(APPEND IMPL_SRC ${GEN_FILES} ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp)
