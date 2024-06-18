@@ -177,7 +177,7 @@ def prepare() -> Tuple[dict, str]:
         default="torch",
     )
     parser.add_argument(
-        '--ascend_impl_plugin',
+        '--impl_plugin',
         help="if functinos are implemented with plugin mode once more, then compile both of them.",
         default=False,
     )
@@ -194,7 +194,7 @@ def prepare() -> Tuple[dict, str]:
     )
     device = remap_impl_device(options.config_device)
 
-    ascend_impl_plugin = options.ascend_impl_plugin
+    impl_plugin = options.impl_plugin
     base_device = options.base_device
 
     def create_if_not_exist(name):
@@ -205,7 +205,7 @@ def prepare() -> Tuple[dict, str]:
     dirs = dict(
         source=source, output_dir=options.output_dir, config_path=config_path
     )
-    return dirs, device, ascend_impl_plugin, base_device
+    return dirs, device, impl_plugin, base_device
 
 
 def get_func_info(content: list) -> Tuple[list, list, list, dict]:
@@ -773,7 +773,7 @@ def gen_base_device_impl_funcs(device: str, base_device: str, dirs: dict, impl_f
     return func_base_decl, impl_basedev_functions, func_device_map
 
 def gen_autogen_operators(
-    dirs: dict, device: str, adaptor_fm: FileManager, ascend_impl_plugin: bool,
+    dirs: dict, device: str, adaptor_fm: FileManager, impl_plugin: bool,
     base_device: str,
 ) -> None:
     config_file_path = os.path.join(
@@ -798,7 +798,7 @@ def gen_autogen_operators(
 
     # get the function declarations
     funcs_decl = get_impl_funcs_declaration(
-        funcs_decl_raw, funcs_info, impl_funcs, ascend_impl_plugin
+        funcs_decl_raw, funcs_info, impl_funcs, impl_plugin
     )
     impl_functions_content = [OT.impl_declaration_content_template.substitute(dict(
         device=device,
@@ -823,7 +823,7 @@ def gen_autogen_operators(
       )))
       impl_funcs = {*impl_funcs, *impl_basedev_functions.keys()}
 
-    if ascend_impl_plugin:
+    if impl_plugin:
         funcs_npu_decl, impl_npu_functions, func_device_map = gen_ascend_impl_plugin_funcs(
                                                               dirs, impl_base_dir, impl_functions)
         impl_functions_content.append(OT.impl_declaration_content_template.substitute(dict(
@@ -859,10 +859,10 @@ def declare_outputs(adaptor_fm: FileManager) -> None:
 
 
 def gen_all_codes() -> None:
-    dirs, device, ascend_impl_plugin, base_device = prepare()
+    dirs, device, impl_plugin, base_device = prepare()
     adaptor_fm = FileManager(dirs.get("output_dir", "."))
     declare_outputs(adaptor_fm)
-    gen_autogen_operators(dirs, device, adaptor_fm, ascend_impl_plugin, base_device)
+    gen_autogen_operators(dirs, device, adaptor_fm, impl_plugin, base_device)
     adaptor_fm.check_all_files_written()
 
 
