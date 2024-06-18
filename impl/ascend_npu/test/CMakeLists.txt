@@ -2,7 +2,7 @@ set(EXPORT_RT export_runtime)
 set(DIOPIFUNCTIONS export_functions)
 
 #add_compile_options(-fno-elide-constructors)
-add_subdirectory(${DIOPI_IMPL_DIR}/third_party/pybind11 build)
+add_subdirectory(${PROJECT_SOURCE_DIR}/../third_party/pybind11 build)
 
 include_directories(SYSTEM "${DIOPI_TEST_DIR}/diopi_stub/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
