@@ -73,7 +73,7 @@ DIOPI主要包含以下几个组件：
 
 
 ## 校验算子
-1. 将数据拷贝到芯片机器上，执行以下命令验证算子：
+1. 将生成的基准数据拷贝到芯片机器上，执行以下命令验证算子：
     ```
     python main.py --mode gen_case  # 生成pytest测例
     python main.py --mode run_test  # 执行测试

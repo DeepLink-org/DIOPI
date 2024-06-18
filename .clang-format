@@ -24,6 +24,7 @@ Standard:  Cpp11
 AllowAllParametersOfDeclarationOnNextLine: true
 BinPackParameters: true
 BinPackArguments: false
+BreakAfterAttributes: Leave
 ColumnLimit: 160
 DerivePointerAlignment: false
 PointerAlignment: Left

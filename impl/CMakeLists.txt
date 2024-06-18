@@ -12,17 +12,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # add stdc++ but not gnuc++
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set (ADAPTOR_DIR "${CMAKE_SOURCE_DIR}/../adaptor")
-set (DIOPI_TEST_DIR "${CMAKE_SOURCE_DIR}/../diopi_test")
+set(DIOPI_IMPL_DIR "${PROJECT_SOURCE_DIR}")
+set(ADAPTOR_DIR "${DIOPI_IMPL_DIR}/../adaptor")
+set(DIOPI_TEST_DIR "${DIOPI_IMPL_DIR}/../diopi_test")
 
 if (TEST)
     # find the file Python.h and add it in the include path.
-    execute_process(COMMAND  sh -c "dirname $(find  $(dirname $(which python))/../ -name Python.h)" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if ("${PYTHON_INCLUDE_DIR}" STREQUAL "")
-        message(FATAL_ERROR "no Python.h is found")
-    endif()
-    message(STATUS "PYTHON_INCLUDE_DIR: " ${PYTHON_INCLUDE_DIR})
-    include_directories(${PYTHON_INCLUDE_DIR})
+    find_package(Python REQUIRED COMPONENTS Interpreter Development)
+    message(STATUS "PYTHON_INCLUDE_DIRS: " ${PYTHON_INCLUDE_DIRS})
+    include_directories(SYSTEM ${Python_INCLUDE_DIRS})
+
 endif(TEST)
 
 # use gcover
@@ -39,14 +38,12 @@ if (ENABLE_COVERAGE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
 
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
 set(COMMON_FLAG "-Wall -Wno-sign-compare")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAG}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAG}")
 
-
 set(DEVICEIMPL diopi_impl)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 list(APPEND IMPL_CUDA "CUDA" "cuda")
 list(APPEND IMPL_TORCH "TORCH" "LIBTORCH" "ATEN" "PYTORCH" "torch" "libtorch" "aten" "pytorch" "PyTorch")
@@ -81,5 +78,5 @@ else()
 endif()
 
 # install
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/../proto/include/ TYPE INCLUDE)
+install(DIRECTORY ${DIOPI_IMPL_DIR}/../proto/include/ TYPE INCLUDE)
 install(FILES lib/lib${DEVICEIMPL}.so TYPE LIB)

@@ -3,7 +3,7 @@ set(DIOPIFUNCTIONS_PYBIND export_functions)
 set(DIOPIRT diopirt)
 
 add_compile_options(-fno-elide-constructors)
-add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
+add_subdirectory(${DIOPI_IMPL_DIR}/third_party/pybind11 build)
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
 
 # config inc/lib path for SUPA runtime.
@@ -61,8 +61,8 @@ pybind11_add_module(${DIOPIRT_PYBIND} SHARED ${RT_EXPORT_SRC})
 target_link_libraries(${DIOPIRT_PYBIND} PRIVATE ${DIOPIRT})
 
 # create pybind library for functions.
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/csrc")
-set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/diopi_stub/codegen")
+set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/diopi_stub/csrc")
+set(TEST_GEN_PATH "${DIOPI_TEST_DIR}/diopi_stub/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=supa)
 add_custom_target(functions_copy ALL
@@ -79,8 +79,8 @@ target_link_libraries(${DIOPIFUNCTIONS_PYBIND} PRIVATE ${DIOPIRT} )
 add_dependencies(${DIOPIFUNCTIONS_PYBIND} functions_copy)
 
 # copy pybind library into test folder.
-file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
+file(MAKE_DIRECTORY ${DIOPI_TEST_DIR}/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS_PYBIND}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT_PYBIND}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS_PYBIND}> ${DIOPI_TEST_DIR}/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT_PYBIND}> ${DIOPI_TEST_DIR}/python/diopilib
     DEPENDS ${DIOPIFUNCTIONS_PYBIND} ${DIOPIRT_PYBIND})
