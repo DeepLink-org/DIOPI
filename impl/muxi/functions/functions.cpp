@@ -12,7 +12,6 @@
 
 #include "helper.hpp"
 
-
 static const char* name = "MuxiDevice";
 const char* diopiGetVendorName() { return name; }
 
