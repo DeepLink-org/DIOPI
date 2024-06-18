@@ -174,6 +174,10 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
     int64_t sparseMode = 0;
+    // Improve performance, ref: https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
+    if (maxSeqLenQ > 2048 && maxSeqLenKV > 2048 && attentionMaskAt.defined() && attentionMaskAt.size(0) == 2048 && attentionMaskAt.size(1) == 2048) {
+        sparseMode = 2;
+    }
 
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionUnpaddingScoreGrad,
                                  qAt,
