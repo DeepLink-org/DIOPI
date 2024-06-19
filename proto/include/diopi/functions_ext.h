@@ -190,8 +190,8 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
  * @param[in] p_dropout Dropout probability.
  * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] is_causal Whether to apply causal attention mask.
- * @param[in] window_size_left 
- * @param[in] window_size_right
+ * @param[in] window_size_left If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only attend to keys between [i - window_size_left, i + window_size_right] inclusive.
+ * @param[in] window_size_right If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only attend to keys between [i - window_size_left, i + window_size_right] inclusive.
  * @param[out] softmax_lse Tensor storing the logsumexp of each row of the matrix qk^T * scaling (e.g., log of the softmax normalization factor). shape =
  [batch_size, head_num, q_seq_len]. type = [float32].
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [bfloat16,
@@ -199,7 +199,7 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
  */
 DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t softmax_lse,
                                              diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t alibi_slopes,
-                                             double p_dropout, double softmax_scale, bool is_causal);
+                                             double p_dropout, double softmax_scale, bool is_causal, int64_t window_size_left, int64_t window_size_right);
 
 /**
  * @brief Compute the back propagation for Flash Attention.
@@ -209,21 +209,24 @@ DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensor
  * @param[in] q Query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[in] k Key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[in] v Value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [bfloat16, float16].
+ * @param[in] alibi_slopes A bias of (-alibi_slope * |i - j|) is added to the attention score of query i and key j. shape = [head_num]. type = [float32].
  * @param[in] attention_out Tensor representing the forward calculation result. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[in] softmax_lse Tensor representing the intermediate calculation result of softmax op from the forward pass.  shape = [batch_size, head_num,
  * q_seq_len]. type = [float32].
  * @param[in] p_dropout Dropout probability.
  * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
  * @param[in] is_causal Whether to apply causal attention mask.
+ * @param[in] window_size_left If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only attend to keys between [i - window_size_left, i + window_size_right] inclusive.
+ * @param[in] window_size_right If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only attend to keys between [i - window_size_left, i + window_size_right] inclusive.
  * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, q_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, k_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, v_seq_len, head_num, head_dim]. type = [bfloat16, float16].
  */
 DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                      diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_out, diopiGeneratorHandle_t gen,
-                                                     diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                                     diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t alibi_slopes,
                                                      diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t softmax_lse, double p_dropout,
-                                                     double softmax_scale, bool is_causal);
+                                                     double softmax_scale, bool is_causal, int64_t window_size_left, int64_t window_size_right);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
