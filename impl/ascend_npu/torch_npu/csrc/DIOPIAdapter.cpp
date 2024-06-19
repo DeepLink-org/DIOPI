@@ -3432,7 +3432,7 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
     dims[dim0] = dim1;
     dims[dim1] = dim0;
     auto outputSize = op_infer::transpose_npu_output_size(self, dims);
-    at::Tensor output = at_npu::native::OpPreparation::apply_tensor(self, outputSize);
+    at::Tensor output = at_npu::native::empty_npu(outputSize, self.options());
     at::IntArrayRef dimsAt(dims);
     EXEC_NPU_CMD(aclnnPermute, self, dimsAt, output);
     return output;
