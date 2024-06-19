@@ -5367,7 +5367,7 @@ def multihead_attention_varlen_backward(
         check_returncode(ret)
         return {"q": grad_q, "k": grad_k, "v": grad_v}
 
-def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
+def flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
     call = "diopiFlashAttention"
     func = check_function(call)
     out = raw_like(q)
@@ -5388,9 +5388,12 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
         q,
         k,
         v,
+        alibi_slopes,
         p_dropout,
         softmax_scale,
         is_causal,
+        window_size_left,
+        window_size_right,
     )
     check_returncode(ret)
     GLOBAL_STATE["flash_attention_softmax_lse"] = softmax_lse
@@ -5399,7 +5402,7 @@ def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
 
 
 def flash_attention_backward(
-    q, k, v, out, grad_outputs, p_dropout, softmax_scale, is_causal
+    q, k, v, alibi_slopes, out, grad_outputs, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right
 ):
     call = "diopiFlashAttentionBackward"
     func = check_function(call)
@@ -5424,11 +5427,14 @@ def flash_attention_backward(
         q,
         k,
         v,
+        alibi_slopes,
         out,
         softmax_lse,
         p_dropout,
         softmax_scale,
         is_causal,
+        window_size_left,
+        window_size_right,
     )
     check_returncode(ret)
     return {"q": grad_q, "k": grad_k, "v": grad_v}
@@ -5438,6 +5444,7 @@ def flash_attention_varlen(
     q,
     k,
     v,
+    alibi_slopes,
     max_seqlen_q,
     max_seqlen_kv,
     cu_seqlens_q,
@@ -5445,17 +5452,16 @@ def flash_attention_varlen(
     p_dropout,
     softmax_scale,
     is_causal,
+    window_size_left, 
+    window_size_right,
 ):
     call = "diopiFlashAttentionVarLen"
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
-    cu_seqlens_q = Sizes(cu_seqlens_q[1:])
-    cu_seqlens_kv = Sizes(cu_seqlens_kv[1:])
-    if is_causal:
-        attention_mask = Tensor()
-    else:
-        attention_mask = None
+    batch_size = len(cu_seqlens_q) - 1
+    cu_seqlens_q = Tensor.from_numpy(np.array(cu_seqlens_q, dtype=np.int32))
+    cu_seqlens_kv = Tensor.from_numpy(np.array(cu_seqlens_kv, dtype=np.int32))
     if p_dropout > 0 and p_dropout <= 1:
         dropout_mask = Tensor()
         state = build_generator_state(q.context())
@@ -5465,43 +5471,32 @@ def flash_attention_varlen(
         generator = None
     else:
         assert 0, "The p_dropout value must be in range of [0, 1]"
-    softmax_max = Tensor()
-    softmax_sum = Tensor()
-    softmax_out = Tensor()
-    attention_mask_ptr = TensorP(attention_mask)
-    dropout_mask_ptr = TensorP(dropout_mask)
-    softmax_max_ptr = TensorP(softmax_max)
-    softmax_sum_ptr = TensorP(softmax_sum)
-    softmax_out_ptr = TensorP(softmax_out)
+    softmax_lse = Tensor([batch_size, q_size[1], max_seqlen_q], dtype=Dtype.float32)
     softmax_scale = (
         1.0 / math.sqrt(q.shape().data[-1]) if not softmax_scale else softmax_scale
     )
     ret = func(
         q.context(),
         out,
-        attention_mask_ptr,
-        dropout_mask_ptr,
-        softmax_max_ptr,
-        softmax_sum_ptr,
-        softmax_out_ptr,
+        softmax_lse,
         generator,
         q,
         k,
         v,
         cu_seqlens_q,
         cu_seqlens_kv,
+        alibi_slopes,
         max_seqlen_q,
         max_seqlen_kv,
         p_dropout,
         softmax_scale,
         is_causal,
+        window_size_left, 
+        window_size_right,
     )
     check_returncode(ret)
-    GLOBAL_STATE["flash_attention_varlen_attention_mask"] = attention_mask
-    GLOBAL_STATE["flash_attention_varlen_dropout_mask"] = dropout_mask
-    GLOBAL_STATE["flash_attention_varlen_softmax_max"] = softmax_max
-    GLOBAL_STATE["flash_attention_varlen_softmax_sum"] = softmax_sum
-    GLOBAL_STATE["flash_attention_varlen_softmax_out"] = softmax_out
+    GLOBAL_STATE["flash_attention_varlen_softmax_lse"] = softmax_lse
+    GLOBAL_STATE["flash_attention_varlen_generator"] = generator
     return out
 
 
@@ -5509,6 +5504,7 @@ def flash_attention_varlen_backward(
     q,
     k,
     v,
+    alibi_slopes,
     out,
     grad_outputs,
     max_seqlen_q,
@@ -5518,6 +5514,8 @@ def flash_attention_varlen_backward(
     p_dropout,
     softmax_scale,
     is_causal,
+    window_size_left, 
+    window_size_right,
 ):
     call = "diopiFlashAttentionVarLenBackward"
     func = check_function(call)
@@ -5526,37 +5524,35 @@ def flash_attention_varlen_backward(
     ), "The p_dropout value must be in range of [0, 1]"
     head_dim = q.shape().data[-1]
     softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
-    cu_seqlens_q = Sizes(cu_seqlens_q[1:])
-    cu_seqlens_kv = Sizes(cu_seqlens_kv[1:])
+    cu_seqlens_q = Tensor.from_numpy(np.array(cu_seqlens_q, dtype=np.int32))
+    cu_seqlens_kv = Tensor.from_numpy(np.array(cu_seqlens_kv, dtype=np.int32))
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
-    attention_mask = GLOBAL_STATE.pop("flash_attention_varlen_attention_mask")
-    dropout_mask = GLOBAL_STATE.pop("flash_attention_varlen_dropout_mask")
-    softmax_max = GLOBAL_STATE.pop("flash_attention_varlen_softmax_max")
-    softmax_sum = GLOBAL_STATE.pop("flash_attention_varlen_softmax_sum")
-    softmax_out = GLOBAL_STATE.pop("flash_attention_varlen_softmax_out")
+    softmax_lse = GLOBAL_STATE.pop("flash_attention_varlen_softmax_lse")
+    generator = GLOBAL_STATE.pop("flash_attention_varlen_generator")
     ret = func(
         q.context(),
         grad_q,
         grad_k,
         grad_v,
         grad_outputs[0],
+        generator,
         q,
         k,
         v,
         cu_seqlens_q,
         cu_seqlens_kv,
+        alibi_slopes,
         out,
-        attention_mask,
-        dropout_mask,
-        softmax_max,
-        softmax_sum,
-        softmax_out,
+        softmax_lse,
         max_seqlen_q,
         max_seqlen_kv,
         p_dropout,
         softmax_scale,
+        is_causal,
+        window_size_left, 
+        window_size_right,
     )
     check_returncode(ret)
     return out
