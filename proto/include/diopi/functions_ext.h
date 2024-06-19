@@ -227,6 +227,32 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                      diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t softmax_lse, float p_dropout,
                                                      float softmax_scale, bool is_causal, int window_size_left, int window_size_right);
 
+/**
+ * @brief Compute the forward propagation for the variable length version of Flash Attention.
+ * For details, please refer to the official flash attention implementation:
+ * https://github.com/Dao-AILab/flash-attention/blob/main/csrc/flash_attn/flash_api.cpp
+ * @param[in] ctx The diopi context.
+ * @param[inout] gen Handle for the random number generator used in dropout op.
+ * @param[in] q Query tensor. shape = [total_q, head_num, head_dim], where total_q = total number of query tokens in the batch. type = [bfloat16, float16].
+ * @param[in] k Key tensor. shape = [total_k, head_num, head_dim], where total_k = total number of key tokens in the batch. type = [bfloat16, float16].
+ * @param[in] v Value tensor. shape = [total_v, head_num, head_dim, where total_v = total number of value tokens in the batch. type = [bfloat16, float16].
+ * @param[in] cum_seq_q The cumulative sequence lengths of the sequences in the batch for query. shape = [batch_size+1]. type = [int32].
+ * @param[in] cum_seq_kv The cumulative sequence lengths of the sequences in the batch for key and value. shape = [batch_size+1]. type = [int32].
+ * @param[in] alibi_slopes Optional tensor used in Attention with Linear Biases (ALiBi). A bias of (-alibi_slope * |i + seqlen_k - seqlen_q - j|) is added to the attention score of query i and key j. shape = [head_num]. type = [float32].
+ * @param[in] max_seqlen_q Maximum sequence length for query.
+ * @param[in] max_seqlen_kv Maximum sequence length for key and value.
+ * @param[in] p_dropout Dropout probability.
+ * @param[in] softmax_scale The scaling of qk^T before applying softmax. By default, softmax\_scale=\frac{1}{\sqrt{d_k}}
+ * @param[in] is_causal Whether to apply causal attention mask.
+ * @param[in] window_size_left If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only attend to keys between [i + seqlen_k - seqlen_q - window_size_left, i + seqlen_k - seqlen_q + window_size_right] inclusive.
+ * @param[in] window_size_right If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only attend to keys between [i + seqlen_k - seqlen_q - window_size_left, i + seqlen_k - seqlen_q + window_size_right] inclusive.
+ * @param[out] softmax_lse Tensor storing the logsumexp of each row of the matrix qk^T * scaling (e.g., log of the softmax normalization factor). shape = [batch_size, head_num, max_seqlen_q]. type = [float32].
+ * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [total, head_num, head_dim]. type = [bfloat16, float16].
+ */
+DIOPI_API diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t softmax_lse, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q,
+                                                 diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_kv, diopiConstTensorHandle_t alibi_slopes,
+                                                 int64_t max_seqlen_q, int64_t max_seqlen_kv, float p_dropout, float softmax_scale, bool is_causal, int window_size_left, int window_size_right);
+
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
  * @brief Compute the forward pass for scaled masked softmax op.
