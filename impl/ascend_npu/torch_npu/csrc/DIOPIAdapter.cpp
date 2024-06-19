@@ -3016,7 +3016,6 @@ NPUTensorImpl* NPUBridge::GetNpuTensorImpl(const at::Tensor& tensor) { return st
 }  // namespace torch_npu
 
 namespace at_npu::key {
-#if !defined(DIOPI_ADAPTER_BUILD_TENSOR_USE_CAST)
 
 c10::DeviceType NativeDeviceType = c10::DeviceType::XLA;
 c10::DispatchKey NativeDispatchKey = c10::DispatchKey::XLA;
@@ -3024,17 +3023,6 @@ c10::DispatchKey NativeAutogradDispatchKey = c10::DispatchKey::AutogradXLA;
 c10::Backend NativeBackend = c10::Backend::XLA;
 std::string npu_device_str("npu");      // NOLINT
 std::string default_device_str("xla");  // NOLINT c10::DeviceType NativeDeviceType = c10::DeviceType::XLA;
-
-#else
-
-c10::DeviceType NativeDeviceType = c10::DeviceType::XLA;
-c10::DispatchKey NativeDispatchKey = c10::DispatchKey::XLA;
-c10::DispatchKey NativeAutogradDispatchKey = c10::DispatchKey::AutogradXLA;
-c10::Backend NativeBackend = c10::Backend::XLA;
-std::string npu_device_str("npu");      // NOLINT
-std::string default_device_str("xla");  // NOLINT c10::DeviceType NativeDeviceType = c10::DeviceType::XLA;
-
-#endif
 
 }  // namespace at_npu::key
 
@@ -3092,7 +3080,9 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
 // We can use reinterpret_cast directly in the dipu,
 // but we cannot use this method directly in the consistency test,
 // although the performance will be worse.
-#if !defined(DIOPI_ADAPTER_BUILD_TENSOR_USE_CAST)
+// #if !defined(DIOPI_ADAPTER_BUILD_TENSOR_USE_CAST)
+
+namespace compatibility {
 
 const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
@@ -3124,7 +3114,7 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
 
 void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
     TORCH_CHECK(out != nullptr);
-    diopiTensorHandle_t diopiHandle = torch_npu::NPUBridge::GetNpuStorageImpl(input)->npu_desc_.;
+    diopiTensorHandle_t diopiHandle = torch_npu::NPUBridge::GetNpuStorageImpl(input)->npu_desc_.diopi_tensor_;
     if (diopiHandle != nullptr) {
         at::Tensor outAt = buildATen(diopiHandle);
         if (outAt.sizes() == input.sizes() && outAt.strides() == input.strides() && outAt.data_ptr() == input.data_ptr()) {
@@ -3186,8 +3176,9 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
     at_npu::defaultGenerator = gen;
     return gen;
 }
+}  // namespace compatibility
 
-#else
+namespace performance {
 
 c10::DeviceType NativeDeviceType = c10::DeviceType::XPU;
 c10::DispatchKey NativeDispatchKey = c10::DispatchKey::XPU;
@@ -3235,18 +3226,33 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
 }
 
 at::Generator buildATen(diopiGeneratorHandle_t generator) {
-#if 1
     auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
     auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
     impl->generator_ = generator;
     at_npu::defaultGenerator = gen;
-#else
-    auto gen = *static_cast<at::Generator*>(generator);
-#endif
     return gen;
 }
 
-#endif
+}  // namespace performance
+
+const bool kUsePerformanceBuildAten = std::getenv("DIOPI_ASCEND_USE_FAST_BUILD_ATEN") != nullptr;
+;
+
+const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
+    return kUsePerformanceBuildAten ? performance::buildATen(tensor) : compatibility::buildATen(tensor);
+}
+
+void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
+    kUsePerformanceBuildAten ? performance::buildDiopiTensor(ctx, input, out) : compatibility::buildDiopiTensor(ctx, input, out);
+}
+
+at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
+    return kUsePerformanceBuildAten ? performance::viewStorage(input, sizes, strides, storageOffset)
+                                    : compatibility::viewStorage(input, sizes, strides, storageOffset);
+}
+at::Generator buildATen(diopiGeneratorHandle_t generator) {
+    return kUsePerformanceBuildAten ? performance::buildATen(generator) : compatibility::buildATen(generator);
+}
 
 at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
 
@@ -3445,8 +3451,6 @@ at::Tensor& wrapper__zero_(at::Tensor& self) { return op_api::zero_(self); }
 
 }  // namespace
 
-#if !defined(DIOPI_ADAPTER_BUILD_TENSOR_USE_CAST)
-
 namespace at {
 
 TORCH_LIBRARY_IMPL(aten, XLA, m) {
@@ -3491,5 +3495,3 @@ TORCH_LIBRARY_IMPL(aten, XLA, m) {
 TORCH_LIBRARY_IMPL(_, XLA, m) { m.fallback(torch::CppFunction::makeFromBoxedFunction<&ascend_diopi_fallback>()); }
 
 }  // namespace at
-
-#endif  // !defined(DIOPI_ADAPTER_BUILD_TENSOR_USE_CAST)
