@@ -117,7 +117,7 @@ inline int debugLevel() {
     if (debugLevel()) {                                                                \
         std::cout << __FILE__ << ":" << __LINE__ << " :" << __FUNCTION__ << std::endl; \
     }                                                                                  \
-    impl::aten::ContextManger contextManger(ctx);                                                  \
+    impl::aten::ContextManger contextManger(ctx);                                      \
     BUILD_ATEN_ARGS(__VA_ARGS__)
 
 #define END_CALL_ACL_OP()                                                                         \
@@ -197,8 +197,8 @@ namespace impl {
 
 namespace aten {
 
-class ContextManger{
-    public:
+class ContextManger {
+public:
     ContextManger(diopiContextHandle_t context);
     ~ContextManger();
 };
