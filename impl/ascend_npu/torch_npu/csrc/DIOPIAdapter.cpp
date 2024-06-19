@@ -37,6 +37,8 @@ int current_device() {
 
 inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; }
 
+const bool kUsePerformanceBuildAten = std::getenv("DIOPI_ASCEND_USE_FAST_BUILD_ATEN") != nullptr;
+
 // check all at::ScalarType is not negative
 #define ENUM_PAIR_FUNC(_1, n) static_assert(static_cast<int64_t>(at::ScalarType::n) >= 0, #n " is negative");
 AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
@@ -1825,9 +1827,9 @@ void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, c
 }
 
 void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format) {
-#if defined(DIOPI_ADAPTER_BUILD_TENSOR_USE_CAST)
-    return;
-#endif
+    if (kUsePerformanceBuildAten) {
+        return;
+    }
     diopiTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
     torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, format, tmp_tensor);
 }
@@ -1860,9 +1862,9 @@ torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dty
 torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
                                                      aclFormat format, diopiTensorHandle_t tensor) {
     struct torch_npu::NPUStorageDesc npu_desc;
-#if defined(DIOPI_ADAPTER_BUILD_TENSOR_USE_CAST)
-    TORCH_WARN("this fun should not be called");
-#endif
+    if (kUsePerformanceBuildAten) {
+        TORCH_WARN("this fun should not be called");
+    }
     npu_desc.data_type_ = dtype;
     npu_desc.base_sizes_ = size;
     npu_desc.base_strides_ = strides;
@@ -3080,7 +3082,6 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
 // We can use reinterpret_cast directly in the dipu,
 // but we cannot use this method directly in the consistency test,
 // although the performance will be worse.
-// #if !defined(DIOPI_ADAPTER_BUILD_TENSOR_USE_CAST)
 
 namespace compatibility {
 
@@ -3234,9 +3235,6 @@ at::Generator buildATen(diopiGeneratorHandle_t generator) {
 }
 
 }  // namespace performance
-
-const bool kUsePerformanceBuildAten = std::getenv("DIOPI_ASCEND_USE_FAST_BUILD_ATEN") != nullptr;
-;
 
 const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     return kUsePerformanceBuildAten ? performance::buildATen(tensor) : compatibility::buildATen(tensor);

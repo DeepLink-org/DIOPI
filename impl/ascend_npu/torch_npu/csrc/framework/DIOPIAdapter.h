@@ -178,8 +178,6 @@ static void warn_(const ::c10::Warning& warning) { INTERFACE_NOT_IMPL; }
 #define RECORD_FUNCTION(...) \
     {}
 
-#define DIOPI_ADAPTER_BUILD_TENSOR_USE_CAST
-
 namespace at_npu {
 namespace key {
 extern c10::DeviceType NativeDeviceType;
