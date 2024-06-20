@@ -80,6 +80,8 @@ else()
     message(WARNING "No implementation module is compiled, cmake requires option -DIMPL_OPT=CUDA or TORCH")
 endif()
 
+target_link_options(${DEVICEIMPL} INTERFACE "LINKER:-no-as-needed")
+
 # install
 install(DIRECTORY ${DIOPI_IMPL_DIR}/../proto/include/ TYPE INCLUDE)
 install(FILES lib/lib${DEVICEIMPL}.so TYPE LIB)
