@@ -427,8 +427,9 @@ class CustomizedTest(object):
             ]
         return output
 
-    def flash_attention(q, k, v, p_dropout, softmax_scale, is_causal):
+    def flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # TODO: impl for alibi and sliding window local attention
         seqlen = q.shape[1]
         softmax_scale = (
             1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
@@ -449,12 +450,16 @@ class CustomizedTest(object):
         v,
         cu_seqlens_q,
         cu_seqlens_kv,
+        alibi_slopes,
         max_seqlen_q,
         max_seqlen_kv,
         p_dropout,
         softmax_scale,
         is_causal,
+        window_size_left,
+        window_size_right,
     ):
+        # TODO: impl for alibi and sliding window local attention
         # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
         cu_seqlens = cu_seqlens_q
         max_seqlen = max_seqlen_q
