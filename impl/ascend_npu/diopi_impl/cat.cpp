@@ -33,7 +33,7 @@ diopiError_t diopiCat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         }
     }
     if (outAt.scalar_type() != outTempAt.scalar_type()) {
-        outAt.copy_(outTempAt);
+        outAt.copy_(outTempAt, true);
     }
 
     END_CALL_ACL_OP();
