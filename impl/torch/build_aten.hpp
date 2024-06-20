@@ -59,10 +59,10 @@ private:
 [[nodiscard]] at::Tensor buildATenSafe(diopiConstTensorHandle_t tensor);
 
 [[nodiscard]] inline auto buildATen(diopiConstTensorHandle_t tensor) {
-#if 1
-    return buildATenUnsafe(tensor);
-#else
+#if SAFE_BUILD_ATEN
     return buildATenSafe(tensor);
+#else
+    return buildATenUnsafe(tensor);
 #endif
 }
 
