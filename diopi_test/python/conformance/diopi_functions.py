@@ -5555,7 +5555,7 @@ def flash_attention_varlen_backward(
         window_size_right,
     )
     check_returncode(ret)
-    return out
+    return {"q": grad_q, "k": grad_k, "v": grad_v}
 
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"

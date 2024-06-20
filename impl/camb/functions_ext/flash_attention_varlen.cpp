@@ -212,6 +212,8 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
         DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, &(rngState[0]), &(rngState[1])));
     }
 
+    DIOPI_CALL_CNNL(cnnlGetFlashAttentionGeneratedRandomNumbers(handle, flashAttentionDesc.get(), qDesc.get(), vDesc.get(), cumSeqQDesc.get(), rngState))
+
     DIOPI_CALL_CNNL(cnnlFlashAttentionBackward(handle,
                                                flashAttentionDesc.get(),
                                                gradOutDesc.get(),
@@ -230,7 +232,7 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
                                                cumSeqQTensor.data(),
                                                cumSeqKVDesc.get(),
                                                cumSeqKVTensor.data(),
-                                               pDropout > 0.0 ? rngState : nullptr,
+                                               rngState,
                                                workspace,
                                                workspaceSize,
                                                gradQDesc.get(),
