@@ -26,20 +26,20 @@ case $1 in
   torch)
     mkdir -p build && cd build
     cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=torch -DCMAKE_BUILD_TYPE=Release -DTEST=ON \
-      -DENABLE_COVERAGE=${USE_COVERAGE} -DCMAKE_PREFIX_PATH=$(python -c 'import torch;print(torch.utils.cmake_prefix_path)')
+    -DENABLE_COVERAGE=${USE_COVERAGE}
     make -j8
     ;;
   torch_dyload)
     mkdir -p build && cd build
     cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=torch -DCMAKE_BUILD_TYPE=Release -DDYLOAD=ON -DTEST=ON \
-      -DCMAKE_PREFIX_PATH=$(python -c 'import torch;print(torch.utils.cmake_prefix_path)') && make -j8
+    && make -j8
     mkdir -p ${DIOPI_TEST_PATH}/lib && ln -sf ${CURRENT_DIR}/../lib/libdiopi_real_impl.so ${DIOPI_TEST_PATH}/lib
     ;;
   muxi)
     mkdir -p build && cd build
-    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=muxi -DCMAKE_BUILD_TYPE=Release -DTEST=ON \
-      -DENABLE_COVERAGE=${USE_COVERAGE} -DCMAKE_PREFIX_PATH=$(python -c 'import torch;print(torch.utils.cmake_prefix_path)')
-    make -j8
+    cmake_maca .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=muxi -DCMAKE_BUILD_TYPE=Release -DTEST=ON \
+      -DENABLE_COVERAGE=${USE_COVERAGE}
+    make_maca -j8
     ;;
   camb_pytorch)
     mkdir -p build && cd build

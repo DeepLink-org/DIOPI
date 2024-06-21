@@ -4,6 +4,10 @@ project(torch_impl)
 add_compile_definitions(USE_MACA=1)
 set(USE_MACA ON)
 
+set(BASE_TORCH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../torch")
+include(${BASE_TORCH_DIR}/cmake/TorchBaseFunc.cmake)
+InitFindTorch()
+
 find_package(Torch REQUIRED)
 if (Torch_FOUND)
     message(STATUS "TORCH_CXX_FLAGS: ${TORCH_CXX_FLAGS}")
@@ -18,7 +22,6 @@ if (Torch_FOUND)
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-set(BASE_TORCH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../torch")
 
 file(GLOB REAL_IMPL_SRC
   ${BASE_TORCH_DIR}/functions/error.cpp
