@@ -99,8 +99,8 @@ set(ASCEND_IMPL_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/csrc/impl/
 )
 
-set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
-file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp" "${DIOPI_IMPL_DIR}/functions_ext/*.cpp")
+set(ASCEND_NPU_DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
+file(GLOB DIOPI_IMPL_SRC "${ASCEND_NPU_DIOPI_IMPL_DIR}/*.cpp" "${ASCEND_NPU_DIOPI_IMPL_DIR}/functions_ext/*.cpp")
 
 add_definitions(-DBUILD_LIBTORCH)
 

@@ -44,7 +44,6 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
 
     if (xAt.dim() >= 5) {
         set_last_error_string("rotary embedding not support 5D tensor yet");
-        impl::aten::unsetCurCtx();
         return diopi5DNotSupported;
     }
 
@@ -68,8 +67,9 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
 
     std::vector<at::Tensor> chunkResult = xView.chunk(2, -1);
     at::Tensor xNew = op_api::cat({chunkResult[1] * (-1), chunkResult[0]}, -1);
-    at::Tensor result = op_api::mul(cosCat, xView) + op_api::mul(sinCat, xNew);
-    outView.copy_(result);
+    auto result1 = op_api::mul(cosCat, xView);
+    auto result2 = op_api::mul(sinCat, xNew);
+    op_api::add_out(result1, result2, 1.0, outView);
 
     END_CALL_ACL_OP();
 }

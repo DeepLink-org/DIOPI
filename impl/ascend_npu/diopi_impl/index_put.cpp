@@ -23,7 +23,7 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
         indicesAtList.emplace_back(impl::aten::buildATen(indices[i]));
     }
 
-    outAt.copy_(inputAt);
+    outAt.copy_(inputAt, true);
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indicesAtList);
     op_api::_index_put_impl_(outAt, indicesCast, valuesAt, accumulate, false);
     END_CALL_ACL_OP();

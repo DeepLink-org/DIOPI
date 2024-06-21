@@ -20,7 +20,7 @@ diopiError_t diopiIndexSelect(diopiContextHandle_t ctx, diopiTensorHandle_t out,
 
     at::Tensor indexTempAt = indexAt;
     if (indexAt.scalar_type() != at::kInt || indexAt.scalar_type() != at::kLong) {
-        indexTempAt = indexAt.to(at::kLong);
+        indexTempAt = indexAt.to(at::kLong, true);
     }
 
     if (false) {
@@ -41,7 +41,7 @@ diopiError_t diopiIndexSelectBackward(diopiContextHandle_t ctx, diopiTensorHandl
 
     at::Tensor indexTempAt = indexAt;
     if (indexAt.scalar_type() != at::kInt || indexAt.scalar_type() != at::kLong) {
-        indexTempAt = indexAt.to(at::kLong);
+        indexTempAt = indexAt.to(at::kLong, true);
     }
 
     at::Scalar zero{0.0};
