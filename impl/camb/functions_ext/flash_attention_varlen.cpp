@@ -25,6 +25,14 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     DiopiTensor qTensor(q);
     DiopiTensor kTensor(k);
     DiopiTensor vTensor(v);
+
+    const int64_t totalSeqQ = qTensor.shape()[0];
+    const int64_t headNumQ = qTensor.shape()[1];
+    const int64_t headDim = qTensor.shape()[2];
+    const int64_t headNumK = kTensor.shape()[1];
+    DIOPI_CHECK(headDim <= 256, "For camb, flash attention only supports head dimension at most 256.");
+    DIOPI_CHECK(headNumQ % headNumK == 0, "Number of heads in key/value must divide number of heads in query.");
+
     DiopiTensor cumSeqQTensor(cumSeqQ);
     DiopiTensor cumSeqKVTensor(cumSeqKV);
     DiopiTensor softmaxLseTensor(softmaxLse);
@@ -68,9 +76,7 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     CnnlTensorDesc cumSeqKVDesc(cumSeqKVTensor, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc attentionOutTmpDesc(attentionOutTensorTmp, CNNL_LAYOUT_ARRAY);
 
-    const int64_t totalSeqQ = qTensor.shape()[0];
-    const int64_t headNum = qTensor.shape()[1];
-    std::vector<int64_t> softmaxLseShape = {headNum, totalSeqQ};
+    std::vector<int64_t> softmaxLseShape = {headNumQ, totalSeqQ};
     std::vector<int64_t> softmaxLseStride = calContiguousStride(softmaxLseShape);
     CnnlTensorDesc softmaxLseTmpDesc;
     softmaxLseTmpDesc.set(softmaxLseTensorTmp.dtype(), softmaxLseShape, softmaxLseStride, CNNL_LAYOUT_ARRAY);
@@ -134,6 +140,14 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
     DiopiTensor qTensor(q);
     DiopiTensor kTensor(k);
     DiopiTensor vTensor(v);
+
+    const int64_t totalSeqQ = qTensor.shape()[0];
+    const int64_t headNumQ = qTensor.shape()[1];
+    const int64_t headDim = qTensor.shape()[2];
+    const int64_t headNumK = kTensor.shape()[1];
+    DIOPI_CHECK(headDim <= 256, "For camb, flash attention only supports head dimension at most 256.");
+    DIOPI_CHECK(headNumQ % headNumK == 0, "Number of heads in key/value must divide number of heads in query.");
+
     DiopiTensor cumSeqQTensor(cumSeqQ);
     DiopiTensor cumSeqKVTensor(cumSeqKV);
     DiopiTensor gradOutTensor(gradOutput);
@@ -192,9 +206,7 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
     CnnlTensorDesc gradKDesc(gradKTensorTmp, CNNL_LAYOUT_ARRAY);
     CnnlTensorDesc gradVDesc(gradVTensorTmp, CNNL_LAYOUT_ARRAY);
 
-    const int64_t totalSeqQ = qTensor.shape()[0];
-    const int64_t headNum = qTensor.shape()[1];
-    std::vector<int64_t> softmaxLseShape = {headNum, totalSeqQ};
+    std::vector<int64_t> softmaxLseShape = {headNumQ, totalSeqQ};
     std::vector<int64_t> softmaxLseStride = calContiguousStride(softmaxLseShape);
     CnnlTensorDesc softmaxLseDesc;
     softmaxLseDesc.set(softmaxLseTensor.dtype(), softmaxLseShape, softmaxLseStride, CNNL_LAYOUT_ARRAY);
