@@ -257,10 +257,10 @@ ascend_npu:
 - diopiPowTensor
 - diopiLerpTensor
 - diopiLerpScalar
-- diopiFlashAttentionV2
-- diopiFlashAttentionV2Backward
-- diopiFlashAttentionVarLenV2
-- diopiFlashAttentionVarLenV2Backward
+# - diopiFlashAttentionV2
+# - diopiFlashAttentionV2Backward
+# - diopiFlashAttentionVarLenV2
+# - diopiFlashAttentionVarLenV2Backward
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
