@@ -80,6 +80,20 @@ else()
     message(WARNING "No implementation module is compiled, cmake requires option -DIMPL_OPT=CUDA or TORCH")
 endif()
 
+# 1.the lib ${DEVICEIMPL} in which all exported symbols are 'weak' can be considered as 'no-needed' lib. 
+# some compilers force link such libs by default, but others having 'as-needed' default link-config may 
+# throw away these libs. so we manually add '-no-as-needed' here to guarantee linking ${DEVICEIMPL}.
+# eg: if you compiler don't link 'no-needed' libs by default, please use 'g++ -dumpspecs' and see '*link:' section
+# to check if it contains policy like '%{!fsanitize=*:--as-needed}' or other policy having '--as-needed' set.
+# you can change compiler's default spec by typing 'gcc -specs=./new.specs' but it's hard to use.
+# Supplementary: https://gcc.gnu.org/onlinedocs/gcc/Spec-Files.html
+
+# 2. when the code below adding "-no-as-needed" opt to link.txt, the opt isn't be added exactly before the place
+# ${DEVICEIMPL} is linked but as a link option before any link-items. if another link-item change linking-policy
+# as "-Wl,--no-as-needed,\"\$<TARGET_FILE:other_lib>\" -Wl,--as-needed" and ${DEVICEIMPL} is linked just after 
+# this item; it will still be linked by -as-needed and finally be throw away by ld and cause error !!
+# so if this error happens, please add link-option "-Wl,-no-as-needed" to the lib which link ${DEVICEIMPL}.
+
 target_link_options(${DEVICEIMPL} INTERFACE "LINKER:-no-as-needed")
 
 # install
