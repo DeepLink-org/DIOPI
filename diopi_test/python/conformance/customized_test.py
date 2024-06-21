@@ -472,10 +472,10 @@ class CustomizedTest(object):
         # adapt to GQA
         if k.shape[1] != q.shape[1] and v.shape[1] != q.shape[1]:  # MQA/GQA
             k = repeat(
-                k, "... hkv d -> ... (hkv g) d", g=q.shape[2] // k.shape[2]
+                k, "... hkv d -> ... (hkv g) d", g=q.shape[1] // k.shape[1]
             )
             v = repeat(
-                v, "... hkv d -> ... (hkv g) d", g=q.shape[2] // v.shape[2]
+                v, "... hkv d -> ... (hkv g) d", g=q.shape[1] // v.shape[1]
             )
         # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
         cu_seqlens = cu_seqlens_q
