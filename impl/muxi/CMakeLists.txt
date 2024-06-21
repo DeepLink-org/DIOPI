@@ -1,4 +1,4 @@
-project(torch_impl)
+project(muxi_impl)
 
 # muxi torch config
 add_compile_definitions(USE_MACA=1)
@@ -41,7 +41,7 @@ file(GLOB REAL_IMPL_SRC
 
 # adaptor
 set(USE_ADAPTOR ON)
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/convert_config.yaml")
     message(FATAL_ERROR "convert_config.yaml doesn't exist.")
 endif()
 
@@ -53,7 +53,7 @@ if(USE_ADAPTOR)
     set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
     set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
     add_custom_target(adaptor_code_gen
-        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH}
+        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${DIOPI_IMPL_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH}
                         --config_device=muxi --base_device=torch
         BYPRODUCTS ${GEN_FILES}
         DEPENDS adaptor_gen_dependency)
