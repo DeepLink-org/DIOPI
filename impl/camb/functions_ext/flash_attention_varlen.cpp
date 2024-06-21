@@ -16,8 +16,8 @@ namespace camb {
 
 diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t softmaxLse, diopiGeneratorHandle_t gen,
                                        diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cumSeqQ,
-                                       diopiConstTensorHandle_t cumSeqKV, diopiConstTensorHandle_t alibiSlopes, int maxSeqLenQ, int maxSeqLenKV, float pDropout,
-                                       float softmaxScale, bool isCausal, int windowSizeLeft, int windowSizeRight) {
+                                       diopiConstTensorHandle_t cumSeqKV, diopiConstTensorHandle_t alibiSlopes, int32_t maxSeqLenQ, int32_t maxSeqLenKV,
+                                       float pDropout, float softmaxScale, bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DIOPI_CHECK(alibiSlopes == nullptr, "For camb, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
@@ -131,8 +131,8 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
                                                diopiConstTensorHandle_t gradOutput, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q,
                                                diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t cumSeqQ,
                                                diopiConstTensorHandle_t cumSeqKV, diopiConstTensorHandle_t alibiSlopes, diopiConstTensorHandle_t attentionOut,
-                                               diopiConstTensorHandle_t softmaxLse, int maxSeqLenQ, int maxSeqLenKV, float pDropout, float softmaxScale,
-                                               bool isCausal, int windowSizeLeft, int windowSizeRight) {
+                                               diopiConstTensorHandle_t softmaxLse, int32_t maxSeqLenQ, int32_t maxSeqLenKV, float pDropout, float softmaxScale,
+                                               bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     DIOPI_CHECK(alibiSlopes == nullptr, "For camb, flash attention currently does not support Attention with Linear Biases (ALiBi)!");

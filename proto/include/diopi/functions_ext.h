@@ -208,8 +208,8 @@ DIOPI_API diopiError_t diopiMultiHeadAttentionVarLenBackward(diopiContextHandle_
  */
 DIOPI_API diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t softmax_lse,
                                            diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                           diopiConstTensorHandle_t alibi_slopes, float p_dropout, float softmax_scale, bool is_causal, int window_size_left,
-                                           int window_size_right);
+                                           diopiConstTensorHandle_t alibi_slopes, float p_dropout, float softmax_scale, bool is_causal,
+                                           int32_t window_size_left, int32_t window_size_right);
 
 /**
  * @brief Compute the back propagation for Flash Attention.
@@ -240,7 +240,7 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t grad_output, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q,
                                                    diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiConstTensorHandle_t alibi_slopes,
                                                    diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t softmax_lse, float p_dropout,
-                                                   float softmax_scale, bool is_causal, int window_size_left, int window_size_right);
+                                                   float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right);
 
 /**
  * @brief Compute the forward propagation for the variable length version of Flash Attention.
@@ -271,8 +271,8 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
 DIOPI_API diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attention_out, diopiTensorHandle_t softmax_lse,
                                                  diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                                  diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_kv, diopiConstTensorHandle_t alibi_slopes,
-                                                 int max_seqlen_q, int max_seqlen_kv, float p_dropout, float softmax_scale, bool is_causal,
-                                                 int window_size_left, int window_size_right);
+                                                 int32_t max_seqlen_q, int32_t max_seqlen_kv, float p_dropout, float softmax_scale, bool is_causal,
+                                                 int32_t window_size_left, int32_t window_size_right);
 
 /**
  * @brief Compute the back propagation for the variable length version of Flash Attention.
@@ -310,8 +310,8 @@ DIOPI_API diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ct
                                                          diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                                          diopiConstTensorHandle_t cum_seq_q, diopiConstTensorHandle_t cum_seq_kv,
                                                          diopiConstTensorHandle_t alibi_slopes, diopiConstTensorHandle_t attention_out,
-                                                         diopiConstTensorHandle_t softmax_lse, int max_seqlen_q, int max_seqlen_kv, float p_dropout,
-                                                         float softmax_scale, bool is_causal, int window_size_left, int window_size_right);
+                                                         diopiConstTensorHandle_t softmax_lse, int32_t max_seqlen_q, int32_t max_seqlen_kv, float p_dropout,
+                                                         float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right);
 
 // This interface is temporarily designed for ascend, please do not use it with other devices.
 /**
