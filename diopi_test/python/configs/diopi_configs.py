@@ -9087,7 +9087,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ["alibi_slopes"],
-                    "shape": (None, None, None, None, None),
+                    "shape": (None, None, None, None, None, None),
                     "dtype": [np.float32,],
                 },
                 
