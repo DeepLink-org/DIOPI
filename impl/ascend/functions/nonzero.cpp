@@ -20,14 +20,15 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
     // build outTmp with maxOutSize and call aclnnNonZero to update outTmp
     diopiTensorHandle_t outTmp;
     diopiRequireTensor(ctx, &outTmp, &maxOutSize, nullptr, diopi_dtype_int64, diopi_device);
-    auto params = DIOPI_ASECND_CALL_ACLNN_SYNC(aclnnNonzero, ctx, input, outTmp);
+    auto params = aclnn_adaptor::convertParams(input, outTmp).params();
+    DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(aclnnNonzero, ctx, params);
 
     // get the true out Shape
     int64_t* dims = nullptr;
     uint64_t dimsNum = 0;
     using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** viewDims, uint64_t* viewDimsNum);
     aclGetViewShapeFunc aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(impl::ascend::aclnn_adaptor::getOpApiFuncAddr("aclGetViewShape"));
-    aclGetViewShape(std::get<1>(params.params()), &dims, &dimsNum);
+    aclGetViewShape(std::get<1>(params), &dims, &dimsNum);
     std::vector<int64_t> outShape(dims, dims + dimsNum);
     diopiSize_t outSize = {outShape.data(), static_cast<int64_t>(dimsNum)};
 
@@ -41,5 +42,6 @@ diopiError_t diopiNonzero(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
 
     return diopiSuccess;
 }
+
 }  // namespace ascend
 }  // namespace impl
