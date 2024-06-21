@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import math
-from einops import rearrange
+from einops import rearrange, repeat
 import torch.nn.functional as F
 
 
@@ -428,8 +428,16 @@ class CustomizedTest(object):
         return output
 
     def flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
-        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         # TODO: impl for alibi and sliding window local attention
+        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # adapt to GQA
+        if k.shape[2] != q.shape[2] and v.shape[2] != q.shape[2]:  # MQA/GQA
+            k = repeat(
+                k, "... hkv d -> ... (hkv g) d", g=q.shape[2] // k.shape[2]
+            )
+            v = repeat(
+                v, "... hkv d -> ... (hkv g) d", g=q.shape[2] // v.shape[2]
+            )
         seqlen = q.shape[1]
         softmax_scale = (
             1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
@@ -460,10 +468,18 @@ class CustomizedTest(object):
         window_size_right,
     ):
         # TODO: impl for alibi and sliding window local attention
+        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # adapt to GQA
+        if k.shape[1] != q.shape[1] and v.shape[1] != q.shape[1]:  # MQA/GQA
+            k = repeat(
+                k, "... hkv d -> ... (hkv g) d", g=q.shape[2] // k.shape[2]
+            )
+            v = repeat(
+                v, "... hkv d -> ... (hkv g) d", g=q.shape[2] // v.shape[2]
+            )
         # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
         cu_seqlens = cu_seqlens_q
         max_seqlen = max_seqlen_q
-        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         batch_size = len(cu_seqlens) - 1
         _, head_num, head_dim = q.size()
         device = q.device
