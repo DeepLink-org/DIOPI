@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(torch_impl)
 
 option(HIP "Whether to use HIP when available" OFF)
+option(DIOPI_TORCH_UNSAFE_BUILDATEN "Whether to use fast but unsafe buildATen (caution: only use this with DIPU)" OFF)
 
 include(cmake/TorchBaseFunc.cmake)
 InitFindTorch()
@@ -102,6 +103,10 @@ endif()
 
 if(USE_ADAPTOR)
     add_dependencies(${DEVICEIMPL} adaptor_code_gen)
+endif()
+
+if(DIOPI_TORCH_UNSAFE_BUILDATEN)
+    target_compile_definitions(${DEVICEIMPL} PRIVATE DIOPI_TORCH_UNSAFE_BUILDATEN)
 endif()
 
 if (TEST)

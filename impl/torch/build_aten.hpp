@@ -59,7 +59,7 @@ private:
 [[nodiscard]] at::Tensor buildATenSafe(diopiConstTensorHandle_t tensor);
 
 [[nodiscard]] inline auto buildATen(diopiConstTensorHandle_t tensor) {
-#if 1
+#if DIOPI_TORCH_UNSAFE_BUILDATEN
     return buildATenUnsafe(tensor);
 #else
     return buildATenSafe(tensor);
