@@ -5,6 +5,10 @@ option(HIP "Whether to use HIP when available" OFF)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSAFE_BUILD_ATEN=1")
 
+include(cmake/TorchBaseFunc.cmake)
+InitFindTorch()
+
+
 find_package(Torch 2.0 REQUIRED)
 if (Torch_FOUND)
     message(STATUS "TORCH_CXX_FLAGS: ${TORCH_CXX_FLAGS}")
