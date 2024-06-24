@@ -5684,6 +5684,10 @@ def flash_attention_varlen_v2(
         generator = None
     else:
         assert 0, "The p_dropout value must be in range of [0, 1]"
+    if is_causal:
+        attention_mask = Tensor()
+    else:
+        attention_mask = Tensor()
     softmax_max = Tensor()
     softmax_sum = Tensor()
     softmax_out = Tensor()
