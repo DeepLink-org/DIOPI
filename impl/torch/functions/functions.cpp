@@ -69,7 +69,7 @@ diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     impl::aten::setCurStream(ctx);
     auto atOut = impl::aten::buildATen(out);
     auto atInput = impl::aten::buildATen(input);
-    at::native::copy_(atOut, atInput ,true);
+    at::native::copy_(atOut, atInput, true);
     CALL_ATEN_CUDA_FUNC(relu_, atOut);
 
     return diopiSuccess;
@@ -207,7 +207,7 @@ diopiError_t diopiConvolution2d(diopiContextHandle_t ctx, diopiTensorHandle_t ou
         DIOPI_CHECK(atInput.options().type_equal(atWeight.options()), "Input type and weight type should be the same");
         DIOPI_CHECK(!atBias.defined() || (atInput.options().type_equal(atBias.options())), "Input type and bias type should be the same");
         auto tempOut = CALL_ATEN_CUDA_FUNC(cudnn_convolution, atInput, atWeight, atPadding, atStride, atDilation, groups, false, false, true);
-        at::native::copy_(atOut, tempOut ,true);
+        at::native::copy_(atOut, tempOut, true);
         if (atBias.defined()) {
             std::vector<int64_t> shape(atInput.dim(), 1);
             shape[1] = -1;
@@ -442,7 +442,7 @@ diopiError_t diopiMax(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiTe
 
 diopiError_t diopiMaxAll(diopiContextHandle_t ctx, diopiTensorHandle_t max, diopiConstTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
-    auto atInput = impl::aten::buildATen(input);    
+    auto atInput = impl::aten::buildATen(input);
     auto atOut = CALL_ATEN_CUDA_FUNC(max, atInput);
     impl::aten::updateATen2Tensor(ctx, atOut, max);
 
@@ -527,7 +527,7 @@ diopiError_t diopiMaskedScatter(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     auto atMask = impl::aten::buildATen(mask);
     auto atSource = impl::aten::buildATen(source);
     auto atOut = impl::aten::buildATen(out);
-    at::native::copy_(atOut, atInput ,true);
+    at::native::copy_(atOut, atInput, true);
     CALL_ATEN_CUDA_FUNC(masked_scatter_, atOut, atMask, atSource);
 
     return diopiSuccess;
@@ -1800,8 +1800,8 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
         auto atMask = impl::aten::buildATen(mask);
         if (atInput.numel() == atMask.numel()) {
             auto tempOut = CALL_ATEN_CUDA_FUNC(_fused_dropout, atInput, 1 - p, gen);
-            at::native::copy_(atOut, std::get<0>(tempOut) ,true);
-            at::native::copy_(atMask, std::get<1>(tempOut) ,true);
+            at::native::copy_(atOut, std::get<0>(tempOut), true);
+            at::native::copy_(atMask, std::get<1>(tempOut), true);
         } else {
             CALL_ATEN_CUDA_FUNC(bernoulli_, atMask, 1 - p, gen);
             CALL_ATEN_CUDA_FUNC(mul_out, atOut, atInput, atMask);
@@ -1824,8 +1824,8 @@ diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
         auto atMask = impl::aten::buildATen(mask);
         if (atInput.numel() == atMask.numel()) {
             auto tempOut = CALL_ATEN_CUDA_FUNC(_fused_dropout, atInput, 1 - p, gen);
-            at::native::copy_(atInput, std::get<0>(tempOut) ,true);
-            at::native::copy_(atMask, std::get<1>(tempOut) ,true);
+            at::native::copy_(atInput, std::get<0>(tempOut), true);
+            at::native::copy_(atMask, std::get<1>(tempOut), true);
         } else {
             CALL_ATEN_CUDA_FUNC(bernoulli_, atMask, 1 - p, gen);
             atInput.mul_(atMask).div_(1 - p);
@@ -1977,7 +1977,7 @@ diopiError_t diopiHardswishBackward(diopiContextHandle_t ctx, diopiTensorHandle_
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atInput = impl::aten::buildATen(input);
     auto tempOut = CALL_ATEN_CUDA_FUNC(hardswish_backward, atGradOutput, atInput);
-    at::native::copy_(atGradInput, tempOut ,true);
+    at::native::copy_(atGradInput, tempOut, true);
 
     return diopiSuccess;
 }
@@ -2070,7 +2070,7 @@ diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
     auto atGrad = impl::aten::buildATen(grad);
     auto atGradInput = impl::aten::buildATen(grad_input);
     DIOPI_IMPL_BUILD_ATEN_OPTIONAL_LIST(vecIdx, indices, nums);
-    at::native::copy_(atGradInput, atZerosInput ,true);
+    at::native::copy_(atGradInput, atZerosInput, true);
     CALL_ATEN_CUDA_FUNC(_index_put_impl_, atGradInput, vecIdx, atGrad, true, true);
 
     return diopiSuccess;
@@ -2134,8 +2134,7 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
 #ifdef USE_HIP
     diopi_tensor_list vecOut = {grad_input, grad_weight};
     auto grad_input_mask = std::array<bool, 3>{true, true, false};
-    auto atOut = CALL_ATEN_FUNC(
-        miopen_convolution_backward, atInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, false, false, grad_input_mask);
+    auto atOut = CALL_ATEN_FUNC(miopen_convolution_backward, atInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, false, false, grad_input_mask);
     updateATen2Tensor(ctx, atOut, vecOut);
     if (bias_sizes && grad_bias) {
         auto atGradBias = impl::aten::buildATen(grad_bias);
@@ -2156,21 +2155,11 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
         auto atGradInput = impl::aten::buildATen(grad_input);
         auto atGradWeight = impl::aten::buildATen(grad_weight);
         auto atGradBias = impl::aten::buildATen(grad_bias);
-        auto tempOut = CALL_ATEN_CUDA_FUNC(convolution_backward,
-                                     atGrad,
-                                     atInput,
-                                     atWeight,
-                                     atBiasSizes,
-                                     atStride,
-                                     atPadding,
-                                     atDilation,
-                                     false,
-                                     outputPadding,
-                                     groups,
-                                     {true, true, true});
-        at::native::copy_(atGradInput, std::get<0>(tempOut) ,true);
-        at::native::copy_(atGradWeight, std::get<1>(tempOut) ,true);
-        at::native::copy_(atGradBias, std::get<2>(tempOut) ,true);
+        auto tempOut = CALL_ATEN_CUDA_FUNC(
+            convolution_backward, atGrad, atInput, atWeight, atBiasSizes, atStride, atPadding, atDilation, false, outputPadding, groups, {true, true, true});
+        at::native::copy_(atGradInput, std::get<0>(tempOut), true);
+        at::native::copy_(atGradWeight, std::get<1>(tempOut), true);
+        at::native::copy_(atGradBias, std::get<2>(tempOut), true);
     } else {
         auto results = at::convolution_backward(
             atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, outputPadding, groups, {true, true, false});
@@ -2207,17 +2196,17 @@ diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorH
 #ifdef USE_HIP
     auto grad_input_mask = std::array<bool, 3>{true, true, false};
     auto atOut = CALL_ATEN_FUNC(miopen_convolution_transpose_backward,
-                                  atInput,
-                                  atGrad,
-                                  atWeight,
-                                  atPadding,
-                                  atOutputPadding,
-                                  atStride,
-                                  atDilation,
-                                  groups,
-                                  false,
-                                  false,
-                                  grad_input_mask);
+                                atInput,
+                                atGrad,
+                                atWeight,
+                                atPadding,
+                                atOutputPadding,
+                                atStride,
+                                atDilation,
+                                groups,
+                                false,
+                                false,
+                                grad_input_mask);
     updateATen2Tensor(ctx, atOut, vecOut);
     if (bias_sizes != nullptr && grad_bias != nullptr) {
         auto atGradBias = impl::aten::buildATen(grad_bias);
@@ -2235,21 +2224,11 @@ diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorH
         auto atGradInput = impl::aten::buildATen(grad_input);
         auto atGradWeight = impl::aten::buildATen(grad_weight);
         auto atGradBias = impl::aten::buildATen(grad_bias);
-        auto tempOut = CALL_ATEN_CUDA_FUNC(convolution_backward, 
-                                     atGrad,
-                                     atInput,
-                                     atWeight,
-                                     atBiasSizes,
-                                     atStride,
-                                     atPadding,
-                                     atDilation,
-                                     true,
-                                     atOutputPadding,
-                                     groups,
-                                     {true, true, true});
-        at::native::copy_(atGradInput, std::get<0>(tempOut) ,true);
-        at::native::copy_(atGradWeight, std::get<1>(tempOut) ,true);
-        at::native::copy_(atGradBias, std::get<2>(tempOut) ,true);
+        auto tempOut = CALL_ATEN_CUDA_FUNC(
+            convolution_backward, atGrad, atInput, atWeight, atBiasSizes, atStride, atPadding, atDilation, true, atOutputPadding, groups, {true, true, true});
+        at::native::copy_(atGradInput, std::get<0>(tempOut), true);
+        at::native::copy_(atGradWeight, std::get<1>(tempOut), true);
+        at::native::copy_(atGradBias, std::get<2>(tempOut), true);
     } else {
         auto grad_inputs = at::convolution_backward(
             atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, true, atOutputPadding, groups, {true, true, false});
@@ -3060,8 +3039,7 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
     diopi_tensor_list vecOut = {grad_input, grad_weight};
 #ifdef USE_HIP
     auto grad_input_mask = std::array<bool, 3>{true, true, false};
-    auto atOut = CALL_ATEN_FUNC(
-        miopen_convolution_backward, atInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, false, false, grad_input_mask);
+    auto atOut = CALL_ATEN_FUNC(miopen_convolution_backward, atInput, atGrad, atWeight, atPadding, atStride, atDilation, groups, false, false, grad_input_mask);
     updateATen2Tensor(ctx, atOut, vecOut);
     if (bias_sizes != nullptr && grad_bias != nullptr) {
         auto atBias = impl::aten::buildATen(grad_bias);
@@ -3082,21 +3060,11 @@ diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diopiTensorHan
         auto atGradInput = impl::aten::buildATen(grad_input);
         auto atGradWeight = impl::aten::buildATen(grad_weight);
         auto atGradBias = impl::aten::buildATen(grad_bias);
-        auto tempOut = CALL_ATEN_CUDA_FUNC(convolution_backward,
-                                     atGrad,
-                                     atInput,
-                                     atWeight,
-                                     atBiasSizes,
-                                     atStride,
-                                     atPadding,
-                                     atDilation,
-                                     false,
-                                     atOutputPadding,
-                                     groups,
-                                     {true, true, true});
-        at::native::copy_(atGradInput, std::get<0>(tempOut) ,true);
-        at::native::copy_(atGradWeight, std::get<1>(tempOut) ,true);
-        at::native::copy_(atGradBias, std::get<2>(tempOut) ,true);
+        auto tempOut = CALL_ATEN_CUDA_FUNC(
+            convolution_backward, atGrad, atInput, atWeight, atBiasSizes, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, true});
+        at::native::copy_(atGradInput, std::get<0>(tempOut), true);
+        at::native::copy_(atGradWeight, std::get<1>(tempOut), true);
+        at::native::copy_(atGradBias, std::get<2>(tempOut), true);
     } else {
         auto grad_inputs = at::convolution_backward(
             atGrad, atInput, atWeight, c10::nullopt, atStride, atPadding, atDilation, false, atOutputPadding, groups, {true, true, false});
@@ -4345,7 +4313,8 @@ DIOPI_API diopiError_t diopiBatchNormGatherStatsWithCounts(diopiContextHandle_t 
     auto atCounts = impl::aten::buildATen(counts);
     auto atMean = impl::aten::buildATen(mean);
     auto atInvstd = impl::aten::buildATen(invstd);
-    auto tempOut = CALL_ATEN_CUDA_FUNC(batch_norm_gather_stats_with_counts, atInput, atMean_all, atInvstd_all, atRunning_mean, atRunning_var, momentum, eps, atCounts);
+    auto tempOut =
+        CALL_ATEN_CUDA_FUNC(batch_norm_gather_stats_with_counts, atInput, atMean_all, atInvstd_all, atRunning_mean, atRunning_var, momentum, eps, atCounts);
     at::native::copy_(atMean, std::get<0>(tempOut), true);
     at::native::copy_(atInvstd, std::get<1>(tempOut), true);
 
