@@ -76,7 +76,7 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
     int64_t* viewDims = nullptr;
     uint64_t viewDimNum = 0;
     using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** viewDims, uint64_t* viewDimsNum);
-    aclGetViewShapeFunc aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(impl::ascend::aclnn_adaptor::getOpApiFuncAddr("aclGetViewShape"));
+    static aclGetViewShapeFunc aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(impl::ascend::aclnn_adaptor::getOpApiFuncAddr("aclGetViewShape"));
     int ret = aclGetViewShape(std::get<2>(params.params()), &viewDims, &viewDimNum);
     ASCEND_CHECK_ABORT(ret == 0, "aclGetViewShape failed");
     diopiSize_t outShape{viewDims, static_cast<int64_t>(viewDimNum)};
