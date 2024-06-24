@@ -570,6 +570,7 @@ class CustomizedTest(object):
         # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
         cu_seqlens = cu_seqlens_q
         max_seqlen = max_seqlen_q
+        cu_seqlens.insert(0, 0)
         batch_size = len(cu_seqlens) - 1
         _, head_num, head_dim = q.size()
         device = q.device
