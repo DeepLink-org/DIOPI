@@ -108,7 +108,7 @@ diopiError_t diopiMultiHeadAttention(diopiContextHandle_t ctx, diopiTensorHandle
     auto atQ = impl::aten::buildATen(q);
     auto atK = impl::aten::buildATen(k);
     auto atV = impl::aten::buildATen(v);
-    c10::optional<at::Tensor> optOut(impl::aten::buildATen(out));
+    DIOPI_IMPL_BUILD_ATEN_OPTIONAL(optOut, out);
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
 
     auto headSize = atQ.sizes()[3];
@@ -146,9 +146,9 @@ diopiError_t diopiMultiHeadAttentionBackward(diopiContextHandle_t ctx, diopiCons
     auto atGradOut = impl::aten::buildATen(grad_out);
     auto atOut = impl::aten::buildATen(out);
     auto atLogsumexp = impl::aten::buildATen(softmax_lse);
-    c10::optional<at::Tensor> optGradQ(impl::aten::buildATen(grad_q));
-    c10::optional<at::Tensor> optGradK(impl::aten::buildATen(grad_k));
-    c10::optional<at::Tensor> optGradV(impl::aten::buildATen(grad_v));
+    DIOPI_IMPL_BUILD_ATEN_OPTIONAL(optGradQ, grad_q);
+    DIOPI_IMPL_BUILD_ATEN_OPTIONAL(optGradK, grad_k);
+    DIOPI_IMPL_BUILD_ATEN_OPTIONAL(optGradV, grad_v);
     c10::optional<at::Tensor> nullOpt;  // Workaround: flash_attn uses non-const optional& as args (which is a really bad idea)
 
     std::vector<at::Tensor> result = DIOPI_EXT_CALL_FLASH(
@@ -166,7 +166,7 @@ diopiError_t diopiMultiHeadAttentionVarLen(diopiContextHandle_t ctx, diopiTensor
     auto atQ = impl::aten::buildATen(q);
     auto atK = impl::aten::buildATen(k);
     auto atV = impl::aten::buildATen(v);
-    c10::optional<at::Tensor> optOut(impl::aten::buildATen(out));
+    DIOPI_IMPL_BUILD_ATEN_OPTIONAL(optOut, out);
     auto atCumSeqQ = impl::aten::buildATen(cum_seq_q);
     auto atCumSeqK = impl::aten::buildATen(cum_seq_k);
     auto atGen = buildGeneratorForMha(ctx, gen, dropout_p);
