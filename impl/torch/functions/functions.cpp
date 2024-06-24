@@ -3242,7 +3242,7 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups, double eps) {
     impl::aten::setCurStream(ctx);
-    at::Tensor atInput = impl::aten::buildATen(input);
+    at::Tensor atInput = impl::aten::buildATen(input).contiguous();
     at::Tensor atWeight = impl::aten::buildATen(weight);
     at::Tensor atBias = impl::aten::buildATen(bias);
     at::Tensor atOut = impl::aten::buildATen(out);
