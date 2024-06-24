@@ -136,6 +136,8 @@ ascend:
 - diopiLog2
 - diopiLog2Inp
 - diopiLogInp
+- diopiMaskedSelect
+- diopiMaskedSelectBackward
 - diopiMaskedFill
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
@@ -256,8 +258,6 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiTensorDestructionHook
-- diopiMaskedSelect
-- diopiMaskedSelectBackward
 - diopiMm
 - diopiNLLLoss
 - diopiNLLLossBackward
