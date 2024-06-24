@@ -9188,6 +9188,182 @@ diopi_configs = {
         ),
     ),
 
+    'flash_attention_v2_mha': dict(
+        name=['flash_attention_v2'],
+        interface=['CustomizedTest'],
+        saved_args=dict(out=0),
+        para=dict(
+            p_dropout=[0, 0, 0, 0],
+            is_causal=[True, False, True, True],
+            softmax_scale=[0.0883, None, 0.125, 0.125],
+            window_size_left=[-1, -1, -1, -1],
+            window_size_right=[-1, -1, -1, -1],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((1, 64, 64, 128), (1, 256, 16, 128), (1, 64, 32, 128), (1, 16, 8, 64)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ["alibi_slopes"],
+                    "shape": (None, None, None, None),
+                    "dtype": [np.float32,],
+                },
+            ],
+        ),
+    ),
+
+    'flash_attention_v2_gqa': dict(
+        name=['flash_attention_v2'],
+        interface=['CustomizedTest'],
+        saved_args=dict(out=0),
+        para=dict(
+            p_dropout=[0, 0, 0],
+            is_causal=[True, False, True],
+            softmax_scale=[0.0883, None, 0.125],
+            window_size_left=[-1, -1, -1],
+            window_size_right=[-1, -1, -1],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((2, 64, 64, 128), (1, 256, 32, 128), (8, 32, 32, 128)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((2, 64, 8, 128), (1, 256, 8, 128), (8, 32, 8, 128)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((2, 64, 8, 128), (1, 256, 8, 128), (8, 32, 8, 128)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ["alibi_slopes"],
+                    "shape": (None, None, None),
+                    "dtype": [np.float32,],
+                },
+            ],
+        ),
+    ),
+
+    'flash_attention_varlen_v2_mha': dict(
+        name=['flash_attention_varlen_v2'],
+        interface=['CustomizedTest'],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            p_dropout=[0, 0, 0, 0, 0, 0],
+            is_causal=[True, True, False, True, False, True],
+            softmax_scale=[None, 0.0883, None, 0.125, None, None],
+            max_seqlen_q=[32, 32, 128, 64, 256, 2560],
+            max_seqlen_kv=[32, 32, 128, 64, 256, 2560],
+            cu_seqlens_q=[[32], [16, 48, 64], [32, 64, 128, 256], [16, 48, 64, 128], [2, 7, 19, 32, 64, 96, 128, 256, 512], [32, 96, 224, 2784]],
+            cu_seqlens_kv=[[32], [16, 48, 64], [32, 64, 128, 256], [16, 48, 64, 128], [2, 7, 19, 32, 64, 96, 128, 256, 512], [32, 96, 224, 2784]],
+            window_size_left=[-1, -1, -1, -1, -1, -1],
+            window_size_right=[-1, -1, -1, -1, -1, -1],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64), (512, 8, 64), (2784, 8, 64)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64), (512, 8, 64), (2784, 8, 64)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64), (512, 8, 64), (2784, 8, 64)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ["alibi_slopes"],
+                    "shape": (None, None, None, None, None, None),
+                    "dtype": [np.float32,],
+                },
+            ],
+        ),
+    ),
+
+    'flash_attention_varlen_v2_gqa': dict(
+        name=['flash_attention_varlen_v2'],
+        interface=['CustomizedTest'],
+        saved_args=dict(out=0),
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            p_dropout=[0, 0, 0, 0, 0, 0],
+            is_causal=[True, True, False, True, False, True],
+            softmax_scale=[None, 0.0883, None, 0.125, None, None],
+            max_seqlen_q=[32, 32, 128, 64, 256, 2560],
+            max_seqlen_kv=[32, 32, 128, 64, 256, 2560],
+            cu_seqlens_q=[[32], [16, 48, 64], [32, 64, 128, 256], [16, 48, 64, 128], [2, 7, 19, 32, 64, 96, 128, 256, 512], [32, 96, 224, 2784]],
+            cu_seqlens_kv=[[32], [16, 48, 64], [32, 64, 128, 256], [16, 48, 64, 128], [2, 7, 19, 32, 64, 96, 128, 256, 512], [32, 96, 224, 2784]],
+            window_size_left=[-1, -1, -1, -1, -1, -1],
+            window_size_right=[-1, -1, -1, -1, -1, -1],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((32, 32, 128), (64, 64, 128), (256, 16, 128), (128, 8, 64), (512, 8, 64), (2784, 8, 64)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((32, 4, 128), (64, 4, 128), (256, 2, 128), (128, 2, 64), (512, 2, 64), (2784, 2, 64)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((32, 4, 128), (64, 4, 128), (256, 2, 128), (128, 2, 64), (512, 2, 64), (2784, 2, 64)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ["alibi_slopes"],
+                    "shape": (None, None, None, None, None, None),
+                    "dtype": [np.float32,],
+                },
+            ],
+        ),
+    ),
+
     'scaled_masked_softmax': dict(
         name=['scaled_masked_softmax'],
         interface=['CustomizedTest'],
