@@ -452,7 +452,97 @@ class CustomizedTest(object):
         output = torch.einsum("bhts,bshd->bthd", attention, v)
         return output
 
+    def flash_attention_v2(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
+        # TODO: impl for alibi and sliding window local attention
+        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # adapt to GQA
+        if k.shape[2] != q.shape[2] and v.shape[2] != q.shape[2]:  # MQA/GQA
+            k = repeat(
+                k, "... hkv d -> ... (hkv g) d", g=q.shape[2] // k.shape[2]
+            )
+            v = repeat(
+                v, "... hkv d -> ... (hkv g) d", g=q.shape[2] // v.shape[2]
+            )
+        seqlen = q.shape[1]
+        softmax_scale = (
+            1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
+        )
+        scores = torch.einsum("bthd,bshd->bhts", q, k * softmax_scale)
+        if is_causal:
+            causal_mask = torch.triu(
+                torch.full((seqlen, seqlen), float("-inf"), device=scores.device), 1
+            )
+            scores = scores + causal_mask.to(dtype=scores.dtype)
+        attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
+        output = torch.einsum("bhts,bshd->bthd", attention, v)
+        return output
+
     def flash_attention_varlen(
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        alibi_slopes,
+        max_seqlen_q,
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+        window_size_left,
+        window_size_right,
+    ):
+        # TODO: impl for alibi and sliding window local attention
+        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # adapt to GQA
+        if k.shape[1] != q.shape[1] and v.shape[1] != q.shape[1]:  # MQA/GQA
+            k = repeat(
+                k, "... hkv d -> ... (hkv g) d", g=q.shape[1] // k.shape[1]
+            )
+            v = repeat(
+                v, "... hkv d -> ... (hkv g) d", g=q.shape[1] // v.shape[1]
+            )
+        # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
+        cu_seqlens = cu_seqlens_q
+        max_seqlen = max_seqlen_q
+        batch_size = len(cu_seqlens) - 1
+        _, head_num, head_dim = q.size()
+        device = q.device
+
+        padded_shape = (batch_size, max_seqlen, head_num, head_dim)
+        q_padded = torch.zeros(padded_shape, dtype=q.dtype, device=device)
+        k_padded = torch.zeros(padded_shape, dtype=k.dtype, device=device)
+        v_padded = torch.zeros(padded_shape, dtype=v.dtype, device=device)
+
+        # Initialize the key_padding_mask as a Boolean mask with False values
+        key_padding_mask = torch.zeros(
+            (batch_size, max_seqlen), dtype=torch.bool, device=device
+        )
+        # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
+        for i in range(batch_size):
+            start_idx = cu_seqlens[i]
+            end_idx = cu_seqlens[i + 1]
+            actual_seq_len = end_idx - start_idx
+            key_padding_mask[i, :actual_seq_len] = True
+            q_padded[i, :actual_seq_len, :, :] = q[start_idx:end_idx, :, :]
+            k_padded[i, :actual_seq_len, :, :] = k[start_idx:end_idx, :, :]
+            v_padded[i, :actual_seq_len, :, :] = v[start_idx:end_idx, :, :]
+
+        qkv_padded_result = multi_head_attention_inside(
+            q_padded, k_padded, v_padded, softmax_scale, is_causal, key_padding_mask
+        )
+        output = torch.zeros(q.shape, dtype=q.dtype, device=device)
+
+        for i in range(batch_size):
+            start_idx = cu_seqlens[i]
+            end_idx = cu_seqlens[i + 1]
+            actual_seq_len = end_idx - start_idx
+            output[start_idx:end_idx, :, :] = qkv_padded_result[
+                i, :actual_seq_len, :, :
+            ]
+        return output
+
+    def flash_attention_varlen_v2(
         q,
         k,
         v,
