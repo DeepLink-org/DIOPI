@@ -40,7 +40,7 @@ diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t
     int64_t d = qAt.size(3);
     const char* inputLayout = "BSND";
 
-    float keepProb = 1 - pDropout;
+    double keepProb = static_cast<double>(1 - pDropout);
 
     at::Tensor pseAt = at::Tensor();
     at::IntArrayRef prefixN = at::IntArrayRef{};
@@ -86,7 +86,7 @@ diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t
         EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskAt, diagonal);
     }
 
-    int64_t preTokens = s1;
+    int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
 
@@ -100,7 +100,7 @@ diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t
                                                                               qAt.options().dtype(at::kFloat));  // [B, N, S0, 8]
     softmaxOutAt = at_npu::native::OpPreparation::apply_tensor_without_format({0},
                                                                               qAt.options());  // [0]
-
+    double scale = static_cast<double>(softmaxScale);
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScore,
                                  qAt,
                                  kAt,
@@ -110,7 +110,7 @@ diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t
                                  paddingMaskAt,
                                  attentionMaskAt,
                                  prefixN,
-                                 softmaxScale,
+                                 scale,
                                  keepProb,
                                  preTokens,
                                  nextTokens,
@@ -148,13 +148,9 @@ diopiError_t diopiFlashAttentionV2Backward(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
 
     at::Tensor dropoutMaskAt;
-    at::Tensor attentionMaskAt;
     if (dropoutMask) {
         dropoutMaskAt = impl::aten::buildATen(dropoutMask);
     }
-    // if (attentionMask) {
-    //     attentionMaskAt = impl::aten::buildATen(attentionMask);
-    // }
 
     int64_t b = qAt.size(0);
     int64_t s0 = qAt.size(1);  // S for query
@@ -163,7 +159,7 @@ diopiError_t diopiFlashAttentionV2Backward(diopiContextHandle_t ctx, diopiTensor
     int64_t d = qAt.size(3);
     const char* inputLayout = "BSND";
 
-    float keepProb = 1 - pDropout;
+    double keepProb = static_cast<double>(1 - pDropout);
 
     at::Tensor pseAt = at::Tensor();
     at::Tensor gradPseAt = at_npu::native::OpPreparation::apply_tensor_without_format({0}, qAt.options());
@@ -171,7 +167,7 @@ diopiError_t diopiFlashAttentionV2Backward(diopiContextHandle_t ctx, diopiTensor
 
     at::Tensor paddingMaskAt = at::Tensor();
 
-    int64_t preTokens = s1;
+    int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
 
@@ -179,7 +175,7 @@ diopiError_t diopiFlashAttentionV2Backward(diopiContextHandle_t ctx, diopiTensor
     // the flash attention is calculated.
     // It is worth noting that the attention mask used by ascend is contrary to common sense, so this interface cannot be used as a universal diopi interface
     // for the time being. Please do not use it with other devices.
-    // at::Tensor attentionMaskAt = at::Tensor();
+    at::Tensor attentionMaskAt = at::Tensor();
     int64_t sparseMode = 0;
     if (isCausal) {
         // NOTE: reference to: https://gitee.com/ascend/ModelLink/blob/v0.1.0/pretrain_llama.py#L74
