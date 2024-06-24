@@ -5439,6 +5439,103 @@ def flash_attention_backward(
     check_returncode(ret)
     return {"q": grad_q, "k": grad_k, "v": grad_v}
 
+def flash_attention_v2(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
+    call = "diopiFlashAttentionV2"
+    func = check_function(call)
+    out = raw_like(q)
+    if is_causal:
+        attention_mask = Tensor()
+    else:
+        attention_mask = Tensor()
+    if p_dropout > 0 and p_dropout <= 1:
+        dropout_mask = Tensor()
+        state = build_generator_state(q.context())
+        generator = Generator(state)
+    elif p_dropout == 0:
+        dropout_mask = None
+        generator = None
+    else:
+        assert 0, "The p_dropout value must be in range of [0, 1]"
+    softmax_max = Tensor()
+    softmax_sum = Tensor()
+    softmax_out = Tensor()
+    dropout_mask_ptr = TensorP(dropout_mask)
+    softmax_max_ptr = TensorP(softmax_max)
+    softmax_sum_ptr = TensorP(softmax_sum)
+    softmax_out_ptr = TensorP(softmax_out)
+    head_dim = q.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
+    ret = func(
+        q.context(),
+        out,
+        dropout_mask_ptr,
+        softmax_max_ptr,
+        softmax_sum_ptr,
+        softmax_out_ptr,
+        generator,
+        q,
+        k,
+        v,
+        alibi_slopes,
+        attention_mask,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+        window_size_left,
+        window_size_right,
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["flash_attention_v2_dropout_mask"] = dropout_mask
+    GLOBAL_STATE["flash_attention_v2_softmax_max"] = softmax_max
+    GLOBAL_STATE["flash_attention_v2_softmax_sum"] = softmax_sum
+    GLOBAL_STATE["flash_attention_v2_softmax_out"] = softmax_out
+    return out
+
+def flash_attention_v2_backward(
+    q, k, v, alibi_slopes, out, grad_outputs, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right
+):
+    call = "diopiFlashAttentionV2Backward"
+    func = check_function(call)
+    assert (
+        p_dropout >= 0 and p_dropout <= 1
+    ), "The p_dropout value must be in range of [0, 1]"
+    if is_causal:
+        attention_mask = Tensor()
+    else:
+        attention_mask = Tensor()
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    dropout_mask = GLOBAL_STATE.pop("flash_attention_v2_dropout_mask")
+    softmax_max = GLOBAL_STATE.pop("flash_attention_v2_softmax_max")
+    softmax_sum = GLOBAL_STATE.pop("flash_attention_v2_softmax_sum")
+    softmax_out = GLOBAL_STATE.pop("flash_attention_v2_softmax_out")
+    head_dim = q.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
+    ret = func(
+        q.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        alibi_slopes,
+        out,
+        attention_mask,
+        dropout_mask,
+        softmax_max,
+        softmax_sum,
+        softmax_out,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+        window_size_left,
+        window_size_right,
+    )
+    check_returncode(ret)
+    return {"q": grad_q, "k": grad_k, "v": grad_v}
 
 def flash_attention_varlen(
     q,
@@ -5546,6 +5643,143 @@ def flash_attention_varlen_backward(
         alibi_slopes,
         out,
         softmax_lse,
+        max_seqlen_q,
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+        window_size_left, 
+        window_size_right,
+    )
+    check_returncode(ret)
+    return {"q": grad_q, "k": grad_k, "v": grad_v}
+
+def flash_attention_varlen_v2(
+    q,
+    k,
+    v,
+    alibi_slopes,
+    max_seqlen_q,
+    max_seqlen_kv,
+    cu_seqlens_q,
+    cu_seqlens_kv,
+    p_dropout,
+    softmax_scale,
+    is_causal,
+    window_size_left, 
+    window_size_right,
+):
+    call = "diopiFlashAttentionVarLenV2"
+    func = check_function(call)
+    q_size = list(q.size().data)
+    out = Tensor(q_size, q.get_dtype())
+    cu_seqlens_q = Sizes(cu_seqlens_q)
+    cu_seqlens_kv = Sizes(cu_seqlens_kv)
+    if p_dropout > 0 and p_dropout <= 1:
+        dropout_mask = Tensor()
+        state = build_generator_state(q.context())
+        generator = Generator(state)
+    elif p_dropout == 0:
+        dropout_mask = None
+        generator = None
+    else:
+        assert 0, "The p_dropout value must be in range of [0, 1]"
+    softmax_max = Tensor()
+    softmax_sum = Tensor()
+    softmax_out = Tensor()
+    dropout_mask_ptr = TensorP(dropout_mask)
+    softmax_max_ptr = TensorP(softmax_max)
+    softmax_sum_ptr = TensorP(softmax_sum)
+    softmax_out_ptr = TensorP(softmax_out)
+    softmax_scale = (
+        1.0 / math.sqrt(q.shape().data[-1]) if not softmax_scale else softmax_scale
+    )
+    ret = func(
+        q.context(),
+        out,
+        dropout_mask_ptr,
+        softmax_max_ptr,
+        softmax_sum_ptr,
+        softmax_out_ptr,
+        generator,
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        alibi_slopes,
+        attention_mask,
+        max_seqlen_q,
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+        window_size_left, 
+        window_size_right,
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["flash_attention_varlen_v2_dropout_mask"] = dropout_mask
+    GLOBAL_STATE["flash_attention_varlen_v2_softmax_max"] = softmax_max
+    GLOBAL_STATE["flash_attention_varlen_v2_softmax_sum"] = softmax_sum
+    GLOBAL_STATE["flash_attention_varlen_v2_softmax_out"] = softmax_out
+    return out
+
+
+def flash_attention_varlen_v2_backward(
+    q,
+    k,
+    v,
+    alibi_slopes,
+    out,
+    grad_outputs,
+    max_seqlen_q,
+    max_seqlen_kv,
+    cu_seqlens_q,
+    cu_seqlens_kv,
+    p_dropout,
+    softmax_scale,
+    is_causal,
+    window_size_left, 
+    window_size_right,
+):
+    call = "diopiFlashAttentionVarLenV2Backward"
+    func = check_function(call)
+    assert (
+        p_dropout >= 0 and p_dropout <= 1
+    ), "The p_dropout value must be in range of [0, 1]"
+    if is_causal:
+        attention_mask = Tensor()
+    else:
+        attention_mask = Tensor()
+    head_dim = q.shape().data[-1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
+    cu_seqlens_q = Sizes(cu_seqlens_q)
+    cu_seqlens_kv = Sizes(cu_seqlens_kv)
+    grad_q = raw_like(q)
+    grad_k = raw_like(k)
+    grad_v = raw_like(v)
+    dropout_mask = GLOBAL_STATE.pop("flash_attention_v2_dropout_mask")
+    softmax_max = GLOBAL_STATE.pop("flash_attention_v2_softmax_max")
+    softmax_sum = GLOBAL_STATE.pop("flash_attention_v2_softmax_sum")
+    softmax_out = GLOBAL_STATE.pop("flash_attention_v2_softmax_out")
+    ret = func(
+        q.context(),
+        grad_q,
+        grad_k,
+        grad_v,
+        grad_outputs[0],
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        alibi_slopes,
+        out,
+        attention_mask,
+        dropout_mask,
+        softmax_max,
+        softmax_sum,
+        softmax_out,
         max_seqlen_q,
         max_seqlen_kv,
         p_dropout,
