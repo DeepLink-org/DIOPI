@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <iterator>
 #include <utility>
-#include <vector>
 
 #include "diopi/diopirt.h"
 
@@ -53,7 +52,7 @@ private:
 // WARNING: This function is UNSAFE. It is the caller's responsibility to ensure that:
 //   1. The returned wrapper is not destroyed when its sliced at::Tensor is still in use in DIOPI.
 //   2. The input diopiConstTensorHandle_t is actually a reinterpret_cast of an at::Tensor*.
-//   3. The input tensor is only used in one thread.
+//   3. The input tensor and its storage are not used in another thread during the lifetime of the returned wrapper.
 [[nodiscard]] UnsafelyDeviceChangedTensorWrapper buildATenUnsafe(diopiConstTensorHandle_t tensor);
 
 [[nodiscard]] at::Tensor buildATenSafe(diopiConstTensorHandle_t tensor);
@@ -76,11 +75,11 @@ template <typename T>
 }
 
 // These macros is designed to avoid early destruction of the wrapper when build optional at::Tensor.
-#define DIOPI_IMPL_BUILD_ATEN_LIST(atTensor, diopiTensors, numTensors)                                                                  \
-    auto atTensor##__MAYBE_WRAPPER = ::impl::aten::buildATenList(diopiTensors, numTensors);                                             \
-    c10::SmallVector<at::Tensor, 4> atTensor;                                                                                           \
-    atTensor.reserve(numTensors);                                                                                                       \
-    std::transform(atTensor##__MAYBE_WRAPPER.begin(), atTensor##__MAYBE_WRAPPER.end(), std::back_inserter(atTensor), [](auto& tensor) { \
+#define DIOPI_IMPL_BUILD_ATEN_LIST(atTensors, diopiTensors, numTensors)                                                                  \
+    auto atTensors##__MAYBE_WRAPPER = ::impl::aten::buildATenList(diopiTensors, numTensors);                                             \
+    c10::SmallVector<at::Tensor, 4> atTensors;                                                                                           \
+    atTensors.reserve(numTensors);                                                                                                       \
+    std::transform(atTensors##__MAYBE_WRAPPER.begin(), atTensors##__MAYBE_WRAPPER.end(), std::back_inserter(atTensors), [](auto& tensor) { \
         return static_cast<at::Tensor>(tensor);                                                                                         \
     });
 #define DIOPI_IMPL_BUILD_ATEN_OPTIONAL(atTensor, diopiTensor)              \
@@ -89,11 +88,11 @@ template <typename T>
     if (atTensor##__MAYBE_WRAPPER.defined()) {                             \
         atTensor = atTensor##__MAYBE_WRAPPER;                              \
     }
-#define DIOPI_IMPL_BUILD_ATEN_OPTIONAL_LIST(atTensor, diopiTensors, numTensors)                                                         \
-    auto atTensor##__MAYBE_WRAPPER = ::impl::aten::buildATenList(diopiTensors, numTensors);                                             \
-    c10::List<c10::optional<at::Tensor>> atTensor;                                                                                      \
-    atTensor.reserve(numTensors);                                                                                                       \
-    std::transform(atTensor##__MAYBE_WRAPPER.begin(), atTensor##__MAYBE_WRAPPER.end(), std::back_inserter(atTensor), [](auto& tensor) { \
+#define DIOPI_IMPL_BUILD_ATEN_OPTIONAL_LIST(atTensors, diopiTensors, numTensors)                                                         \
+    auto atTensors##__MAYBE_WRAPPER = ::impl::aten::buildATenList(diopiTensors, numTensors);                                             \
+    c10::List<c10::optional<at::Tensor>> atTensors;                                                                                      \
+    atTensors.reserve(numTensors);                                                                                                       \
+    std::transform(atTensors##__MAYBE_WRAPPER.begin(), atTensors##__MAYBE_WRAPPER.end(), std::back_inserter(atTensors), [](auto& tensor) { \
         return tensor.defined() ? c10::optional<at::Tensor>(tensor) : c10::nullopt;                                                     \
     });
 
