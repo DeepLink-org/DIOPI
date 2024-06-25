@@ -70,14 +70,15 @@ diopiError_t diopiMaskedSelect(diopiContextHandle_t ctx, diopiTensorHandle_t* ou
     // call aclnnMaskedSelect to do the calculation
     diopiTensorHandle_t outTmp = nullptr;
     diopiRequireTensor(ctx, &outTmp, &outShapeTmp, nullptr, inputAt.dtype(), diopi_device);
-    auto params = DIOPI_ASECND_CALL_ACLNN_SYNC(aclnnMaskedSelect, ctx, expandInputAt, expandMaskAt, outTmp);
+    auto params = ::impl::ascend::aclnn_adaptor::convertParams(expandInputAt, expandMaskAt, outTmp).params();
+    DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(aclnnMaskedSelect, ctx, params);
 
     // get true outShape by aclGetViewShape
     int64_t* viewDims = nullptr;
     uint64_t viewDimNum = 0;
     using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** viewDims, uint64_t* viewDimsNum);
     static aclGetViewShapeFunc aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(impl::ascend::aclnn_adaptor::getOpApiFuncAddr("aclGetViewShape"));
-    int ret = aclGetViewShape(std::get<2>(params.params()), &viewDims, &viewDimNum);
+    int ret = aclGetViewShape(std::get<2>(params), &viewDims, &viewDimNum);
     ASCEND_CHECK_ABORT(ret == 0, "aclGetViewShape failed");
     diopiSize_t outShape{viewDims, static_cast<int64_t>(viewDimNum)};
 
