@@ -8,10 +8,13 @@
 #define IMPL_ASCEND_ACLNN_ADAPTOR_HPP_
 
 #include <acl/acl.h>
+#include <acl/acl_base.h>
 #include <aclnn/acl_meta.h>
 #include <dlfcn.h>
 
 #include <array>
+#include <cassert>
+#include <complex>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -55,23 +58,50 @@ inline void* getOpApiFuncAddr(const char* apiName) {
     return getOpApiFuncAddrInLib(opApiHandler, kOpApiLibName, apiName);
 }
 
+inline aclFormat storageFormatByDimNum(int64_t dimNum) {
+    aclFormat format = ACL_FORMAT_ND;
+    switch (dimNum) {
+        case 3:
+            format = ACL_FORMAT_NCL;
+            break;
+        case 4:
+            format = ACL_FORMAT_NCHW;
+            break;
+        case 5:
+            format = ACL_FORMAT_NCDHW;
+            break;
+        default:
+            format = ACL_FORMAT_ND;
+    }
+    return format;
+}
+
 inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
     const auto& shape = input.shape();
     const auto& stride = input.stride();
     const auto storageSize = static_cast<int64_t>(input.storageNbytes() / input.elemsize());
+
+    void* storagePtr = nullptr;
+    diopiGetTensorStoragePtr(input.tensorHandle(), &storagePtr);
+    auto format = storageFormatByDimNum(input.dim());
+
     return ::aclCreateTensor(shape.data(),
                              shape.size(),
                              input.getAclDataType(),
                              stride.data(),
                              input.storageOffset(),
-                             input.getAclDataFormat(),  // TODO(lljbash): op_plugin assume non-channel-last, why?
+                             format,  // input.getAclDataFormat(),  // TODO(lljbash): op_plugin assume non-channel-last, why?
                              &storageSize,
                              /*storageDimsNum=*/1,
-                             const_cast<void*>(input.data()));
+                             const_cast<void*>(storagePtr));
 }
 
 inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor) {
-    ASCEND_CHECK_NULLPTR_ABORT(tensor);
+    // The Ascend kernel can handle the case that the input tensor is nullptr.
+    if (tensor == nullptr) {
+        return nullptr;
+    }
+
     diopiSize_t shape{};
     diopiGetTensorShape(tensor, &shape);
     diopiSize_t stride{};
@@ -85,20 +115,15 @@ inline aclTensor* createAclTensorFromDiopiTensor(diopiConstTensorHandle_t tensor
     diopiGetTensorStorageOffset(tensor, &storageOffset);
     std::size_t storageNbytes{};
     diopiGetTensorStorageNbytes(tensor, &storageNbytes);
-    const void* tensorData = nullptr;
-    diopiGetTensorDataConst(tensor, &tensorData);
+
+    void* storagePtr = nullptr;
+    diopiGetTensorStoragePtr(tensor, &storagePtr);
+
     auto type = diopiDtypeToAclDataType(dtype);
-    auto format = inferAclDataFormat(shape.len, shape.data, stride.data);
+    auto format = storageFormatByDimNum(shape.len);
     auto storageSize = static_cast<int64_t>(storageNbytes / elemsize);
-    return ::aclCreateTensor(shape.data,
-                             shape.len,
-                             type,
-                             stride.data,
-                             storageOffset,
-                             format,
-                             &storageSize,
-                             /*storageDimsNum=*/1,
-                             const_cast<void*>(tensorData));
+
+    return ::aclCreateTensor(shape.data, shape.len, type, stride.data, storageOffset, format, &storageSize, 1, const_cast<void*>(storagePtr));
 }
 
 inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
@@ -107,6 +132,17 @@ inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
 }
 
 inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) { return ::aclCreateIntArray(size.data, size.len); }
+
+template <size_t N>
+inline aclBoolArray* createAclBoolArrayFromVector(const std::array<bool, N>& vec) {
+    return ::aclCreateBoolArray(vec.data(), vec.size());
+}
+
+template <typename T>
+struct IsBoolStdArray : std::false_type {};
+
+template <std::size_t N>
+struct IsBoolStdArray<std::array<bool, N>> : std::true_type {};
 
 inline aclIntArray* createAclIntArrayFromIntVector(const std::vector<int64_t>& vec) { return ::aclCreateIntArray(vec.data(), vec.size()); }
 
@@ -144,6 +180,8 @@ decltype(auto) convertType(T&& param) {
         return createAclIntArrayFromIntVector(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiDtype_t>) {
         return diopiDtypeToAclDataType(std::forward<T>(param));
+    } else if constexpr (IsBoolStdArray<U>::value) {
+        return createAclBoolArrayFromVector<std::tuple_size_v<U>>(std::forward<T>(param));
     } else {
         static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
         return std::forward<T>(param);
@@ -178,7 +216,13 @@ public:
     }
     ConvertedParamsHolder(const ConvertedParamsHolder&) = delete;
     ConvertedParamsHolder& operator=(const ConvertedParamsHolder&) = delete;
-    ConvertedParamsHolder(ConvertedParamsHolder&&) = delete;
+    ConvertedParamsHolder(ConvertedParamsHolder&& other) {
+        if (this == &other) {
+            return;
+        }
+        convertedParams_ = std::move(other.convertedParams_);
+    }
+
     ConvertedParamsHolder& operator=(ConvertedParamsHolder&&) = delete;
     const auto& params() const noexcept { return convertedParams_; }
 
@@ -245,55 +289,87 @@ private:
     void* workspaceAddr_ = nullptr;
 };
 
-template <const char* api, const char* workspaceApi, class... Args>
-void callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
+// std::true_type if it's one of the types listed, otherwise std::false_type
+template <typename T>
+struct IsAclnnBuildInType
+    : std::disjunction<std::is_same<T, aclTensor*>, std::is_same<T, aclScalar*>, std::is_same<T, aclIntArray*>, std::is_same<T, aclFloatArray*>,
+                       std::is_same<T, aclBoolArray*>, std::is_same<T, aclTensorList*>, std::is_same<T, aclScalarList*>, std::is_same<T, aclDataType>,
+                       std::is_same<T, aclFormat>, std::is_fundamental<std::decay_t<T>>> {};
+
+// enable if all the args meet the conditions
+template <const char* workspaceApi, typename... Args, std::enable_if_t<std::conjunction_v<IsAclnnBuildInType<Args>...>, void*> = nullptr>
+static std::pair<uint64_t, aclOpExecutor*> computeWorkspaceSize(const std::tuple<Args...>& tupleArgs) {
+    static const auto workspaceSizeFuncAddr = getOpApiFuncAddr(workspaceApi);
+    using WorkspaceSizeFunc = int (*)(Args..., uint64_t*, aclOpExecutor**);
+    static WorkspaceSizeFunc workspaceSizeFunc = reinterpret_cast<WorkspaceSizeFunc>(workspaceSizeFuncAddr);
+    uint64_t workspaceSize = 0;
+    aclOpExecutor* executor = nullptr;
+    auto tupleWorkspaceSizeFuncArgs = std::tuple_cat(tupleArgs, std::make_tuple(&workspaceSize, &executor));
+    auto workspaceStatus = std::apply(workspaceSizeFunc, std::move(tupleWorkspaceSizeFuncArgs));
+    ASCEND_CHECK_THROW(workspaceStatus == ACL_SUCCESS, "[%s]'s return value is not equal to ACL_SUCCESS. aclnnStatus is %d.", workspaceApi, workspaceStatus);
+    return {workspaceSize, executor};
+}
+
+template <const char* api, const char* workspaceApi, typename... Args>
+void callAclnnImpl(diopiContextHandle_t ctx, const std::tuple<Args...>& tuple) {
     if (isDebugAclOpRunnerOn()) {
-        std::cout << "ACLNN_ADAPTOR for " << api << '\n';
+        std::cout << "ACLNN_ADAPTOR for " << api << std::endl;
     }
 
     /* 0. get aclrtStream */
     aclrtStream stream = nullptr;
     diopiGetStream(ctx, &stream);
 
-    /* 1. call xxxGetWorkspaceSize function. */
-    static const auto workspaceSizeFuncAddr = getOpApiFuncAddr(workspaceApi);
-    ASCEND_CHECK_ABORT(workspaceSizeFuncAddr != nullptr, "[%s] can't get workSpaceName function.", api);
-    using WorkspaceSizeFuncType = int (*)(std::decay_t<decltype(convertType(std::declval<Args>()))>..., uint64_t*, aclOpExecutor**);
-    static const auto workspaceSizeFunc = reinterpret_cast<WorkspaceSizeFuncType>(workspaceSizeFuncAddr);
-
     static const auto initFunc = reinterpret_cast<InitHugeMemThreadLocal>(getOpApiFuncAddr("InitHugeMemThreadLocal"));
     static const auto unInitFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(getOpApiFuncAddr("UnInitHugeMemThreadLocal"));
     static const auto releaseFunc = reinterpret_cast<ReleaseHugeMem>(getOpApiFuncAddr("ReleaseHugeMem"));
     AclHugeMem aclHugeMem(initFunc, unInitFunc, releaseFunc);
 
+    /* 1. call xxxGetWorkspaceSize function. */
     uint64_t workspaceSize = 0;
     aclOpExecutor* executor = nullptr;
-    auto convertedParams = convertParams(args...);
-    auto workspaceStatus = std::apply(workspaceSizeFunc, std::tuple_cat(convertedParams.params(), std::make_tuple(&workspaceSize, &executor)));
-    ASCEND_CHECK_ABORT(workspaceStatus == ACL_SUCCESS, "[%s]'s workspaceStatus is not equal to ACL_SUCCESS. aclnnStatus is %d.", api, workspaceStatus);
+    std::tie(workspaceSize, executor) = computeWorkspaceSize<workspaceApi>(tuple);
 
     AclWorkspace workspace(ctx, workspaceSize);
 
     /* 2. call aclnnXXX function */
     static const auto opApiFuncAddr = getOpApiFuncAddr(api);
-    ASCEND_CHECK_ABORT(opApiFuncAddr != nullptr, "[%s] can't get op function.", api);
+    ASCEND_CHECK_THROW(opApiFuncAddr != nullptr, "[%s] can't get op function.", api);
     using OpApiFuncType = int (*)(void*, uint64_t, aclOpExecutor*, aclrtStream);
     static const auto opApiFunc = reinterpret_cast<OpApiFuncType>(opApiFuncAddr);
 
     auto ret = opApiFunc(workspace.addr(), workspaceSize, executor, stream);
-    ASCEND_CHECK_ABORT(ret == ACL_SUCCESS, "[%s] failed. aclnnStatus is %d.", api, ret);
+    ASCEND_CHECK_THROW(ret == ACL_SUCCESS, "[%s] failed. aclnnStatus is %d.", api, ret);
+    return;
 }
-
-#define DIOPI_ASCEND_CALL_ACLNN(api, ctx, ...)                                                       \
-    do {                                                                                             \
-        static constexpr const char kApiName[] = #api;                                               \
-        static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                   \
-        ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, __VA_ARGS__); \
-    } while (false)
 
 }  // namespace aclnn_adaptor
 
 }  // namespace ascend
 }  // namespace impl
+
+#define DIOPI_ASCEND_CALL_ACLNN(api, ctx, ...)                                                                    \
+    do {                                                                                                          \
+        static constexpr const char kApiName[] = #api;                                                            \
+        static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                                \
+        auto convertedParams = ::impl::ascend::aclnn_adaptor::convertParams(__VA_ARGS__);                         \
+        ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, convertedParams.params()); \
+    } while (false)
+
+#define DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(api, ctx, ...)                                             \
+    do {                                                                                             \
+        static constexpr const char kApiName[] = #api;                                               \
+        static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                   \
+        ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, __VA_ARGS__); \
+        diopiStreamHandle_t stream;                                                                  \
+        diopiGetStream(ctx, &stream);                                                                \
+        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));                   \
+    } while (false)
+
+#define DIOPI_ASCEND_CALL_ACLNN_SYNC(api, ctx, ...)                                       \
+    do {                                                                                  \
+        auto convertedParams = ::impl::ascend::aclnn_adaptor::convertParams(__VA_ARGS__); \
+        DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(api, ctx, convertedParams.params())             \
+    } while (false)
 
 #endif  // IMPL_ASCEND_ACLNN_ADAPTOR_HPP_

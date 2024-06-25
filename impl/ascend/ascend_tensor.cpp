@@ -234,9 +234,10 @@ aclFormat inferAclDataFormat(int64_t dim, const int64_t* shape, const int64_t* s
             return ACL_FORMAT_NHWC;
         }
         std::call_once(warningFlag, warnOnUnsupportedFormat, __FILE__, __LINE__, __FUNCTION__);
+    } else if (dim == 3) {
+        return ACL_FORMAT_NCL;
     }
     return ACL_FORMAT_ND;
 }
-
 }  // namespace ascend
 }  // namespace impl

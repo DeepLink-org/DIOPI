@@ -29,7 +29,7 @@ namespace ascend {
 diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                           diopiReduction_t reduction) {
     int64_t reductionValue = getReductionValue(reduction);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnMseLoss, ctx, input, target, reduction, out);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnMseLoss, ctx, input, target, reductionValue, out);
     return diopiSuccess;
 }
 

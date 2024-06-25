@@ -145,7 +145,6 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/loss.cpp
     ${OLD_IMPL_DIR}/functions/contiguous.cpp
     ${OLD_IMPL_DIR}/functions/bitwise.cpp
-    ${OLD_IMPL_DIR}/functions/upsample.cpp
     ${OLD_IMPL_DIR}/functions/tril.cpp
     ${OLD_IMPL_DIR}/functions/mse_loss.cpp
     ${OLD_IMPL_DIR}/functions/floor.cpp
@@ -196,9 +195,12 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/split.cpp
     ${OLD_IMPL_DIR}/functions/zeros.cpp
     ${OLD_IMPL_DIR}/functions/matmul.cpp
+    ${OLD_IMPL_DIR}/functions/max_pool2d.cpp
     ${OLD_IMPL_DIR}/functions/equal.cpp
+    ${OLD_IMPL_DIR}/functions/masked_select.cpp
     ${OLD_IMPL_DIR}/functions_mmcv/roi_align_npu.cpp
     ${OLD_IMPL_DIR}/functions_ext/rms_norm.cpp
+    ${OLD_IMPL_DIR}/functions_ext/adamw.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp
