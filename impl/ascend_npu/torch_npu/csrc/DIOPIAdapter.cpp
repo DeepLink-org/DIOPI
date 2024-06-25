@@ -37,7 +37,7 @@ int current_device() {
 
 inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; }
 
-const bool kUsePerformanceBuildAten = std::getenv("DIOPI_ASCEND_USE_FAST_BUILD_ATEN") != nullptr;
+const bool kUsePerformanceBuildAten = std::getenv("DIOPI_ASCEND_NOT_USE_FAST_BUILD_ATEN") == nullptr;
 
 // check all at::ScalarType is not negative
 #define ENUM_PAIR_FUNC(_1, n) static_assert(static_cast<int64_t>(at::ScalarType::n) >= 0, #n " is negative");
