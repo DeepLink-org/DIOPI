@@ -75,12 +75,12 @@ template <typename T>
 }
 
 // These macros is designed to avoid early destruction of the wrapper when build optional at::Tensor.
-#define DIOPI_IMPL_BUILD_ATEN_LIST(atTensors, diopiTensors, numTensors)                                                                  \
-    auto atTensors##__MAYBE_WRAPPER = ::impl::aten::buildATenList(diopiTensors, numTensors);                                             \
-    c10::SmallVector<at::Tensor, 4> atTensors;                                                                                           \
-    atTensors.reserve(numTensors);                                                                                                       \
+#define DIOPI_IMPL_BUILD_ATEN_LIST(atTensors, diopiTensors, numTensors)                                                                    \
+    auto atTensors##__MAYBE_WRAPPER = ::impl::aten::buildATenList(diopiTensors, numTensors);                                               \
+    c10::SmallVector<at::Tensor, 4> atTensors;                                                                                             \
+    atTensors.reserve(numTensors);                                                                                                         \
     std::transform(atTensors##__MAYBE_WRAPPER.begin(), atTensors##__MAYBE_WRAPPER.end(), std::back_inserter(atTensors), [](auto& tensor) { \
-        return static_cast<at::Tensor>(tensor);                                                                                         \
+        return static_cast<at::Tensor>(tensor);                                                                                            \
     });
 #define DIOPI_IMPL_BUILD_ATEN_OPTIONAL(atTensor, diopiTensor)              \
     auto atTensor##__MAYBE_WRAPPER = ::impl::aten::buildATen(diopiTensor); \
@@ -88,12 +88,12 @@ template <typename T>
     if (atTensor##__MAYBE_WRAPPER.defined()) {                             \
         atTensor = atTensor##__MAYBE_WRAPPER;                              \
     }
-#define DIOPI_IMPL_BUILD_ATEN_OPTIONAL_LIST(atTensors, diopiTensors, numTensors)                                                         \
-    auto atTensors##__MAYBE_WRAPPER = ::impl::aten::buildATenList(diopiTensors, numTensors);                                             \
-    c10::List<c10::optional<at::Tensor>> atTensors;                                                                                      \
-    atTensors.reserve(numTensors);                                                                                                       \
+#define DIOPI_IMPL_BUILD_ATEN_OPTIONAL_LIST(atTensors, diopiTensors, numTensors)                                                           \
+    auto atTensors##__MAYBE_WRAPPER = ::impl::aten::buildATenList(diopiTensors, numTensors);                                               \
+    c10::List<c10::optional<at::Tensor>> atTensors;                                                                                        \
+    atTensors.reserve(numTensors);                                                                                                         \
     std::transform(atTensors##__MAYBE_WRAPPER.begin(), atTensors##__MAYBE_WRAPPER.end(), std::back_inserter(atTensors), [](auto& tensor) { \
-        return tensor.defined() ? c10::optional<at::Tensor>(tensor) : c10::nullopt;                                                     \
+        return tensor.defined() ? c10::optional<at::Tensor>(tensor) : c10::nullopt;                                                        \
     });
 
 }  // namespace impl::aten
