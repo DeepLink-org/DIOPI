@@ -54,6 +54,7 @@ ascend:
 - diopiContiguous
 - diopiConvolution2d
 - diopiConvolution2dBackward
+- diopiCopyInp
 - diopiCos
 - diopiCosInp
 - diopiCrossEntropyLoss
@@ -244,7 +245,6 @@ ascend:
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
-- diopiCopyInp
 - diopiRotaryEmbedding
 - diopiIndexPut
 - diopiIndexPutInp
