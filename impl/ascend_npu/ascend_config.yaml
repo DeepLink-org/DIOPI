@@ -183,6 +183,7 @@ ascend:
 - diopiReluInp
 - diopiRMSNorm
 - diopiRMSNormBackward
+- diopiRotaryEmbedding
 - diopiRsqrt
 - diopiRsqrtInp
 - diopiSgn
@@ -245,7 +246,6 @@ ascend:
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
-- diopiRotaryEmbedding
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIndex
