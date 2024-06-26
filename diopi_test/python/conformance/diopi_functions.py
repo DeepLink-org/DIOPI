@@ -5439,9 +5439,9 @@ def flash_attention_backward(
     check_returncode(ret)
     return {"q": grad_q, "k": grad_k, "v": grad_v}
 
-# diopiFlashAttentionV2 is designed for ascend, please do not use it with other devices.
-def flash_attention_v2(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
-    call = "diopiFlashAttentionV2"
+# diopiCustomizedFlashAttention is designed for ascend, please do not use it with other devices.
+def customized_flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
+    call = "diopiCustomizedFlashAttention"
     func = check_function(call)
     out = raw_like(q)
     if is_causal:
@@ -5491,16 +5491,16 @@ def flash_attention_v2(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causa
         window_size_right,
     )
     check_returncode(ret)
-    GLOBAL_STATE["flash_attention_v2_dropout_mask"] = dropout_mask
-    GLOBAL_STATE["flash_attention_v2_softmax_max"] = softmax_max
-    GLOBAL_STATE["flash_attention_v2_softmax_sum"] = softmax_sum
-    GLOBAL_STATE["flash_attention_v2_softmax_out"] = softmax_out
+    GLOBAL_STATE["customized_flash_attention_dropout_mask"] = dropout_mask
+    GLOBAL_STATE["customized_flash_attention_softmax_max"] = softmax_max
+    GLOBAL_STATE["customized_flash_attention_softmax_sum"] = softmax_sum
+    GLOBAL_STATE["customized_flash_attention_softmax_out"] = softmax_out
     return out
 
-def flash_attention_v2_backward(
+def customized_flash_attention_backward(
     q, k, v, alibi_slopes, out, grad_outputs, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right
 ):
-    call = "diopiFlashAttentionV2Backward"
+    call = "diopiCustomizedFlashAttentionBackward"
     func = check_function(call)
     assert (
         p_dropout >= 0 and p_dropout <= 1
@@ -5517,10 +5517,10 @@ def flash_attention_v2_backward(
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
-    dropout_mask = GLOBAL_STATE.pop("flash_attention_v2_dropout_mask")
-    softmax_max = GLOBAL_STATE.pop("flash_attention_v2_softmax_max")
-    softmax_sum = GLOBAL_STATE.pop("flash_attention_v2_softmax_sum")
-    softmax_out = GLOBAL_STATE.pop("flash_attention_v2_softmax_out")
+    dropout_mask = GLOBAL_STATE.pop("customized_flash_attention_dropout_mask")
+    softmax_max = GLOBAL_STATE.pop("customized_flash_attention_softmax_max")
+    softmax_sum = GLOBAL_STATE.pop("customized_flash_attention_softmax_sum")
+    softmax_out = GLOBAL_STATE.pop("customized_flash_attention_softmax_out")
     head_dim = q.shape().data[-1]
     softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
     ret = func(
@@ -5661,8 +5661,8 @@ def flash_attention_varlen_backward(
     check_returncode(ret)
     return {"q": grad_q, "k": grad_k, "v": grad_v}
 
-# diopiFlashAttentionVarLenV2 is designed for ascend, please do not use it with other devices.
-def flash_attention_varlen_v2(
+# diopiCustomizedFlashAttentionVarLen is designed for ascend, please do not use it with other devices.
+def customized_flash_attention_varlen(
     q,
     k,
     v,
@@ -5677,7 +5677,7 @@ def flash_attention_varlen_v2(
     window_size_left, 
     window_size_right,
 ):
-    call = "diopiFlashAttentionVarLenV2"
+    call = "diopiCustomizedFlashAttentionVarLen"
     func = check_function(call)
     q_size = list(q.size().data)
     out = Tensor(q_size, q.get_dtype())
@@ -5735,14 +5735,14 @@ def flash_attention_varlen_v2(
         window_size_right,
     )
     check_returncode(ret)
-    GLOBAL_STATE["flash_attention_varlen_v2_dropout_mask"] = dropout_mask
-    GLOBAL_STATE["flash_attention_varlen_v2_softmax_max"] = softmax_max
-    GLOBAL_STATE["flash_attention_varlen_v2_softmax_sum"] = softmax_sum
-    GLOBAL_STATE["flash_attention_varlen_v2_softmax_out"] = softmax_out
+    GLOBAL_STATE["customized_flash_attention_varlen_dropout_mask"] = dropout_mask
+    GLOBAL_STATE["customized_flash_attention_varlen_softmax_max"] = softmax_max
+    GLOBAL_STATE["customized_flash_attention_varlen_softmax_sum"] = softmax_sum
+    GLOBAL_STATE["customized_flash_attention_varlen_softmax_out"] = softmax_out
     return out
 
 
-def flash_attention_varlen_v2_backward(
+def customized_flash_attention_varlen_backward(
     q,
     k,
     v,
@@ -5759,7 +5759,7 @@ def flash_attention_varlen_v2_backward(
     window_size_left, 
     window_size_right,
 ):
-    call = "diopiFlashAttentionVarLenV2Backward"
+    call = "diopiCustomizedFlashAttentionVarLenBackward"
     func = check_function(call)
     assert (
         p_dropout >= 0 and p_dropout <= 1
@@ -5780,10 +5780,10 @@ def flash_attention_varlen_v2_backward(
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
-    dropout_mask = GLOBAL_STATE.pop("flash_attention_varlen_v2_dropout_mask")
-    softmax_max = GLOBAL_STATE.pop("flash_attention_varlen_v2_softmax_max")
-    softmax_sum = GLOBAL_STATE.pop("flash_attention_varlen_v2_softmax_sum")
-    softmax_out = GLOBAL_STATE.pop("flash_attention_varlen_v2_softmax_out")
+    dropout_mask = GLOBAL_STATE.pop("customized_flash_attention_varlen_dropout_mask")
+    softmax_max = GLOBAL_STATE.pop("customized_flash_attention_varlen_softmax_max")
+    softmax_sum = GLOBAL_STATE.pop("customized_flash_attention_varlen_softmax_sum")
+    softmax_out = GLOBAL_STATE.pop("customized_flash_attention_varlen_softmax_out")
     ret = func(
         q.context(),
         grad_q,

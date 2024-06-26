@@ -452,7 +452,7 @@ class CustomizedTest(object):
         output = torch.einsum("bhts,bshd->bthd", attention, v)
         return output
 
-    def flash_attention_v2(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
+    def customized_flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
         # TODO: impl for alibi and sliding window local attention
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
         # adapt to GQA
@@ -542,7 +542,7 @@ class CustomizedTest(object):
             ]
         return output
 
-    def flash_attention_varlen_v2(
+    def customized_flash_attention_varlen(
         q,
         k,
         v,

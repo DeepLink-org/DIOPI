@@ -9188,8 +9188,8 @@ diopi_configs = {
         ),
     ),
 
-    'flash_attention_v2_mha': dict(
-        name=['flash_attention_v2'],
+    'customized_flash_attention_mha': dict(
+        name=['customized_flash_attention'],
         interface=['CustomizedTest'],
         saved_args=dict(out=0),
         para=dict(
@@ -9229,8 +9229,8 @@ diopi_configs = {
         ),
     ),
 
-    'flash_attention_v2_gqa': dict(
-        name=['flash_attention_v2'],
+    'customized_flash_attention_gqa': dict(
+        name=['customized_flash_attention'],
         interface=['CustomizedTest'],
         saved_args=dict(out=0),
         para=dict(
@@ -9270,8 +9270,8 @@ diopi_configs = {
         ),
     ),
 
-    'flash_attention_varlen_v2_mha': dict(
-        name=['flash_attention_varlen_v2'],
+    'customized_flash_attention_varlen_mha': dict(
+        name=['customized_flash_attention_varlen'],
         interface=['CustomizedTest'],
         saved_args=dict(out=0),
         atol=1e-3,
@@ -9317,8 +9317,8 @@ diopi_configs = {
         ),
     ),
 
-    'flash_attention_varlen_v2_gqa': dict(
-        name=['flash_attention_varlen_v2'],
+    'customized_flash_attention_varlen_gqa': dict(
+        name=['customized_flash_attention_varlen'],
         interface=['CustomizedTest'],
         saved_args=dict(out=0),
         atol=1e-3,
