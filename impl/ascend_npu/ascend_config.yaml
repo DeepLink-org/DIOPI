@@ -54,6 +54,7 @@ ascend:
 - diopiContiguous
 - diopiConvolution2d
 - diopiConvolution2dBackward
+- diopiCopyInp
 - diopiCos
 - diopiCosInp
 - diopiCrossEntropyLoss
@@ -150,6 +151,7 @@ ascend:
 - diopiMaxPool2dWithIndices
 - diopiMaxPool2dBackward
 - diopiMean
+- diopiMm
 - diopiMSELoss
 - diopiMSELossBackward
 - diopiMul
@@ -160,6 +162,7 @@ ascend:
 - diopiMin
 - diopiMinAll
 - diopiMinimum
+- diopiMm
 - diopiNe
 - diopiNeInp
 - diopiNeInpScalar
@@ -243,7 +246,6 @@ ascend:
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
-- diopiCopyInp
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIndex
@@ -258,7 +260,6 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiTensorDestructionHook
-- diopiMm
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNLLLossV2
