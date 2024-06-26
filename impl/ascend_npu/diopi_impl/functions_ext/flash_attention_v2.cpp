@@ -163,6 +163,7 @@ diopiError_t diopiFlashAttentionV2Backward(diopiContextHandle_t ctx, diopiTensor
         }
     }
 
+    double scale = static_cast<double>(softmaxScale);
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScoreGrad,
                                  qAt,
                                  kAt,
@@ -177,7 +178,7 @@ diopiError_t diopiFlashAttentionV2Backward(diopiContextHandle_t ctx, diopiTensor
                                  softmaxOutAt,
                                  attentionOutAt,
                                  prefixN,
-                                 softmaxScale,
+                                 scale,
                                  keepProb,
                                  preTokens,
                                  nextTokens,
