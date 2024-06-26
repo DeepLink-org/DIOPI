@@ -5685,8 +5685,8 @@ def flash_attention_varlen_v2(
     else:
         assert 0, "The p_dropout value must be in range of [0, 1]"
     if is_causal:
-        seqlen_q = min(max_seqlen_q, 2048)
-        seqlen_kv = min(max_seqlen_kv, 2048)
+        seqlen_q = max_seqlen_q if max_seqlen_q <= 2048 else 2048
+        seqlen_kv = max_seqlen_kv if max_seqlen_kv <= 2048 else 2048
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
         attention_mask = None
@@ -5754,8 +5754,8 @@ def flash_attention_varlen_v2_backward(
         p_dropout >= 0 and p_dropout <= 1
     ), "The p_dropout value must be in range of [0, 1]"
     if is_causal:
-        seqlen_q = min(max_seqlen_q, 2048)
-        seqlen_kv = min(max_seqlen_kv, 2048)
+        seqlen_q = max_seqlen_q if max_seqlen_q <= 2048 else 2048
+        seqlen_kv = max_seqlen_kv if max_seqlen_kv <= 2048 else 2048
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
         attention_mask = None
@@ -5766,10 +5766,10 @@ def flash_attention_varlen_v2_backward(
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
-    dropout_mask = GLOBAL_STATE.pop("flash_attention_v2_dropout_mask")
-    softmax_max = GLOBAL_STATE.pop("flash_attention_v2_softmax_max")
-    softmax_sum = GLOBAL_STATE.pop("flash_attention_v2_softmax_sum")
-    softmax_out = GLOBAL_STATE.pop("flash_attention_v2_softmax_out")
+    dropout_mask = GLOBAL_STATE.pop("flash_attention_varlen_v2_dropout_mask")
+    softmax_max = GLOBAL_STATE.pop("flash_attention_varlen_v2_softmax_max")
+    softmax_sum = GLOBAL_STATE.pop("flash_attention_varlen_v2_softmax_sum")
+    softmax_out = GLOBAL_STATE.pop("flash_attention_varlen_v2_softmax_out")
     ret = func(
         q.context(),
         grad_q,
