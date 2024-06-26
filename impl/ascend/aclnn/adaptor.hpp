@@ -90,7 +90,7 @@ inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
                              input.getAclDataType(),
                              stride.data(),
                              input.storageOffset(),
-                             format,  // input.getAclDataFormat(),  // TODO(lljbash): op_plugin assume non-channel-last, why?
+                             format,
                              &storageSize,
                              /*storageDimsNum=*/1,
                              const_cast<void*>(storagePtr));
@@ -146,6 +146,14 @@ struct IsBoolStdArray<std::array<bool, N>> : std::true_type {};
 
 inline aclIntArray* createAclIntArrayFromIntVector(const std::vector<int64_t>& vec) { return ::aclCreateIntArray(vec.data(), vec.size()); }
 
+inline aclTensorList* createAclTensorListFromAscendTensorVector(const std::vector<AscendTensor>& tensorsVec) {
+    std::vector<const aclTensor*> tList(tensorsVec.size());
+    for (size_t i = 0; i < tensorsVec.size(); i++) {
+        tList[i] = createAclTensorFromAscendTensor(tensorsVec[i]);
+    }
+    return ::aclCreateTensorList(tList.data(), tList.size());
+}
+
 inline aclTensorList* createAclTensorListFromDiopiTensorVector(const std::vector<diopiTensorHandle_t>& tensorsVec) {
     std::vector<const aclTensor*> tensorList(tensorsVec.size());
     for (size_t i = 0; i < tensorsVec.size(); i++) {
@@ -168,6 +176,8 @@ decltype(auto) convertType(T&& param) {
         return createAclTensorFromAscendTensor(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiTensorHandle_t> || std::is_same_v<U, diopiConstTensorHandle_t>) {
         return createAclTensorFromDiopiTensor(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, std::vector<AscendTensor>>) {
+        return createAclTensorListFromAscendTensorVector(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, std::vector<diopiConstTensorHandle_t>>) {
         return createAclTensorListFromConstDiopiTensorVector(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, std::vector<diopiTensorHandle_t>>) {
