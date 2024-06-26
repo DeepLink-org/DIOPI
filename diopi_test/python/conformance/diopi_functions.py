@@ -5444,9 +5444,11 @@ def flash_attention_v2(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causa
     func = check_function(call)
     out = raw_like(q)
     if is_causal:
-        attention_mask = Tensor()
+        seqlen_q = q.shape().data[1] if q.shape().data[1] <= 2048 else 2048
+        seqlen_kv = k.shape().data[1] if k.shape().data[1] <= 2048 else 2048
+        attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
-        attention_mask = Tensor()
+        attention_mask = None
     if p_dropout > 0 and p_dropout <= 1:
         dropout_mask = Tensor()
         state = build_generator_state(q.context())
@@ -5500,9 +5502,11 @@ def flash_attention_v2_backward(
         p_dropout >= 0 and p_dropout <= 1
     ), "The p_dropout value must be in range of [0, 1]"
     if is_causal:
-        attention_mask = Tensor()
+        seqlen_q = q.shape().data[1] if q.shape().data[1] <= 2048 else 2048
+        seqlen_kv = k.shape().data[1] if k.shape().data[1] <= 2048 else 2048
+        attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
-        attention_mask = Tensor()
+        attention_mask = None
     grad_q = raw_like(q)
     grad_k = raw_like(k)
     grad_v = raw_like(v)
@@ -5681,9 +5685,11 @@ def flash_attention_varlen_v2(
     else:
         assert 0, "The p_dropout value must be in range of [0, 1]"
     if is_causal:
-        attention_mask = Tensor()
+        seqlen_q = min(max_seqlen_q, 2048)
+        seqlen_kv = min(max_seqlen_kv, 2048)
+        attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
-        attention_mask = Tensor()
+        attention_mask = None
     softmax_max = Tensor()
     softmax_sum = Tensor()
     softmax_out = Tensor()
@@ -5748,9 +5754,11 @@ def flash_attention_varlen_v2_backward(
         p_dropout >= 0 and p_dropout <= 1
     ), "The p_dropout value must be in range of [0, 1]"
     if is_causal:
-        attention_mask = Tensor()
+        seqlen_q = min(max_seqlen_q, 2048)
+        seqlen_kv = min(max_seqlen_kv, 2048)
+        attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
-        attention_mask = Tensor()
+        attention_mask = None
     head_dim = q.shape().data[-1]
     softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
     cu_seqlens_q = Sizes(cu_seqlens_q)

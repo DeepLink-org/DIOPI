@@ -24,7 +24,7 @@ diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t
                                    diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                    diopiConstTensorHandle_t alibiSlopes, diopiConstTensorHandle_t attentionMask, float pDropout, float softmaxScale,
                                    bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight) {
-    BEGIN_CALL_ACL_OP(q, k, v, alibiSlopes, gen, attentionOut);
+    BEGIN_CALL_ACL_OP(q, k, v, alibiSlopes, attentionMask, gen, attentionOut);
 
     DIOPI_CHECK(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
     DIOPI_CHECK(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
@@ -32,6 +32,7 @@ diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t
     DIOPI_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4-dimensional");
     DIOPI_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
+    DIOPI_CHECK(isCausal == false || attentionMask != nullptr, "When isCausal is True, attentionMask should not be nullptr!");
 
     int64_t b = qAt.size(0);
     int64_t s0 = qAt.size(1);  // S for query
@@ -64,31 +65,15 @@ diopiError_t diopiFlashAttentionV2(diopiContextHandle_t ctx, diopiTensorHandle_t
         }
     }
 
-    // In order to reduce overhead, a common attention mask can be saved in the model layer, which can avoid repeatedly generating the attention mask every time
-    // the flash attention is calculated.
-    // It is worth noting that the attention mask used by ascend is contrary to common sense, so this interface cannot be used as a universal diopi interface
-    // for the time being. Please do not use it with other devices.
-    at::Tensor attentionMaskAt = at::Tensor();
-    int64_t sparseMode = 0;
-    if (isCausal) {
-        // NOTE: reference to: https://gitee.com/ascend/ModelLink/blob/v0.1.0/pretrain_llama.py#L74
-        // It should be noted that the generation logic of attention mask is exactly opposite to common sense on ascend.
-        // According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
-        // https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
-        if (s0 > 2048 && s1 > 2048) {
-            attentionMaskAt = npu_preparation::apply_tensor_without_format({2048, 2048}, qAt.options().dtype(at::kBool));  // [2048, 2048]
-            sparseMode = 2;
-        } else {
-            attentionMaskAt = npu_preparation::apply_tensor_without_format({s0, s1}, qAt.options().dtype(at::kBool));  // [S0, S1]
-        }
-        EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskAt);
-        int64_t diagonal = 1;
-        EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskAt, diagonal);
-    }
-
     int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
+    int64_t sparseMode = 0;
+    if (isCausal) {
+        if (s0 > 2048 && s1 > 2048 && attentionMaskAt.defined() && attentionMaskAt.size(0) == 2048 && attentionMaskAt.size(1) == 2048) {
+            sparseMode = 2;
+        }
+    }
 
     at::Tensor softmaxMaxAt;
     at::Tensor softmaxSumAt;
@@ -138,7 +123,7 @@ diopiError_t diopiFlashAttentionV2Backward(diopiContextHandle_t ctx, diopiTensor
                                            diopiConstTensorHandle_t dropoutMask, diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
                                            diopiConstTensorHandle_t softmaxOut, float pDropout, float softmaxScale, bool isCausal, int32_t windowSizeLeft,
                                            int32_t windowSizeRight) {
-    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
+    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, attentionMask, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
     DIOPI_CHECK(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
     DIOPI_CHECK(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
@@ -146,6 +131,7 @@ diopiError_t diopiFlashAttentionV2Backward(diopiContextHandle_t ctx, diopiTensor
     DIOPI_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4-dimensional");
     DIOPI_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
+    DIOPI_CHECK(isCausal == false || attentionMask != nullptr, "When isCausal is True, attentionMask should not be nullptr!");
 
     at::Tensor dropoutMaskAt;
     if (dropoutMask) {
@@ -170,27 +156,11 @@ diopiError_t diopiFlashAttentionV2Backward(diopiContextHandle_t ctx, diopiTensor
     int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
-
-    // In order to reduce overhead, a common attention mask can be saved in the model layer, which can avoid repeatedly generating the attention mask every time
-    // the flash attention is calculated.
-    // It is worth noting that the attention mask used by ascend is contrary to common sense, so this interface cannot be used as a universal diopi interface
-    // for the time being. Please do not use it with other devices.
-    at::Tensor attentionMaskAt = at::Tensor();
     int64_t sparseMode = 0;
     if (isCausal) {
-        // NOTE: reference to: https://gitee.com/ascend/ModelLink/blob/v0.1.0/pretrain_llama.py#L74
-        // It should be noted that the generation logic of attention mask is exactly opposite to common sense on ascend.
-        // According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
-        // https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
-        if (s0 > 2048 && s1 > 2048) {
-            attentionMaskAt = npu_preparation::apply_tensor_without_format({2048, 2048}, qAt.options().dtype(at::kBool));  // [2048, 2048]
+        if (s0 > 2048 && s1 > 2048 && attentionMaskAt.defined() && attentionMaskAt.size(0) == 2048 && attentionMaskAt.size(1) == 2048) {
             sparseMode = 2;
-        } else {
-            attentionMaskAt = npu_preparation::apply_tensor_without_format({s0, s1}, qAt.options().dtype(at::kBool));  // [S0, S1]
         }
-        EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskAt);
-        int64_t diagonal = 1;
-        EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskAt, diagonal);
     }
 
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScoreGrad,
