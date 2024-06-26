@@ -3,6 +3,9 @@ project(torch_impl)
 
 option(HIP "Whether to use HIP when available" OFF)
 
+include(cmake/TorchBaseFunc.cmake)
+InitFindTorch()
+
 find_package(Torch 2.0 REQUIRED)
 if (Torch_FOUND)
     message(STATUS "TORCH_CXX_FLAGS: ${TORCH_CXX_FLAGS}")
