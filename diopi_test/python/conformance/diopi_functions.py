@@ -5439,11 +5439,15 @@ def flash_attention_backward(
     check_returncode(ret)
     return {"q": grad_q, "k": grad_k, "v": grad_v}
 
+# diopiFlashAttentionV2 is designed for ascend, please do not use it with other devices.
 def flash_attention_v2(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
     call = "diopiFlashAttentionV2"
     func = check_function(call)
     out = raw_like(q)
     if is_causal:
+        # According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
+        # https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
+        # It is worth noting that the attention mask used by ascend is contrary to common sense.
         seqlen_q = q.shape().data[1] if q.shape().data[1] <= 2048 else 2048
         seqlen_kv = k.shape().data[1] if k.shape().data[1] <= 2048 else 2048
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
@@ -5502,6 +5506,9 @@ def flash_attention_v2_backward(
         p_dropout >= 0 and p_dropout <= 1
     ), "The p_dropout value must be in range of [0, 1]"
     if is_causal:
+        # According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
+        # https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
+        # It is worth noting that the attention mask used by ascend is contrary to common sense.
         seqlen_q = q.shape().data[1] if q.shape().data[1] <= 2048 else 2048
         seqlen_kv = k.shape().data[1] if k.shape().data[1] <= 2048 else 2048
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
@@ -5654,6 +5661,7 @@ def flash_attention_varlen_backward(
     check_returncode(ret)
     return {"q": grad_q, "k": grad_k, "v": grad_v}
 
+# diopiFlashAttentionVarLenV2 is designed for ascend, please do not use it with other devices.
 def flash_attention_varlen_v2(
     q,
     k,
@@ -5685,6 +5693,9 @@ def flash_attention_varlen_v2(
     else:
         assert 0, "The p_dropout value must be in range of [0, 1]"
     if is_causal:
+        # According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
+        # https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
+        # It is worth noting that the attention mask used by ascend is contrary to common sense.
         seqlen_q = max_seqlen_q if max_seqlen_q <= 2048 else 2048
         seqlen_kv = max_seqlen_kv if max_seqlen_kv <= 2048 else 2048
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
@@ -5754,6 +5765,9 @@ def flash_attention_varlen_v2_backward(
         p_dropout >= 0 and p_dropout <= 1
     ), "The p_dropout value must be in range of [0, 1]"
     if is_causal:
+        # According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
+        # https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
+        # It is worth noting that the attention mask used by ascend is contrary to common sense.
         seqlen_q = max_seqlen_q if max_seqlen_q <= 2048 else 2048
         seqlen_kv = max_seqlen_kv if max_seqlen_kv <= 2048 else 2048
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
