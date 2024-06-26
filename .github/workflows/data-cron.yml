@@ -93,6 +93,7 @@ jobs:
           mkdir -p ${DATA_DIR}/source/${GEN_DATA}
           rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
           """
+<<<<<<< HEAD
 #          ssh ${CLUSTER_ASCEND_910B} """
 #          mkdir -p ${DATA_DIR}/source/${GEN_DATA}
 #          rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
@@ -115,3 +116,12 @@ jobs:
           set -e
           source ~/Aoss_env.sh 
           ads-cli cp s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss-internal.cn-sh-01c.sensecoreapi-oss.cn${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
+=======
+          ssh ${CLUSTER_ASCEND_910B} """
+          mkdir -p ${DATA_DIR}/source/${GEN_DATA}
+          rsync -a --delete ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
+          """
+          # ssh ${CLUSTER_SUPA} """
+          # rsync -a ${CLUSTER_V100}:${DATA_DIR}/source/${GEN_DATA}/diopi/ ${DATA_DIR}/source/${GEN_DATA}/diopi/
+          # """
+>>>>>>> 2b566db5 ([ci]fix Ascend CI (#1275))
