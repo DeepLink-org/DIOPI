@@ -5559,13 +5559,9 @@ def flash_attention_varlen(
     batch_size = len(cu_seqlens_q) - 1
     cu_seqlens_q = Tensor.from_numpy(np.array(cu_seqlens_q, dtype=np.int32))
     cu_seqlens_kv = Tensor.from_numpy(np.array(cu_seqlens_kv, dtype=np.int32))
-    if p_dropout > 0 and p_dropout <= 1:
-        dropout_mask = Tensor()
+    if p_dropout >= 0 and p_dropout <= 1:
         state = build_generator_state(q.context())
         generator = Generator(state)
-    elif p_dropout == 0:
-        dropout_mask = None
-        generator = None
     else:
         assert 0, "The p_dropout value must be in range of [0, 1]"
     softmax_lse = Tensor([batch_size, q_size[1], max_seqlen_q], dtype=Dtype.float32)
