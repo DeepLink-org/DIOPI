@@ -139,6 +139,8 @@ ascend:
 - diopiLog2
 - diopiLog2Inp
 - diopiLogInp
+- diopiMaskedSelect
+- diopiMaskedSelectBackward
 - diopiMaskedFill
 - diopiMaskedFillInp
 - diopiMaskedFillInpScalar
@@ -181,6 +183,7 @@ ascend:
 - diopiReluInp
 - diopiRMSNorm
 - diopiRMSNormBackward
+- diopiRotaryEmbedding
 - diopiRsqrt
 - diopiRsqrtInp
 - diopiSgn
@@ -244,7 +247,6 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiCopyInp
-- diopiRotaryEmbedding
 - diopiIndex
 - diopiDestIndexCopyKV
 - diopiTokenAttentionInference
@@ -256,8 +258,6 @@ ascend_npu:
 - diopiNativeMemoryFormatCast
 - diopiGetNativeMemoryFormat
 - diopiTensorDestructionHook
-- diopiMaskedSelect
-- diopiMaskedSelectBackward
 - diopiMm
 - diopiNLLLoss
 - diopiNLLLossBackward
