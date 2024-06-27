@@ -299,6 +299,7 @@ private:
     void* workspaceAddr_ = nullptr;
 };
 
+// std::true_type if it's one of the types listed, otherwise std::false_type
 template <typename T>
 struct IsAclnnBuildInType
     : std::disjunction<std::is_same<T, aclTensor*>, std::is_same<T, aclScalar*>, std::is_same<T, aclIntArray*>, std::is_same<T, aclFloatArray*>,
