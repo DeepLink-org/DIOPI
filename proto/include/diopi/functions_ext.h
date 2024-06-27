@@ -638,6 +638,7 @@ DIOPI_API diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ct
  * @param[in] q Tensor representing the query matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num * head_dim].
  * @param[in] k Tensor representing the key matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num * head_dim]
  * @param[in] v Tensor representing the value matrix in the attention mechanism. shape = [sum_batch_seq_len, head_num * head_dim]
+ * @param[in] attenMask Tensor representing the mask matrix in the attention mechanism. shape = [1, single_seq_len]
  * @param[in] actual_seq_lengths Tensor representing the sequence length in each batch. shape = [batch_size]
  * @param[in] num_heads head number of q and out.
  * @param[in] num_kv_heads head number of key and value.
@@ -646,8 +647,8 @@ DIOPI_API diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ct
  * @param[in] block_size Size of eatch block unit.
  */
 DIOPI_API diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                           diopiConstTensorHandle_t v, diopiSize_t actual_seq_lengths, int64_t num_heads, int64_t num_kv_heads, int64_t dim,
-                                           diopiConstTensorHandle_t block_table, int64_t block_size);
+                                           diopiConstTensorHandle_t v, diopiConstTensorHandle_t attenMask, diopiSize_t actual_seq_lengths, int64_t num_heads,
+                                           int64_t num_kv_heads, int64_t dim, diopiConstTensorHandle_t block_table, int64_t block_size);
 /**
  * @brief The no pad implementation of
  * \text{context_attention_out}(\mathrm{q},\mathrm{k},\mathrm{v})=\text{softmax}(\frac{\mathrm{qk}^\mathrm{T}}{\sqrt{\mathrm{d_k}}})\mathrm{v}. For details,
