@@ -19,26 +19,29 @@ const int64_t uInt8BitNumber = 8;
 
 }  // namespace
 
-diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* attentionMask,
-                                       diopiTensorHandle_t* dropoutMask, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
-                                       diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                       diopiConstTensorHandle_t v, diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, int64_t maxSeqLenQ, int64_t maxSeqLenKV,
-                                       double pDropout, double softmaxScale, bool isCausal) {
-    BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqKV, gen, attentionOut);
+diopiError_t diopiCustomizedFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* dropoutMask,
+                                                 diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum, diopiTensorHandle_t* softmaxOut,
+                                                 diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                                 diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, diopiConstTensorHandle_t alibiSlopes,
+                                                 diopiConstTensorHandle_t attentionMask, int32_t maxSeqLenQ, int32_t maxSeqLenKV, float pDropout,
+                                                 float softmaxScale, bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight) {
+    BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqKV, attentionMask, gen, attentionOut);
 
+    DIOPI_CHECK(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
+    DIOPI_CHECK(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
     DIOPI_CHECK(qAt.dim() == 3, "The shapes of the input query should be 3-dimensional");
     DIOPI_CHECK(kAt.dim() == 3, "The shapes of the input key should be 3-dimensional");
     DIOPI_CHECK(vAt.dim() == 3, "The shapes of the input value should be 3-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
+    DIOPI_CHECK(isCausal == false || attentionMask != nullptr, "When isCausal is True, attentionMask should not be nullptr!");
 
-    std::string inputLayout = "TND";
-    char* inputLayoutPtr = const_cast<char*>(inputLayout.c_str());
+    const char* inputLayout = "TND";
 
     int64_t t = qAt.size(0);
     int64_t n = qAt.size(1);
     int64_t d = qAt.size(2);
 
-    double keepProb = 1 - pDropout;
+    double keepProb = static_cast<double>(1 - pDropout);
 
     at::Tensor pseAt = at::Tensor();
     at::IntArrayRef prefixN = at::IntArrayRef{};
@@ -56,7 +59,7 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
         int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
         dropoutMaskAt = npu_preparation::apply_tensor_without_format({length}, qAt.options().dtype(at::kByte));
         if (pDropout == 1) {
-            op_api::zero_(dropoutMaskAt);
+            EXEC_NPU_CMD(aclnnInplaceZero, dropoutMaskAt);
         } else {
             at::IntArrayRef shapeArray(numels);
             auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genAt)->philox_engine_inputs(10);
@@ -66,25 +69,15 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
         }
     }
 
-    int64_t sparseMode = 0;
-    at::Tensor attentionMaskAt = at::Tensor();
-    if (isCausal) {
-        // According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
-        // https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
-        if (maxSeqLenQ > 2048 && maxSeqLenKV > 2048) {
-            maxSeqLenQ = 2048;
-            maxSeqLenKV = 2048;
-            sparseMode = 2;
-        }
-        attentionMaskAt = npu_preparation::apply_tensor_without_format({maxSeqLenQ, maxSeqLenKV}, qAt.options().dtype(at::kBool));
-        EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskAt);
-        int64_t diagonal = 1;
-        EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskAt, diagonal);
-    }
-
     int64_t preTokens = kAt.size(0);
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
+    int64_t sparseMode = 0;
+    if (isCausal) {
+        if (maxSeqLenQ > 2048 && maxSeqLenKV > 2048 && attentionMaskAt.defined() && attentionMaskAt.size(0) == 2048 && attentionMaskAt.size(1) == 2048) {
+            sparseMode = 2;
+        }
+    }
 
     at::Tensor softmaxMaxAt;
     at::Tensor softmaxSumAt;
@@ -96,7 +89,7 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
                                                                               qAt.options().dtype(at::kFloat));  // [T, N, 8]
     softmaxOutAt = at_npu::native::OpPreparation::apply_tensor_without_format({0},
                                                                               qAt.options());  // [0]
-
+    double scale = static_cast<double>(softmaxScale);
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionVarLenScore,
                                  qAt,
                                  kAt,
@@ -108,12 +101,12 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
                                  prefixN,
                                  cumSeqQAt,
                                  cumSeqKVAt,
-                                 softmaxScale,
+                                 scale,
                                  keepProb,
                                  preTokens,
                                  nextTokens,
                                  n,
-                                 inputLayoutPtr,
+                                 inputLayout,
                                  innerPrecise,
                                  sparseMode,
                                  softmaxMaxAt,
@@ -121,9 +114,6 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
                                  softmaxOutAt,
                                  attentionOutAt);
 
-    if (attentionMaskAt.defined()) {
-        impl::aten::buildDiopiTensor(ctx, attentionMaskAt, attentionMask);
-    }
     if (dropoutMaskAt.defined()) {
         impl::aten::buildDiopiTensor(ctx, dropoutMaskAt, dropoutMask);
     }
@@ -133,36 +123,31 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     END_CALL_ACL_OP();
 }
 
-diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
-                                               diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                               diopiConstTensorHandle_t v, diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, diopiConstTensorHandle_t attentionOut,
-                                               diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
-                                               diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum, diopiConstTensorHandle_t softmaxOut,
-                                               int64_t maxSeqLenQ, int64_t maxSeqLenKV, double pDropout, double softmaxScale) {
+diopiError_t diopiCustomizedFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK,
+                                                         diopiTensorHandle_t gradV, diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q,
+                                                         diopiConstTensorHandle_t k, diopiConstTensorHandle_t v, diopiSize_t cumSeqQ, diopiSize_t cumSeqKV,
+                                                         diopiConstTensorHandle_t alibiSlopes, diopiConstTensorHandle_t attentionOut,
+                                                         diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
+                                                         diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
+                                                         diopiConstTensorHandle_t softmaxOut, int32_t maxSeqLenQ, int32_t maxSeqLenKV, float pDropout,
+                                                         float softmaxScale, bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight) {
     BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqKV, attentionOut, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
-    at::Tensor dropoutMaskAt;
-    at::Tensor attentionMaskAt;
-    if (dropoutMask) {
-        dropoutMaskAt = impl::aten::buildATen(dropoutMask);
-    }
-    if (attentionMask) {
-        attentionMaskAt = impl::aten::buildATen(attentionMask);
-    }
-
+    DIOPI_CHECK(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
+    DIOPI_CHECK(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
     DIOPI_CHECK(qAt.dim() == 3, "The shapes of the input query should be 3-dimensional");
     DIOPI_CHECK(kAt.dim() == 3, "The shapes of the input key should be 3-dimensional");
     DIOPI_CHECK(vAt.dim() == 3, "The shapes of the input value should be 3-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
+    DIOPI_CHECK(isCausal == false || attentionMask != nullptr, "When isCausal is True, attentionMask should not be nullptr!");
 
-    std::string inputLayout = "TND";
-    char* inputLayoutPtr = const_cast<char*>(inputLayout.c_str());
+    const char* inputLayout = "TND";
 
     int64_t t = qAt.size(0);
     int64_t n = qAt.size(1);
     int64_t d = qAt.size(2);
 
-    double keepProb = 1 - pDropout;
+    double keepProb = static_cast<double>(1 - pDropout);
 
     at::Tensor pseAt = at::Tensor();
     at::Tensor gradPseAt = at_npu::native::OpPreparation::apply_tensor_without_format({0}, qAt.options());
@@ -174,12 +159,20 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
     int64_t sparseMode = 0;
-    // According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
-    // https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
-    if (maxSeqLenQ > 2048 && maxSeqLenKV > 2048 && attentionMaskAt.defined() && attentionMaskAt.size(0) == 2048 && attentionMaskAt.size(1) == 2048) {
-        sparseMode = 2;
+    at::Tensor attentionMaskAt;
+    attentionMaskAt = impl::aten::buildATen(attentionMask);
+    if (isCausal) {
+        if (maxSeqLenQ > 2048 && maxSeqLenKV > 2048 && attentionMaskAt.defined() && attentionMaskAt.size(0) == 2048 && attentionMaskAt.size(1) == 2048) {
+            sparseMode = 2;
+        }
     }
 
+    at::Tensor dropoutMaskAt;
+    if (dropoutMask) {
+        dropoutMaskAt = impl::aten::buildATen(dropoutMask);
+    }
+
+    double scale = static_cast<double>(softmaxScale);
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionUnpaddingScoreGrad,
                                  qAt,
                                  kAt,
@@ -196,12 +189,12 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
                                  prefixN,
                                  cumSeqQAt,
                                  cumSeqKVAt,
-                                 softmaxScale,
+                                 scale,
                                  keepProb,
                                  preTokens,
                                  nextTokens,
                                  n,
-                                 inputLayoutPtr,
+                                 inputLayout,
                                  innerPrecise,
                                  sparseMode,
                                  gradQAt,

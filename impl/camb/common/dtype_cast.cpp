@@ -128,6 +128,8 @@ diopiError_t dataTypeCast(diopiContextHandle_t ctx, DiopiTensor& dest, const Dio
 static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes, diopiDtype_t* dtype) {
     if (opSupportedDtypes.find(diopi_dtype_float32) != opSupportedDtypes.end()) {
         *dtype = diopi_dtype_float32;
+    } else if (opSupportedDtypes.find(diopi_dtype_bfloat16) != opSupportedDtypes.end()) {
+        *dtype = diopi_dtype_bfloat16;
     } else if (opSupportedDtypes.find(diopi_dtype_float16) != opSupportedDtypes.end()) {
         *dtype = diopi_dtype_float16;
     } else if (opSupportedDtypes.find(diopi_dtype_int32) != opSupportedDtypes.end()) {

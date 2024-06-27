@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import math
-from einops import rearrange
+from einops import rearrange, repeat
 import torch.nn.functional as F
 
 
@@ -427,21 +427,17 @@ class CustomizedTest(object):
             ]
         return output
 
-    def flash_attention_v1(
-        q, k, v, p_dropout, softmax_scale, is_causal, head_num, input_layout
-    ):
+    def flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
+        # TODO: impl for alibi and sliding window local attention
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
-        # For calculation convenience, convert to BSND.
-        if input_layout == "SBH":
-            q, k, v = [
-                rearrange(x, "s b (n d) -> b s n d", n=head_num) for x in [q, k, v]
-            ]
-        elif input_layout == "BSH":
-            q, k, v = [
-                rearrange(x, "b s (n d) -> b s n d", n=head_num) for x in [q, k, v]
-            ]
-        elif input_layout == "BNSD":
-            q, k, v = [rearrange(x, "b n s d-> b s n d") for x in [q, k, v]]
+        # adapt to GQA
+        if k.shape[2] != q.shape[2] and v.shape[2] != q.shape[2]:  # MQA/GQA
+            k = repeat(
+                k, "... hkv d -> ... (hkv g) d", g=q.shape[2] // k.shape[2]
+            )
+            v = repeat(
+                v, "... hkv d -> ... (hkv g) d", g=q.shape[2] // v.shape[2]
+            )
         seqlen = q.shape[1]
         softmax_scale = (
             1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
@@ -454,16 +450,19 @@ class CustomizedTest(object):
             scores = scores + causal_mask.to(dtype=scores.dtype)
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
         output = torch.einsum("bhts,bshd->bthd", attention, v)
-        if input_layout == "SBH":
-            output = rearrange(output, "b s n d -> s b (n d)")
-        elif input_layout == "BSH":
-            output = rearrange(output, "b s n d -> b s (n d)")
-        elif input_layout == "BNSD":
-            output = rearrange(output, "b s n d -> b n s d")
         return output
 
-    def flash_attention_v3(q, k, v, p_dropout, softmax_scale, is_causal):
+    def customized_flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
+        # TODO: impl for alibi and sliding window local attention
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # adapt to GQA
+        if k.shape[2] != q.shape[2] and v.shape[2] != q.shape[2]:  # MQA/GQA
+            k = repeat(
+                k, "... hkv d -> ... (hkv g) d", g=q.shape[2] // k.shape[2]
+            )
+            v = repeat(
+                v, "... hkv d -> ... (hkv g) d", g=q.shape[2] // v.shape[2]
+            )
         seqlen = q.shape[1]
         softmax_scale = (
             1.0 / math.sqrt(q.shape[-1]) if not softmax_scale else softmax_scale
@@ -484,16 +483,94 @@ class CustomizedTest(object):
         v,
         cu_seqlens_q,
         cu_seqlens_kv,
+        alibi_slopes,
         max_seqlen_q,
         max_seqlen_kv,
         p_dropout,
         softmax_scale,
         is_causal,
+        window_size_left,
+        window_size_right,
     ):
+        # TODO: impl for alibi and sliding window local attention
+        # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # adapt to GQA
+        if k.shape[1] != q.shape[1] and v.shape[1] != q.shape[1]:  # MQA/GQA
+            k = repeat(
+                k, "... hkv d -> ... (hkv g) d", g=q.shape[1] // k.shape[1]
+            )
+            v = repeat(
+                v, "... hkv d -> ... (hkv g) d", g=q.shape[1] // v.shape[1]
+            )
         # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
         cu_seqlens = cu_seqlens_q
         max_seqlen = max_seqlen_q
+        batch_size = len(cu_seqlens) - 1
+        _, head_num, head_dim = q.size()
+        device = q.device
+
+        padded_shape = (batch_size, max_seqlen, head_num, head_dim)
+        q_padded = torch.zeros(padded_shape, dtype=q.dtype, device=device)
+        k_padded = torch.zeros(padded_shape, dtype=k.dtype, device=device)
+        v_padded = torch.zeros(padded_shape, dtype=v.dtype, device=device)
+
+        # Initialize the key_padding_mask as a Boolean mask with False values
+        key_padding_mask = torch.zeros(
+            (batch_size, max_seqlen), dtype=torch.bool, device=device
+        )
+        # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
+        for i in range(batch_size):
+            start_idx = cu_seqlens[i]
+            end_idx = cu_seqlens[i + 1]
+            actual_seq_len = end_idx - start_idx
+            key_padding_mask[i, :actual_seq_len] = True
+            q_padded[i, :actual_seq_len, :, :] = q[start_idx:end_idx, :, :]
+            k_padded[i, :actual_seq_len, :, :] = k[start_idx:end_idx, :, :]
+            v_padded[i, :actual_seq_len, :, :] = v[start_idx:end_idx, :, :]
+
+        qkv_padded_result = multi_head_attention_inside(
+            q_padded, k_padded, v_padded, softmax_scale, is_causal, key_padding_mask
+        )
+        output = torch.zeros(q.shape, dtype=q.dtype, device=device)
+
+        for i in range(batch_size):
+            start_idx = cu_seqlens[i]
+            end_idx = cu_seqlens[i + 1]
+            actual_seq_len = end_idx - start_idx
+            output[start_idx:end_idx, :, :] = qkv_padded_result[
+                i, :actual_seq_len, :, :
+            ]
+        return output
+
+    def customized_flash_attention_varlen(
+        q,
+        k,
+        v,
+        cu_seqlens_q,
+        cu_seqlens_kv,
+        alibi_slopes,
+        max_seqlen_q,
+        max_seqlen_kv,
+        p_dropout,
+        softmax_scale,
+        is_causal,
+        window_size_left,
+        window_size_right,
+    ):
+        # TODO: impl for alibi and sliding window local attention
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # adapt to GQA
+        if k.shape[1] != q.shape[1] and v.shape[1] != q.shape[1]:  # MQA/GQA
+            k = repeat(
+                k, "... hkv d -> ... (hkv g) d", g=q.shape[1] // k.shape[1]
+            )
+            v = repeat(
+                v, "... hkv d -> ... (hkv g) d", g=q.shape[1] // v.shape[1]
+            )
+        # Currently, only equality between cu_seqlens_q and cu_seqlens_kv is supported here
+        cu_seqlens = cu_seqlens_q
+        max_seqlen = max_seqlen_q
+        cu_seqlens.insert(0, 0)
         batch_size = len(cu_seqlens) - 1
         _, head_num, head_dim = q.size()
         device = q.device
@@ -728,127 +805,6 @@ class CustomizedTest(object):
         key_rotate = torch.cat((-k2, k1), dim=-1)
         key = key * cos + key_rotate * sin
         return query.view(query.shape[0], -1), key.view(key.shape[0], -1)
-
-    def attention(
-        query,
-        key,
-        value,
-        attn_mask=None,
-        attn_bias=None,
-        dropout_p=0.0,
-        is_causal=False,
-        scale=None,
-    ):
-        query = query.permute(0, 2, 1, 3)  # BSND -> BNSD
-        key = key.permute(0, 2, 1, 3)  # BSND -> BNSD
-        value = value.permute(0, 2, 1, 3)  # BSND -> BNSD
-        half_use_float = query.is_cpu and (
-            query.dtype == torch.float16 or query.dtype == torch.bfloat16
-        )
-        raw_dtype = query.dtype
-        device = query.device
-        if half_use_float:
-            query = query.float()
-            key = key.float()
-            value = value.float()
-        batch_size, seq_len_q, seq_len_kv = query.size(0), query.size(-2), key.size(-2)
-        scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
-        attn_bias_temp = torch.zeros(
-            seq_len_q, seq_len_kv, dtype=query.dtype, device=device
-        )
-        if is_causal:
-            assert attn_mask is None
-            temp_mask = torch.ones(
-                seq_len_q, seq_len_kv, dtype=torch.bool, device=device
-            ).tril(diagonal=0)
-            attn_bias_temp.masked_fill_(temp_mask.logical_not(), -10000.0)
-
-        if attn_mask is not None:
-            if attn_mask.dtype == torch.bool:
-                attn_bias_temp.masked_fill_(attn_mask.logical_not(), -10000.0)
-            else:
-                assert False, "atten_mask dtype is not bool"
-
-        attn_weight = query @ key.transpose(-2, -1) * scale_factor
-        attn_weight += attn_bias_temp
-        if attn_bias is not None:
-            attn_weight += attn_bias
-        attn_weight = torch.softmax(attn_weight, dim=-1)
-        attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
-        out = attn_weight @ value
-        if half_use_float:
-            out = out.to(raw_dtype)
-        out = out.permute(0, 2, 1, 3)  # BNSD -> BSND
-        return out
-
-    def attention_varlen(
-        query,
-        key,
-        value,
-        cu_seqlens_q,
-        cu_seqlens_kv,
-        max_seqlen_q,
-        max_seqlen_kv,
-        attn_mask=None,
-        attn_bias=None,
-        dropout_p=0.0,
-        is_causal=False,
-        scale=None,
-    ):
-
-        batch_size = cu_seqlens_q.numel() - 1
-        _, head_num, head_dim = query.size()
-        device = query.device
-        padded_q_shape = (batch_size, max_seqlen_q, head_num, head_dim)  # BSND
-        padded_kv_shape = (batch_size, max_seqlen_kv, head_num, head_dim)  # BSND
-
-        query_padded = torch.zeros(padded_q_shape, dtype=query.dtype, device=device)
-        key_padded = torch.zeros(padded_kv_shape, dtype=key.dtype, device=device)
-        value_padded = torch.zeros(padded_kv_shape, dtype=value.dtype, device=device)
-
-        padded_attn_bias = torch.zeros(
-            batch_size, 1, max_seqlen_q, max_seqlen_kv, dtype=query.dtype, device=device
-        )  # BNSS
-        # Fill the key_padding_mask with True values at positions with actual data (cu_seqlens)
-        for i in range(batch_size):
-            actual_q_seq_len = cu_seqlens_q[i + 1] - cu_seqlens_q[i]
-            actual_kv_seq_len = cu_seqlens_kv[i + 1] - cu_seqlens_kv[i]
-            padded_attn_bias[i, :, actual_q_seq_len:, :] = -10000.0
-            padded_attn_bias[i, :, :, actual_kv_seq_len:] = -10000.0
-            query_padded[i, :actual_q_seq_len, :, :] = query[
-                cu_seqlens_q[i] : cu_seqlens_q[i + 1], :, :
-            ]  # BSND
-            key_padded[i, :actual_kv_seq_len, :, :] = key[
-                cu_seqlens_kv[i] : cu_seqlens_kv[i + 1], :, :
-            ]  # BSND
-            value_padded[i, :actual_kv_seq_len, :, :] = value[
-                cu_seqlens_kv[i] : cu_seqlens_kv[i + 1], :, :
-            ]
-
-            actual_q_seq_len = cu_seqlens_q[i + 1] - cu_seqlens_q[i]
-        if attn_bias is None:
-            attn_bias = padded_attn_bias
-        else:
-            attn_bias += padded_attn_bias
-        out_paded = CustomizedTest.attention(
-            query=query_padded,
-            key=key_padded,
-            value=value_padded,
-            dropout_p=dropout_p,
-            is_causal=is_causal,
-            scale=scale,
-            attn_bias=attn_bias,
-        )  # BSND
-
-        out = torch.zeros(query.shape, dtype=query.dtype, device=device)
-        for i in range(batch_size):
-            start_idx = cu_seqlens_q[i]
-            end_idx = cu_seqlens_q[i + 1]
-            actual_seq_len = end_idx - start_idx
-            out[start_idx:end_idx, :, :] = out_paded[
-                i, :actual_seq_len, :, :
-            ]  # BSND->TND
-        return out
 
     def nll_loss_v2(input, target, weight=None, ignore_index=-100, reduction="mean"):
         out = torch.nn.functional.nll_loss(
