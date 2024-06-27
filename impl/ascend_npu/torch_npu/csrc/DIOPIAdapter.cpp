@@ -26,6 +26,8 @@
 #include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
+bool kUsePerformanceBuildAten = std::getenv("DIOPI_ASCEND_NOT_USE_FAST_BUILD_ATEN") == nullptr;
+
 namespace {
 constexpr float EPSILON = 1e-6;
 
@@ -36,8 +38,6 @@ int current_device() {
 }
 
 inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; }
-
-const bool kUsePerformanceBuildAten = std::getenv("DIOPI_ASCEND_USE_FAST_BUILD_ATEN") != nullptr;
 
 // check all at::ScalarType is not negative
 #define ENUM_PAIR_FUNC(_1, n) static_assert(static_cast<int64_t>(at::ScalarType::n) >= 0, #n " is negative");
@@ -1557,10 +1557,10 @@ at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const
         markedOutputs.pop_front();
         return out;
     }
-    TORCH_WARN(options.device().type() != at::DeviceType::CPU,
-               "Expected all tensors to be on the same device. "
-               "Expected NPU tensor, please check whether the input tensor device is correct. but got ",
-               options);
+    TORCH_CHECK(options.device().type() != at::DeviceType::CPU,
+                "Expected all tensors to be on the same device. "
+                "Expected NPU tensor, please check whether the input tensor device is correct. but got ",
+                options);
     auto fixFormat = InferFormat::GuessStorageFormat(sizes, (aclFormat)format);
     return NPUNativeFunctions::unsafe_empty_with_format(
         sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), fixFormat, keep_format);
