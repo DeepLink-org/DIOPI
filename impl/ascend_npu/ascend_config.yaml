@@ -100,6 +100,9 @@ ascend:
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
+- diopiIndexBackward
+- diopiIndexPut
+- diopiIndexPutInp
 - diopiIsNan
 - diopiIndexSelect
 - diopiIndexSelectBackward
@@ -244,10 +247,7 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiCopyInp
-- diopiIndexPut
-- diopiIndexPutInp
 - diopiIndex
-- diopiIndexBackward
 - diopiDestIndexCopyKV
 - diopiTokenAttentionInference
 - diopiTokenSoftmaxReduceVInference
