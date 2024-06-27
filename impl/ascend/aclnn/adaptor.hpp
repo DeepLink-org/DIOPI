@@ -13,6 +13,7 @@
 
 #include <array>
 #include <cassert>
+#include <complex>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -286,6 +287,25 @@ public:
 private:
     void* workspaceAddr_ = nullptr;
 };
+
+template <typename T>
+struct IsAclnnType {
+    using value =
+        typename std::disjunction<std::is_same<T, aclTensor*>, std::is_same<T, aclScalar*>, std::is_same<T, aclIntArray*>, std::is_same<T, aclFloatArray*>,
+                                  std::is_same<T, aclBoolArray*>, std::is_same<T, aclTensorList*>, std::is_same<T, aclScalarList*>>::value;
+};
+
+template <const char* workspaceApi, typename... Args, std::enable_if_t<std::conjunction_v<IsAclnnType<Args>...>, void> = 0>
+static std::pair<uint64_t, aclOpExecutor*> computeWorkspaceSize(Args&&... args){
+    static const auto workspaceSizeFuncAddr = getOpApiFuncAddr(workspaceApi);
+    using WorkspaceSizeFunc = int (*)(Args..., uint64_t*, aclOpExecutor**);
+    WorkspaceSizeFunc workspaceSizeFunc = reinterpret_cast<WorkspaceSizeFunc>(workspaceSizeFuncAddr);
+    uint64_t workspaceSize = 0;
+    aclOpExecutor* executor = nullptr;
+    auto workspaceStatus = std::invoke(workspaceSizeFunc, std::forward(args)..., &workspaceSize, &executor);
+    ASCEND_CHECK_THROW(workspaceStatus == ACL_SUCCESS, "[%s]'s return value is not equal to ACL_SUCCESS. aclnnStatus is %d.", workspaceApi, workspaceStatus);
+    return {workspaceSize, executor};
+}
 
 template <const char* api, const char* workspaceApi, class... Args>
 auto callAclnnImpl(diopiContextHandle_t ctx, const Args&... args) {
