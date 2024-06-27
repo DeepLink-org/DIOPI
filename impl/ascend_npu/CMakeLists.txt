@@ -78,7 +78,6 @@ list(REMOVE_ITEM OP_PLUGIN_SRC
   ${OP_PLUGIN_BASE_OPS_DIR}/opapi/LstmCellKernelNpuApi.cpp
   ${OP_PLUGIN_BASE_OPS_DIR}/aclops/TriangularSolveKernelNpu.cpp
   ${OP_PLUGIN_SRC_V_DIR}/aclops/EmbeddingBagBackwardKernelNpu.cpp
-  ${OP_PLUGIN_SRC_V_DIR}/opapi/StdKernelNpuOpApi.cpp
   ${OP_PLUGIN_SRC_V_DIR}/opapi/StdMeanKernelNpuOpApi.cpp
   ${OP_PLUGIN_SRC_V_DIR}/opapi/VarKernelNpuOpApi.cpp
   ${OP_PLUGIN_SRC_V_DIR}/opapi/TraceKernelNpuOpApi.cpp
