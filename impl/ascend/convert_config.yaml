@@ -458,3 +458,7 @@
 - diopiMaxPool2dBackward:
     tensor_dtype:
         indices: (int64)->int32
+
+- diopiStd:
+    dtype: (float64)->float32
+    layout: ND

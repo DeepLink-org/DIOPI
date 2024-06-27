@@ -223,6 +223,7 @@ ascend:
 - diopiSqrt
 - diopiSqrtInp
 - diopiStack
+- diopiStd
 - diopiTanh
 - diopiTanhBackward
 - diopiTanhInp
