@@ -12,6 +12,8 @@
 #include <stdexcept>  // IWYU pragma: keep
 #include <vector>
 
+// WARNING: This error message is used in tests to check if the functions are available. If you change this message, make sure to update the tests.
+//          To find related tests, search "DIOPI is built without flash-attention" in `diopi_test/python/conformance/diopi_functions.py`
 #define DIOPI_EXT_CALL_FLASH(func, ...)                                                                         \
     [&] {                                                                                                       \
         if (func == nullptr) {                                                                                  \
