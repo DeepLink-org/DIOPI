@@ -5380,21 +5380,27 @@ def flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, 
     head_dim = q_size[-1]
     softmax_lse = Tensor([q_size[0], q_size[2], q_size[1]], dtype=Dtype.float32)
     softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
-    ret = func(
-        q.context(),
-        out,
-        softmax_lse,
-        generator,
-        q,
-        k,
-        v,
-        alibi_slopes,
-        p_dropout,
-        softmax_scale,
-        is_causal,
-        window_size_left,
-        window_size_right,
-    )
+    try:
+        ret = func(
+            q.context(),
+            out,
+            softmax_lse,
+            generator,
+            q,
+            k,
+            v,
+            alibi_slopes,
+            p_dropout,
+            softmax_scale,
+            is_causal,
+            window_size_left,
+            window_size_right,
+        )
+    except RuntimeError as rte:
+        if "DIOPI is built without flash-attention" in rte.args[0]:
+            raise FunctionNotImplementedError
+        else:
+            raise
     check_returncode(ret)
     GLOBAL_STATE["flash_attention_softmax_lse"] = softmax_lse
     GLOBAL_STATE["flash_attention_generator"] = generator
@@ -5417,25 +5423,31 @@ def flash_attention_backward(
     softmax_lse = GLOBAL_STATE.pop("flash_attention_softmax_lse")
     generator = GLOBAL_STATE.pop("flash_attention_generator")
     softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
-    ret = func(
-        q.context(),
-        grad_q,
-        grad_k,
-        grad_v,
-        grad_outputs[0],
-        generator,
-        q,
-        k,
-        v,
-        alibi_slopes,
-        out,
-        softmax_lse,
-        p_dropout,
-        softmax_scale,
-        is_causal,
-        window_size_left,
-        window_size_right,
-    )
+    try:
+        ret = func(
+            q.context(),
+            grad_q,
+            grad_k,
+            grad_v,
+            grad_outputs[0],
+            generator,
+            q,
+            k,
+            v,
+            alibi_slopes,
+            out,
+            softmax_lse,
+            p_dropout,
+            softmax_scale,
+            is_causal,
+            window_size_left,
+            window_size_right,
+        )
+    except RuntimeError as rte:
+        if "DIOPI is built without flash-attention" in rte.args[0]:
+            raise FunctionNotImplementedError
+        else:
+            raise
     check_returncode(ret)
     return {"q": grad_q, "k": grad_k, "v": grad_v}
 
@@ -5579,25 +5591,31 @@ def flash_attention_varlen(
     softmax_scale = (
         1.0 / math.sqrt(q.shape().data[-1]) if not softmax_scale else softmax_scale
     )
-    ret = func(
-        q.context(),
-        out,
-        softmax_lse,
-        generator,
-        q,
-        k,
-        v,
-        cu_seqlens_q,
-        cu_seqlens_kv,
-        alibi_slopes,
-        max_seqlen_q,
-        max_seqlen_kv,
-        p_dropout,
-        softmax_scale,
-        is_causal,
-        window_size_left, 
-        window_size_right,
-    )
+    try:
+        ret = func(
+            q.context(),
+            out,
+            softmax_lse,
+            generator,
+            q,
+            k,
+            v,
+            cu_seqlens_q,
+            cu_seqlens_kv,
+            alibi_slopes,
+            max_seqlen_q,
+            max_seqlen_kv,
+            p_dropout,
+            softmax_scale,
+            is_causal,
+            window_size_left, 
+            window_size_right,
+        )
+    except RuntimeError as rte:
+        if "DIOPI is built without flash-attention" in rte.args[0]:
+            raise FunctionNotImplementedError
+        else:
+            raise
     check_returncode(ret)
     GLOBAL_STATE["flash_attention_varlen_softmax_lse"] = softmax_lse
     GLOBAL_STATE["flash_attention_varlen_generator"] = generator
@@ -5635,29 +5653,35 @@ def flash_attention_varlen_backward(
     grad_v = raw_like(v)
     softmax_lse = GLOBAL_STATE.pop("flash_attention_varlen_softmax_lse")
     generator = GLOBAL_STATE.pop("flash_attention_varlen_generator")
-    ret = func(
-        q.context(),
-        grad_q,
-        grad_k,
-        grad_v,
-        grad_outputs[0],
-        generator,
-        q,
-        k,
-        v,
-        cu_seqlens_q,
-        cu_seqlens_kv,
-        alibi_slopes,
-        out,
-        softmax_lse,
-        max_seqlen_q,
-        max_seqlen_kv,
-        p_dropout,
-        softmax_scale,
-        is_causal,
-        window_size_left, 
-        window_size_right,
-    )
+    try:
+        ret = func(
+            q.context(),
+            grad_q,
+            grad_k,
+            grad_v,
+            grad_outputs[0],
+            generator,
+            q,
+            k,
+            v,
+            cu_seqlens_q,
+            cu_seqlens_kv,
+            alibi_slopes,
+            out,
+            softmax_lse,
+            max_seqlen_q,
+            max_seqlen_kv,
+            p_dropout,
+            softmax_scale,
+            is_causal,
+            window_size_left, 
+            window_size_right,
+        )
+    except RuntimeError as rte:
+        if "DIOPI is built without flash-attention" in rte.args[0]:
+            raise FunctionNotImplementedError
+        else:
+            raise
     check_returncode(ret)
     return {"q": grad_q, "k": grad_k, "v": grad_v}
 

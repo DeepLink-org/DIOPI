@@ -154,7 +154,7 @@ inline void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopi_tensor_
     updateATen2Tensor(ctx, atOuts, outs);
 }
 
-void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out);
+void buildDiopiTensor(diopiContextHandle_t ctx, const at::Tensor& input, diopiTensorHandle_t* out);
 
 // new cuda generator and pass dipu generator state into cuda generator state
 at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator);
