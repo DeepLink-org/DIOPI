@@ -14,7 +14,7 @@ diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     TORCH_CHECK(inputAt.dim() <= repeatSize.len, "repeats size should not be smaller than input tensor dim on ascend!");
     // When repeatSize.len is equal to 0, out is the same as input.
     if (repeatSize.len == 0) {
-        outAt.copy_(inputAt);
+        outAt.copy_(inputAt, true);
         END_CALL_ACL_OP();
     }
 
