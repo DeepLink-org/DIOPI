@@ -47,7 +47,7 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         at::Tensor gradWeightTempAt = at_npu::native::OpPreparation::apply_tensor_with_format(
             op_infer::rms_norm_grad_npu_output_size(inputAt, weightAt)[1], gradWeightAt.options().dtype(at::kFloat), ACL_FORMAT_ND);
         EXEC_NPU_CMD(aclnnRmsNormGrad, gradOutputAt, inputAt, invRmsAt, weightAt, gradInputAt, gradWeightTempAt);
-        gradWeightAt.copy_(gradWeightTempAt, true);
+        gradWeightAt.copy_(gradWeightTempAt);
     } else {
         EXEC_NPU_CMD(aclnnRmsNormGrad, gradOutputAt, inputAt, invRmsAt, weightAt, gradInputAt, gradWeightAt);
     }
@@ -60,7 +60,7 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
             std::iota(sumDims.begin(), sumDims.end(), 0);
             op_api::sum_out(gradOutputAt, sumDims, false, gradBiasAt.scalar_type(), gradBiasAt);
         } else {
-            gradBiasAt.copy_(gradOutputAt, true);
+            gradBiasAt.copy_(gradOutputAt);
         }
     }
     END_CALL_ACL_OP();
