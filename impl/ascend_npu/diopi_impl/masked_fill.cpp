@@ -16,7 +16,7 @@ diopiError_t diopiMaskedFill(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
         return diopiSuccess;
     }
     if (outAt.data_ptr() != inputAt.data_ptr()) {
-        outAt.copy_(inputAt, true);
+        outAt.copy_(inputAt);
     }
     op_api::masked_fill_(outAt, maskAt, valueAt);
     END_CALL_ACL_OP();
@@ -38,7 +38,7 @@ diopiError_t diopiMaskedFillScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
         return diopiSuccess;
     }
     if (outAt.data_ptr() != inputAt.data_ptr()) {
-        outAt.copy_(inputAt, true);
+        outAt.copy_(inputAt);
     }
     op_api::masked_fill_(outAt, maskAt, valueAt);
     END_CALL_ACL_OP();

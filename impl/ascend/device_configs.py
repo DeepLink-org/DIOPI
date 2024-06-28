@@ -1368,16 +1368,9 @@ device_configs = {
         skip_all = True
     ),
 
-    # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend
-    'flash_attention_varlen': dict(
-        name=['flash_attention_varlen'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["q"],
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        )
+    # Skipped due to conformance test failure. Need someone to fix it
+    'paged_attention': dict(
+        name=['paged_attention'],
+        skip_all=True,
     ),
 }

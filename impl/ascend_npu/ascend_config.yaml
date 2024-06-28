@@ -36,10 +36,6 @@ ascend_npu:
 - diopiArange
 - diopiAtan
 - diopiAtanInp
-- diopiAttention
-- diopiAttentionBackward
-- diopiAttentionVarLen
-- diopiAttentionVarLenBackward
 - diopiBaddbmm
 - diopiBaddbmmInp
 - diopiBatchNorm
@@ -261,11 +257,10 @@ ascend_npu:
 - diopiPowTensor
 - diopiLerpTensor
 - diopiLerpScalar
-- diopiFlashAttention
-- diopiFlashAttentionBackward
-- diopiFlashAttentionV2
-- diopiFlashAttentionVarLen
-- diopiFlashAttentionVarLenBackward
+- diopiCustomizedFlashAttention
+- diopiCustomizedFlashAttentionBackward
+- diopiCustomizedFlashAttentionVarLen
+- diopiCustomizedFlashAttentionVarLenBackward 
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp

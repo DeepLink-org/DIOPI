@@ -34,7 +34,9 @@ file(GLOB REAL_IMPL_SRC
 
   ${BASE_TORCH_DIR}/functions/functions_ext.cpp 
   ${BASE_TORCH_DIR}/functions/functions_ext/*.cu 
-
+  
+  ${BASE_TORCH_DIR}/build_aten.cpp
+  
   # mx cpp
   functions/functions.cpp 
 )
