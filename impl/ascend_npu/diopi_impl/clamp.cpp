@@ -18,7 +18,7 @@ diopiError_t diopiClamp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
     if (inputAt.numel() == 0) {
         return diopiSuccess;
     }
-    at::Tensor inputTmp = inputAt.to(outAt.scalar_type(), true);
+    at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
     if (minAt.defined() && maxAt.defined()) {
         op_api::clamp_out(inputTmp, minAt, maxAt, outAt);
     } else {
@@ -39,7 +39,7 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
         if (inputAt.numel() == 0) {
             return diopiSuccess;
         }
-        at::Tensor inputTmp = inputAt.to(outAt.scalar_type(), true);
+        at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
         op_api::clamp_out(inputTmp, minAt, maxAt, outAt);
         END_CALL_ACL_OP();
     } else {
@@ -48,7 +48,7 @@ diopiError_t diopiClampScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out,
             if (inputAt.numel() == 0) {
                 return diopiSuccess;
             }
-            at::Tensor inputTmp = inputAt.to(outAt.scalar_type(), true);
+            at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
             op_api::clamp_min_out(inputTmp, minAt, outAt);
             END_CALL_ACL_OP();
         }
@@ -133,7 +133,7 @@ diopiError_t diopiClampMinScalar(diopiContextHandle_t ctx, diopiTensorHandle_t o
     if (inputAt.numel() == 0) {
         return diopiSuccess;
     }
-    at::Tensor inputTmp = inputAt.to(outAt.scalar_type(), true);
+    at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
     op_api::clamp_min_out(inputTmp, minAt, outAt);
     END_CALL_ACL_OP();
 }
@@ -143,7 +143,7 @@ diopiError_t diopiClampMin(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     if (inputAt.numel() == 0) {
         return diopiSuccess;
     }
-    at::Tensor inputTmp = inputAt.to(outAt.scalar_type(), true);
+    at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
     op_api::clamp_min_out(inputTmp, minAt, outAt);
     END_CALL_ACL_OP();
 }
@@ -181,7 +181,7 @@ diopiError_t diopiClampMax(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     if (inputAt.numel() == 0) {
         return diopiSuccess;
     }
-    at::Tensor inputTmp = inputAt.to(outAt.scalar_type(), true);
+    at::Tensor inputTmp = inputAt.to(outAt.scalar_type());
     op_api::clamp_max_out(inputTmp, maxAt, outAt);
     END_CALL_ACL_OP();
 }
