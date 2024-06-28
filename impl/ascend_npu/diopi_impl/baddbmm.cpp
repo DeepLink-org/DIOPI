@@ -17,7 +17,7 @@ diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto alphaAt = at::Scalar(alpha);
 
     if (0 == outAt.numel()) {
-      END_CALL_ACL_OP();
+        END_CALL_ACL_OP();
     }
 
     op_api::baddbmm_out(inputAt, batch1At, batch2At, betaAt, alphaAt, outAt);
@@ -31,7 +31,7 @@ diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     auto alphaAt = at::Scalar(alpha);
 
     if (0 == inputAt.numel()) {
-      END_CALL_ACL_OP();
+        END_CALL_ACL_OP();
     }
 
     op_api::baddbmm_(inputAt, batch1At, batch2At, betaAt, alphaAt);
