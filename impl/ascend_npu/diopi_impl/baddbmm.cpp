@@ -16,8 +16,7 @@ diopiError_t diopiBaddbmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     auto betaAt = at::Scalar(beta);
     auto alphaAt = at::Scalar(alpha);
 
-    if (batch1At.numel() == 0 || batch2At.numel() == 0) {
-        EXEC_NPU_CMD(aclnnMuls, inputAt, betaAt, outAt);
+    if (0 == outAt.numel()) {
         END_CALL_ACL_OP();
     }
 
@@ -31,8 +30,7 @@ diopiError_t diopiBaddbmmInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     auto betaAt = at::Scalar(beta);
     auto alphaAt = at::Scalar(alpha);
 
-    if (batch1At.numel() == 0 || batch2At.numel() == 0) {
-        op_api::mul_(inputAt, betaAt);
+    if (0 == inputAt.numel()) {
         END_CALL_ACL_OP();
     }
 

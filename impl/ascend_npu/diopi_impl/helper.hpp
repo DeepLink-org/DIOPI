@@ -117,10 +117,11 @@ inline int debugLevel() {
     if (debugLevel()) {                                                                \
         std::cout << __FILE__ << ":" << __LINE__ << " :" << __FUNCTION__ << std::endl; \
     }                                                                                  \
-    impl::aten::ContextManger contextManger(ctx);                                      \
+    impl::aten::setCurCtx(ctx);                                                        \
     BUILD_ATEN_ARGS(__VA_ARGS__)
 
 #define END_CALL_ACL_OP()                                                                         \
+    impl::aten::unsetCurCtx();                                                                    \
     if (debugLevel()) {                                                                           \
         std::cout << __FILE__ << ":" << __LINE__ << " :" << __FUNCTION__ << " over" << std::endl; \
     }                                                                                             \
@@ -197,11 +198,9 @@ namespace impl {
 
 namespace aten {
 
-class ContextManger {
-public:
-    ContextManger(diopiContextHandle_t context);
-    ~ContextManger();
-};
+void setCurCtx(diopiContextHandle_t ctx);
+
+void unsetCurCtx();
 
 inline void sync(diopiContextHandle_t ctx) {
     diopiStreamHandle_t streamHandle;
@@ -406,8 +405,8 @@ inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
 }
 
 inline void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
+    // TODO(fengsibo): add device and nbytes check
     if (out != nullptr) {
-        TORCH_WARN(false, "can be optimized: there is no need copy");
         at::Tensor atOutput = buildATen(out);
         atOutput.reshape_as(atOut).copy_(atOut, true);
     }
