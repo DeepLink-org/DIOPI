@@ -923,7 +923,7 @@ inline bool CheckJitDisable() { return true; }
 inline bool CheckProfilingEnable() { return false; }
 inline bool CheckMmBmmNDDisable() { return true; }
 inline bool CheckForbidInternalFormat() { return false; }
-inline bool IsAllowFP32ToFP16() { return true; }
+inline bool IsAllowFP32ToFP16() { return false; }
 inline bool IsAllowConvHF32() {
     // INTERFACE_NOT_IMPL;
     return false;

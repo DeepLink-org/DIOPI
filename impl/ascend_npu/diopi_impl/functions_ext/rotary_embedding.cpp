@@ -67,9 +67,8 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
 
     std::vector<at::Tensor> chunkResult = xView.chunk(2, -1);
     at::Tensor xNew = op_api::cat({chunkResult[1] * (-1), chunkResult[0]}, -1);
-    auto result1 = op_api::mul(cosCat, xView);
-    auto result2 = op_api::mul(sinCat, xNew);
-    op_api::add_out(result1, result2, 1.0, outView);
+    at::Tensor result = op_api::mul(cosCat, xView) + op_api::mul(sinCat, xNew);
+    outView.copy_(result);
 
     END_CALL_ACL_OP();
 }

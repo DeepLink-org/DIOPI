@@ -27,7 +27,7 @@ diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                     diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, int64_t numGroups) {
-    BEGIN_CALL_ACL_OP(input, gradWeight, gradBias);
+    BEGIN_CALL_ACL_OP(input, gradWeight, gradBias, gradInput, gradOutput, weight, mean, rstd);
     if (!inputAt.defined()) {
         return diopiSuccess;
     }
@@ -40,7 +40,6 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
             op_api::fill_(gradBiasAt, c10::Scalar(0.0));
         }
     } else {
-        BEGIN_CALL_ACL_OP(gradInput, gradOutput, weight, mean, rstd);
         int64_t n = inputAt.sizes()[0];
         int64_t c = inputAt.sizes()[1];
         int64_t hw = inputAt.numel() / (n * c);

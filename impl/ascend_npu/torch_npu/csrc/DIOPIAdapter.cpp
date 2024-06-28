@@ -1561,9 +1561,7 @@ at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const
                 "Expected all tensors to be on the same device. "
                 "Expected NPU tensor, please check whether the input tensor device is correct. but got ",
                 options);
-    auto fixFormat = InferFormat::GuessStorageFormat(sizes, (aclFormat)format);
-    return NPUNativeFunctions::unsafe_empty_with_format(
-        sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), fixFormat, keep_format);
+    return at_npu::native::empty_npu(sizes, options);
 }
 
 inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return at_npu::native::empty_npu(sizes, options); }
