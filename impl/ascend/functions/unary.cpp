@@ -37,13 +37,6 @@ diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
 
 diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiErf(ctx, input, input); }
 
-DIOPI_API diopiError_t diopiAbs(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-    AclOpRunner<1, 1>("Abs", ctx).addInput(input).addOutput(out).run();
-    return diopiSuccess;
-}
-
-diopiError_t diopiAbsInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) { return diopiAbs(ctx, input, input); }
-
 void logInternal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, float base) {
     AclOpRunner<1, 1>("Log", ctx).addInput(input).setAttr<float>("base", base).setAttr<float>("scale", 1).setAttr<float>("shift", 0).addOutput(out).run();
 }

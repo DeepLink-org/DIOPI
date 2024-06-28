@@ -4,35 +4,17 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiUniformInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double from, double to, diopiGeneratorHandle_t generator) {
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    diopiScalar_t seedScalar = constructDiopiScalarT(diopi_dtype_int64, pair.first);
-    diopiTensorHandle_t seedTh;
-    makeTensorFromScalar(ctx, &seedScalar, &seedTh);
-    diopiScalar_t offsetScalar = constructDiopiScalarT(diopi_dtype_int64, pair.second);
-    diopiTensorHandle_t offsetTh;
-    makeTensorFromScalar(ctx, &offsetScalar, &offsetTh);
-    diopiScalar_t alg = constructDiopiScalarT(diopi_dtype_int64, 1);
-    AclOpRunner<4, 1>("StatelessRandomUniformV2", ctx)
-        .addConstInput(AscendTensor(inout).shape())
-        .addConstInput(seedTh, false, ACL_UINT64)
-        .addConstInput(offsetTh, false, ACL_UINT64)
-        .addConstInput(alg, diopi_dtype_int32)
-        .setAttr("dtype", getAclDataType(inout))
-        .addOutput(inout)
-        .run();
-    AscendTensor inoutTensor(inout);
-    // StatelessRandomUniformV2 output: U(0~1) --> U(from~to)
-    diopiScalar_t diffScalar = constructDiopiScalarT(inoutTensor.dtype(), to - from);
-    diopiMulInpScalar(ctx, inout, &diffScalar);
-    diopiScalar_t fromScalar = constructDiopiScalarT(inoutTensor.dtype(), from);
-    diopiScalar_t alphaScalar = constructDiopiScalarT(inoutTensor.dtype(), 1);
-    diopiAddInpScalar(ctx, inout, &fromScalar, &alphaScalar);
+    uint64_t seed = 0;
+    uint64_t offset = 0;
+    diopiGeneratorGetSeedAndOffset(generator, seed, offset);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceUniform, ctx, inout, from, to, seed, offset);
     return diopiSuccess;
 }
 

@@ -143,7 +143,7 @@ at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::
     auto flatTarget = atTarget.view(-1);
 
     // Create a mask corresponding to ignore_index if it's provided
-    auto mask = (ignore_index >= 0) ? (flatTarget != ignore_index) : at::ones(flatTarget.sizes(), flatTarget.options()).to(at::kBool);
+    auto mask = (flatTarget != ignore_index);
 
     if (atWeight.defined()) {
         // Filter out the targets using the mask and compute total weight using index_select

@@ -4,92 +4,78 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
+#include "../aclnn/acl_scalar.hpp"
+#include "../aclnn/adaptor.hpp"
 
 namespace impl {
 namespace ascend {
 
-void stdNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiGeneratorHandle_t generator) {
-    AscendTensor outputAt(out);
-    auto pair = getSeedAndOffset(ctx, generator, 10);
-    diopiScalar_t seedScalar = constructDiopiScalarT(diopi_dtype_int64, pair.first);
-    diopiTensorHandle_t seedTh;
-    makeTensorFromScalar(ctx, &seedScalar, &seedTh);
-    diopiScalar_t offsetScalar = constructDiopiScalarT(diopi_dtype_int64, pair.second);
-    diopiTensorHandle_t offsetTh;
-    makeTensorFromScalar(ctx, &offsetScalar, &offsetTh);
-    diopiScalar_t alg = constructDiopiScalarT(diopi_dtype_int64, 1);
-    AclOpRunner<4, 1>("StatelessRandomNormalV2", ctx)
-        .addConstInput(outputAt.dim() == 0 ? std::vector<int64_t>{1} : outputAt.shape())
-        .addConstInput(seedTh, false, ACL_UINT64)
-        .addConstInput(offsetTh, false, ACL_UINT64)
-        .addConstInput(alg, diopi_dtype_int32)
-        .setAttr("dtype", getAclDataType(out))
-        .addOutput(out)
-        .run();
-}
-
 diopiError_t diopiNormal(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, double std, diopiGeneratorHandle_t generator) {
-    stdNormal(ctx, out, generator);
+    AscendTensor outAt(out);
+    if (outAt.numel() == 0) {
+        return diopiSuccess;
+    }
 
-    // N(0,1) --> N(mean,std)
-    diopiScalar_t stdScalar = constructDiopiScalarT(diopi_dtype_float64, std);
-    diopiMulInpScalar(ctx, out, &stdScalar);
-    diopiScalar_t meanScalar = constructDiopiScalarT(diopi_dtype_float64, mean);
-    diopiScalar_t alphaScalar = constructDiopiScalarT(diopi_dtype_float64, 1);
-    diopiAddInpScalar(ctx, out, &meanScalar, &alphaScalar);
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
+
+    float meanCast = static_cast<float>(mean);
+    float rstdCast = static_cast<float>(std);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnNormalFloatFloat, ctx, meanCast, rstdCast, seed, offset, out);
     return diopiSuccess;
 }
 
 diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandle_t inout, double mean, double std, diopiGeneratorHandle_t generator) {
-    return diopiNormal(ctx, inout, mean, std, generator);
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
+
+    float meanCast = static_cast<float>(mean);
+    float rstdCast = static_cast<float>(std);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceNormal, ctx, inout, meanCast, rstdCast, seed, offset);
+    return diopiSuccess;
 }
 
 diopiError_t diopiNormalTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t std,
                                diopiGeneratorHandle_t generator) {
-    AscendTensor meanTr(mean);
-    AscendTensor stdTr(std);
-    AscendTensor outTr(out);
-    std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};
-    std::vector<AscendTensor*> pTensors{&meanTr, &stdTr};
-    DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
-    AscendTensor outTrTmp = outTr;
-    if (outTr.dtype() != meanTr.dtype()) {
-        castTensor(ctx, outTrTmp, meanTr.dtype());
+    AscendTensor outAt(out);
+    if (outAt.numel() == 0) {
+        return diopiSuccess;
     }
 
-    stdNormal(ctx, const_cast<diopiTensorHandle_t>(outTrTmp.tensorHandle()), generator);
-    // N(0,1) --> N(mean,std)
-    diopiMulInp(ctx, const_cast<diopiTensorHandle_t>(outTrTmp.tensorHandle()), std);
-    diopiScalar_t alphaScalar = constructDiopiScalarT(meanTr.dtype(), 1);
-    diopiAddInp(ctx, const_cast<diopiTensorHandle_t>(outTrTmp.tensorHandle()), meanTr.tensorHandle(), &alphaScalar);
-    if (outTr.dtype() != meanTr.dtype()) {
-        ::impl::ascend_npu::diopiCopyInp(ctx, outTrTmp.tensorHandle(), const_cast<diopiTensorHandle_t>(outTr.tensorHandle()));
-    }
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
+
+    DIOPI_ASCEND_CALL_ACLNN(aclnnNormalTensorTensor, ctx, mean, std, seed, offset, out);
     return diopiSuccess;
 }
 
 diopiError_t diopiNormalScalarTensor(diopiContextHandle_t ctx, diopiTensorHandle_t out, double mean, diopiConstTensorHandle_t std,
                                      diopiGeneratorHandle_t generator) {
-    stdNormal(ctx, out, generator);
+    AscendTensor outAt(out);
+    if (outAt.numel() == 0) {
+        return diopiSuccess;
+    }
 
-    // N(0,1) --> N(mean,std)
-    diopiMulInp(ctx, out, std);
-    diopiScalar_t meanScalar = constructDiopiScalarT(diopi_dtype_float64, mean);
-    diopiScalar_t alphaScalar = constructDiopiScalarT(diopi_dtype_float64, 1);
-    diopiAddInpScalar(ctx, out, &meanScalar, &alphaScalar);
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
+
+    float meanCast = static_cast<float>(mean);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnNormalFloatTensor, ctx, meanCast, std, seed, offset, out);
     return diopiSuccess;
 }
 
 diopiError_t diopiNormalTensorScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t mean, double std,
                                      diopiGeneratorHandle_t generator) {
-    stdNormal(ctx, out, generator);
+    AscendTensor outAt(out);
+    if (outAt.numel() == 0) {
+        return diopiSuccess;
+    }
 
-    // N(0,1) --> N(mean,std)
-    diopiScalar_t stdScalar = constructDiopiScalarT(diopi_dtype_float64, std);
-    diopiMulInpScalar(ctx, out, &stdScalar);
-    diopiScalar_t alphaScalar = constructDiopiScalarT(diopi_dtype_float64, 1);
-    diopiAddInp(ctx, out, mean, &alphaScalar);
+    uint64_t seed, offset;
+    DIOPI_CALL(diopiGeneratorGetSeedAndOffset(generator, seed, offset));
+
+    float rstdCast = static_cast<float>(std);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnNormalTensorFloat, ctx, mean, rstdCast, seed, offset, out);
     return diopiSuccess;
 }
 
