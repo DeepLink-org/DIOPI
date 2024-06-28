@@ -7,11 +7,19 @@ import torch.nn.functional as F
 import math
 import torchvision
 
-from gen_input import GenPolicy
+from conformance.utils import GenPolicy
 from conformance.utils import logger, get_data_from_file
 from conformance.db_operation import db_conn
 from einops import rearrange
 from customized_test import CustomizedTest
+
+    def _amp_foreach_non_finite_check_and_unscale_(scaled_grads, found_inf, inv_scale):
+        torch._amp_foreach_non_finite_check_and_unscale_(scaled_grads, found_inf, inv_scale)
+        return scaled_grads, found_inf
+
+    def _amp_update_scale_(scale, growth_tracker, found_inf, growth_factor, backoff_factor, growth_interval):
+        torch._amp_update_scale_(scale, growth_tracker, found_inf, growth_factor, backoff_factor, growth_interval)
+        return scale, growth_tracker
 
 
 class GenOutputData(object):
