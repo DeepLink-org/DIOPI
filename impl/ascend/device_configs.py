@@ -1368,9 +1368,4 @@ device_configs = {
         skip_all = True
     ),
 
-    # Skipped due to conformance test failure. Need someone to fix it
-    'paged_attention': dict(
-        name=['paged_attention'],
-        skip_all=True,
-    ),
 }
