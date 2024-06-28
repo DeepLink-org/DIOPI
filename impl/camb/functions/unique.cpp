@@ -16,6 +16,10 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
 
     // input_tensor
     DiopiTensor inputTensor(input);
+    if (!inputTensor.isContiguous()) {
+        // the input must be contiguous in cnnl, adaptor will not do this because of "*out"
+        DIOPI_CALL(contiguous(ctx, inputTensor, diopiMemoryFormat_t::Contiguous));
+    }
 
     // If dim is set to -1, the unique of the flattened input is to apply in CNNL.
     int realDim = -1;
