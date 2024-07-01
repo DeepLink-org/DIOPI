@@ -45,7 +45,7 @@ diopiError_t diopiApplyPenaltyV2(diopiContextHandle_t ctx, diopiTensorHandle_t l
     op_api::gt_out(curLogits, zero, cand);
     op_api::where_out(cand, curLogits / repetitionPenaltyAt, curLogits * repetitionPenaltyAt, repoLogits);
     repoLogits = repoLogits - pTokenCountsAt * frequencyPenaltyAt - presencePenaltyAt;
-    std::vector<int64_t> shape(pTokenIdsAt.dim() + 1, 1);
+    c10::DimVector shape(pTokenIdsAt.dim() + 1, 1);
     for (int64_t i = 0; i < pTokenIdsAt.dim(); i++) {
         shape[i] = pTokenIdsAt.size(i);
     }

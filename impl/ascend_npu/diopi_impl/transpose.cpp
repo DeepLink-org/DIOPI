@@ -17,7 +17,7 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
         return diopiSuccess;
     }
 
-    std::vector<int64_t> dims(inputAt.dim());
+    c10::DimVector dims(inputAt.dim());
     dim0 = dim0 < 0 ? dim0 + inputAt.dim() : dim0;
     dim1 = dim1 < 0 ? dim1 + inputAt.dim() : dim1;
     std::iota(dims.begin(), dims.end(), 0);

@@ -36,7 +36,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
     const int64_t preTockensOptional = sq + sk;
 
     const auto qShape = qAt.sizes();
-    std::vector<int64_t> softmaxMaxShape{batch, headNum, sq, 8};  // [B, N, sq, 8]
+    c10::DimVector softmaxMaxShape{batch, headNum, sq, 8};  // [B, N, sq, 8]
     at::Tensor softmaxMaxOut = at_npu::native::empty_npu(softmaxMaxShape, attentionOutAt.options().dtype(at::kFloat));
     at::Tensor softmaxSumOut = at_npu::native::empty_npu(softmaxMaxShape, attentionOutAt.options().dtype(at::kFloat));
     at::Tensor softmaxOutOut = at_npu::native::empty_npu({0}, attentionOutAt.options().dtype(at::kFloat));
@@ -62,7 +62,7 @@ diopiError_t diopiAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attent
         if (pDropout == 1) {
             op_api::zero_(dropMaskOptional);
         } else {
-            std::vector<int64_t> shapeVector{numels};
+            c10::DimVector shapeVector{numels};
             at::IntArrayRef shapeArray(shapeVector);
             auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genDropoutAt)->philox_engine_inputs(10);
             const uint64_t seed = pair.first;
