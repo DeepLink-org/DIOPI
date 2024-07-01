@@ -1586,7 +1586,7 @@ at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, a
 
 at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
     diopiTensorHandle_t tensorDiopi = nullptr;
-    std::vector<int64_t> sizeVec(1, size);
+    c10::DimVector sizeVec(1, size);
     diopiError_t ret = diopiRequireBuffer(context, &tensorDiopi, size, diopi_device);
     if (enableDumpArgs()) {
         std::cout << __FUNCTION__ << ": diopiRequireBuffer: " << size << "(bytes)." << std::endl;
@@ -3141,7 +3141,7 @@ void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHa
 at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
     // TORCH_CHECK(c10::multiply_integers(sizes) <= input.numel());
     TORCH_CHECK(!input.is_cpu());
-    std::vector<int64_t> stridesVec(sizes.size(), 1);
+    c10::DimVector stridesVec(sizes.size(), 1);
     if (strides.size() > 0) {
         std::copy(strides.begin(), strides.end(), stridesVec.begin());
     } else {
@@ -3155,7 +3155,7 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
     }
 
     // when shape[0]=-1, fill data
-    std::vector<int64_t> sizeVec(sizes.size(), 1);
+    c10::DimVector sizeVec(sizes.size(), 1);
     std::copy(sizes.begin(), sizes.end(), sizeVec.begin());
     if (!sizes.empty() && sizes[0] == -1) {
         bool flag = true;
@@ -3340,7 +3340,7 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
     int64_t inputSize = self.dim();
     if (dim0 < 0) dim0 = dim0 + inputSize;
     if (dim1 < 0) dim1 = dim1 + inputSize;
-    std::vector<int64_t> dims(inputSize);
+    c10::DimVector dims(inputSize);
     std::iota(dims.begin(), dims.end(), 0);
     dims[dim0] = dim1;
     dims[dim1] = dim0;
