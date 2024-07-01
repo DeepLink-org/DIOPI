@@ -8,8 +8,8 @@
 namespace impl {
 namespace camb {
 
-diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, diopiConstTensorHandle_t input, const int64_t *dim, bool sorted, bool returnCounts,
-                         diopiTensorHandle_t indices, diopiTensorHandle_t *counts) {
+diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, const int64_t* dim, bool sorted, bool returnCounts,
+                         diopiTensorHandle_t indices, diopiTensorHandle_t* counts) {
 // version should be greater than 1.15.2
 #if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL >= 11502)
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
@@ -29,7 +29,7 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
 
     // dtype cast
     diopiDtype_t originInputDtype = inputTensor.dtype();
-    std::vector<DiopiTensor *> pTensors{&inputTensor};
+    std::vector<DiopiTensor*> pTensors{&inputTensor};
     std::set<diopiDtype_t> supportedDtypes{diopi_dtype_float32, diopi_dtype_int32, diopi_dtype_int64};
     DIOPI_CALL(autoCastTensorType(ctx, pTensors, supportedDtypes));
 
@@ -68,7 +68,7 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
     DIOPI_CALL_CNNL(cnnlSetUniqueDescriptor(uniqueDesc.get(), mode, realDim, returnIndices, returnCounts));
     size_t workspaceSize = 0;
     DIOPI_CALL_CNNL(cnnlGetUniqueWorkspaceSize(handle, uniqueDesc.get(), inputDesc.get(), &workspaceSize));
-    void *workspace = nullptr;
+    void* workspace = nullptr;
     if (workspaceSize != 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
     }
@@ -82,7 +82,7 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t *out, dio
                                   inputTensor.data(),
                                   workspace,
                                   workspaceSize,
-                                  static_cast<int *>(outlenTensor.data()),
+                                  static_cast<int*>(outlenTensor.data()),
                                   outputDesc.get(),
                                   outputTensor.data(),
                                   indexDesc.get(),
