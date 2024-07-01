@@ -223,7 +223,7 @@ default_context = Context()
 
 class Sizes(diopiSize):
     def __init__(self, shape=()):
-        super(Sizes, self).__init__(list(shape), len(shape))
+        super(Sizes, self).__init__(list(shape) if shape else None, len(shape))
         self.shape = self.data
 
 

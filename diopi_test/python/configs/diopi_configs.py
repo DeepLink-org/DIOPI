@@ -8696,7 +8696,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ["attenMask"],
-                    "value": [[False, False, False, False, False]],
+                    "value": [[[False, False, False, False, False]],],
                     "dtype": [np.bool_,],
                     "gen_policy": "gen_tensor_by_value",
                 },
