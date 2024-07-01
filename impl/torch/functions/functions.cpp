@@ -30,6 +30,7 @@
 
 #include "../helper.hpp"
 #include "../vision_kernel.h"
+#include "../sparse_kernel.h"
 
 namespace impl {
 namespace cuda {
@@ -4379,6 +4380,19 @@ DIOPI_API diopiError_t diopiBatchNormElemt(diopiContextHandle_t ctx, diopiTensor
     auto atBias = impl::aten::buildATen(bias);
     auto atOut = impl::aten::buildATen(out);
     CALL_ATEN_CUDA_FUNC(batch_norm_elemt_out, atOut, atInput, atWeight, atBias, atMean, atInvstd, eps);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiSpMM(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t row_ptr, 
+                       diopiTensorHandle_t col_ind, diopiTensorHandle_t value, diopiTensorHandle_t input){
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atRowPtr = impl::aten::buildATen(row_ptr);
+    auto atColInd = impl::aten::buildATen(col_ind);
+    auto atValue = impl::aten::buildATen(value);
+    auto atOut = impl::aten::buildATen(out);
+    sparse::ops::row_balance_row_major_seq_reduce_kernel(atOut, atRowPtr, atColInd, atValue, atInput);
 
     return diopiSuccess;
 }
