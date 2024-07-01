@@ -18,7 +18,7 @@ diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         keepdim = true;
     }
     at::Scalar correction(static_cast<int64_t>(unbiased));
-    if (dim.data == nullptr) {
+    if (0 == dim.len) {
         c10::DimVector adim(inputAt.dim());
         std::iota(adim.begin(), adim.end(), 0);
         at::IntArrayRef rdim(adim.data(), adim.size());

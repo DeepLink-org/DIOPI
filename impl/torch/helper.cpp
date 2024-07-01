@@ -94,7 +94,7 @@ at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
     }
 }
 
-void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
+void buildDiopiTensor(diopiContextHandle_t ctx, const at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();
     at::IntArrayRef atStride = input.strides();
     diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};

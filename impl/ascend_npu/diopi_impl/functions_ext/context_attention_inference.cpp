@@ -22,8 +22,8 @@ at::Tensor torchContextAttention(at::Tensor xq, at::Tensor xk, at::Tensor xv, in
     at::Tensor mask = op_api::tril(op_api::ones({seqLen, seqLen}, at::kFloat, layout, device)).unsqueeze(0).unsqueeze(0);
     mask.masked_fill_(mask == 0., -100000000.0);
     mask = mask.repeat({batchSize, head, 1, 1});
-    at::Tensor scores = op_api::matmul(xq.to(at::kFloat, true), xk.transpose(2, 3).to(at::kFloat, true)) / std::sqrt(dim);
-    at::Tensor output = op_api::matmul((scores + mask).softmax(-1), xv.to(at::kFloat, true)).transpose(1, 2).to(dtype, true);
+    at::Tensor scores = op_api::matmul(xq.to(at::kFloat), xk.transpose(2, 3).to(at::kFloat)) / std::sqrt(dim);
+    at::Tensor output = op_api::matmul((scores + mask).softmax(-1), xv.to(at::kFloat)).transpose(1, 2).to(dtype);
     output = output.view({output.numel() / static_cast<int64_t>(head * dim), head, dim});
     return output;
 }

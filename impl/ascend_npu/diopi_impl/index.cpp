@@ -39,7 +39,7 @@ diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gr
 
     auto indicesCast = impl::aten::castIntIndicesToLongIndices(indicesAtList);
     op_api::_index_put_impl_(zerosLikeInputAt, indicesCast, gradOutputAt, true, false);
-    gradInputAt.copy_(zerosLikeInputAt, true);
+    gradInputAt.copy_(zerosLikeInputAt);
     END_CALL_ACL_OP();
 }
 

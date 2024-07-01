@@ -19,53 +19,29 @@ const int64_t uInt8BitNumber = 8;
 
 }  // namespace
 
-diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* attentionMask,
-                                 diopiTensorHandle_t* dropoutMask, diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum,
-                                 diopiTensorHandle_t* softmaxOut, diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                 diopiConstTensorHandle_t v, double pDropout, double softmaxScale, bool isCausal, int64_t headNum, const char* inputLayout) {
-    BEGIN_CALL_ACL_OP(q, k, v, gen, attentionOut);
+diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* dropoutMask,
+                                           diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum, diopiTensorHandle_t* softmaxOut,
+                                           diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
+                                           diopiConstTensorHandle_t alibiSlopes, diopiConstTensorHandle_t attentionMask, float pDropout, float softmaxScale,
+                                           bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight) {
+    BEGIN_CALL_ACL_OP(q, k, v, alibiSlopes, attentionMask, gen, attentionOut);
 
-    DIOPI_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3-dimensional or 4-dimensional");
-    DIOPI_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3-dimensional or 4-dimensional");
-    DIOPI_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3-dimensional or 4-dimensional");
+    DIOPI_CHECK(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
+    DIOPI_CHECK(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
+    DIOPI_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4-dimensional");
+    DIOPI_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4-dimensional");
+    DIOPI_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
+    DIOPI_CHECK(isCausal == false || attentionMask != nullptr, "When isCausal is True, attentionMask should not be nullptr!");
 
-    int64_t b = 0;
-    int64_t s0 = 0;
-    int64_t s1 = 0;
-    int64_t n = 0;
-    int64_t d = 0;
-    int64_t h = 0;
+    int64_t b = qAt.size(0);
+    int64_t s0 = qAt.size(1);  // S for query
+    int64_t s1 = kAt.size(1);  // S for key & value
+    int64_t n = qAt.size(2);
+    int64_t d = qAt.size(3);
+    const char* inputLayout = "BSND";
 
-    if (strcmp(inputLayout, "SBH") == 0) {
-        b = qAt.size(1);
-        s0 = qAt.size(0);  // S for query
-        s1 = kAt.size(0);  // S for key & value
-        n = headNum;
-        h = qAt.size(2);
-    } else if (strcmp(inputLayout, "BSH") == 0) {
-        b = qAt.size(0);
-        s0 = qAt.size(1);  // S for query
-        s1 = kAt.size(1);  // S for key & value
-        n = headNum;
-        h = qAt.size(2);
-    } else if (strcmp(inputLayout, "BSND") == 0) {
-        b = qAt.size(0);
-        s0 = qAt.size(1);  // S for query
-        s1 = kAt.size(1);  // S for key & value
-        n = qAt.size(2);
-        d = qAt.size(3);
-    } else if (strcmp(inputLayout, "BNSD") == 0) {
-        b = qAt.size(0);
-        s0 = qAt.size(2);  // S for query
-        s1 = kAt.size(2);  // S for key & value
-        n = qAt.size(1);
-        d = qAt.size(3);
-    } else {
-        DIOPI_CHECK(false, "The input layout should be BSH/SBH/BNSD/BSND");
-    }
-
-    double keepProb = 1 - pDropout;
+    double keepProb = static_cast<double>(1 - pDropout);
 
     at::Tensor pseAt = at::Tensor();
     at::IntArrayRef prefixN = at::IntArrayRef{};
@@ -78,7 +54,7 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
         int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
         dropoutMaskAt = npu_preparation::apply_tensor_without_format({length}, qAt.options().dtype(at::kByte));
         if (pDropout == 1) {
-            op_api::zero_(dropoutMaskAt);
+            EXEC_NPU_CMD(aclnnInplaceZero, dropoutMaskAt);
         } else {
             c10::DimVector shapeVector{numels};
             at::IntArrayRef shapeArray(shapeVector);
@@ -89,20 +65,15 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
         }
     }
 
-    at::Tensor attentionMaskAt = at::Tensor();
-    if (isCausal) {
-        // NOTE: reference to: https://gitee.com/ascend/ModelLink/blob/v0.1.0/pretrain_llama.py#L74
-        // It should be noted that the generation logic of attention mask is exactly opposite to common sense on ascend.
-        attentionMaskAt = npu_preparation::apply_tensor_without_format({s0, s1}, qAt.options().dtype(at::kBool));  // [S0, S1]
-        EXEC_NPU_CMD(aclnnInplaceOne, attentionMaskAt);
-        int64_t diagonal = 1;
-        EXEC_NPU_CMD(aclnnInplaceTriu, attentionMaskAt, diagonal);
-    }
-
     int64_t preTokens = kAt.size(1);
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
     int64_t sparseMode = 0;
+    if (isCausal) {
+        if (s0 > 2048 && s1 > 2048 && attentionMaskAt.defined() && attentionMaskAt.size(0) == 2048 && attentionMaskAt.size(1) == 2048) {
+            sparseMode = 2;
+        }
+    }
 
     at::Tensor softmaxMaxAt;
     at::Tensor softmaxSumAt;
@@ -114,7 +85,7 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
                                                                               qAt.options().dtype(at::kFloat));  // [B, N, S0, 8]
     softmaxOutAt = at_npu::native::OpPreparation::apply_tensor_without_format({0},
                                                                               qAt.options());  // [0]
-
+    double scale = static_cast<double>(softmaxScale);
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScore,
                                  qAt,
                                  kAt,
@@ -124,7 +95,7 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
                                  paddingMaskAt,
                                  attentionMaskAt,
                                  prefixN,
-                                 softmaxScale,
+                                 scale,
                                  keepProb,
                                  preTokens,
                                  nextTokens,
@@ -137,9 +108,6 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
                                  softmaxOutAt,
                                  attentionOutAt);
 
-    if (attentionMaskAt.defined()) {
-        impl::aten::buildDiopiTensor(ctx, attentionMaskAt, attentionMask);
-    }
     if (dropoutMaskAt.defined()) {
         impl::aten::buildDiopiTensor(ctx, dropoutMaskAt, dropoutMask);
     }
@@ -149,62 +117,36 @@ diopiError_t diopiFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t a
     END_CALL_ACL_OP();
 }
 
-diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
-                                         diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
-                                         diopiConstTensorHandle_t attentionOut, diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
-                                         diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum, diopiConstTensorHandle_t softmaxOut,
-                                         double pDropout, double softmaxScale, int64_t headNum, const char* inputLayout) {
-    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
+diopiError_t diopiCustomizedFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradQ, diopiTensorHandle_t gradK, diopiTensorHandle_t gradV,
+                                                   diopiConstTensorHandle_t gradOut, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
+                                                   diopiConstTensorHandle_t v, diopiConstTensorHandle_t alibiSlopes, diopiConstTensorHandle_t attentionOut,
+                                                   diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
+                                                   diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
+                                                   diopiConstTensorHandle_t softmaxOut, float pDropout, float softmaxScale, bool isCausal,
+                                                   int32_t windowSizeLeft, int32_t windowSizeRight) {
+    BEGIN_CALL_ACL_OP(q, k, v, attentionOut, attentionMask, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
+
+    DIOPI_CHECK(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
+    DIOPI_CHECK(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
+    DIOPI_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4-dimensional");
+    DIOPI_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4-dimensional");
+    DIOPI_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4-dimensional");
+    DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
+    DIOPI_CHECK(isCausal == false || attentionMask != nullptr, "When isCausal is True, attentionMask should not be nullptr!");
 
     at::Tensor dropoutMaskAt;
-    at::Tensor attentionMaskAt;
     if (dropoutMask) {
         dropoutMaskAt = impl::aten::buildATen(dropoutMask);
     }
-    if (attentionMask) {
-        attentionMaskAt = impl::aten::buildATen(attentionMask);
-    }
-    DIOPI_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3-dimensional or 4-dimensional");
-    DIOPI_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3-dimensional or 4-dimensional");
-    DIOPI_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3-dimensional or 4-dimensional");
-    DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
 
-    int64_t b = 0;
-    int64_t s0 = 0;
-    int64_t s1 = 0;
-    int64_t n = 0;
-    int64_t d = 0;
-    int64_t h = 0;
+    int64_t b = qAt.size(0);
+    int64_t s0 = qAt.size(1);  // S for query
+    int64_t s1 = kAt.size(1);  // S for key & value
+    int64_t n = qAt.size(2);
+    int64_t d = qAt.size(3);
+    const char* inputLayout = "BSND";
 
-    if (strcmp(inputLayout, "SBH") == 0) {
-        b = qAt.size(1);
-        s0 = qAt.size(0);  // S for query
-        s1 = kAt.size(0);  // S for key & value
-        n = headNum;
-        h = qAt.size(2);
-    } else if (strcmp(inputLayout, "BSH") == 0) {
-        b = qAt.size(0);
-        s0 = qAt.size(1);  // S for query
-        s1 = kAt.size(1);  // S for key & value
-        n = headNum;
-        h = qAt.size(2);
-    } else if (strcmp(inputLayout, "BSND") == 0) {
-        b = qAt.size(0);
-        s0 = qAt.size(1);  // S for query
-        s1 = kAt.size(1);  // S for key & value
-        n = qAt.size(2);
-        d = qAt.size(3);
-    } else if (strcmp(inputLayout, "BNSD") == 0) {
-        b = qAt.size(0);
-        s0 = qAt.size(2);  // S for query
-        s1 = kAt.size(2);  // S for key & value
-        n = qAt.size(1);
-        d = qAt.size(3);
-    } else {
-        DIOPI_CHECK(false, "The input layout should be BSH/SBH/BNSD/BSND");
-    }
-
-    double keepProb = 1 - pDropout;
+    double keepProb = static_cast<double>(1 - pDropout);
 
     at::Tensor pseAt = at::Tensor();
     at::Tensor gradPseAt = at_npu::native::OpPreparation::apply_tensor_without_format({0}, qAt.options());
@@ -216,7 +158,13 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
     int64_t nextTokens = 0;
     int64_t innerPrecise = 0;
     int64_t sparseMode = 0;
+    if (isCausal) {
+        if (s0 > 2048 && s1 > 2048 && attentionMaskAt.defined() && attentionMaskAt.size(0) == 2048 && attentionMaskAt.size(1) == 2048) {
+            sparseMode = 2;
+        }
+    }
 
+    double scale = static_cast<double>(softmaxScale);
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScoreGrad,
                                  qAt,
                                  kAt,
@@ -231,7 +179,7 @@ diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHa
                                  softmaxOutAt,
                                  attentionOutAt,
                                  prefixN,
-                                 softmaxScale,
+                                 scale,
                                  keepProb,
                                  preTokens,
                                  nextTokens,

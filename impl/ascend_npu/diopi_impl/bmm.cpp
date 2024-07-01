@@ -13,10 +13,11 @@
 namespace OP_IMPL_NS {
 
 diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat2) {
-    BEGIN_CALL_ACL_OP(out, input, mat2);
+    BEGIN_CALL_ACL_OP(out);
     if (outAt.numel() == 0) {
         return diopiSuccess;
     }
+    BEGIN_CALL_ACL_OP(input, mat2);
     // op_api::bmm_out(inputAt, mat2At, outAt);
     signed char cubeMathType = at_npu::native::OpPreparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
     EXEC_NPU_CMD(aclnnBatchMatMul, inputAt, mat2At, outAt, cubeMathType);
