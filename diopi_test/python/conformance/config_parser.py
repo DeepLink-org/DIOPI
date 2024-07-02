@@ -3,6 +3,7 @@ import sys
 import copy
 import pickle
 import itertools
+from typing import Iterable
 import numpy as np
 from enum import Enum
 from conformance.global_settings import default_cfg_dict
@@ -28,7 +29,7 @@ class ConfigParser(object):
     def __str__(self):
         return str(self._items)
 
-    def parser(self, config, fname=["all_ops"]):
+    def parser(self, config, fname: Iterable[str] = ("all_ops")):
         if isinstance(config, dict):
             self._config_dict_parse(config, fname)
         elif os.path.isfile(config):
@@ -38,11 +39,13 @@ class ConfigParser(object):
         else:
             raise Exception(f"{__file__}: Parameter {config} passed with wrong type.")
 
-    def _config_dict_parse(self, config, fname):
+    @staticmethod
+    def _has_fname(fname_available: Iterable[str], fname_required: Iterable[str]) -> bool:
+        return any(map(lambda name: name == "all_ops" or name in fname_available, fname_required))
+
+    def _config_dict_parse(self, config, fname: Iterable[str]):
         for key, value in config.items():
-            skiped = (len(set(fname + value["name"])) == (len(fname) + len(value["name"])))
-            # op_name not in fname will be skiped
-            if "all_ops" not in fname and skiped:
+            if not self._has_fname(value["name"], fname):
                 continue
             cfg_item = ConfigItem(key, value)
             cfg_item.generate_items()
@@ -61,7 +64,7 @@ class ConfigParser(object):
             pickle.dump(self._items, f)
 
     # load config from self._ofile
-    def load(self, fname):
+    def load(self, fname: Iterable[str]):
         if not os.path.exists(self._ofile):
             raise FileExistsError("Config file does not exist!")
         with open(self._ofile, "rb") as f:
