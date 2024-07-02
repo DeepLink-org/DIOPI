@@ -16,7 +16,7 @@ diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
         set_last_error_string("only support destLoc.rank == 1");
         return diopiNoImplement;
     }
-    std::vector<int64_t> shape(destLocAt.dim() + 1, 1);
+    c10::DimVector shape(destLocAt.dim() + 1, 1);
     for (int64_t i = 0; i < destLocAt.dim(); i++) {
         shape[i] = destLocAt.size(i);
     }
