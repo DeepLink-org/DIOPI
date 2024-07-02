@@ -3573,6 +3573,21 @@ DIOPI_API diopiError_t diopiGetNativeMemoryFormat(diopiContextHandle_t ctx, diop
 DIOPI_API diopiError_t diopiTensorDestructionHook(diopiContextHandle_t ctx, void* ptr);
 // ============================================custom api end========================================
 
+// ============================================sparse api begin========================================
+/**
+ * @brief           Row Balance Row Major Sequence Reduce SpMM
+ * @param[in]       ctx         Context environment.
+ * @param[out]      out         output tensor.
+ * @param[in]       input       input tensor.
+ * @param[in]       row_ptr     A tensor that stores begin index of each row for col_ind
+ * @param[in]       col_ind     A tensor that stores column indexs
+ * @param[in]       value       A tensor that stores values
+ * @param[in]       input       A tensor that stores input matrix data
+ */
+DIOPI_API diopiError_t diopiSpMM(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t row_ptr,
+                                diopiTensorHandle_t col_ind, diopiTensorHandle_t value, diopiTensorHandle_t input);
+// ============================================sparse api end========================================
+
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus

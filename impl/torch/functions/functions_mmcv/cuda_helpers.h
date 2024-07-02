@@ -41,7 +41,7 @@ constexpr int THREADS_PER_BLOCK = 512;
 inline int GET_BLOCKS(const int N, const int num_threads = THREADS_PER_BLOCK) {
     int optimal_block_num = (N + num_threads - 1) / num_threads;
     int max_block_num = 4096;
-    return std::min(optimal_block_num, max_block_num);
+    return min(optimal_block_num, max_block_num);
 }
 
 template <typename T>
