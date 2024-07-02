@@ -56,7 +56,7 @@ diopiError_t diopiRMSNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
         auto outDim = gradOutputAt.dim();
         auto biasDim = gradBiasAt.dim();
         if (outDim > biasDim) {
-            std::vector<int64_t> sumDims(outDim - biasDim);
+            c10::DimVector sumDims(outDim - biasDim);
             std::iota(sumDims.begin(), sumDims.end(), 0);
             op_api::sum_out(gradOutputAt, sumDims, false, gradBiasAt.scalar_type(), gradBiasAt);
         } else {

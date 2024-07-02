@@ -20,7 +20,7 @@ at::Tensor viewAs4D(const at::Tensor& input) {
 
     static const int64_t n = 4;
     int dim = input.dim();
-    std::vector<int64_t> viewShape(n, 1);
+    c10::DimVector viewShape(n, 1);
     auto inputShape = input.sizes();
     for (int i = 0; i < dim; ++i) {
         viewShape[i + n - dim] = inputShape[i];

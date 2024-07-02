@@ -14,7 +14,7 @@ diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     int64_t dimTmp;
     if (dim == nullptr) {
         dimTmp = 0;
-        std::vector<int64_t> flattenShape{inputAt.numel()};
+        c10::DimVector flattenShape{inputAt.numel()};
         auto flattenInput = inputAt.view(flattenShape);
         EXEC_NPU_CMD(aclnnArgMax, flattenInput, dimTmp, keepdim, outAt);
     } else {

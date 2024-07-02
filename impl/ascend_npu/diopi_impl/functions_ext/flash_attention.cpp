@@ -56,7 +56,7 @@ diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, diopiTensor
         if (pDropout == 1) {
             EXEC_NPU_CMD(aclnnInplaceZero, dropoutMaskAt);
         } else {
-            std::vector<int64_t> shapeVector{numels};
+            c10::DimVector shapeVector{numels};
             at::IntArrayRef shapeArray(shapeVector);
             auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genAt)->philox_engine_inputs(10);
             const uint64_t seed = pair.first;
