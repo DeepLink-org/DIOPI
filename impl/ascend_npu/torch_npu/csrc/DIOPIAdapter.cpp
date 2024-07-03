@@ -3030,32 +3030,6 @@ namespace impl {
 
 namespace aten {
 
-class FakeAllocator : public c10::Allocator {
-    void* ptr_ = nullptr;
-    size_t size_ = 0;
-    c10::Device device_;
-
-public:
-    FakeAllocator(void* ptr, size_t size, c10::Device device) : ptr_(ptr), size_(size), device_(device) {}
-
-    FakeAllocator() : device_(c10::DeviceType::CPU) {}
-
-    void set(void* ptr, size_t size, c10::Device device) {
-        ptr_ = ptr;
-        size_ = size, device_ = device;
-    }
-
-    c10::DataPtr allocate(size_t n) const {
-        if (n == 0) {
-            return c10::InefficientStdFunctionContext::makeDataPtr(nullptr, c10::detail::deleteNothing, device_);
-        } else {
-            return c10::InefficientStdFunctionContext::makeDataPtr(ptr_, c10::detail::deleteNothing, device_);
-        }
-    }
-
-    c10::DeleterFnPtr raw_deleter() const { return c10::detail::deleteNothing; }
-};
-
 at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const at::TensorOptions& options) {
     auto device = options.device();
     TORCH_CHECK(options.device().has_index());
@@ -3268,6 +3242,7 @@ c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List
 ContextManger::ContextManger(diopiContextHandle_t ctx) {
     if (context_use_counter == 0) {
         context = ctx;
+        at_npu::native::markedOutputs.clear();
     }
     context_use_counter++;
 }
