@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feat/*
       - dev_v0.25
   pull_request:
     paths-ignore:
@@ -96,10 +95,8 @@ jobs:
           && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_SUPA}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to supa"
           ssh ${CLUSTER_1424} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
           && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_1424}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to sh1424"
-          # ssh ${CLUSTER_ASCEND_910B} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
-          # && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_ASCEND_910B}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to ascend 910b"
-          source ~/Aoss_env.sh
-          ads-cli cp ${GITHUB_WORKSPACE}/source/ s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss.cn-sh-01c.sensecoreapi-oss.cn${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/
+          ssh ${CLUSTER_ASCEND_910B} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
+          && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_ASCEND_910B}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to ascend 910b"
           # ssh ${CLUSTER_KLX} "mkdir -p ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source" \
           # && rsync -a --delete ${GITHUB_WORKSPACE}/source/ ${CLUSTER_KLX}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ || echo "failure to connect to kunlunxin"
 
@@ -295,12 +292,6 @@ jobs:
     needs: [Rsync]
     if: ${{ contains( needs.Rsync.outputs.output, 'ASCEND' ) }}
     steps:
-      - name: COPY Source
-        run: |
-           set -e
-           source ~/Aoss_env.sh
-           ads-cli cp s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss-internal.cn-sh-01c.sensecoreapi-oss.cn${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/
-           ads-cli  --dryrun --deleteSrc cp  s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss-internal.cn-sh-01c.sensecoreapi-oss.cn${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/source/ /dev/null 2>&1 >/dev/null
       - name: build
         run: |
           set -e
@@ -327,10 +318,7 @@ jobs:
           set -e
           cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}
           if [[ \"${{ needs.Rsync.outputs.output }}\" == *GENDATA* ]];then
-            # rsync -a ${CLUSTER_V100}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA}/diopi ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
-            source ~/Aoss_env.sh
-            ads-cli cp s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss-internal.cn-sh-01c.sensecoreapi-oss.cn${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/ ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
-            ads-cli  --dryrun --deleteSrc cp  s3://${Platform_ci_aoss_name}:${Platform_ci_aoss_url}@platform.aoss-internal.cn-sh-01c.sensecoreapi-oss.cn${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/ /dev/null 2>&1 >/dev/null
+            rsync -a ${CLUSTER_V100}:${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/${GEN_DATA}/diopi ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
           else
             ln -s ${GEN_DATA_PATH}/${GEN_DATA}/diopi ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1}/diopi_test/python/cache/
           fi
