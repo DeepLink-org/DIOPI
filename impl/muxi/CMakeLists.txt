@@ -6,20 +6,12 @@ set(USE_MACA ON)
 
 set(BASE_TORCH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../torch")
 include(${BASE_TORCH_DIR}/cmake/TorchBaseFunc.cmake)
-InitFindTorch()
+DIOPIFindTorch()
 
-find_package(Torch REQUIRED)
-if (Torch_FOUND)
-    message(STATUS "TORCH_CXX_FLAGS: ${TORCH_CXX_FLAGS}")
-    message(STATUS "TORCH_LIBRARIES: ${TORCH_LIBRARIES}")
- 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-    add_definitions(-DTORCH_VERSION_MAJOR=${Torch_VERSION_MAJOR})
-    add_definitions(-DTORCH_VERSION_MINOR=${Torch_VERSION_MINOR})
-    add_definitions(-DTORCH_VERSION_PATCH=${Torch_VERSION_PATCH})
-    add_definitions(-DTORCH_VERSION=${Torch_VERSION})
-    message(STATUS "Found Torch Version: ${Torch_VERSION}")
-endif()
+#TODO: Report bugs to muxi
+# There are conflicts when muxi runtime used together with pip installed torch_cpu.
+# so to use dipu with torch_cpu in muxi, maunual compile torch cpu with export BLAS=OpenBLAS.
+
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
