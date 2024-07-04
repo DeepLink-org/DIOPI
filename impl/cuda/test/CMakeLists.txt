@@ -6,7 +6,7 @@ set(DIOPIFUNCTIONS export_functions)
 find_package(CUDA REQUIRED)
 
 add_compile_options(-fno-elide-constructors)
-add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 build)
+add_subdirectory(${DIOPI_IMPL_DIR}/third_party/pybind11 build)
 
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/test/include")
 include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/../third_party/pybind11/include")
@@ -28,9 +28,9 @@ cuda_add_library(diopirt SHARED ${RUNTIME_SRC})
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 target_link_libraries(diopirt ${DEVICEIMPL})
 
-set(FUNCTION_SAVE_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/csrc")
+set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/csrc")
 
-set(TEST_GEN_PATH "${CMAKE_SOURCE_DIR}/../diopi_test/codegen")
+set(TEST_GEN_PATH "${DIOPI_TEST_DIR}/codegen")
 add_custom_target(test_code_gen COMMAND python3 ${TEST_GEN_PATH}/gen.py
     --device=torch --use_adaptor=${USE_ADAPTOR})
 add_custom_target(functions_copy ALL
@@ -50,8 +50,8 @@ if(${USE_ADAPTOR} STREQUAL "true")
 endif()
 
 
-file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/../diopi_test/python)
+file(MAKE_DIRECTORY ${DIOPI_TEST_DIR}/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${DIOPI_TEST_DIR}/python
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${DIOPI_TEST_DIR}/python
     DEPENDS ${DIOPIFUNCTIONS} ${DIOPIRT})

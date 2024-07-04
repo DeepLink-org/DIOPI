@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.14)
 project(torch_impl)
 
 option(HIP "Whether to use HIP when available" OFF)
+option(DIOPI_TORCH_UNSAFE_BUILDATEN "Whether to use fast but unsafe buildATen (caution: only use this with DIPU)" OFF)
+
+include(cmake/TorchBaseFunc.cmake)
+InitFindTorch()
 
 find_package(Torch 2.0 REQUIRED)
 if (Torch_FOUND)
@@ -29,7 +33,7 @@ if (DYLOAD)
     set(IMPL_SRC wrap_func.cpp)
 endif()
 
-file(GLOB REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/functions_mmcv/*.cu functions/functions_ext/*.cu functions/*.cpp helper.cpp)
+file(GLOB REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/functions_mmcv/*.cu functions/functions_ext/*.cu functions/*.cpp helper.cpp build_aten.cpp)
 
 # adaptor
 set(USE_ADAPTOR ON)
@@ -45,7 +49,7 @@ if(USE_ADAPTOR)
     set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
     set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
     add_custom_target(adaptor_code_gen
-        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=torch
+        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${DIOPI_IMPL_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=torch
         BYPRODUCTS ${GEN_FILES}
         DEPENDS adaptor_gen_dependency)
     list(APPEND REAL_IMPL_SRC ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/composite_ops.cpp)
@@ -99,6 +103,10 @@ endif()
 
 if(USE_ADAPTOR)
     add_dependencies(${DEVICEIMPL} adaptor_code_gen)
+endif()
+
+if(DIOPI_TORCH_UNSAFE_BUILDATEN)
+    target_compile_definitions(${DEVICEIMPL} PRIVATE DIOPI_TORCH_UNSAFE_BUILDATEN)
 endif()
 
 if (TEST)

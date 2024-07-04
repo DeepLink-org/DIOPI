@@ -18,10 +18,6 @@ diopiError_t diopiRepeat(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
         END_CALL_ACL_OP();
     }
 
-    std::vector<int64_t> inputShape = inputAt.sizes().vec();
-    inputShape.insert(inputShape.begin(), repeatSize.len - inputAt.dim(), 1);
-    inputAt = impl::aten::viewStorage(inputAt, inputShape);
-
     EXEC_NPU_CMD(aclnnRepeat, inputAt, repeatSizeAt, outAt);
     END_CALL_ACL_OP();
 }

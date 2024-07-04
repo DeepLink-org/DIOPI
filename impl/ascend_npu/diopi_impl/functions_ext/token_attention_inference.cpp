@@ -39,9 +39,9 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
 }
 
 diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
-                                 diopiConstTensorHandle_t v, diopiSize_t actualSeqLengths, int64_t numHeads, int64_t numKeyValueHeads, int64_t dim,
-                                 diopiConstTensorHandle_t blockTable, int64_t blockSize) {
-    BEGIN_CALL_ACL_OP(out, q, k, v, blockTable);
+                                 diopiConstTensorHandle_t v, diopiConstTensorHandle_t attenMask, diopiSize_t actualSeqLengths, int64_t numHeads,
+                                 int64_t numKeyValueHeads, int64_t dim, diopiConstTensorHandle_t blockTable, int64_t blockSize) {
+    BEGIN_CALL_ACL_OP(out, q, k, v, blockTable, attenMask);
     at::IntArrayRef actSeqLen(actualSeqLengths.data, actualSeqLengths.len);
     TORCH_CHECK(actualSeqLengths.len == qAt.size(0), "The size of the first dimension of q must be equal to the length of actualSeqLengths!");
     TORCH_CHECK(actualSeqLengths.len == outAt.size(0), "The size of the first dimension of out must be equal to the length of actualSeqLengths!");
@@ -59,13 +59,13 @@ diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t o
     at::TensorList keyTensors = kAt;
     at::TensorList valueTensors = vAt;
     int64_t innerPrecise = 1;
-    at::Tensor paddingMask, attenMask, dequantScale1, quantScale1, dequantScale2, quantScale2, quantOffset2, antiquantScale, antiquantOffset, kvPaddingSize;
+    at::Tensor paddingMask, dequantScale1, quantScale1, dequantScale2, quantScale2, quantOffset2, antiquantScale, antiquantOffset, kvPaddingSize;
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV4,
                                  qAt,
                                  keyTensors,
                                  valueTensors,
                                  paddingMask,
-                                 attenMask,
+                                 attenMaskAt,
                                  actSeqLen,
                                  dequantScale1,
                                  quantScale1,

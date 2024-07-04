@@ -326,18 +326,6 @@ device_configs = {
         rtol=1e-4,
     ),
 
-    'reduce_partial_op_1': dict(
-        name=['std'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
     'cross_entropy': dict(
         name=['cross_entropy'],
         tensor_para=dict(
@@ -808,11 +796,14 @@ device_configs = {
         rtol=5e-2,
         atol_half=5e-2,
         rtol_half=5e-2,
+<<<<<<< HEAD
         para=dict(
     # for aclnnGroupNorm, eps must be larger than 0.
     # aclnnGoupNorm do not support float16 input
             eps=[Skip(-1), Skip(0)],
         ),
+=======
+>>>>>>> main
         tensor_para=dict(
             args=[
                 {
@@ -871,6 +862,19 @@ device_configs = {
         ),
     ),
 
+    'index': dict(
+        name=['index'],
+        tensor_para=dict(
+            # aclnn not support index out of size
+            args=[
+                {
+                    "ins": ['idx3'],
+                    "shape": [Skip((224, 224)),],
+                },
+            ],
+        ),
+    ),
+    
     'index': dict(
         name=['index'],
         tensor_para=dict(
@@ -1412,19 +1416,6 @@ device_configs = {
         skip_all = True
     ),
 
-    # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend
-    'flash_attention_varlen': dict(
-        name=['flash_attention_varlen'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["q"],
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        )
-    ),
-    
     # aclnnMseloss not support float64
     # TODO(zhangqiu): skip float64 temporarily, as mse_loss can not pass the test with float64 cast to float32
     'mse_loss': dict(

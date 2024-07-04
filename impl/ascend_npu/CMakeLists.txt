@@ -23,7 +23,7 @@ add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
 
 # find python3
-find_package(Python COMPONENTS Interpreter Development)
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
 MESSAGE(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
 MESSAGE(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
 include_directories(SYSTEM ${Python_INCLUDE_DIRS})
@@ -78,7 +78,6 @@ list(REMOVE_ITEM OP_PLUGIN_SRC
   ${OP_PLUGIN_BASE_OPS_DIR}/opapi/LstmCellKernelNpuApi.cpp
   ${OP_PLUGIN_BASE_OPS_DIR}/aclops/TriangularSolveKernelNpu.cpp
   ${OP_PLUGIN_SRC_V_DIR}/aclops/EmbeddingBagBackwardKernelNpu.cpp
-  ${OP_PLUGIN_SRC_V_DIR}/opapi/StdKernelNpuOpApi.cpp
   ${OP_PLUGIN_SRC_V_DIR}/opapi/StdMeanKernelNpuOpApi.cpp
   ${OP_PLUGIN_SRC_V_DIR}/opapi/VarKernelNpuOpApi.cpp
   ${OP_PLUGIN_SRC_V_DIR}/opapi/TraceKernelNpuOpApi.cpp
@@ -99,8 +98,8 @@ set(ASCEND_IMPL_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/torch_npu/csrc/impl/
 )
 
-set(DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
-file(GLOB DIOPI_IMPL_SRC "${DIOPI_IMPL_DIR}/*.cpp" "${DIOPI_IMPL_DIR}/functions_ext/*.cpp")
+set(ASCEND_NPU_DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
+file(GLOB DIOPI_IMPL_SRC "${ASCEND_NPU_DIOPI_IMPL_DIR}/*.cpp" "${ASCEND_NPU_DIOPI_IMPL_DIR}/functions_ext/*.cpp")
 
 add_definitions(-DBUILD_LIBTORCH)
 
@@ -243,7 +242,7 @@ if(USE_ADAPTOR)
     set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
     set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
     add_custom_target(adaptor_code_gen
-        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${CMAKE_SOURCE_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=ascend --impl_plugin=True
+        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${DIOPI_IMPL_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=ascend --impl_plugin=True
         BYPRODUCTS ${GEN_FILES}
         DEPENDS adaptor_gen_dependency)
     list(APPEND IMPL_SRC ${GEN_FILES} ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp)
