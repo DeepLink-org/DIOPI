@@ -2,13 +2,10 @@
     layout: NCHW
 
 - diopiAdamW:
-<<<<<<< HEAD
-=======
     dtype: (float64)->float32
     layout: ND
 
 - diopiSoftmax:
->>>>>>> main
     dtype: (float64)->float32
     layout: ND
 

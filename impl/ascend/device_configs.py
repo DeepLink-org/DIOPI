@@ -796,14 +796,11 @@ device_configs = {
         rtol=5e-2,
         atol_half=5e-2,
         rtol_half=5e-2,
-<<<<<<< HEAD
         para=dict(
     # for aclnnGroupNorm, eps must be larger than 0.
     # aclnnGoupNorm do not support float16 input
             eps=[Skip(-1), Skip(0)],
         ),
-=======
->>>>>>> main
         tensor_para=dict(
             args=[
                 {

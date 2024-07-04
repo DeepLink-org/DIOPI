@@ -483,20 +483,14 @@ class CustomizedTest(object):
         v,
         cu_seqlens_q,
         cu_seqlens_kv,
-<<<<<<< HEAD
-=======
         alibi_slopes,
->>>>>>> main
         max_seqlen_q,
         max_seqlen_kv,
         p_dropout,
         softmax_scale,
         is_causal,
-<<<<<<< HEAD
-=======
         window_size_left,
         window_size_right,
->>>>>>> main
     ):
         # TODO: impl for alibi and sliding window local attention
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
@@ -744,10 +738,7 @@ class CustomizedTest(object):
         query,
         key,
         value,
-<<<<<<< HEAD
-=======
         attenMask,
->>>>>>> main
         actualSeqLengths,
         numHeads,
         numKeyValueHeads,
