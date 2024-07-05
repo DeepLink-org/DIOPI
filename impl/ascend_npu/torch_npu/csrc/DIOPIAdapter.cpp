@@ -3250,7 +3250,7 @@ ContextManger::ContextManger(diopiContextHandle_t ctx) {
 ContextManger::~ContextManger() {
     context_use_counter--;
     if (context_use_counter == 0) {
-        context == nullptr;
+        context = nullptr;
         requiredTensorMap.clear();
     }
 }
