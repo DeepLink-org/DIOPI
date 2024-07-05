@@ -17,7 +17,7 @@ message(STATUS "op-plugin download done")
 add_custom_target(op_plugin_gen
   COMMAND cd ${op_plugin_SOURCE_DIR} && bash ./gencode.sh 2.1 python
   BYPRODUCTS ${op_plugin_SOURCE_DIR}/op_plugin/OpInterface.h ${op_plugin_SOURCE_DIR}/op_plugin/OpInterface.cpp
-             ${op_plugin_SOURCE_DIR}/op_plugin/AclOpsInterface.h  ${op_plugin_SOURCE_DIR}/op_plugin/OpApiInterface.h
+  ${op_plugin_SOURCE_DIR}/op_plugin/AclOpsInterface.h ${op_plugin_SOURCE_DIR}/op_plugin/OpApiInterface.h
 )
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
@@ -36,18 +36,22 @@ if(NOT DEFINED PYTORCH_DIR)
     OUTPUT_VARIABLE PYTORCH_DIR
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
+
 find_package(Torch REQUIRED
-    PATHS  ${PYTORCH_DIR}
+    PATHS ${PYTORCH_DIR}
 )
 
-execute_process(
+if(NOT DIOPI_TORCH_VERSION)
+  execute_process(
     COMMAND python -c "import torch;import re;version_tuple=re.search('[0-9\.]+', torch.__version__).group().split('.');factor=[10000,100, 1];DIOPI_TORCH_VERSION=sum([factor[i] * int(version_tuple[i]) for i in range(len(version_tuple))]);print(DIOPI_TORCH_VERSION)"
     OUTPUT_VARIABLE DIOPI_TORCH_VERSION
     OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+  )
+endif()
+
 add_compile_definitions(DIOPI_TORCH_VERSION=${DIOPI_TORCH_VERSION})
 message(STATUS "TORCH_INSTALL_PREFIX:" ${TORCH_INSTALL_PREFIX})
-message(STATUS "TORCH_CXX_FLAGS:" ${TORCH_CXX_FLAGS})   # include -D_GLIBCXX_USE_CXX11_ABI
+message(STATUS "TORCH_CXX_FLAGS:" ${TORCH_CXX_FLAGS}) # include -D_GLIBCXX_USE_CXX11_ABI
 message(STATUS "TORCH_INCLUDE_DIRS:" ${TORCH_INCLUDE_DIRS})
 message(STATUS "DIOPI_TORCH_VERSION:" ${DIOPI_TORCH_VERSION})
 
@@ -61,7 +65,7 @@ set(CMAKE_CXX_FLAGS
 
 set(OP_PLUGIN_BASE_OPS_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/base_ops/)
 set(OP_PLUGIN_UTILS_DIR ${op_plugin_SOURCE_DIR}/op_plugin/utils/)
-set(OP_PLUGIN_SRC_V_DIR  ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r1/)
+set(OP_PLUGIN_SRC_V_DIR ${op_plugin_SOURCE_DIR}/op_plugin/ops/v2r1/)
 
 file(GLOB_RECURSE OP_PLUGIN_SRC
   ${OP_PLUGIN_BASE_OPS_DIR}/aclops/*.cpp
@@ -102,7 +106,6 @@ set(ASCEND_NPU_DIOPI_IMPL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/diopi_impl/)
 file(GLOB DIOPI_IMPL_SRC "${ASCEND_NPU_DIOPI_IMPL_DIR}/*.cpp" "${ASCEND_NPU_DIOPI_IMPL_DIR}/functions_ext/*.cpp")
 
 add_definitions(-DBUILD_LIBTORCH)
-
 
 include_directories(SYSTEM ${op_plugin_SOURCE_DIR} torch_npu ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -185,8 +188,9 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/linspace.cpp
     ${OLD_IMPL_DIR}/functions/split.cpp
     ${OLD_IMPL_DIR}/functions_ext/rms_norm.cpp
-    #${OLD_IMPL_DIR}/test/export_functions.cpp
-    #${OLD_IMPL_DIR}/test/conform_test.cpp
+
+  # ${OLD_IMPL_DIR}/test/export_functions.cpp
+  # ${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp
     ${OLD_IMPL_DIR}/common/debug.cpp
     ${OLD_IMPL_DIR}/common/generator_helper.cpp
@@ -208,29 +212,30 @@ if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
   include_directories(SYSTEM ${ASCEND_DIR}/ascend-toolkit/latest/include/aclnn)
   link_directories(${ASCEND_DIR}/ascend-toolkit/latest/lib64)
 else()
-    message(FATAL_ERROR "No ascend-toolkit found.")
+  message(FATAL_ERROR "No ascend-toolkit found.")
 endif()
 
 list(APPEND IMPL_SRC ${OP_PLUGIN_SRC} ${DIOPI_IMPL_SRC} ${OLD_IMPL_SRC})
 
 # adaptor
 set(USE_ADAPTOR ON)
+
 if(EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
-    set(USE_ADAPTOR ON)
+  set(USE_ADAPTOR ON)
 endif()
 
 if(USE_ADAPTOR)
-    file(GLOB ADAPTOR_TEMPLATE_CODE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/ ${ADAPTOR_DIR}/codegen/*.py)
-    add_custom_target(adaptor_gen_dependency DEPENDS ${ADAPTOR_TEMPLATE_CODE})
+  file(GLOB ADAPTOR_TEMPLATE_CODE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/../ascend/ ${ADAPTOR_DIR}/codegen/*.py)
+  add_custom_target(adaptor_gen_dependency DEPENDS ${ADAPTOR_TEMPLATE_CODE})
 
-    set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
-    set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
-    add_custom_target(adaptor_code_gen
-        COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${DIOPI_IMPL_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=ascend --impl_plugin=True
-        BYPRODUCTS ${GEN_FILES}
-        DEPENDS adaptor_gen_dependency)
-    list(APPEND IMPL_SRC ${GEN_FILES} ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp)
-    add_definitions(-DTEST_USE_ADAPTOR)
+  set(ADAPTOR_CSRC_PATH "${ADAPTOR_DIR}/csrc")
+  set(GEN_FILES ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/impl_functions.hpp)
+  add_custom_target(adaptor_code_gen
+    COMMAND python3 ${ADAPTOR_DIR}/codegen/gen.py --diopi_dir=${DIOPI_IMPL_DIR}/../ --output_dir=${ADAPTOR_CSRC_PATH} --config_device=ascend --impl_plugin=True
+    BYPRODUCTS ${GEN_FILES}
+    DEPENDS adaptor_gen_dependency)
+  list(APPEND IMPL_SRC ${GEN_FILES} ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp)
+  add_definitions(-DTEST_USE_ADAPTOR)
 endif()
 
 if(DEFINED ENV{ASCEND_CUSTOM_PATH})
@@ -242,12 +247,12 @@ endif()
 if(EXISTS ${ASCEND_DIR}/ascend-toolkit/latest/)
   message(STATUS "ascend-toolkit exists:" ${ASCEND_DIR}/ascend-toolkit/latest/)
   message(STATUS "ASCEND_DIR:" ${ASCEND_DIR})
-  #include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/)
+
+  # include_directories(${ASCEND_DIR}/ascend-toolkit/latest/include/)
   link_directories(${ASCEND_DIR}/ascend-toolkit/latest/lib64)
 else()
-    message(FATAL_ERROR "No ascend-toolkit found.")
+  message(FATAL_ERROR "No ascend-toolkit found.")
 endif()
-
 
 # third_party include
 set(THIRD_PARTY_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/half/include)
@@ -260,9 +265,9 @@ target_include_directories(${DEVICEIMPL} SYSTEM PUBLIC ${THIRD_PARTY_INCLUDE_DIR
 target_link_libraries(${DEVICEIMPL} ascendcl acl_op_compiler graph c10 torch_cpu nnopbase opapi ${Python_LIBRARIES})
 
 if(USE_ADAPTOR)
-    add_dependencies(${DEVICEIMPL} adaptor_code_gen)
+  add_dependencies(${DEVICEIMPL} adaptor_code_gen)
 endif()
 
-if (TEST)
-    add_subdirectory(test)
+if(TEST)
+  add_subdirectory(test)
 endif()
