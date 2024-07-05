@@ -12,11 +12,10 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t saveMean, diopiTensorHandle_t saveInvstd,
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t numGroups, double eps) {
-    BEGIN_CALL_ACL_OP(input);
+    BEGIN_CALL_ACL_OP(input, weight, bias, out, saveMean, saveInvstd);
     if (!inputAt.defined() || inputAt.numel() == 0) {
         return diopiSuccess;
     }
-    BEGIN_CALL_ACL_OP(weight, bias, out, saveMean, saveInvstd);
     int64_t n = inputAt.sizes()[0];
     int64_t c = inputAt.sizes()[1];
     int64_t hw = inputAt.numel() / (n * c);
@@ -28,11 +27,10 @@ diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t gradWeight, diopiTensorHandle_t gradBias,
                                     diopiConstTensorHandle_t gradOutput, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
                                     diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, int64_t numGroups) {
-    BEGIN_CALL_ACL_OP(input);
+    BEGIN_CALL_ACL_OP(input, gradWeight, gradBias, gradInput, gradOutput, weight, mean, rstd);
     if (!inputAt.defined()) {
         return diopiSuccess;
     }
-    BEGIN_CALL_ACL_OP(gradWeight, gradBias);
     if (inputAt.numel() == 0) {
         if (inputAt.sizes()[0] == 0) {
             op_api::fill_(gradWeightAt, c10::Scalar(0.0));
@@ -42,7 +40,6 @@ diopiError_t diopiGroupNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_
             op_api::fill_(gradBiasAt, c10::Scalar(0.0));
         }
     } else {
-        BEGIN_CALL_ACL_OP(gradInput, gradOutput, weight, mean, rstd);
         int64_t n = inputAt.sizes()[0];
         int64_t c = inputAt.sizes()[1];
         int64_t hw = inputAt.numel() / (n * c);
