@@ -130,7 +130,7 @@ git push -u origin {branch_name}
 -->
 所有 reviewer 同意合入 PR 后，我们会尽快将 PR 合并到主分支。
 
-(5) 当前只有IMPL文件夹支持开发者贡献代码，PROTO与DIOPI-TEST后续会逐步开放。
+(5) 当前只有impl文件夹支持开发者贡献代码，proto与diopi_test后续会逐步开放。
 
 #### 6. 解决冲突
 

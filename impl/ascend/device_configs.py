@@ -326,18 +326,6 @@ device_configs = {
         rtol=1e-4,
     ),
 
-    'reduce_partial_op_1': dict(
-        name=['std'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
     'cross_entropy': dict(
         name=['cross_entropy'],
         tensor_para=dict(
@@ -883,6 +871,19 @@ device_configs = {
             ],
         ),
     ),
+    
+    'index': dict(
+        name=['index'],
+        tensor_para=dict(
+            # aclnn not support index out of size
+            args=[
+                {
+                    "ins": ['idx3'],
+                    "shape": [Skip((224, 224)),],
+                },
+            ],
+        ),
+    ),
 
     'index_put_acc_three_indices': dict( # llm used
         name=['index_put'],
@@ -1410,19 +1411,6 @@ device_configs = {
     'nll_loss': dict(
         name = ['nll_loss'],
         skip_all = True
-    ),
-
-    # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend
-    'flash_attention_varlen': dict(
-        name=['flash_attention_varlen'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["q"],
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        )
     ),
     
     # aclnnMseloss not support float64

@@ -6,6 +6,10 @@
     layout: ND
 
 - diopiSoftmax:
+    dtype: (float64)->float32
+    layout: ND
+
+- diopiSoftmax:
     layout: ND
 
 - diopiBaddbmm:
@@ -194,17 +198,17 @@
     dtype: (float64)->float32
 
 - diopiScatter:
-    dtype: (uint8)->int32
+    dtype: (uint8, int64)->int32
     layout: ND
 
 - diopiScatterInp:
-    dtype: (uint8)->int32
+    dtype: (uint8, int64)->int32
 
 - diopiScatterScalar:
-    dtype: (uint8)->int32
+    dtype: (uint8, int64)->int32
 
 - diopiScatterInpScalar:
-    dtype: (uint8)->int32
+    dtype: (uint8, int64)->int32
 
 - diopiRotaryEmbedding:
     dtype: (float64)->float32
@@ -396,6 +400,7 @@
     layout: ND
 
 - diopiIndexPutInp:
+    dtype: (int64)->int32
     layout: ND
 
 - diopiLogicalAnd:
@@ -458,3 +463,7 @@
 - diopiMaxPool2dBackward:
     tensor_dtype:
         indices: (int64)->int32
+- diopiStd:
+    # aclnnStd doesn't support float64
+    dtype: (float64)->float32
+    layout: ND

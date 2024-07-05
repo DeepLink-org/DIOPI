@@ -44,11 +44,11 @@ bool try_to_optimize_copy_with_any_format(at::Tensor& self, const at::Tensor& sr
 
 namespace {
 
-std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef strides) {
+c10::DimVector inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef strides) {
     if (sizes.size() <= 0) {
-        return std::vector<int64_t>();
+        return c10::DimVector();
     }
-    std::vector<int64_t> originSizes(sizes.size(), 1);
+    c10::DimVector originSizes(sizes.size(), 1);
     originSizes[0] = sizes[0] * strides[0];
     for (size_t i = 1; i < sizes.size(); i++) {
         int64_t dim = sizes[i] * strides[i];
@@ -61,9 +61,9 @@ std::vector<int64_t> inferOriginShape(at::IntArrayRef sizes, at::IntArrayRef str
 
 at::Tensor viewToSameDim(const at::Tensor& tensor, const at::IntArrayRef destShape) {
     const auto originShape = tensor.sizes();
-    std::vector<int64_t> strides(destShape.size(), 0);
+    c10::DimVector strides(destShape.size(), 0);
     if (originShape.size() < destShape.size()) {
-        std::vector<int64_t> sameDims;
+        c10::DimVector sameDims;
         for (int i = destShape.size() - 1; i >= 0; i--) {
             for (int j = originShape.size() - 1 - sameDims.size(); j >= 0; j--) {
                 if (destShape[i] == originShape[j]) {
@@ -87,7 +87,7 @@ at::Tensor viewToSameDim(const at::Tensor& tensor, const at::IntArrayRef destSha
 
 bool isPartOfOther(const at::Tensor& tensor) {
     const auto& strides = tensor.strides();
-    std::vector<int64_t> contiguousStrides(tensor.sizes().size());
+    c10::DimVector contiguousStrides(tensor.sizes().size());
     int64_t stride = 1;
     for (int i = contiguousStrides.size() - 1; i >= 0; --i) {
         contiguousStrides[i] = stride;
@@ -460,7 +460,7 @@ private:
     }
 
     bool broadcast_to_contiguous(at::Tensor& self, const at::Tensor& src, const ContiguousTensorDesc& src_desc) {
-        std::vector<int64_t> src_size(src.dim());
+        c10::DimVector src_size(src.dim());
         for (const auto i : c10::irange(src_desc.sizes_.size())) {
             if (src_desc.strides_[i] == 0) {
                 src_size[i] = 1;

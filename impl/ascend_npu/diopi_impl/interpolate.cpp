@@ -15,7 +15,7 @@ diopiError_t diopiUpsampleLinear(diopiContextHandle_t ctx, diopiTensorHandle_t o
                                  const char* mode) {
     TORCH_CHECK(strcmp(mode, "bilinear") == 0, "diopiUpsampleLinearBackward unsupport mode %s", mode);
     BEGIN_CALL_ACL_OP(input, out);
-    std::vector<int64_t> sizeVec(size.data, size.data + size.len);
+    c10::DimVector sizeVec(size.data, size.data + size.len);
     double scalesH = 1.0;
     double scalesW = 1.0;
     op_api::upsample_bilinear2d_out(inputAt, sizeVec, alignCorners, scalesH, scalesW, outAt);
@@ -26,8 +26,8 @@ diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHa
                                          diopiSize_t inSize, bool alignCorners, const char* mode) {
     TORCH_CHECK(strcmp(mode, "bilinear") == 0, "diopiUpsampleLinearBackward unsupport mode %s", mode);
     BEGIN_CALL_ACL_OP(gradInput, gradOutput);
-    std::vector<int64_t> outSizeVec(outSize.data, outSize.data + outSize.len);
-    std::vector<int64_t> inSizeVec(inSize.data, inSize.data + inSize.len);
+    c10::DimVector outSizeVec(outSize.data, outSize.data + outSize.len);
+    c10::DimVector inSizeVec(inSize.data, inSize.data + inSize.len);
     double scalesH = 1.0;
     double scalesW = 1.0;
     op_api::upsample_bilinear2d_backward_out(gradOutputAt, outSizeVec, inSizeVec, alignCorners, scalesH, scalesW, gradInputAt);
@@ -36,7 +36,7 @@ diopiError_t diopiUpsampleLinearBackward(diopiContextHandle_t ctx, diopiTensorHa
 
 diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t size) {
     BEGIN_CALL_ACL_OP(input, out);
-    std::vector<int64_t> sizeVec(size.data, size.data + size.len);
+    c10::DimVector sizeVec(size.data, size.data + size.len);
     double scalesH = -1.0;
     double scalesW = -1.0;
     double scalesD = -1.0;
@@ -53,8 +53,8 @@ diopiError_t diopiUpsampleNearest(diopiContextHandle_t ctx, diopiTensorHandle_t 
 diopiError_t diopiUpsampleNearestBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiConstTensorHandle_t gradOutput, diopiSize_t outSize,
                                           diopiSize_t inSize) {
     BEGIN_CALL_ACL_OP(gradInput, gradOutput);
-    std::vector<int64_t> outSizeVec(outSize.data, outSize.data + outSize.len);
-    std::vector<int64_t> inSizeVec(inSize.data, inSize.data + inSize.len);
+    c10::DimVector outSizeVec(outSize.data, outSize.data + outSize.len);
+    c10::DimVector inSizeVec(inSize.data, inSize.data + inSize.len);
     double scalesH = -1.0;
     double scalesW = -1.0;
     double scalesD = -1.0;
