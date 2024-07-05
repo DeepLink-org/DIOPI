@@ -195,7 +195,7 @@ at::Tensor NPUNativeFunctions::empty_with_format(c10::IntArrayRef size, c10::opt
 at::Tensor NPUNativeFunctions::empty_with_format(at::IntArrayRef size, c10::optional<at::DimnameList> names, c10::optional<at::ScalarType> dtype,
                                                  c10::optional<at::Layout> layout, c10::optional<at::Device> device, c10::optional<bool> pin_memory,
                                                  int64_t acl_format) {
-    OP_NOT_IMPL;
+    return at_npu::native::empty_with_format(size, dtype, layout, device, pin_memory, acl_format);
 }
 
 at::Tensor NPUNativeFunctions::unsafe_empty_with_format(at::IntArrayRef size, c10::optional<at::ScalarType> dtype, c10::optional<at::Layout> layout,

@@ -219,12 +219,15 @@
 
 - diopiScatterInp:
     dtype: (uint8, int64)->int32
+    layout: ND
 
 - diopiScatterScalar:
     dtype: (uint8, int64)->int32
+    layout: ND
 
 - diopiScatterInpScalar:
     dtype: (uint8, int64)->int32
+    layout: ND
 
 - diopiRotaryEmbedding:
     dtype: (float64)->float32
@@ -419,6 +422,10 @@
     layout: ND
 
 - diopiIndexPutInp:
+    dtype: (int64)->int32
+    layout: ND
+
+- diopiIndexPut:
     dtype: (int64)->int32
     layout: ND
 
