@@ -13,10 +13,10 @@
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
 
-#include <mutex>
 #include <utility>
 #include <vector>
 
+#include "build_aten.hpp"  // IWYU pragma: export
 #include "error.hpp"
 #include "impl_functions.hpp"
 
@@ -96,8 +96,6 @@ inline c10::DeviceType getATenDevice(diopiDevice_t device) {
     return c10::DeviceType::CUDA;
 }
 
-at::Tensor buildATen(diopiConstTensorHandle_t tensor);
-
 inline bool isInt(const diopiScalar_t* scalar) { return scalar->stype <= 7; }
 
 inline bool isFloat(const diopiScalar_t* scalar) { return scalar->stype > 7; }
@@ -107,15 +105,6 @@ at::Scalar buildAtScalar(const diopiScalar_t* scalar);
 inline at::IntArrayRef buildAtIntArray(const diopiSize_t* size) { return at::IntArrayRef(size->data, size->len); }
 
 inline at::IntArrayRef buildAtIntArray(diopiSize_t size) { return at::IntArrayRef(size.data, size.len); }
-
-template <typename T>
-inline decltype(auto) buildATenList(T* tensors, int64_t numTensors) {
-    std::vector<at::Tensor> vecAtTensor;
-    for (size_t i = 0; i < numTensors; ++i) {
-        vecAtTensor.emplace_back(buildATen(tensors[i]));
-    }
-    return vecAtTensor;
-}
 
 inline void updateATen2Tensor(diopiContextHandle_t ctx, const at::Tensor& atOut, diopiTensorHandle_t out) {
     if (out != nullptr) {
@@ -147,7 +136,7 @@ inline void updateATen2Tensor(diopiContextHandle_t ctx, TupleT& atOuts, diopi_te
     UpdateTupleATen<TupleT, tupleSize>::update(ctx, atOuts, outs);
 }
 
-inline void updateATen2Tensor(diopiContextHandle_t ctx, std::vector<at::Tensor>& atOuts, diopi_tensor_list& outs) {
+inline void updateATen2Tensor(diopiContextHandle_t ctx, c10::ArrayRef<at::Tensor>& atOuts, diopi_tensor_list& outs) {
     for (size_t i = 0; i < atOuts.size(); ++i) {
         updateATen2Tensor(ctx, atOuts.at(i), outs.at(i));
     }
@@ -165,7 +154,7 @@ inline void invokeATenFuncRet(diopiContextHandle_t ctx, Func func, diopi_tensor_
     updateATen2Tensor(ctx, atOuts, outs);
 }
 
-void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out);
+void buildDiopiTensor(diopiContextHandle_t ctx, const at::Tensor& input, diopiTensorHandle_t* out);
 
 // new cuda generator and pass dipu generator state into cuda generator state
 at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator);

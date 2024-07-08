@@ -13,11 +13,11 @@ namespace OP_IMPL_NS {
 diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim0, int64_t dim1) {
     BEGIN_CALL_ACL_OP(input, out);
     if (0 == inputAt.dim()) {
-        outAt.copy_(inputAt, true);
+        outAt.copy_(inputAt);
         return diopiSuccess;
     }
 
-    std::vector<int64_t> dims(inputAt.dim());
+    c10::DimVector dims(inputAt.dim());
     dim0 = dim0 < 0 ? dim0 + inputAt.dim() : dim0;
     dim1 = dim1 < 0 ? dim1 + inputAt.dim() : dim1;
     std::iota(dims.begin(), dims.end(), 0);
@@ -31,7 +31,7 @@ diopiError_t diopiTranspose(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
 diopiError_t diopiPermute(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dims) {
     BEGIN_CALL_ACL_OP(input, dims, out);
     if (0 == dims.len) {
-        outAt.copy_(inputAt, true);
+        outAt.copy_(inputAt);
         return diopiSuccess;
     }
     EXEC_NPU_CMD(aclnnPermute, inputAt, dimsAt, outAt);

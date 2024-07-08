@@ -3,6 +3,7 @@
  * @author DeepLink
  * @copyright  (c) 2024, DeepLink.
  */
+#include <numeric>
 
 #include "helper.hpp"
 #include "op_plugin/OpApiInterface.h"
@@ -16,8 +17,16 @@ diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     if (inputAt.dim() == outAt.dim()) {
         keepdim = true;
     }
-    int64_t correction = static_cast<int64_t>(unbiased);
-    EXEC_NPU_CMD(aclnnStd, inputAt, dimAt, correction, keepdim, outAt);
+    at::Scalar correction(static_cast<int64_t>(unbiased));
+    if (0 == dim.len) {
+        c10::DimVector adim(inputAt.dim());
+        std::iota(adim.begin(), adim.end(), 0);
+        at::IntArrayRef rdim(adim.data(), adim.size());
+        op_api::std_out(inputAt, rdim, correction, keepdim, outAt);
+    } else {
+        at::IntArrayRef rdim(dim.data, dim.len);
+        op_api::std_out(inputAt, rdim, correction, keepdim, outAt);
+    }
     return diopiSuccess;
 }
 

@@ -92,7 +92,7 @@ diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     DIOPI_CHECK(maskAt.defined(), "[DIOPI][Ascend] Check if mask tensor defined");
 
     if (p == 0 || train == false) {
-        outAt.copy_(inputAt, true);
+        outAt.copy_(inputAt);
         op_api::fill_(maskAt, c10::Scalar(1));
         END_CALL_ACL_OP();
     }
