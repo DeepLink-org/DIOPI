@@ -13,7 +13,6 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 file(GLOB REAL_IMPL_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} functions/functions_mmcv/*.cu functions/functions_ext/*.cu functions/*.cpp helper.cpp)
-file(GLOB WRAPPER_SRC wrap_func.cpp)
 
 # adaptor
 set(USE_ADAPTOR ON)
@@ -21,19 +20,12 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
     message(FATAL_ERROR "convert_config.yaml doesn't exist.")
 endif()
 
+include(../cmake/ImplHelper.cmake)
 if(USE_ADAPTOR)
-    include(../cmake/AdapterHelper.cmake)
-    DIOPIUseAdapter()
+  diopi_use_adapter("--config_device=torch")
 endif()
 
-
-if (DYLOAD)
-  set(REAL_IMPL diopi_real_impl)
-  add_library(${DEVICEIMPL} SHARED ${WRAPPER_SRC})
-  target_link_libraries(${DEVICEIMPL} -ldl)
-else()
-  set(REAL_IMPL ${DEVICEIMPL})
-endif()
+prep_dyn_load(DYLOAD)
 
 if(HIP)
     include(../cmake/LoadHIP.cmake)
