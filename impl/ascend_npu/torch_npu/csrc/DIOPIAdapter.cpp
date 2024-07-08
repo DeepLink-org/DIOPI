@@ -39,7 +39,7 @@ inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; 
 AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
 #undef ENUM_PAIR_FUNC
 
-#if DIOPI_TORCH_VERSION >= 20100
+#if DIOPI_TORCH_INT_VERSION >= 20100
 #define AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(_)    \
     _(at::ScalarType::Byte, ACL_UINT8)                 \
     _(at::ScalarType::Char, ACL_INT8)                  \
@@ -1764,7 +1764,7 @@ void StorageDescHelper::UpdateDesc(torch_npu::NPUStorageDesc& npuDesc, const c10
 
     npuDesc.base_sizes_ = new_size;
 
-    // 计算连续场景下size对应的stride值
+    // 计算连续场景下 size 对应的 stride 值
     int64_t dim_ = static_cast<int64_t>(new_size.size());
     c10::SmallVector<int64_t, 5> new_stride(dim_);
     if (dim_ > 0) {
@@ -3265,7 +3265,7 @@ at::Tensor& wrapper_source_Storage_set_(at::Tensor& self, at::Storage src) {
     auto* selfImpl = self.unsafeGetTensorImpl();
     auto storage = selfImpl->unsafe_storage();
     auto storageImpl = storage.unsafeGetStorageImpl();
-#if DIOPI_TORCH_VERSION >= 20100
+#if DIOPI_TORCH_INT_VERSION >= 20100
     storageImpl->set_data_ptr(std::move(src.mutable_data_ptr()));
 #else
     storageImpl->set_data_ptr(std::move(src.data_ptr()));
@@ -3280,7 +3280,7 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     auto* selfImpl = self.unsafeGetTensorImpl();
     auto storage = selfImpl->unsafe_storage();
     auto storageImpl = storage.unsafeGetStorageImpl();
-#if DIOPI_TORCH_VERSION >= 20100
+#if DIOPI_TORCH_INT_VERSION >= 20100
     storageImpl->set_data_ptr(std::move(source.mutable_data_ptr()));
 #else
     storageImpl->set_data_ptr(std::move(source.data_ptr()));
