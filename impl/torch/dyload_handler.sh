@@ -54,7 +54,7 @@ function patch_diopi_torch() {
 # 2.although both the 1st hop dynamic-loaded lib and the 2ed's link to torch_dipu.so, they still share
 # the same lib instance in addr space.
 function patch_diopi_dipu() {
-   patchelf --remove-needed libtorch_dipu.so libdiopi_real_impl.so
+ patchelf --remove-needed libtorch_dipu.so libdiopi_real_impl.so
   patchelf --add-needed libtorch_dipu.so libdiopi_real_impl.so
 }
 
@@ -64,8 +64,14 @@ cd ${LIBS_DIR}
 if [[ "$1" == "patch_torch" ]]; then
    gen_versioned_torch
 elif [[ "$1" == "patch_diopi" ]]; then
-    # dipu lib must linked after torch lib
+    # in dipoi link lib list, torch_dipu.so must be placed behind torch_XX libs. 
+    # because both dipu and inner 'DEEPBIND' torch_cpu call Library.<CppFunction>fallback() which is
+    # a template function instantiated when parameter types CppFunction is first called
+    # (!!! not directly link to the template definition in external torch_cpu.so !!!).
+    # if torch_dipu.so is linked in front, <CppFunction>fallback() symbol is bind to the symbol 
+    # in torch_dipu.so which use external torch template class that cannot work with inner torch CppFunction.  
     patch_diopi_dipu
     patch_diopi_torch
-    
+
+
 fi

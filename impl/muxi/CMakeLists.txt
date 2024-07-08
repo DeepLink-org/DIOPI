@@ -52,6 +52,15 @@ if(USE_ADAPTOR)
     list(APPEND REAL_IMPL_SRC ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/composite_ops.cpp)
 endif()
 
+
+if (DYLOAD)
+  set(REAL_IMPL diopi_real_impl)
+  add_library(${DEVICEIMPL} SHARED ${WRAPPER_SRC})
+  target_link_libraries(${DEVICEIMPL} -ldl)
+else()
+  set(REAL_IMPL ${DEVICEIMPL})
+endif()
+
 cuda_add_library(${DEVICEIMPL} SHARED ${REAL_IMPL_SRC})
 target_link_libraries(${DEVICEIMPL} ${TORCH_LIBRARIES})
 add_subdirectory(functions/functions_ext/flash-attention)
