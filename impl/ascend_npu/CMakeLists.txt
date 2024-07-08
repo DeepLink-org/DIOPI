@@ -40,16 +40,9 @@ find_package(Torch REQUIRED
     PATHS  ${PYTORCH_DIR}
 )
 
-execute_process(
-    COMMAND python -c "import torch;import re;version_tuple=re.search('[0-9\.]+', torch.__version__).group().split('.');factor=[10000,100, 1];DIOPI_TORCH_VERSION=sum([factor[i] * int(version_tuple[i]) for i in range(len(version_tuple))]);print(DIOPI_TORCH_VERSION)"
-    OUTPUT_VARIABLE DIOPI_TORCH_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-add_compile_definitions(DIOPI_TORCH_VERSION=${DIOPI_TORCH_VERSION})
 message(STATUS "TORCH_INSTALL_PREFIX:" ${TORCH_INSTALL_PREFIX})
 message(STATUS "TORCH_CXX_FLAGS:" ${TORCH_CXX_FLAGS})   # include -D_GLIBCXX_USE_CXX11_ABI
 message(STATUS "TORCH_INCLUDE_DIRS:" ${TORCH_INCLUDE_DIRS})
-message(STATUS "DIOPI_TORCH_VERSION:" ${DIOPI_TORCH_VERSION})
 
 include_directories(SYSTEM ${TORCH_INCLUDE_DIRS})
 link_directories(${TORCH_INSTALL_PREFIX}/lib)

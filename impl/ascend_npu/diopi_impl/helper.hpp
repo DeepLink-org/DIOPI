@@ -11,6 +11,7 @@
 #include <c10/core/Allocator.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <torch/version.h>
 
 #include <iostream>
 #include <mutex>
@@ -21,6 +22,12 @@
 
 #include "error.hpp"
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
+
+#if TORCH_VERSION_MINOR < 100 and TORCH_VERSION_PATCH < 100
+#define DIOPI_TORCH_INT_VERSION (TORCH_VERSION_MAJOR * 10000 + TORCH_VERSION_MINOR * 100 + TORCH_VERSION_PATCH)
+#else
+#error "require refactoring: version number exceeds width limit"
+#endif
 
 #define OP_IMPL_NS impl::ascend_npu
 
