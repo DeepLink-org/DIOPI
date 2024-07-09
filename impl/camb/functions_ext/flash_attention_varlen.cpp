@@ -25,6 +25,28 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     DiopiTensor qTensor(q);
     DiopiTensor kTensor(k);
     DiopiTensor vTensor(v);
+    DiopiTensor cumSeqQTensor(cumSeqQ);
+    DiopiTensor cumSeqKVTensor(cumSeqKV);
+    DiopiTensor softmaxLseTensor(softmaxLse);
+    DiopiTensor attentionOutTensor(attentionOut);
+
+    // deal with [1,seqLen,head,headDim] -> [seqLen,head,headDim]
+    if (qTensor.dim() == 4 && qTensor.shape()[0] == 1) {
+        std::vector<int64_t> newQshape = {qTensor.shape()[1], qTensor.shape()[2], qTensor.shape()[3]};
+        std::vector<int64_t> newQstride = calContiguousStride(newQshape);
+        qTensor.asStrided(newQshape, newQstride);
+        qTensor.asStrided(newQshape, newQstride);
+        attentionOutTensor.asStrided(newQshape, newQstride);
+    }
+
+    if (kTensor.dim() == 4 && kTensor.shape()[0] == 1) {
+        std::vector<int64_t> newKshape = {kTensor.shape()[1], kTensor.shape()[2], kTensor.shape()[3]};
+        std::vector<int64_t> newKstride = calContiguousStride(newKshape);
+        kTensor.asStrided(newKshape, newKstride);
+        vTensor.asStrided(newKshape, newKstride);
+    }
+
+    DIOPI_CHECK(qTensor.dim() == 3 && kTensor.dim() == 3 && vTensor.dim() == 3, "cnnlFlashAttention should have 3-D qkv");
 
     const int64_t totalSeqQ = qTensor.shape()[0];
     const int64_t headNumQ = qTensor.shape()[1];
@@ -33,13 +55,8 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     DIOPI_CHECK(headDim <= 256, "For camb, flash attention only supports head dimension at most 256.");
     DIOPI_CHECK(headNumQ % headNumK == 0, "Number of heads in key/value must divide number of heads in query.");
 
-    DiopiTensor cumSeqQTensor(cumSeqQ);
-    DiopiTensor cumSeqKVTensor(cumSeqKV);
-    DiopiTensor softmaxLseTensor(softmaxLse);
-    DiopiTensor attentionOutTensor(attentionOut);
-
     // convert dtype
-    DIOPI_CALL(autoCastTensorType(ctx, {&qTensor, &kTensor, &vTensor}, {diopi_dtype_float16, diopi_dtype_bfloat16}));
+    DIOPI_CALL(autoCastTensorType(ctx, {&qTensor, &kTensor, &vTensor}, {diopi_dtype_float16}));
     DIOPI_CALL(autoCastTensorType(ctx, {&cumSeqQTensor, &cumSeqKVTensor}, {diopi_dtype_int32}));
 
     DiopiTensor attentionOutTensorTmp = attentionOutTensor;
@@ -94,27 +111,33 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
         DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, &(rngState[0]), &(rngState[1])));
     }
 
-    DIOPI_CALL_CNNL(cnnlFlashAttentionForward(handle,
-                                              flashAttentionDesc.get(),
-                                              qDesc.get(),
-                                              qTensor.data(),
-                                              kDesc.get(),
-                                              kTensor.data(),
-                                              vDesc.get(),
-                                              vTensor.data(),
-                                              cumSeqQDesc.get(),
-                                              cumSeqQTensor.data(),
-                                              cumSeqKVDesc.get(),
-                                              cumSeqKVTensor.data(),
-                                              rngState,
-                                              workspace,
-                                              workspaceSize,
-                                              nullptr,
-                                              nullptr,
-                                              softmaxLseTmpDesc.get(),
-                                              softmaxLseTensorTmp.data(),
-                                              attentionOutTmpDesc.get(),
-                                              attentionOutTensorTmp.data()))
+    DIOPI_CALL_CNNL(cnnlFlashAttentionForward_v2(handle,
+                                                 flashAttentionDesc.get(),
+                                                 qDesc.get(),
+                                                 qTensor.data(),
+                                                 kDesc.get(),
+                                                 kTensor.data(),
+                                                 vDesc.get(),
+                                                 vTensor.data(),
+                                                 cumSeqQDesc.get(),
+                                                 cumSeqQTensor.data(),
+                                                 cumSeqKVDesc.get(),
+                                                 cumSeqKVTensor.data(),
+                                                 nullptr,  //[seqused_k desc],for future used
+                                                 nullptr,  //[seqused_k],for future used
+                                                 nullptr,  //[attn mask desc ],for future used
+                                                 nullptr,  //[attn mask],for future used
+                                                 nullptr,  //[alibi slopes desc], for future used
+                                                 nullptr,  //[alibi slopes], for future used
+                                                 rngState,
+                                                 workspace,
+                                                 workspaceSize,
+                                                 nullptr,
+                                                 nullptr,
+                                                 softmaxLseTmpDesc.get(),
+                                                 softmaxLseTensorTmp.data(),
+                                                 attentionOutTmpDesc.get(),
+                                                 attentionOutTensorTmp.data()))
 
     if (attentionOutTensorTmp.dtype() != attentionOutTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, attentionOutTensor, attentionOutTensorTmp));
@@ -140,14 +163,6 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
     DiopiTensor qTensor(q);
     DiopiTensor kTensor(k);
     DiopiTensor vTensor(v);
-
-    const int64_t totalSeqQ = qTensor.shape()[0];
-    const int64_t headNumQ = qTensor.shape()[1];
-    const int64_t headDim = qTensor.shape()[2];
-    const int64_t headNumK = kTensor.shape()[1];
-    DIOPI_CHECK(headDim <= 256, "For camb, flash attention only supports head dimension at most 256.");
-    DIOPI_CHECK(headNumQ % headNumK == 0, "Number of heads in key/value must divide number of heads in query.");
-
     DiopiTensor cumSeqQTensor(cumSeqQ);
     DiopiTensor cumSeqKVTensor(cumSeqKV);
     DiopiTensor gradOutTensor(gradOutput);
@@ -158,8 +173,37 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
     DiopiTensor gradKTensor(gradK);
     DiopiTensor gradVTensor(gradV);
 
+    // deal with [1,seqLen,head,headDim] -> [seqLen,head,headDim]
+    if (qTensor.dim() == 4) {
+        std::vector<int64_t> newQshape = {qTensor.shape()[1], qTensor.shape()[2], qTensor.shape()[3]};
+        std::vector<int64_t> newQstride = calContiguousStride(newQshape);
+        qTensor.asStrided(newQshape, newQstride);
+        qTensor.asStrided(newQshape, newQstride);
+        attentionOutTensor.asStrided(newQshape, newQstride);
+        gradOutTensor.asStrided(newQshape, newQstride);
+        gradQTensor.asStrided(newQshape, newQstride);
+    }
+
+    if (kTensor.dim() == 4) {
+        std::vector<int64_t> newKshape = {kTensor.shape()[1], kTensor.shape()[2], kTensor.shape()[3]};
+        std::vector<int64_t> newKstride = calContiguousStride(newKshape);
+        kTensor.asStrided(newKshape, newKstride);
+        vTensor.asStrided(newKshape, newKstride);
+        gradKTensor.asStrided(newKshape, newKstride);
+        gradVTensor.asStrided(newKshape, newKstride);
+    }
+
+    DIOPI_CHECK(qTensor.dim() == 3 && kTensor.dim() == 3 && vTensor.dim() == 3, "cnnlFlashAttention should have 3-D qkv");
+
+    const int64_t totalSeqQ = qTensor.shape()[0];
+    const int64_t headNumQ = qTensor.shape()[1];
+    const int64_t headDim = qTensor.shape()[2];
+    const int64_t headNumK = kTensor.shape()[1];
+    DIOPI_CHECK(headDim <= 256, "For camb, flash attention only supports head dimension at most 256.");
+    DIOPI_CHECK(headNumQ % headNumK == 0, "Number of heads in key/value must divide number of heads in query.");
+
     // convert dtype
-    DIOPI_CALL(autoCastTensorType(ctx, {&qTensor, &kTensor, &vTensor, &attentionOutTensor, &gradOutTensor}, {diopi_dtype_float16, diopi_dtype_bfloat16}));
+    DIOPI_CALL(autoCastTensorType(ctx, {&qTensor, &kTensor, &vTensor, &attentionOutTensor, &gradOutTensor}, {diopi_dtype_float16}));
     DIOPI_CALL(autoCastTensorType(ctx, {&cumSeqQTensor, &cumSeqKVTensor}, {diopi_dtype_int32}));
     DIOPI_CALL(autoCastTensorType(ctx, {&softmaxLseTensor}, {diopi_dtype_float32}));
 
@@ -224,37 +268,41 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
         DIOPI_CALL(diopiGeneratorGetSeedAndOffset(gen, &(rngState[0]), &(rngState[1])));
     }
 
-    DIOPI_CALL_CNNL(cnnlFlashAttentionBackward(handle,
-                                               flashAttentionDesc.get(),
-                                               gradOutDesc.get(),
-                                               gradOutTensor.data(),
-                                               qDesc.get(),
-                                               qTensor.data(),
-                                               kDesc.get(),
-                                               kTensor.data(),
-                                               vDesc.get(),
-                                               vTensor.data(),
-                                               attentionOutDesc.get(),
-                                               attentionOutTensor.data(),
-                                               softmaxLseDesc.get(),
-                                               softmaxLseTensor.data(),
-                                               cumSeqQDesc.get(),
-                                               cumSeqQTensor.data(),
-                                               cumSeqKVDesc.get(),
-                                               cumSeqKVTensor.data(),
-                                               rngState,
-                                               workspace,
-                                               workspaceSize,
-                                               gradQDesc.get(),
-                                               gradQTensorTmp.data(),
-                                               gradKDesc.get(),
-                                               gradKTensorTmp.data(),
-                                               gradVDesc.get(),
-                                               gradVTensorTmp.data(),
-                                               nullptr,
-                                               nullptr,
-                                               nullptr,
-                                               nullptr));
+    DIOPI_CALL_CNNL(cnnlFlashAttentionBackward_v2(handle,
+                                                  flashAttentionDesc.get(),
+                                                  gradOutDesc.get(),
+                                                  gradOutTensor.data(),
+                                                  qDesc.get(),
+                                                  qTensor.data(),
+                                                  kDesc.get(),
+                                                  kTensor.data(),
+                                                  vDesc.get(),
+                                                  vTensor.data(),
+                                                  attentionOutDesc.get(),
+                                                  attentionOutTensor.data(),
+                                                  softmaxLseDesc.get(),
+                                                  softmaxLseTensor.data(),
+                                                  cumSeqQDesc.get(),
+                                                  cumSeqQTensor.data(),
+                                                  cumSeqKVDesc.get(),
+                                                  cumSeqKVTensor.data(),
+                                                  nullptr,
+                                                  nullptr,
+                                                  nullptr,
+                                                  nullptr,
+                                                  rngState,
+                                                  workspace,
+                                                  workspaceSize,
+                                                  gradQDesc.get(),
+                                                  gradQTensorTmp.data(),
+                                                  gradKDesc.get(),
+                                                  gradKTensorTmp.data(),
+                                                  gradVDesc.get(),
+                                                  gradVTensorTmp.data(),
+                                                  nullptr,
+                                                  nullptr,
+                                                  nullptr,
+                                                  nullptr));
 
     if (gradQTensorTmp.dtype() != gradQTensor.dtype()) {
         DIOPI_CALL(dataTypeCast(ctx, gradQTensor, gradQTensorTmp));
