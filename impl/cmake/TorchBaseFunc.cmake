@@ -1,5 +1,5 @@
 
-macro(DIOPIFindTorch)
+macro(diopi_find_torch)
   execute_process(
     COMMAND sh -c "python -c 'import torch;print(torch.utils.cmake_prefix_path)'"
     OUTPUT_VARIABLE DIOPI_TORCH_CMAKE_PREFIX

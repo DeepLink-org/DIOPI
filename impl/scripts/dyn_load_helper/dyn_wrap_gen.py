@@ -34,6 +34,7 @@ diopi_init(void) {\n\
     printf("diopi dyload init\\n");\n\
     if (!handle) {\n\
         fprintf (stderr, "%s ", dlerror());\n\
+        throw std::runtime_error("diopi_init err"); \n\
     }\n\
 }\n\
 \n\
@@ -118,19 +119,45 @@ def gen_wrapper_func(content):
             new_content.append("}\n")
             new_content.append("\n")
 
+
+def debugat():
+    # rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
+    rank = 0
+    if rank == 0:
+        import os
+        import ptvsd
+        import socket
+
+        pid1 = os.getpid()
+
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+        print(hostname, ip, flush=True)
+        host = ip  # or "localhost"
+        host = "127.0.0.1"
+        port = 12346
+        print("cwd is:", os.getcwd(), flush=True)
+        ptvsd.enable_attach(address=(host, port), redirect_output=False)
+        print("-------------------------print rank,:", rank, "pid1:", pid1, flush=True)
+        ptvsd.wait_for_attach()
+
+
+# debugat()
+
 if __name__ == '__main__':
     print("open functions.h")
-    _cur_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(_cur_dir, '../proto/include/diopi/functions.h'), 'r')as f:
+    file_dir = os.path.dirname(os.path.abspath(__file__))
+    impl_dir = file_dir + "/../../"
+    with open(os.path.join(impl_dir, '../proto/include/diopi/functions.h'), 'r')as f:
         content = f.readlines()
     print("generate for functions.h")
     gen_wrapper_func(content)
     print("open functions_mmcv.h")
-    with open(os.path.join(_cur_dir, '../proto/include/diopi/functions_mmcv.h'), 'r') as f:
+    with open(os.path.join(impl_dir, '../proto/include/diopi/functions_mmcv.h'), 'r') as f:
         content_mmcv = f.readlines()
     print("generate for functions_mmcv.h")
     gen_wrapper_func(content_mmcv)
-    with open(os.path.join(_cur_dir, '../proto/include/diopi/functions_ext.h'), 'r') as f:
+    with open(os.path.join(impl_dir, '../proto/include/diopi/functions_ext.h'), 'r') as f:
         content_ext = f.readlines()
     print("generate for functions_ext.h")
     gen_wrapper_func(content_ext)

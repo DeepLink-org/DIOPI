@@ -43,8 +43,8 @@ case $1 in
     ;;
   muxi_dyload)
     mkdir -p build && cd build
-    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=muxi -DCMAKE_BUILD_TYPE=Release -DDYLOAD=ON -DTEST=ON \
-    && make -j8
+    cmake_maca .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=muxi -DCMAKE_BUILD_TYPE=Release -DDYLOAD=ON -DTEST=ON \
+    && make_maca -j8
     mkdir -p ${DIOPI_TEST_PATH}/lib && ln -sf ${CURRENT_DIR}/../lib/libdiopi_real_impl.so ${DIOPI_TEST_PATH}/lib
     ;;
   camb_pytorch)

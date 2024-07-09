@@ -4,14 +4,15 @@ project(muxi_impl)
 add_compile_definitions(USE_MACA=1)
 set(USE_MACA ON)
 
-set(BASE_TORCH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../torch")
-include(${BASE_TORCH_DIR}/cmake/TorchBaseFunc.cmake)
-DIOPIFindTorch()
+include(../cmake/ImplHelper.cmake)
+include(../cmake/TorchBaseFunc.cmake)
+diopi_find_torch()
 
-#TODO: Report bugs to muxi
-# There are conflicts when muxi runtime used together with pip installed torch_cpu.
+# TODO: Report bugs to muxi
+# There has conflict when muxi runtime used together with pip installed torch_cpu.
 # so to use dipu with torch_cpu in muxi, maunual compile torch cpu with export BLAS=OpenBLAS.
 
+set(BASE_TORCH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../torch")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
@@ -39,7 +40,6 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/convert_config.yaml")
     message(FATAL_ERROR "convert_config.yaml doesn't exist.")
 endif()
 
-include(../cmake/ImplHelper.cmake)
 if(USE_ADAPTOR)
   diopi_use_adapter("--config_device=muxi --base_device=torch")
 endif()
