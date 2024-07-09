@@ -314,7 +314,7 @@ DIOPI_API diopiError_t diopiCustomizedFlashAttentionBackward(diopiContextHandle_
                                                              diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
                                                              diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, float p_dropout,
                                                              float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right,
-                                                             int32_t window_size_right, int32_t head_num, const char* input_layout);
+                                                             int32_t head_num, const char* input_layout);
 
 /**
  * @brief Compute the forward propagation for the variable length version of Flash Attention.
