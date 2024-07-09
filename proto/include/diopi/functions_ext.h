@@ -262,6 +262,8 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  * attend to keys between [i - window_size_left, i + window_size_right] inclusive.
  * @param[in] window_size_right If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only
  * attend to keys between [i - window_size_left, i + window_size_right] inclusive.
+ * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
+ * @param[in] input_layout The layout of input tensor. type = [char*], "BSND", "BNSD", "BSH", "SBH".
  * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, seq_len_q, head_num_q, head_dim]. type = [bfloat16,
  * float16].
  * @param[out] dropout_mask Tensor storing the dropout mask for back propagation.
@@ -273,7 +275,8 @@ DIOPI_API diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, d
                                                      diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum, diopiTensorHandle_t* softmax_out,
                                                      diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                                      diopiConstTensorHandle_t v, diopiConstTensorHandle_t alibi_slopes, diopiConstTensorHandle_t attention_mask,
-                                                     float p_dropout, float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right);
+                                                     float p_dropout, float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right,
+                                                     int32_t head_num, const char* input_layout);
 
 /**
  * @brief Compute the back propagation for Flash Attention.
@@ -298,6 +301,8 @@ DIOPI_API diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, d
  * attend to keys between [i - window_size_left, i + window_size_right] inclusive.
  * @param[in] window_size_right If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only
  * attend to keys between [i - window_size_left, i + window_size_right] inclusive.
+ * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
+ * @param[in] input_layout The layout of input tensor. type = [char*], "BSND", "BNSD", "BSH", "SBH".
  * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, seq_len_q, head_num_q, head_dim]. type = [bfloat16, float16].
  * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, seq_len_k, head_num_k, head_dim]. type = [bfloat16, float16].
  * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, seq_len_v, head_num_v, head_dim]. type = [bfloat16, float16].
@@ -308,7 +313,8 @@ DIOPI_API diopiError_t diopiCustomizedFlashAttentionBackward(diopiContextHandle_
                                                              diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
                                                              diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
                                                              diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, float p_dropout,
-                                                             float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right);
+                                                             float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right,
+                                                             int32_t window_size_right, int32_t head_num, const char* input_layout);
 
 /**
  * @brief Compute the forward propagation for the variable length version of Flash Attention.

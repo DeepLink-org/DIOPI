@@ -452,9 +452,16 @@ class CustomizedTest(object):
         output = torch.einsum("bhts,bshd->bthd", attention, v)
         return output
 
-    def customized_flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
+    def customized_flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right, head_num, input_layout):
         # TODO: impl for alibi and sliding window local attention
         # In order to compare the accuracy with the baseline value, dropout is not used during testing.
+        # For calculation convenience, convert to BSND.
+        if input_layout == "SBH":
+            q, k, v = [rearrange(x, "s b (n d) -> b s n d", n=head_num) for x in [q, k, v]]
+        elif input_layout == "BSH":
+            q, k, v = [rearrange(x, "b s (n d) -> b s n d", n=head_num) for x in [q, k, v]]
+        elif input_layout == "BNSD":
+            q, k, v = [rearrange(x, "b n s d-> b s n d") for x in [q, k, v]]
         # adapt to GQA
         if k.shape[2] != q.shape[2] and v.shape[2] != q.shape[2]:  # MQA/GQA
             k = repeat(
@@ -475,6 +482,12 @@ class CustomizedTest(object):
             scores = scores + causal_mask.to(dtype=scores.dtype)
         attention = torch.softmax(scores, dim=-1, dtype=v.dtype)
         output = torch.einsum("bhts,bshd->bthd", attention, v)
+        if input_layout == "SBH":
+            output = rearrange(output, "b s n d -> s b (n d)")
+        elif input_layout == "BSH":
+            output = rearrange(output, "b s n d -> b s (n d)")
+        elif input_layout == "BNSD":
+            output = rearrange(output, "b s n d -> b n s d")
         return output
 
     def flash_attention_varlen(
