@@ -9203,6 +9203,8 @@ diopi_configs = {
             softmax_scale=[0.0883, None, 0.125, 0.125],
             window_size_left=[-1, -1, -1, -1],
             window_size_right=[-1, -1, -1, -1],
+            head_num=[64, 16, 32, 8],
+            input_layout=['BSND', 'BSND', 'BSND', 'BSND']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -9233,6 +9235,49 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'customized_flash_attention_mha_other_layout': dict(
+        name=['customized_flash_attention'],
+        interface=['CustomizedTest'],
+        saved_args=dict(out=0),
+        para=dict(
+            p_dropout=[0, 0, 0, 0, 0, 0],
+            is_causal=[True, False, True, False, True, False],
+            softmax_scale=[0.0883, None, 0.125, 0.125, None, 0.125],
+            window_size_left=[-1, -1, -1, -1, -1, -1],
+            window_size_right=[-1, -1, -1, -1, -1, -1],
+            head_num=[64, 32, 64, 32, 64, 32],
+            input_layout=['SBH', 'SBH', 'BSH', 'BSH', 'BNSD', 'BNSD']
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((64, 1, 8192), (64, 1, 4096), (1, 64, 8192), (1, 64, 4096), (1, 64, 64, 128), (1, 32, 64, 128)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((64, 1, 8192), (64, 1, 4096), (1, 64, 8192), (1, 64, 4096), (1, 64, 64, 128), (1, 32, 64, 128)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((64, 1, 8192), (64, 1, 4096), (1, 64, 8192), (1, 64, 4096), (1, 64, 64, 128), (1, 32, 64, 128)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ["alibi_slopes"],
+                    "shape": (None, None, None, None, None, None),
+                    "dtype": [np.float32,],
+                },
+            ],
+        ),
+    ),
 
     'customized_flash_attention_gqa': dict(
         name=['customized_flash_attention'],
@@ -9244,6 +9289,8 @@ diopi_configs = {
             softmax_scale=[0.0883, None, 0.125],
             window_size_left=[-1, -1, -1],
             window_size_right=[-1, -1, -1],
+            head_num=[64, 32, 32],
+            input_layout=['BSND', 'BSND', 'BSND']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',

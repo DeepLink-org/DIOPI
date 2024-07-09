@@ -23,23 +23,51 @@ diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, diopiTensor
                                            diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum, diopiTensorHandle_t* softmaxOut,
                                            diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                            diopiConstTensorHandle_t alibiSlopes, diopiConstTensorHandle_t attentionMask, float pDropout, float softmaxScale,
-                                           bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight) {
+                                           bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight, int32_t headNum, const char* inputLayout) {
     BEGIN_CALL_ACL_OP(q, k, v, alibiSlopes, attentionMask, gen, attentionOut);
 
     DIOPI_CHECK(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
     DIOPI_CHECK(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
-    DIOPI_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4-dimensional");
-    DIOPI_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4-dimensional");
-    DIOPI_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4-dimensional");
+    DIOPI_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3-dimensional or 4-dimensional");
+    DIOPI_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3-dimensional or 4-dimensional");
+    DIOPI_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
     DIOPI_CHECK(isCausal == false || attentionMask != nullptr, "When isCausal is True, attentionMask should not be nullptr!");
 
-    int64_t b = qAt.size(0);
-    int64_t s0 = qAt.size(1);  // S for query
-    int64_t s1 = kAt.size(1);  // S for key & value
-    int64_t n = qAt.size(2);
-    int64_t d = qAt.size(3);
-    const char* inputLayout = "BSND";
+    int64_t b = 0;
+    int64_t s0 = 0;
+    int64_t s1 = 0;
+    int64_t n = 0;
+    int64_t d = 0;
+    int64_t h = 0;
+
+    if (strcmp(inputLayout, "SBH") == 0) {
+        b = qAt.size(1);
+        s0 = qAt.size(0);  // S for query
+        s1 = kAt.size(0);  // S for key & value
+        n = headNum;
+        h = qAt.size(2);
+    } else if (strcmp(inputLayout, "BSH") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(1);  // S for query
+        s1 = kAt.size(1);  // S for key & value
+        n = headNum;
+        h = qAt.size(2);
+    } else if (strcmp(inputLayout, "BSND") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(1);  // S for query
+        s1 = kAt.size(1);  // S for key & value
+        n = qAt.size(2);
+        d = qAt.size(3);
+    } else if (strcmp(inputLayout, "BNSD") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(2);  // S for query
+        s1 = kAt.size(2);  // S for key & value
+        n = qAt.size(1);
+        d = qAt.size(3);
+    } else {
+        DIOPI_CHECK(false, "The input layout should be BSH/SBH/BNSD/BSND");
+    }
 
     double keepProb = static_cast<double>(1 - pDropout);
 
@@ -123,14 +151,14 @@ diopiError_t diopiCustomizedFlashAttentionBackward(diopiContextHandle_t ctx, dio
                                                    diopiConstTensorHandle_t attentionMask, diopiConstTensorHandle_t dropoutMask,
                                                    diopiConstTensorHandle_t softmaxMax, diopiConstTensorHandle_t softmaxSum,
                                                    diopiConstTensorHandle_t softmaxOut, float pDropout, float softmaxScale, bool isCausal,
-                                                   int32_t windowSizeLeft, int32_t windowSizeRight) {
+                                                   int32_t windowSizeLeft, int32_t windowSizeRight, int32_t headNum, const char* inputLayout) {
     BEGIN_CALL_ACL_OP(q, k, v, attentionOut, attentionMask, softmaxMax, softmaxSum, softmaxOut, gradQ, gradK, gradV, gradOut);
 
     DIOPI_CHECK(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
     DIOPI_CHECK(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
-    DIOPI_CHECK(qAt.dim() == 4, "The shapes of the input query should be 4-dimensional");
-    DIOPI_CHECK(kAt.dim() == 4, "The shapes of the input key should be 4-dimensional");
-    DIOPI_CHECK(vAt.dim() == 4, "The shapes of the input value should be 4-dimensional");
+    DIOPI_CHECK(qAt.dim() == 3 || qAt.dim() == 4, "The shapes of the input query should be 3-dimensional or 4-dimensional");
+    DIOPI_CHECK(kAt.dim() == 3 || kAt.dim() == 4, "The shapes of the input key should be 3-dimensional or 4-dimensional");
+    DIOPI_CHECK(vAt.dim() == 3 || vAt.dim() == 4, "The shapes of the input value should be 3-dimensional or 4-dimensional");
     DIOPI_CHECK(pDropout >= 0 && pDropout <= 1, "The p_dropout value must be in range of [0, 1]");
     DIOPI_CHECK(isCausal == false || attentionMask != nullptr, "When isCausal is True, attentionMask should not be nullptr!");
 
@@ -139,12 +167,40 @@ diopiError_t diopiCustomizedFlashAttentionBackward(diopiContextHandle_t ctx, dio
         dropoutMaskAt = impl::aten::buildATen(dropoutMask);
     }
 
-    int64_t b = qAt.size(0);
-    int64_t s0 = qAt.size(1);  // S for query
-    int64_t s1 = kAt.size(1);  // S for key & value
-    int64_t n = qAt.size(2);
-    int64_t d = qAt.size(3);
-    const char* inputLayout = "BSND";
+    int64_t b = 0;
+    int64_t s0 = 0;
+    int64_t s1 = 0;
+    int64_t n = 0;
+    int64_t d = 0;
+    int64_t h = 0;
+
+    if (strcmp(inputLayout, "SBH") == 0) {
+        b = qAt.size(1);
+        s0 = qAt.size(0);  // S for query
+        s1 = kAt.size(0);  // S for key & value
+        n = headNum;
+        h = qAt.size(2);
+    } else if (strcmp(inputLayout, "BSH") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(1);  // S for query
+        s1 = kAt.size(1);  // S for key & value
+        n = headNum;
+        h = qAt.size(2);
+    } else if (strcmp(inputLayout, "BSND") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(1);  // S for query
+        s1 = kAt.size(1);  // S for key & value
+        n = qAt.size(2);
+        d = qAt.size(3);
+    } else if (strcmp(inputLayout, "BNSD") == 0) {
+        b = qAt.size(0);
+        s0 = qAt.size(2);  // S for query
+        s1 = kAt.size(2);  // S for key & value
+        n = qAt.size(1);
+        d = qAt.size(3);
+    } else {
+        DIOPI_CHECK(false, "The input layout should be BSH/SBH/BNSD/BSND");
+    }
 
     double keepProb = static_cast<double>(1 - pDropout);
 
