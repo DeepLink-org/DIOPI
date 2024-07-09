@@ -5456,12 +5456,29 @@ def customized_flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, 
     call = "diopiCustomizedFlashAttention"
     func = check_function(call)
     out = raw_like(q)
+    if input_layout == "SBH":
+        head_dim = q.shape().data[-1] / head_num
+        seqlen_q = q.shape().data[0]
+        seqlen_kv = k.shape().data[0]
+    elif input_layout == "BSH":
+        head_dim = q.shape().data[-1] / head_num
+        seqlen_q = q.shape().data[1]
+        seqlen_kv = k.shape().data[1]
+    elif input_layout == "BNSD":
+        head_dim = q.shape().data[-1]
+        seqlen_q = q.shape().data[2]
+        seqlen_kv = k.shape().data[2]
+    elif input_layout == "BSND":
+        head_dim = q.shape().data[-1]
+        seqlen_q = q.shape().data[1]
+        seqlen_kv = k.shape().data[1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
     if is_causal:
         # According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
         # https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
         # It is worth noting that the attention mask used by ascend is contrary to common sense.
-        seqlen_q = q.shape().data[1] if q.shape().data[1] <= 2048 else 2048
-        seqlen_kv = k.shape().data[1] if k.shape().data[1] <= 2048 else 2048
+        seqlen_q = min(seqlen_q, 2048)
+        seqlen_kv = min(seqlen_kv, 2048)
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
         attention_mask = None
@@ -5481,15 +5498,6 @@ def customized_flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, 
     softmax_max_ptr = TensorP(softmax_max)
     softmax_sum_ptr = TensorP(softmax_sum)
     softmax_out_ptr = TensorP(softmax_out)
-    if input_layout == "SBH":
-        head_dim = q.shape().data[-1] / head_num
-    elif input_layout == "BSH":
-        head_dim = q.shape().data[-1] / head_num
-    elif input_layout == "BNSD":
-        head_dim = q.shape().data[-1]
-    elif input_layout == "BSND":
-        head_dim = q.shape().data[-1]
-    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
     ret = func(
         q.context(),
         out,
@@ -5526,12 +5534,29 @@ def customized_flash_attention_backward(
     assert (
         p_dropout >= 0 and p_dropout <= 1
     ), "The p_dropout value must be in range of [0, 1]"
+    if input_layout == "SBH":
+        head_dim = q.shape().data[-1] / head_num
+        seqlen_q = q.shape().data[0]
+        seqlen_kv = k.shape().data[0]
+    elif input_layout == "BSH":
+        head_dim = q.shape().data[-1] / head_num
+        seqlen_q = q.shape().data[1]
+        seqlen_kv = k.shape().data[1]
+    elif input_layout == "BNSD":
+        head_dim = q.shape().data[-1]
+        seqlen_q = q.shape().data[2]
+        seqlen_kv = k.shape().data[2]
+    elif input_layout == "BSND":
+        head_dim = q.shape().data[-1]
+        seqlen_q = q.shape().data[1]
+        seqlen_kv = k.shape().data[1]
+    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
     if is_causal:
         # According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
         # https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
         # It is worth noting that the attention mask used by ascend is contrary to common sense.
-        seqlen_q = q.shape().data[1] if q.shape().data[1] <= 2048 else 2048
-        seqlen_kv = k.shape().data[1] if k.shape().data[1] <= 2048 else 2048
+        seqlen_q = min(seqlen_q, 2048)
+        seqlen_kv = min(seqlen_kv, 2048)
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
         attention_mask = None
@@ -5542,15 +5567,6 @@ def customized_flash_attention_backward(
     softmax_max = GLOBAL_STATE.pop("customized_flash_attention_softmax_max")
     softmax_sum = GLOBAL_STATE.pop("customized_flash_attention_softmax_sum")
     softmax_out = GLOBAL_STATE.pop("customized_flash_attention_softmax_out")
-    if input_layout == "SBH":
-        head_dim = q.shape().data[-1] / head_num
-    elif input_layout == "BSH":
-        head_dim = q.shape().data[-1] / head_num
-    elif input_layout == "BNSD":
-        head_dim = q.shape().data[-1]
-    elif input_layout == "BSND":
-        head_dim = q.shape().data[-1]
-    softmax_scale = 1.0 / math.sqrt(head_dim) if not softmax_scale else softmax_scale
     ret = func(
         q.context(),
         grad_q,
