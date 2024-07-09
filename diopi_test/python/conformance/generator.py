@@ -1,7 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 import numpy as np
 import scipy as sp
-from functools import reduce
+
 
 class Genfunc:
     @staticmethod
