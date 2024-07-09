@@ -5477,8 +5477,8 @@ def customized_flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, 
         # According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
         # https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
         # It is worth noting that the attention mask used by ascend is contrary to common sense.
-        seqlen_q = min(seqlen_q, 2048)
-        seqlen_kv = min(seqlen_kv, 2048)
+        seqlen_q = seqlen_q if seqlen_q <= 2048 else 2048
+        seqlen_kv = seqlen_kv if seqlen_kv <= 2048 else 2048
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
         attention_mask = None
@@ -5555,8 +5555,8 @@ def customized_flash_attention_backward(
         # According to Huawei documentation, when the attentionMask shape is greater than 2048 * 2048, sparseMode=2 can be adjusted to reduce the memory usage:
         # https://www.hiascend.com/document/detail/zh/Pytorch/60RC1/apiref/apilist/ptaoplist_000742.html
         # It is worth noting that the attention mask used by ascend is contrary to common sense.
-        seqlen_q = min(seqlen_q, 2048)
-        seqlen_kv = min(seqlen_kv, 2048)
+        seqlen_q = seqlen_q if seqlen_q <= 2048 else 2048
+        seqlen_kv = seqlen_kv if seqlen_kv <= 2048 else 2048
         attention_mask = Tensor.from_numpy(np.triu(np.ones([seqlen_q, seqlen_kv], dtype=bool), k=1))
     else:
         attention_mask = None
