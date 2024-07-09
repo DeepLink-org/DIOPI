@@ -44,6 +44,8 @@ ascend_npu:
 - diopiCosInp
 - diopiErf
 - diopiErfInp
+- diopiErfinv
+- diopiErfinvInp
 - diopiNonzero
 - diopiBmm
 - diopiMatmul
