@@ -26,7 +26,7 @@ if(USE_ADAPTOR)
   diopi_use_adapter("--config_device=torch")
 endif()
 
-prep_dyn_load(DYLOAD)
+prep_dyn_load(${DYLOAD})
 
 if(HIP)
     include(../cmake/LoadHIP.cmake)
@@ -53,6 +53,8 @@ endif()
 if(USE_ADAPTOR)
     add_dependencies(${REAL_IMPL} adaptor_code_gen)
 endif()
+
+handle_dyn_torch(${DYLOAD} ${TORCH_INSTALL_PREFIX})
 
 if(DIOPI_TORCH_UNSAFE_BUILDATEN)
     target_compile_definitions(${DEVICEIMPL} PRIVATE DIOPI_TORCH_UNSAFE_BUILDATEN)

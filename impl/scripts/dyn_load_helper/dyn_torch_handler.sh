@@ -1,10 +1,9 @@
 
 
 #!/usr/bin/env bash
-set -ex 
+set -eo pipefail
 
 # pip install patchelf
-
 
 diopi_suffix=".diopi"
 torch_raws=("libtorch.so" "libtorch_cuda.so" "libtorch_cpu.so" "libc10_cuda.so" "libc10.so")
@@ -34,6 +33,27 @@ function gen_versioned_torch() {
   done
 }
 
+function check_correct_torch() {
+  echo "check diopi torch: $1"
+
+  # TODO: use an elf lib to remove unqiue flag in *so.diopi
+  # remove unique symbols of both cpu torch (dipu use) and device torch (diopi use).
+  # if you device torch is compiled by clang, which not supporting -fno-gnu-unique,
+  # just test if it works (eg: muxi torch with unique can coexist with no-uniqued cpu torch)
+
+  echo "please check if you torch builded with -fno-gnu-unique to support multi version torch coexist"
+  set +e
+  chk_ret=`cd $1 && ls -alh |grep .*\.so\.diopi | wc -l`
+  set -e
+  if [[ ${chk_ret} -ne ${#torch_4diopi[@]} ]]; then
+      echo "ret value: ${chk_ret}, in device-torch dir, not find dyn-load needed XX.so.diopi libs!"
+      echo "!! please manual run handle_dyload_torch.sh patch_torch {device_torch_dir} to gen dyn-load needed multi-version torch"
+      exit -1
+  fi
+
+  echo  "diopi torch version check ok"
+}
+
 function patch_diopi_torch() {
   removed_items=""
   added_items=""
@@ -54,16 +74,17 @@ function patch_diopi_torch() {
 # 2.although both the 1st hop dynamic-loaded lib and the 2ed's link to torch_dipu.so, they still share
 # the same lib instance in addr space.
 function patch_diopi_dipu() {
- patchelf --remove-needed libtorch_dipu.so libdiopi_real_impl.so
+  patchelf --remove-needed libtorch_dipu.so libdiopi_real_impl.so
   patchelf --add-needed libtorch_dipu.so libdiopi_real_impl.so
 }
 
 
-LIBS_DIR=$2
-cd ${LIBS_DIR}
+WORK_DIR=$2
+cd ${WORK_DIR}
 if [[ "$1" == "patch_torch" ]]; then
    gen_versioned_torch
 elif [[ "$1" == "patch_diopi" ]]; then
+    check_correct_torch $3
     # in dipoi link lib list, torch_dipu.so must be placed behind torch_XX libs. 
     # because both dipu and inner 'DEEPBIND' torch_cpu call Library.<CppFunction>fallback() which is
     # a template function instantiated when parameter types CppFunction is first called
@@ -72,6 +93,4 @@ elif [[ "$1" == "patch_diopi" ]]; then
     # in torch_dipu.so which use external torch template class that cannot work with inner torch CppFunction.  
     patch_diopi_dipu
     patch_diopi_torch
-
-
 fi

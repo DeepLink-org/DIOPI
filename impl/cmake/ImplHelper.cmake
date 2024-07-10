@@ -17,13 +17,17 @@ macro(diopi_use_adapter cmd_extra_config)
 endmacro()
 
 
-macro(prep_dyn_load if_dynlod)
-  if (${if_dynlod})
+macro(prep_dyn_load if_dynload)
+  if (${if_dynload})
+
+
+
     # creat an empty file to pass wrap_func.cpp's existence check
     # one can change code_gen.py or wrap_func.cpp to recompile once wrap_func.cpp built
     execute_process(COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/wrap_func.cpp)
-    add_custom_target(dyn_wrap_gen COMMAND python ${DIOPI_IMPL_DIR}/scripts/dyn_load_helper/dyn_wrap_gen.py
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    add_custom_target(dyn_wrap_gen
+             COMMAND python ${DIOPI_IMPL_DIR}/scripts/dyn_load_helper/dyn_wrap_gen.py
+             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     set(WRAPPER_SRC wrap_func.cpp)
 
     set(REAL_IMPL diopi_real_impl)
@@ -35,7 +39,17 @@ macro(prep_dyn_load if_dynlod)
   endif()
 endmacro()
 
-# macro(prep_dync_load_torch)
-  
-# endmacro
+macro(handle_dyn_torch if_dynload torch_dir)
+  if (${if_dynload})
+    add_custom_target(dyn_torch
+      COMMAND ${DIOPI_IMPL_DIR}/scripts/dyn_load_helper/dyn_torch_handler.sh patch_diopi
+              ${LIBRARY_OUTPUT_PATH} ${torch_dir}/lib
+      DEPENDS ${REAL_IMPL}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+
+    )
+    message(STATUS "handle_dyn_torch with torch: ${torch_dir}")
+    add_dependencies(${DEVICEIMPL} dyn_torch)
+  endif()
+endmacro()
 

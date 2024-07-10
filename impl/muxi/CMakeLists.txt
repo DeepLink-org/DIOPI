@@ -44,8 +44,7 @@ if(USE_ADAPTOR)
   diopi_use_adapter("--config_device=muxi --base_device=torch")
 endif()
 
-prep_dyn_load(DYLOAD)
-
+prep_dyn_load(${DYLOAD})
 
 cuda_add_library(${REAL_IMPL} SHARED ${REAL_IMPL_SRC})
 target_link_libraries(${REAL_IMPL} ${TORCH_LIBRARIES})
@@ -56,6 +55,8 @@ target_include_directories(${REAL_IMPL} PRIVATE ${BASE_TORCH_DIR})
 if(USE_ADAPTOR)
     add_dependencies(${REAL_IMPL} adaptor_code_gen)
 endif()
+
+handle_dyn_torch(${DYLOAD} ${TORCH_INSTALL_PREFIX})
 
 if (TEST)
     add_subdirectory(test)
