@@ -110,32 +110,6 @@ def gen_wrapper_func(content):
             new_content.append("\n")
 
 
-def debugat():
-    # rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
-    rank = 0
-    if rank == 0:
-        import os
-        import ptvsd
-        import socket
-
-        pid1 = os.getpid()
-
-        hostname = socket.gethostname()
-        ip = socket.gethostbyname(hostname)
-        print(hostname, ip, flush=True)
-        host = ip  # or "localhost"
-        host = "127.0.0.1"
-        port = 12346
-        print("cwd is:", os.getcwd(), flush=True)
-        ptvsd.enable_attach(address=(host, port), redirect_output=False)
-        print("-------------------------print rank,:", rank, "pid1:", pid1, flush=True)
-        ptvsd.wait_for_attach()
-
-
-# debugat()
-
-
-
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate DIOPI adaptor source files"
