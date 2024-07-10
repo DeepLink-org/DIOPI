@@ -9,7 +9,6 @@
 
 namespace impl {
 namespace ascend {
-static const uint64_t PHILOX_DEFAULT_NUM = 10;
 
 diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t out, double p, diopiGeneratorHandle_t generator) {
     const std::pair<uint64_t, uint64_t> gen = getSeedAndOffset(ctx, generator, 10);
