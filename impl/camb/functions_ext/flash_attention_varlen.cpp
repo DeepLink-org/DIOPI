@@ -30,22 +30,6 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     DiopiTensor softmaxLseTensor(softmaxLse);
     DiopiTensor attentionOutTensor(attentionOut);
 
-    // deal with [1,seqLen,head,headDim] -> [seqLen,head,headDim]
-    if (qTensor.dim() == 4 && qTensor.shape()[0] == 1) {
-        std::vector<int64_t> newQshape = {qTensor.shape()[1], qTensor.shape()[2], qTensor.shape()[3]};
-        std::vector<int64_t> newQstride = calContiguousStride(newQshape);
-        qTensor.asStrided(newQshape, newQstride);
-        qTensor.asStrided(newQshape, newQstride);
-        attentionOutTensor.asStrided(newQshape, newQstride);
-    }
-
-    if (kTensor.dim() == 4 && kTensor.shape()[0] == 1) {
-        std::vector<int64_t> newKshape = {kTensor.shape()[1], kTensor.shape()[2], kTensor.shape()[3]};
-        std::vector<int64_t> newKstride = calContiguousStride(newKshape);
-        kTensor.asStrided(newKshape, newKstride);
-        vTensor.asStrided(newKshape, newKstride);
-    }
-
     DIOPI_CHECK(qTensor.dim() == 3 && kTensor.dim() == 3 && vTensor.dim() == 3, "cnnlFlashAttention should have 3-D qkv");
 
     const int64_t totalSeqQ = qTensor.shape()[0];
@@ -172,26 +156,6 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
     DiopiTensor gradQTensor(gradQ);
     DiopiTensor gradKTensor(gradK);
     DiopiTensor gradVTensor(gradV);
-
-    // deal with [1,seqLen,head,headDim] -> [seqLen,head,headDim]
-    if (qTensor.dim() == 4) {
-        std::vector<int64_t> newQshape = {qTensor.shape()[1], qTensor.shape()[2], qTensor.shape()[3]};
-        std::vector<int64_t> newQstride = calContiguousStride(newQshape);
-        qTensor.asStrided(newQshape, newQstride);
-        qTensor.asStrided(newQshape, newQstride);
-        attentionOutTensor.asStrided(newQshape, newQstride);
-        gradOutTensor.asStrided(newQshape, newQstride);
-        gradQTensor.asStrided(newQshape, newQstride);
-    }
-
-    if (kTensor.dim() == 4) {
-        std::vector<int64_t> newKshape = {kTensor.shape()[1], kTensor.shape()[2], kTensor.shape()[3]};
-        std::vector<int64_t> newKstride = calContiguousStride(newKshape);
-        kTensor.asStrided(newKshape, newKstride);
-        vTensor.asStrided(newKshape, newKstride);
-        gradKTensor.asStrided(newKshape, newKstride);
-        gradVTensor.asStrided(newKshape, newKstride);
-    }
 
     DIOPI_CHECK(qTensor.dim() == 3 && kTensor.dim() == 3 && vTensor.dim() == 3, "cnnlFlashAttention should have 3-D qkv");
 
