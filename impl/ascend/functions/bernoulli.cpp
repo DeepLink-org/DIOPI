@@ -1,7 +1,7 @@
 /**
  * @file
  * @author DeepLink
- * @copyright  (c) 2023, DeepLink.
+ * @copyright  (c) 2024, DeepLink.
  */
 
 #include "../aclnn/acl_scalar.hpp"
@@ -16,7 +16,7 @@ diopiError_t diopiBernoulliScalar(diopiContextHandle_t ctx, diopiTensorHandle_t 
     const uint64_t seed = gen.first;
     const uint64_t offset = gen.second;
     auto pScalar = constructDiopiScalarT(diopi_dtype_float64, p);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceBernoulli, ctx, out, p, seed, offset);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceBernoulli, ctx, out, &pScalar, seed, offset);
     return diopiSuccess;
 }
 

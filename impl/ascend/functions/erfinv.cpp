@@ -1,10 +1,9 @@
 /**
  * @file
  * @author DeepLink
- * @copyright  (c) 2023, DeepLink.
+ * @copyright  (c) 2024, DeepLink.
  */
 
-#include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
 
 namespace impl {
