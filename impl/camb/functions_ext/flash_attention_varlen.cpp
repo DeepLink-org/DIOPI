@@ -25,12 +25,8 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     DiopiTensor qTensor(q);
     DiopiTensor kTensor(k);
     DiopiTensor vTensor(v);
-    DiopiTensor cumSeqQTensor(cumSeqQ);
-    DiopiTensor cumSeqKVTensor(cumSeqKV);
-    DiopiTensor softmaxLseTensor(softmaxLse);
-    DiopiTensor attentionOutTensor(attentionOut);
-
-    DIOPI_CHECK(qTensor.dim() == 3 && kTensor.dim() == 3 && vTensor.dim() == 3, "cnnlFlashAttention should have 3-D qkv");
+    DIOPI_CHECK(qTensor.dim() == 3 && kTensor.dim() == 3 && vTensor.dim() == 3,
+                "qTensor, kTensor and vTensor should be 3-dimensional for varlen flash attention!");
 
     const int64_t totalSeqQ = qTensor.shape()[0];
     const int64_t headNumQ = qTensor.shape()[1];
@@ -39,8 +35,13 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     DIOPI_CHECK(headDim <= 256, "For camb, flash attention only supports head dimension at most 256.");
     DIOPI_CHECK(headNumQ % headNumK == 0, "Number of heads in key/value must divide number of heads in query.");
 
+    DiopiTensor cumSeqQTensor(cumSeqQ);
+    DiopiTensor cumSeqKVTensor(cumSeqKV);
+    DiopiTensor softmaxLseTensor(softmaxLse);
+    DiopiTensor attentionOutTensor(attentionOut);
+
     // convert dtype
-    DIOPI_CALL(autoCastTensorType(ctx, {&qTensor, &kTensor, &vTensor}, {diopi_dtype_float16}));
+    DIOPI_CALL(autoCastTensorType(ctx, {&qTensor, &kTensor, &vTensor}, {diopi_dtype_float16, diopi_dtype_bfloat16}));
     DIOPI_CALL(autoCastTensorType(ctx, {&cumSeqQTensor, &cumSeqKVTensor}, {diopi_dtype_int32}));
 
     DiopiTensor attentionOutTensorTmp = attentionOutTensor;
@@ -147,6 +148,16 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
     DiopiTensor qTensor(q);
     DiopiTensor kTensor(k);
     DiopiTensor vTensor(v);
+    DIOPI_CHECK(qTensor.dim() == 3 && kTensor.dim() == 3 && vTensor.dim() == 3,
+                "qTensor, kTensor and vTensor should be 3-dimensional for varlen flash attention!");
+
+    const int64_t totalSeqQ = qTensor.shape()[0];
+    const int64_t headNumQ = qTensor.shape()[1];
+    const int64_t headDim = qTensor.shape()[2];
+    const int64_t headNumK = kTensor.shape()[1];
+    DIOPI_CHECK(headDim <= 256, "For camb, flash attention only supports head dimension at most 256.");
+    DIOPI_CHECK(headNumQ % headNumK == 0, "Number of heads in key/value must divide number of heads in query.");
+
     DiopiTensor cumSeqQTensor(cumSeqQ);
     DiopiTensor cumSeqKVTensor(cumSeqKV);
     DiopiTensor gradOutTensor(gradOutput);
@@ -157,17 +168,8 @@ diopiError_t diopiFlashAttentionVarLenBackward(diopiContextHandle_t ctx, diopiTe
     DiopiTensor gradKTensor(gradK);
     DiopiTensor gradVTensor(gradV);
 
-    DIOPI_CHECK(qTensor.dim() == 3 && kTensor.dim() == 3 && vTensor.dim() == 3, "cnnlFlashAttention should have 3-D qkv");
-
-    const int64_t totalSeqQ = qTensor.shape()[0];
-    const int64_t headNumQ = qTensor.shape()[1];
-    const int64_t headDim = qTensor.shape()[2];
-    const int64_t headNumK = kTensor.shape()[1];
-    DIOPI_CHECK(headDim <= 256, "For camb, flash attention only supports head dimension at most 256.");
-    DIOPI_CHECK(headNumQ % headNumK == 0, "Number of heads in key/value must divide number of heads in query.");
-
     // convert dtype
-    DIOPI_CALL(autoCastTensorType(ctx, {&qTensor, &kTensor, &vTensor, &attentionOutTensor, &gradOutTensor}, {diopi_dtype_float16}));
+    DIOPI_CALL(autoCastTensorType(ctx, {&qTensor, &kTensor, &vTensor, &attentionOutTensor, &gradOutTensor}, {diopi_dtype_float16, diopi_dtype_bfloat16}));
     DIOPI_CALL(autoCastTensorType(ctx, {&cumSeqQTensor, &cumSeqKVTensor}, {diopi_dtype_int32}));
     DIOPI_CALL(autoCastTensorType(ctx, {&softmaxLseTensor}, {diopi_dtype_float32}));
 
