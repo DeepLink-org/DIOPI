@@ -34,6 +34,7 @@ ascend:
 - diopiBitwiseOrInpScalar
 - diopiBitwiseOrScalar
 - diopiBmm
+- diopiBernoulliScalar
 - diopiCastDtype
 - diopiCat
 - diopiCeil
@@ -75,6 +76,8 @@ ascend:
 - diopiEqual
 - diopiErf
 - diopiErfInp
+- diopiErfinv
+- diopiErfinvInp
 - diopiExp
 - diopiExpInp
 - diopiExpand
@@ -255,8 +258,6 @@ ascend_npu:
 - diopiCustomizedFlashAttentionVarLen
 - diopiCustomizedFlashAttentionVarLenBackward
 - diopiDestIndexCopyKV
-- diopiErfinv
-- diopiErfinvInp
 - diopiGetNativeMemoryFormat
 - diopiIndex
 - diopiIndexBackward
