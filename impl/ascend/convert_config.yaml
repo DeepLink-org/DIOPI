@@ -306,6 +306,12 @@
 - diopiErfInp:
     dtype: (uint8, int8, int16, int32)->float32
 
+- diopiErfinv:
+    dtype: (float64)->float32
+
+- diopiErfinvInp:
+    dtype: (float64)->float32
+
 - diopiSgn:
     dtype: (uint8, int8, int16)->int32
 
