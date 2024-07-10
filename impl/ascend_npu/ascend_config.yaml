@@ -255,6 +255,8 @@ ascend_npu:
 - diopiCustomizedFlashAttentionVarLen
 - diopiCustomizedFlashAttentionVarLenBackward
 - diopiDestIndexCopyKV
+- diopiErfinv
+- diopiErfinvInp
 - diopiGetNativeMemoryFormat
 - diopiIndex
 - diopiIndexBackward
