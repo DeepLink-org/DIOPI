@@ -1,5 +1,6 @@
 # Copyright (c) 2023, DeepLink.
 import os
+import argparse
 # CONVERT
 #
 # DIOPI_API diopiError_t diopiBmm(diopiContextHandle_t ctx, diopiTensorHandle_t out,
@@ -14,37 +15,26 @@ import os
 # }
 
 new_content = []
-new_content.append('/**\n\
- * @file\n\
- * @author DeepLink\n\
- * @copyright  (c) 2023, DeepLink.\n\
- */\n\
-#include <diopi/functions.h>\n\
-#include <diopi/functions_mmcv.h>\n\
-#include <diopi/functions_ext.h>\n\
-#include <stdio.h>\n\
-#include <dlfcn.h>\n\
-\n\
-static void* handle;\n\
-\n\
-static void\n\
-__attribute__ ((constructor))\n\
-diopi_init(void) {\n\
-    handle = dlopen("libdiopi_real_impl.so", RTLD_LAZY | RTLD_LOCAL | RTLD_DEEPBIND);\n\
-    printf("diopi dyload init\\n");\n\
-    if (!handle) {\n\
-        fprintf (stderr, "%s ", dlerror());\n\
-        throw std::runtime_error("diopi_init err"); \n\
-    }\n\
-}\n\
-\n\
-static void\n\
-__attribute__ ((destructor))\n\
-diopi_fini(void)\n\
-{\n\
-dlclose(handle);\n\
-}\n\
-\n')
+new_content.append('''
+/**
+ * @file
+ * @author DeepLink
+ * @copyright  (c) 2023, DeepLink.
+ */
+#include <diopi/functions.h>
+#include <diopi/functions_ext.h>
+#include <diopi/functions_mmcv.h>
+#include <dlfcn.h>
+#include <dyn_helper.hpp>
+
+#include <cstdio>
+
+static void* handle;
+const static char* diopiFile = "libdiopi_real_impl.so";
+static void __attribute__((constructor)) diopi_init() { handle = dynLoadFile(diopiFile); }
+static void __attribute__((destructor)) diopi_fini() { dlclose(handle); }
+
+''')
 
 
 def get_func_arg(content):
@@ -107,7 +97,7 @@ def gen_wrapper_func(content):
                 new_content.append(args)
 
             new_content.append("    " + 'func = reinterpret_cast<decltype(func)>(dlsym(handle, "' + func_name + '"));\n')
-            new_content.append("    " + "if (func != NULL) {\n")
+            new_content.append("    " + "if (func != nullptr) {\n")
             new_content.append("    " + "    return (*func)" + arg + ";\n")
             new_content.append("    " + "} else {\n")
             new_content.append("    " + "    printf(\"[wrap_func] %s not implemented!\\n\", \"" + func_name + "\");\n")
@@ -144,26 +134,39 @@ def debugat():
 
 # debugat()
 
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Generate DIOPI adaptor source files"
+    )
+    parser.add_argument(
+        "-o",
+        "--output_file",
+        help="output generated dynamic call file",
+    )
+    args = parser.parse_args()
+    return args
+
+op_header_files = ['functions.h', 'functions_mmcv.h', 'functions_ext.h']
+
 if __name__ == '__main__':
-    print("open functions.h")
+    args = parse_args()
     file_dir = os.path.dirname(os.path.abspath(__file__))
-    impl_dir = file_dir + "/../../"
-    with open(os.path.join(impl_dir, '../proto/include/diopi/functions.h'), 'r')as f:
-        content = f.readlines()
-    print("generate for functions.h")
-    gen_wrapper_func(content)
-    print("open functions_mmcv.h")
-    with open(os.path.join(impl_dir, '../proto/include/diopi/functions_mmcv.h'), 'r') as f:
-        content_mmcv = f.readlines()
-    print("generate for functions_mmcv.h")
-    gen_wrapper_func(content_mmcv)
-    with open(os.path.join(impl_dir, '../proto/include/diopi/functions_ext.h'), 'r') as f:
-        content_ext = f.readlines()
-    print("generate for functions_ext.h")
-    gen_wrapper_func(content_ext)
-    os.system("rm -f wrap_func.cpp")
-    print("generate wrap_func.cpp")
-    with open('wrap_func.cpp', 'w') as f:
+    protodir = file_dir + "/../../../proto/include/diopi/"
+    for fname in op_header_files:
+      with open(os.path.join(protodir, fname), 'r')as f:
+          content = f.readlines()
+          print(f"generate for {fname}")
+          gen_wrapper_func(content)
+
+
+    print(f"generate {args.output_file}")
+    out_dir = os.path.dirname(args.output_file)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    with open(args.output_file, 'w') as f:
         for row in new_content:
             f.write(row)
     print("finish codegen")
