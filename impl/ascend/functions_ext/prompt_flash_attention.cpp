@@ -24,6 +24,7 @@ diopiError_t diopiPromptFlashAttention(diopiContextHandle_t ctx, diopiTensorHand
     int64_t nextTokens = 0;
     AscendTensor paddingMask;
     DIOPI_ASCEND_CALL_ACLNN(aclnnPromptFlashAttention,
+                            ctx,
                             queryAt,
                             keyAt,
                             valueAt,
