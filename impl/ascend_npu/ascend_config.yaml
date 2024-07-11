@@ -150,6 +150,7 @@ ascend:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiMatmul
+- diopiMatmulAllReduce
 - diopiMax
 - diopiMaxAll
 - diopiMaxPool2d
@@ -188,6 +189,7 @@ ascend:
 - diopiPowScalar
 - diopiPowTensor
 - diopiProd
+- diopiPromptFlashAttention
 - diopiRMSNorm
 - diopiRMSNormBackward
 - diopiReciprocal
@@ -261,14 +263,12 @@ ascend_npu:
 - diopiGetNativeMemoryFormat
 - diopiIndex
 - diopiIndexBackward
-- diopiMatmulAllReduce
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
 - diopiNativeMemoryFormatCast
 - diopiPagedAttention
-- diopiPromptFlashAttention
 - diopiRotaryEmbeddingV2
 - diopiScaledMaskedSoftmax
 - diopiScaledMaskedSoftmaxBackward

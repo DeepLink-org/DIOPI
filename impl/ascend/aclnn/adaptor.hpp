@@ -192,6 +192,8 @@ decltype(auto) convertType(T&& param) {
         return diopiDtypeToAclDataType(std::forward<T>(param));
     } else if constexpr (IsBoolStdArray<U>::value) {
         return createAclBoolArrayFromVector<std::tuple_size_v<U>>(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<T, const char*>) {
+        return std::forward<T>(param);
     } else {
         static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
         return std::forward<T>(param);
