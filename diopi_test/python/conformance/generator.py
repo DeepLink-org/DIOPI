@@ -69,6 +69,16 @@ class Genfunc:
         val = np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
         return sp.special.log_softmax(val, dim)
 
+    @staticmethod
+    def randn_set_value(low=0, high=10, shape=(1,), dtype=np.float32, value=float('inf'), prob=0.2):
+        if np.dtype(dtype) in ["i", "u"]:
+            tensor = np.random.randint(low=low, high=high, size=shape).astype(dtype)
+        else:
+            tensor = np.random.uniform(low=low, high=high, size=shape).astype(dtype)
+        mask = np.random.choice([True, False], size=shape, p=[prob, 1-prob])
+        tensor[mask] = value
+        return tensor
+
 
 # only for Genfunc test
 if __name__ == "__main__":
