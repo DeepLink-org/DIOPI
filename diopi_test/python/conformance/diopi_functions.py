@@ -6113,3 +6113,12 @@ def rotary_emb_v2(query, key, cos, sin, dim):
     ret = func(query.context(), query, key, cos, sin, dim)
     check_returncode(ret)
     return query, key
+
+def spmm(row_ptr, col_ind, value, input) -> Tensor:
+    M = row_ptr.size().data[-1]-1
+    N = input.size().data[-1]
+    out = Tensor(list([M, N]),dtype=Dtype.float32)
+    func = check_function("diopiSpMM")
+    ret = func(input.context(), out, row_ptr, col_ind, value, input)
+    check_returncode(ret)
+    return out
