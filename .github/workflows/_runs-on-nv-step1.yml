@@ -55,7 +55,7 @@ jobs:
             """
           fi
 
-  open job after dynamic torch ready (with out unique + gen diopi suffix lib)
+  #  open job after dynamic torch ready (with out unique + gen diopi suffix lib)
   Build-torch-dynamic:
     if: false
     name: Build-torch-dynamic
