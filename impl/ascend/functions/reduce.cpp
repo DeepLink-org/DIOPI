@@ -4,6 +4,8 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
+#include <numeric>
+
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
 
@@ -49,6 +51,31 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     diopiGetTensorDtype(out, &dtype);
     aclDataType type = diopiDtypeToAclDataType(dtype);
     DIOPI_ASCEND_CALL_ACLNN(aclnnMean, ctx, input, dim, keepDim, type, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool unbiased) {
+    AscendTensor inputAt(input);
+    AscendTensor outAt(out);
+
+    bool keepdim = false;
+    if (inputAt.dim() == outAt.dim()) {
+        keepdim = true;
+    }
+
+    int64_t correction = 0;
+    if (unbiased) {
+        correction = 1;
+    }
+
+    if (dim.data == nullptr || dim.len == 0) {
+        std::vector<int64_t> allDim(inputAt.dim());
+        std::iota(allDim.begin(), allDim.end(), 0);
+        diopiSize_t rDim = vectorToDiopiSize(allDim);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnStd, ctx, input, rDim, correction, keepdim, out);
+    } else {
+        DIOPI_ASCEND_CALL_ACLNN(aclnnStd, ctx, input, dim, correction, keepdim, out);
+    }
     return diopiSuccess;
 }
 

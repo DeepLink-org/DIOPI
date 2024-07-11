@@ -49,6 +49,16 @@ diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     return diopiSuccess;
 }
 
+diopiError_t diopiErfinv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnErfinv, ctx, input, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiErfinvInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceErfinv, ctx, input);
+    return diopiSuccess;
+}
+
 diopiError_t diopiLog(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     DIOPI_ASCEND_CALL_ACLNN(aclnnLog, ctx, input, out);
     return diopiSuccess;
