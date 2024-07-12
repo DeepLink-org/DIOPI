@@ -132,6 +132,11 @@ extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageOffset(dio
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageNbytes(diopiConstTensorHandle_t th, size_t* pNbytes);
 extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorDeviceIndex(diopiConstTensorHandle_t th, diopiDeviceIndex_t* pDevIndex);
 
+extern DIOPI_RT_API diopiError_t diopiGetTensorCrowIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* crow_indices);
+extern DIOPI_RT_API diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* col_indices);
+extern DIOPI_RT_API diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diopiTensorHandle_t* values);
+extern DIOPI_RT_API diopiError_t diopiIsTensorSparse(diopiConstTensorHandle_t th, bool* is_sparse);
+
 /**
  * operations to require Stream and Tensor instances from a Context handle
  **/

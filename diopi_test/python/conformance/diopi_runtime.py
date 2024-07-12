@@ -6,6 +6,7 @@ from ctypes import c_void_p
 
 from diopilib import (
     diopiTensor,
+    diopiSparseCsrTensor,
     diopiSize,
     diopiScalar,
     diopiReduction,
@@ -296,7 +297,7 @@ class Tensor(diopiTensor):
         self.reset_shape(Sizes(list(shape)))
 
     @classmethod
-    def from_numpy(cls, darray, context=None, device=Device.AIChip):
+    def from_numpy(cls, darray, context=None, device=Device.AIChip, is_sparse=False, sparse_format=None):
         if not isinstance(darray, (np.generic, np.ndarray)):
             raise TypeError(f"expected np.ndarray (got {type(darray)})")
         dtype = from_numpy_dtype(darray.dtype)
@@ -317,20 +318,27 @@ class Tensor(diopiTensor):
         capsule = PyCapsule_New(
             c_void_p(darray.ctypes.data), None, PyCapsule_Destructor(0)
         )
-        if context:
-            tr = cls(
-                size=size,
-                dtype=dtype,
-                stride=stride,
-                data_ptr=capsule,
-                context=context,
-                device=device,
-            )
-        else:
-            tr = cls(
-                size=size, dtype=dtype, stride=stride, data_ptr=capsule, device=device
-            )
-        return tr
+
+        if is_sparse:
+            if sparse_format == 'csr':
+                return cls.create_sparse_csr_tensor(
+                    dense_data=darray, 
+                    dtype=dtype, 
+                    size=size, 
+                    device=device, 
+                    context=context if context else default_context
+                )
+            else:
+                raise NotImplementedError(f"Sparse format {sparse_format} is not supported")
+        
+        return cls(
+            size=size,
+            dtype=dtype,
+            stride=stride,
+            data_ptr=capsule,
+            context=context if context else default_context,
+            device=device,
+        )
 
     def numpy(self) -> np.ndarray:
         if all(x == 0 for x in self.size().data) and self.numel() == 0:
@@ -359,6 +367,152 @@ class Tensor(diopiTensor):
             darray, shape=list(self.size().data), strides=strides
         )
         return darray
+
+    def to_sparse_csr(self):
+        dense_data = self.numpy()
+
+        crow_indices = [0]
+        col_indices = []
+        values = []
+
+        for i, row in enumerate(dense_data):
+            row_nnz = 0
+            for j, value in enumerate(row):
+                if value != 0:
+                    col_indices.append(j)
+                    values.append(value)
+                    row_nnz += 1
+            crow_indices.append(crow_indices[-1] + row_nnz)
+
+        crow_indices = Tensor.from_numpy(np.array(crow_indices, dtype=np.int32))
+        col_indices = Tensor.from_numpy(np.array(col_indices, dtype=np.int32))
+        values = Tensor.from_numpy(np.array(values, dtype=to_numpy_dtype(self.dtype())))
+
+        sparse_tensor = SparseCsrTensor(
+            size=self.size(),
+            dtype=self.dtype(),
+            context=self.context(),
+            device=self.get_device(),
+            crow_indices=crow_indices,
+            col_indices=col_indices,
+            values=values,
+        )
+        return sparse_tensor
+
+    @classmethod
+    def create_sparse_csr_tensor(cls, dense_data, dtype, size, device, context):
+        """ 
+        Helper method to create a SparseCsrTensor from dense 2D NumPy array.
+        
+        TODO: The current implementation supports only 2D sparse tensors. 
+              If multi-dimensional sparse tensor creation is required, 
+              additional implementation will be needed in the future.
+        
+        The conversion process involves:
+         1. Iterate through each row of the dense array:
+            - For each non-zero element, record its column index in `col_indices` and its value in `values`.
+            - Track the number of non-zero elements per row and append the cumulative count to `crow_indices`.
+         2. Convert `crow_indices`, `col_indices`, and `values` lists to tensors.
+         3. Create and return a SparseCsrTensor using these tensors.
+        """
+        crow_indices = [0]
+        col_indices = []
+        values = []
+        
+        for row in dense_data:
+            row_nnz = 0
+            for j, value in enumerate(row):
+                if value != 0:
+                    col_indices.append(j)
+                    values.append(value)
+                    row_nnz += 1
+            crow_indices.append(crow_indices[-1] + row_nnz)
+        
+        crow_indices_tensor = Tensor.from_numpy(np.array(crow_indices, dtype=np.int32))
+        col_indices_tensor = Tensor.from_numpy(np.array(col_indices, dtype=np.int32))
+        values_tensor = Tensor.from_numpy(np.array(values, dtype=dense_data.dtype))
+        
+        return SparseCsrTensor(
+            size=size,
+            dtype=dtype,
+            device=device,
+            crow_indices=crow_indices_tensor,
+            col_indices=col_indices_tensor,
+            values=values_tensor,
+        )
+
+
+class SparseCsrTensor(diopiSparseCsrTensor):
+    def __init__(
+        self,
+        size=None,
+        dtype=None,
+        stride=None,
+        context=default_context,
+        device=Device.AIChip,
+        crow_indices=None,
+        col_indices=None,
+        values=None,
+    ):
+        if size is None:
+            return diopiSparseCsrTensor.__init__(self)
+
+        if isinstance(size, (tuple, list)):
+            size = Sizes(list(size))
+
+        if isinstance(stride, (tuple, list)):
+            stride = Sizes(list(stride))
+
+        self.col_indices = col_indices
+        self.crow_indices = crow_indices
+        self.values = values
+        
+        diopiSparseCsrTensor.__init__(self, size, stride, dtype, device, context, crow_indices, col_indices, values)
+
+    def __str__(self):
+        string = f"tensor(crow_indices=tensor({self.crow_indices.numpy()}),\n"
+        string += f"       col_indices=tensor({self.col_indices.numpy()}),\n"
+        string += f"       values=tensor({self.values.numpy()}),\n"
+        string += f"       size={self.size().data}, nnz={self.col_indices.size().data[0]}, layout=sparse_csr)"
+        return string
+
+    def __repr__(self):
+        return self.__str__()
+
+    def size(self):
+        return self.shape()
+
+    def dtype(self):
+        return self.get_dtype()
+
+    def reset_shape(self, shape):
+        assert isinstance(shape, (tuple, list))
+        self.reset_shape(Sizes(list(shape)))
+
+    def numpy(self) -> np.ndarray:
+        """
+        Converts a sparse tensor in Compressed Sparse Row (CSR) format to a dense NumPy array.
+        
+        TODO: The current implementation supports only 2D sparse tensors. 
+              For multi-dimensional sparse tensor conversion, additional 
+              implementation is needed in the future.
+
+        The conversion process involves:
+         1. Initialize a dense NumPy array of zeros with the same shape and data type as the sparse tensor.
+         2. Extract the CSR components (crow_indices, col_indices, and values) and convert them to NumPy arrays.
+         3. Iterate through each row of the sparse tensor:
+            - For each row, use crow_indices to find the range of non-zero elements.
+            - For each non-zero element in this range, use col_indices to find the column index and values to get the actual value.
+            - Assign the value to the corresponding position in the dense array.
+        """
+        dense_data = np.zeros(self.size().data, dtype=to_numpy_dtype(self.get_dtype()))
+        crow_indices = self.crow_indices.numpy()
+        col_indices = self.col_indices.numpy()
+        values = self.values.numpy()
+        for i in range(len(crow_indices) - 1):
+            for j in range(crow_indices[i], crow_indices[i + 1]):
+                dense_data[i, col_indices[j]] = values[j]
+        return dense_data
 
 
 def raw_like(tensor) -> Tensor:

@@ -43,6 +43,24 @@ PYBIND11_MODULE(export_runtime, m) {
         .def("context", &diopiTensor::getCtx)
         .def_buffer(&diopiTensor::buffer);
 
+    py::class_<diopiSparseCsrTensor, std::shared_ptr<diopiSparseCsrTensor>, diopiTensor>(m, "diopiSparseCsrTensor", py::buffer_protocol())
+        .def(py::init([](const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
+                         std::shared_ptr<diopiTensor> crow_indices, std::shared_ptr<diopiTensor> col_indices, std::shared_ptr<diopiTensor> values) {
+            return std::make_shared<diopiSparseCsrTensor>(shape, stride, dtype, device, context, crow_indices, col_indices, values);
+        }))
+        .def(py::init([]() {
+            return std::make_shared<diopiSparseCsrTensor>();
+        }))
+        .def("shape", &diopiSparseCsrTensor::shape)
+        .def("get_stride", &diopiSparseCsrTensor::stride)
+        .def("get_dtype", &diopiSparseCsrTensor::dtype)
+        .def("get_device", &diopiSparseCsrTensor::device)
+        .def("numel", &diopiSparseCsrTensor::numel)
+        .def("reset_shape", &diopiSparseCsrTensor::resetShape)
+        .def("itemsize", &diopiSparseCsrTensor::elemSize)
+        .def("context", &diopiSparseCsrTensor::getCtx)
+        .def_buffer(&diopiSparseCsrTensor::buffer);
+
     py::class_<diopiGenerator, std::shared_ptr<diopiGenerator>>(m, "diopiGenerator", py::buffer_protocol())
         .def(py::init([](diopiConstTensorHandle_t state) {
             auto generator = diopiGenerator(state);

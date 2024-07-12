@@ -5,6 +5,7 @@ import pickle
 import itertools
 import numpy as np
 from enum import Enum
+from itertools import product
 from conformance.global_settings import default_cfg_dict
 
 
@@ -263,6 +264,22 @@ def _expand_tensor_para(args_list, tensor_paras_list):
                     ], "wrong stride for shape (might have memory overlap)"
         tensor_paras_list.append(args_ins_expand_list)
 
+    _expand_tensor_para_sparse(tensor_paras_list)
+
+
+def _expand_tensor_para_sparse(tensor_paras_list):
+    expanded_list = []
+    for tensor_paras in tensor_paras_list:
+        sparse_combinations = [para['is_sparse'] for para in tensor_paras]
+        for combination in product(*sparse_combinations):
+            expanded_set = [
+                {**para, 'is_sparse': [is_sparse_value]}
+                for para, is_sparse_value in zip(tensor_paras, combination)
+            ]
+            expanded_list.append(expanded_set)
+    tensor_paras_list.clear()
+    tensor_paras_list.extend(expanded_list)
+
 
 def _expand_config_with_para(config_item: dict):
     paras_list = []
@@ -368,7 +385,7 @@ class ConfigItem(object):
                 _assert_type(
                     args_name,
                     arg,
-                    (list, tuple),
+                    (list, tuple, bool, str),
                     [k for k in arg.keys() if k not in ["gen_fn", "gen_policy"]],
                 )
                 # should design gen policy: map
@@ -459,6 +476,8 @@ class ConfigItem(object):
                 if "requires_grad" not in item.keys():
                     item["requires_grad"] = [False]
                     # item["requires_grad"] = False
+                if "is_sparse" not in item.keys():
+                    item["is_sparse"] = [False]
                 if "gen_num_range" not in item.keys():
                     item["gen_num_range"] = []
             # gen_fn and dtype maybe set in global zone,
