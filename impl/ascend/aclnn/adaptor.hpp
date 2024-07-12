@@ -200,7 +200,8 @@ decltype(auto) convertType(T&& param) {
     }
 }
 
-template <class T, class U = std::remove_reference_t<T>, std::enable_if_t<!std::is_class_v<U> && !std::is_pointer_v<U>, int> = 0>
+template <class T, class U = std::remove_reference_t<T>,
+          std::enable_if_t<std::is_same_v<U, const char* const> || (!std::is_class_v<U> && !std::is_pointer_v<U>), int> = 0>
 void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
 
 #define IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Type)        \
@@ -306,7 +307,7 @@ template <typename T>
 struct IsAclnnBuildInType
     : std::disjunction<std::is_same<T, aclTensor*>, std::is_same<T, aclScalar*>, std::is_same<T, aclIntArray*>, std::is_same<T, aclFloatArray*>,
                        std::is_same<T, aclBoolArray*>, std::is_same<T, aclTensorList*>, std::is_same<T, aclScalarList*>, std::is_same<T, aclDataType>,
-                       std::is_same<T, aclFormat>, std::is_fundamental<std::decay_t<T>>> {};
+                       std::is_same<T, aclFormat>, std::is_fundamental<std::decay_t<T>>, std::is_same<T, const char*>> {};
 
 // enable if all the args meet the conditions
 template <const char* workspaceApi, typename... Args, std::enable_if_t<std::conjunction_v<IsAclnnBuildInType<Args>...>, void*> = nullptr>

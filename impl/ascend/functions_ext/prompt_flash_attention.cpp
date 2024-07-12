@@ -22,13 +22,12 @@ diopiError_t diopiPromptFlashAttention(diopiContextHandle_t ctx, diopiTensorHand
     double scaleValue = 1 / std::sqrt(dim);
     int64_t preTokens = 2147473647;
     int64_t nextTokens = 0;
-    AscendTensor paddingMask;
     DIOPI_ASCEND_CALL_ACLNN(aclnnPromptFlashAttention,
                             ctx,
                             queryAt,
                             keyAt,
                             valueAt,
-                            paddingMask,
+                            nullptr,
                             attenMask,
                             actualSeqLengths,
                             numHeads,
