@@ -132,7 +132,9 @@ PYBIND11_MODULE(export_runtime, m) {
 
     py::class_<diopiSize_t>(m, "diopiSize")
         .def(py::init<>())
-        .def(py::init([](py::none, int64_t nums) { return diopiSize_t{nullptr, nums}; }))
+        .def(py::init([](py::none, int64_t nums) {
+            return diopiSize_t{nullptr, nums};
+        }))
         .def(py::init([](py::list& sizeList, int64_t nums) {
             int64_t* sizes = new int64_t[nums];
             for (int i = 0; i < nums; ++i) sizes[i] = sizeList[i].cast<int64_t>();
