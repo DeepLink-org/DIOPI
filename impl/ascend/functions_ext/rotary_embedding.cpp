@@ -116,5 +116,21 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiRotaryEmbeddingV2(diopiContextHandle_t ctx, diopiTensorHandle_t query, diopiTensorHandle_t key, diopiConstTensorHandle_t cos,
+                                              diopiConstTensorHandle_t sin, int64_t dim) {
+    int64_t layOut = 1;
+    AscendTensor queryAt(query), keyAt(key), cosAt(cos), sinAt(sin);
+    if (queryAt.dim() == 2) {
+        queryAt = queryAt.view({1, queryAt.shape(0), queryAt.shape(1) / dim, dim});
+    }
+    if (keyAt.dim() == 2) {
+        keyAt = keyAt.view({1, keyAt.shape(0), keyAt.shape(1) / dim, dim});
+    }
+    AscendTensor cosView = cosAt.view(expandTo4DShape(cosAt.shape()));
+    AscendTensor sinView = sinAt.view(expandTo4DShape(sinAt.shape()));
+    DIOPI_ASCEND_CALL_ACLNN(aclnnApplyRotaryPosEmb, ctx, queryAt, keyAt, cosView, sinView, layOut);
+    return diopiSuccess;
+}
+
 }  // namespace ascend
 }  // namespace impl

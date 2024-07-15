@@ -196,6 +196,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions_ext/rotary_embedding.cpp
     ${OLD_IMPL_DIR}/functions_ext/adamw.cpp
     ${OLD_IMPL_DIR}/functions_ext/prompt_flash_attention.cpp
+    ${OLD_IMPL_DIR}/functions_ext/paged_attention.cpp
     ${OLD_IMPL_DIR}/functions_ext/matmul_all_reduce.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
