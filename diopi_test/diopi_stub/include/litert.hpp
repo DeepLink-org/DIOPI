@@ -71,7 +71,7 @@ public:
 
 enum class Layout : int8_t {
     Strided,
-    Sparse, 
+    Sparse,
     SparseCsr,
     SparseCsc,
     SparseBsr,
@@ -162,7 +162,10 @@ private:
 public:
     diopiSparseCsrTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
                          std::shared_ptr<diopiTensor> crow_indices, std::shared_ptr<diopiTensor> col_indices, std::shared_ptr<diopiTensor> values)
-        : diopiTensor(shape, stride, dtype, device, context, nullptr, Layout::SparseCsr), crow_indices_(crow_indices), col_indices_(col_indices), values_(values) {}
+        : diopiTensor(shape, stride, dtype, device, context, nullptr, Layout::SparseCsr),
+          crow_indices_(crow_indices),
+          col_indices_(col_indices),
+          values_(values) {}
     diopiSparseCsrTensor() {}
     ~diopiSparseCsrTensor() {}
     diopiSparseCsrTensor& operator=(const diopiSparseCsrTensor& other) {
@@ -196,7 +199,6 @@ public:
         return values_.get();
     }
 };
-
 
 struct diopiGenerator {
 private:

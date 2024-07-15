@@ -298,7 +298,6 @@ DIOPI_RT_API diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diop
     return diopiSuccess;
 }
 
-
 diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiStreamHandle_t* stream) {
     *stream = ctx->getStreamHandle();
     return diopiSuccess;

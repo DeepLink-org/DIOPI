@@ -13,7 +13,7 @@
 namespace impl {
 namespace cuda {
 
-diopiError_t diopiSpMM(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat2){
+diopiError_t diopiSpMM(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t mat2) {
     impl::aten::setCurStream(ctx);
     auto atMat2 = impl::aten::buildATen(mat2);
 
