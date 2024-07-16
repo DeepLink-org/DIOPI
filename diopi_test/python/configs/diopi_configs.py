@@ -9462,7 +9462,7 @@ diopi_configs = {
                     "ins": ['mat2'],
                     "shape": ((48, 128), (128, 128), (8, 1)),
                     "dtype": [np.float32],
-                    "sparse": [False],
+                    "sparse": [True, False],
                     "gen_fn": 'Genfunc.randn',
                 },
             ],

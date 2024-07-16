@@ -270,10 +270,10 @@ def _expand_tensor_para(args_list, tensor_paras_list):
 def _expand_tensor_para_sparse(tensor_paras_list):
     expanded_list = []
     for tensor_paras in tensor_paras_list:
-        sparse_combinations = [para['is_sparse'] for para in tensor_paras]
+        sparse_combinations = [para['sparse'] for para in tensor_paras]
         for combination in product(*sparse_combinations):
             expanded_set = [
-                {**para, 'is_sparse': [is_sparse_value]}
+                {**para, 'sparse': [is_sparse_value]}
                 for para, is_sparse_value in zip(tensor_paras, combination)
             ]
             expanded_list.append(expanded_set)
@@ -476,8 +476,8 @@ class ConfigItem(object):
                 if "requires_grad" not in item.keys():
                     item["requires_grad"] = [False]
                     # item["requires_grad"] = False
-                if "is_sparse" not in item.keys():
-                    item["is_sparse"] = [False]
+                if "sparse" not in item.keys():
+                    item["sparse"] = [False]
                 if "gen_num_range" not in item.keys():
                     item["gen_num_range"] = []
             # gen_fn and dtype maybe set in global zone,
