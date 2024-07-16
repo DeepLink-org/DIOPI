@@ -214,17 +214,31 @@ class GenTensor(object):
         return value
 
     def parse_gen_fn(self, gen_fn):
-        if isinstance(gen_fn, dict):
-            gen_fn = eval(self.arg["gen_fn"]["fn"])
-            low = self.arg["gen_fn"].get("low", 0)
-            high = self.arg["gen_fn"].get("high", 10)
-            gen_fn = partial(gen_fn, low=low, high=high)
+        is_sparse = self.arg.get("sparse", [False])
+        gen_fn_spec = self.arg["gen_fn"]
+
+        # unpack function name and para based on its type
+        if isinstance(gen_fn_spec, dict):
+            gen_fn_name = gen_fn_spec['fn']
+            params = {k: v for k, v in gen_fn_spec.items() if k != 'fn'}
         else:
-            gen_fn = eval(self.arg["gen_fn"])
-            if (
-                gen_fn == Genfunc.randint or gen_fn == Genfunc.uniform or gen_fn == Genfunc.randn_int
-            ):
-                gen_fn = partial(gen_fn, low=0, high=10)
+            gen_fn_name = gen_fn_spec
+            params = {}
+
+        # modify function name for sparse generator
+        if is_sparse == [True]:
+            gen_fn_name += "_sparse" if "sparse" not in gen_fn_name else ""
+            params.setdefault('density', 0.2)
+        else:
+            params.pop('density', None)
+
+        gen_fn = eval(gen_fn_name)
+
+        if gen_fn in [Genfunc.randint, Genfunc.uniform, Genfunc.randint] and not params:
+            params.update(low=0, high=10)
+        if params:
+            gen_fn = partial(gen_fn, **params)
+
         return gen_fn
 
 

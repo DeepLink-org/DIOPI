@@ -9445,4 +9445,28 @@ diopi_configs = {
         ),
     ),
 
+    'spmm': dict(
+        name=['spmm'],
+        interface=['torch'],
+        sparse_format='csr',
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((8, 48), (4, 128), (256, 8)),
+                    "dtype": [np.float32],
+                    "sparse": [True, False],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=0, high=1, density=0.1),
+                },
+                {
+                    "ins": ['mat2'],
+                    "shape": ((48, 128), (128, 128), (8, 1)),
+                    "dtype": [np.float32],
+                    "sparse": [True, False],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+
 }

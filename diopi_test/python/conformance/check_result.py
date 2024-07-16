@@ -1,6 +1,6 @@
 import numpy as np
 
-from conformance.diopi_runtime import Tensor, is_dtype, to_numpy_dtype
+from conformance.diopi_runtime import Tensor, SparseCsrTensor, is_dtype, to_numpy_dtype
 from conformance.exception import InputChangedException, OutputCheckFailedException
 from conformance.global_settings import glob_vars
 from copy import deepcopy
@@ -13,7 +13,7 @@ class CheckResult(object):
         Recursively convert the tensor and scalar to numpy.
         E.g: {"input": Tensor, "other": Tensor, "input_size": 5, "dtype": Dtype.float16} -> {"input": np.ndarray, "other": np.ndarray, "input_size": np.array(5), "dtype": np.float16}
         """
-        if isinstance(data, Tensor):
+        if isinstance(data, (Tensor, SparseCsrTensor)):
             data_np = data.numpy()
         elif is_dtype(data):
             data_np = to_numpy_dtype(data)

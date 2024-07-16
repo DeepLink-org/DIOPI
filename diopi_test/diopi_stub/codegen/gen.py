@@ -185,6 +185,9 @@ def gen_functions(options, functions_fm):
     with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions_ext.h'), 'r', encoding='utf8')as f:
         content_ext = f.readlines()
     exports = get_export(content_ext, ft, exports)
+    with open(os.path.join(_cur_dir, options.get('source_dir'), 'functions_sparse.h'), 'r', encoding='utf8')as f:
+        content_sparse = f.readlines()
+    exports = get_export(content_sparse, ft, exports)
 
     functions_fm.write("export_functions.cpp", OT.operators_template, env=dict(export_functions=exports))
 
