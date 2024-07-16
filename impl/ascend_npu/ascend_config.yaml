@@ -249,15 +249,15 @@ ascend:
 - diopiWhere
 - diopiZeroInp
 - diopiZeros
+- diopiDestIndexCopyKV
+- diopiApplyPenaltyV2
 ascend_npu:
 - diopiApplyPenalty
-- diopiApplyPenaltyV2
 - diopiContextAttentionInference
 - diopiCustomizedFlashAttention
 - diopiCustomizedFlashAttentionBackward
 - diopiCustomizedFlashAttentionVarLen
 - diopiCustomizedFlashAttentionVarLenBackward
-- diopiDestIndexCopyKV
 - diopiGetNativeMemoryFormat
 - diopiIndex
 - diopiIndexBackward
