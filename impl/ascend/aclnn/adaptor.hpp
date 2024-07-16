@@ -77,6 +77,9 @@ inline aclFormat storageFormatByDimNum(int64_t dimNum) {
 }
 
 inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
+    if (!input.defined()) {
+        return nullptr;
+    }
     const auto& shape = input.shape();
     const auto& stride = input.stride();
     const auto storageSize = static_cast<int64_t>(input.storageNbytes() / input.elemsize());
@@ -131,7 +134,12 @@ inline aclScalar* createAclScalarFromDiopiScalar(const diopiScalar_t* scalar) {
     return ::aclCreateScalar(bytes.data(), diopiDtypeToAclDataType(scalar->stype));
 }
 
-inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) { return ::aclCreateIntArray(size.data, size.len); }
+inline aclIntArray* createAclIntArrayFromDiopiSize(const diopiSize_t size) {
+    if (size.data == nullptr) {
+        return nullptr;
+    }
+    return ::aclCreateIntArray(size.data, size.len);
+}
 
 template <size_t N>
 inline aclBoolArray* createAclBoolArrayFromVector(const std::array<bool, N>& vec) {

@@ -59,6 +59,10 @@ ascend:
 - diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
+- diopiCustomizedFlashAttention
+- diopiCustomizedFlashAttentionBackward
+- diopiCustomizedFlashAttentionVarLen
+- diopiCustomizedFlashAttentionVarLenBackward
 - diopiCumsum
 - diopiDiv
 - diopiDivInp
@@ -255,10 +259,6 @@ ascend_npu:
 - diopiApplyPenalty
 - diopiApplyPenaltyV2
 - diopiContextAttentionInference
-- diopiCustomizedFlashAttention
-- diopiCustomizedFlashAttentionBackward
-- diopiCustomizedFlashAttentionVarLen
-- diopiCustomizedFlashAttentionVarLenBackward
 - diopiDestIndexCopyKV
 - diopiGetNativeMemoryFormat
 - diopiIndex
