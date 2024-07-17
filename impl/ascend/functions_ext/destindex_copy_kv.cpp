@@ -20,13 +20,11 @@ diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
         return diopiNoImplement;
     }
 
-    std::vector<int64_t> shape(destLocAt.dim() + 1, 1);
-    for (int64_t i = 0; i < destLocAt.dim(); i++) {
-        shape[i] = destLocAt.shape(i);
-    }
-    
+    std::vector<int64_t> shape(destLocAt.shape());
+    shape.push_back(1);
+
     auto destLocReshape = destLocAt.view(shape);
-    
+
     DIOPI_ASCEND_CALL_ACLNN(aclnnScatterNd, ctx, out, destLocReshape, k, out);
     return diopiSuccess;
 }
