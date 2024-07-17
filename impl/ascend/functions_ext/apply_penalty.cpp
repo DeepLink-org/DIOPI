@@ -72,10 +72,8 @@ diopiError_t diopiApplyPenaltyV2(diopiContextHandle_t ctx, diopiTensorHandle_t l
 
     DIOPI_ASCEND_CALL_ACLNN(aclnnSub, ctx, repoLogitsTensor, penaltySum, &oneScalar, repoLogitsTensor);
 
-    std::vector<int64_t> shape(pTokenIdsAt.dim() + 1, 1);
-    for (int i = 0; i < pTokenIdsAt.dim(); ++i) {
-        shape[i] = pTokenIdsAt.shape(i);
-    }
+    std::vector<int64_t> shape(pTokenIdsAt.shape());
+    shape.push_back(1);
 
     pTokenIdsAt.view(shape);
     DIOPI_ASCEND_CALL_ACLNN(aclnnScatterNd, ctx, logitsAt, pTokenIdsAt, repoLogitsTensor, logitsAt);
