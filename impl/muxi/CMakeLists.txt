@@ -17,21 +17,17 @@ set(BASE_TORCH_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../torch")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 file(GLOB REAL_IMPL_SRC
-  ${BASE_TORCH_DIR}/functions/error.cpp
-  ${BASE_TORCH_DIR}/functions/functions.cpp 
-
-  ${BASE_TORCH_DIR}/functions/functions_lightllm.cpp 
-  ${BASE_TORCH_DIR}/functions/functions_mmcv.cpp
-  ${BASE_TORCH_DIR}/helper.cpp
-  ${BASE_TORCH_DIR}/functions/functions_mmcv/*.cu
-
-  ${BASE_TORCH_DIR}/functions/functions_ext.cpp 
-  ${BASE_TORCH_DIR}/functions/functions_ext/*.cu 
-  
-  ${BASE_TORCH_DIR}/build_aten.cpp
-  
-  # mx cpp
-  functions/functions.cpp 
+    ${BASE_TORCH_DIR}/functions/error.cpp
+    ${BASE_TORCH_DIR}/functions/functions.cpp
+    ${BASE_TORCH_DIR}/functions/functions_lightllm.cpp
+    ${BASE_TORCH_DIR}/functions/functions_mmcv.cpp
+    ${BASE_TORCH_DIR}/helper.cpp
+    ${BASE_TORCH_DIR}/functions/functions_mmcv/*.cu
+    ${BASE_TORCH_DIR}/functions/functions_ext.cpp
+    ${BASE_TORCH_DIR}/functions/functions_ext/*.cu
+    ${BASE_TORCH_DIR}/build_aten.cpp
+    # mx cpp
+    functions/functions.cpp
 )
 
 # adaptor
@@ -41,10 +37,15 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/convert_config.yaml")
 endif()
 
 if(USE_ADAPTOR)
-  diopi_use_adapter("--config_device=muxi --base_device=torch")
+    diopi_use_adapter(${ADAPTOR_DIR} ${DIOPI_IMPL_DIR} "muxi" "torch" ${REAL_IMPL_SRC})
 endif()
 
-prep_dyn_load(${DYLOAD})
+if(${DYLOAD})
+    prep_dyn_load(${DIOPI_IMPL_DIR} ${DEVICEIMPL})
+    set(REAL_IMPL diopi_real_impl)
+else()
+    set(REAL_IMPL ${DEVICEIMPL})
+endif()
 
 cuda_add_library(${REAL_IMPL} SHARED ${REAL_IMPL_SRC})
 target_link_libraries(${REAL_IMPL} ${TORCH_LIBRARIES})
@@ -55,8 +56,9 @@ target_include_directories(${REAL_IMPL} PRIVATE ${BASE_TORCH_DIR})
 if(USE_ADAPTOR)
     add_dependencies(${REAL_IMPL} adaptor_code_gen)
 endif()
-
-handle_dyn_torch(${DYLOAD} ${TORCH_INSTALL_PREFIX})
+if(${DYLOAD})
+    handle_dyn_torch(${DIOPI_IMPL_DIR} ${REAL_IMPL} ${TORCH_INSTALL_PREFIX} ${DEVICEIMPL})
+endif()
 
 if (TEST)
     add_subdirectory(test)

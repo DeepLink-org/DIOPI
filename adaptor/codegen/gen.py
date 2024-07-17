@@ -196,7 +196,9 @@ def prepare() -> Tuple[dict, str]:
 
     impl_plugin = options.impl_plugin
     base_device = options.base_device
-
+    assert(base_device is None or base_device == "" or base_device == "torch", f"invalid base_device:{base_device}")
+    if base_device == "":
+        base_device = None
     def create_if_not_exist(name):
         if not os.path.exists(name):
             os.makedirs(name)
@@ -758,7 +760,7 @@ def gen_base_device_impl_funcs(device: str, base_device: str, dirs: dict, impl_f
     impl_basedev_functions = get_all_impl_functions(base_device_impl_dir)
     # remove ops already exist in device impl.
     impl_basedev_functions = {op: args for op, args in impl_basedev_functions.items() if op not in impl_functions}
-   
+
     funcs_info, funcs_decl_raw = get_functions_support(dirs.get("source"))
     func_base_decl = get_impl_funcs_declaration(
         funcs_decl_raw, funcs_info, impl_basedev_functions.keys(), True,
