@@ -12,8 +12,6 @@ namespace ascend {
 
 namespace {
 
-// using npu_preparation = at_npu::native::OpPreparation;
-
 const int64_t bitNumber = 128;
 const int64_t uInt8BitNumber = 8;
 
@@ -25,7 +23,6 @@ diopiError_t diopiCustomizedFlashAttentionVarLen(diopiContextHandle_t ctx, diopi
                                                  diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, diopiConstTensorHandle_t alibiSlopes,
                                                  diopiConstTensorHandle_t attentionMask, int32_t maxSeqLenQ, int32_t maxSeqLenKV, float pDropout,
                                                  float softmaxScale, bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight) {
-    // BEGIN_CALL_ACL_OP(q, k, v, cumSeqQ, cumSeqKV, attentionMask, gen, attentionOut);
     AscendTensor qAt(q), kAt(k), vAt(v), attentionMaskAt(attentionMask), attentionOutAt(attentionOut);
     ASCEND_CHECK_ABORT(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
     ASCEND_CHECK_ABORT(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
@@ -63,25 +60,6 @@ diopiError_t diopiCustomizedFlashAttentionVarLen(diopiContextHandle_t ctx, diopi
             DIOPI_ASCEND_CALL_ACLNN(aclnnDropoutGenMask, ctx, shapeVector, pDropout, seed, offset, dropoutMaskAt);
         }
     }
-    // if (pDropout > 0 && pDropout <= 1) {
-    //     int64_t numels = n;
-    //     int64_t accum = cumSeqQAt[0] * cumSeqKVAt[0];
-    //     for (int64_t i = 1; i < cumSeqQAt.shape(); i++) {
-    //         accum += ((cumSeqQAt[i] - cumSeqQAt[i - 1]) * (cumSeqKVAt[i] - cumSeqKVAt[i - 1]));
-    //     }
-    //     numels *= accum;
-    //     int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
-    //     dropoutMaskAt = npu_preparation::apply_tensor_without_format({length}, qAt.options().dtype(at::kByte));
-    //     if (pDropout == 1) {
-    //         EXEC_NPU_CMD(aclnnInplaceZero, dropoutMaskAt);
-    //     } else {
-    //         at::IntArrayRef shapeArray(numels);
-    //         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(genAt)->philox_engine_inputs(10);
-    //         const uint64_t seed = pair.first;
-    //         const uint64_t offset = pair.second;
-    //         EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, pDropout, seed, offset, dropoutMaskAt);
-    //     }
-    // }
 
     int64_t preTokens = kAt.shape(0);
     int64_t nextTokens = 0;
@@ -124,11 +102,11 @@ diopiError_t diopiCustomizedFlashAttentionVarLen(diopiContextHandle_t ctx, diopi
                             attentionOutAt);
 
     if (dropoutMaskAt.defined()) {
-        *dropoutMask = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dropoutMaskAt));
+        *dropoutMask = diopiTensorHandle_t(dropoutMaskAt);
     }
-    *softmaxMax = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(softmaxMaxAt));
-    *softmaxSum = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(softmaxSumAt));
-    *softmaxOut = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(softmaxOutAt));
+    *softmaxMax = diopiTensorHandle_t(softmaxMaxAt);
+    *softmaxSum = diopiTensorHandle_t(softmaxSumAt);
+    *softmaxOut = diopiTensorHandle_t(softmaxOutAt);
     return diopiSuccess;
 }
 

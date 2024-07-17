@@ -16,10 +16,10 @@ diopiError_t diopiPagedAttention(diopiContextHandle_t ctx, diopiTensorHandle_t o
     ASCEND_CHECK_ABORT(actualSeqLengths.len == qAt.shape(0), "The size of the first dimension of q must be equal to the length of actualSeqLengths!");
     ASCEND_CHECK_ABORT(actualSeqLengths.len == outAt.shape(0), "The size of the first dimension of out must be equal to the length of actualSeqLengths!");
     if (qAt.dim() == 2) {
-        qAt = qAt.view({qAt.shape(0), (int64_t)1, qAt.shape(1)});
-        outAt = outAt.view({outAt.shape(0), (int64_t)1, outAt.shape(1)});
-        kAt = kAt.view({kAt.shape(0), (int64_t)1, kAt.shape(1)});
-        vAt = vAt.view({vAt.shape(0), (int64_t)1, vAt.shape(1)});
+        qAt = qAt.view({qAt.shape(0), 1, qAt.shape(1)});
+        outAt = outAt.view({outAt.shape(0), 1, outAt.shape(1)});
+        kAt = kAt.view({kAt.shape(0), 1, kAt.shape(1)});
+        vAt = vAt.view({vAt.shape(0), 1, vAt.shape(1)});
     }
     if (qAt.dim() == 3) {
         ASCEND_CHECK_ABORT(1 == qAt.shape(1), "The size of the second dimension of q must be 1!");

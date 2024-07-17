@@ -124,11 +124,11 @@ diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, diopiTensor
                             softmaxOutAt,
                             attentionOutAt);
     if (dropoutMaskAt.defined()) {
-        *dropoutMask = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dropoutMaskAt));
+        *dropoutMask = diopiTensorHandle_t(dropoutMaskAt);
     }
-    *softmaxMax = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(softmaxMaxAt));
-    *softmaxSum = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(softmaxSumAt));
-    *softmaxOut = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(softmaxOutAt));
+    *softmaxMax = diopiTensorHandle_t(softmaxMaxAt);
+    *softmaxSum = diopiTensorHandle_t(softmaxSumAt);
+    *softmaxOut = diopiTensorHandle_t(softmaxOutAt);
     return diopiSuccess;
 }
 
