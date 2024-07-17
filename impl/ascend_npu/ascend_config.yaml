@@ -34,6 +34,9 @@ ascend:
 - diopiBitwiseOrInpScalar
 - diopiBitwiseOrScalar
 - diopiBmm
+- diopiBernoulli
+- diopiBernoulliInp
+- diopiBernoulliScalar
 - diopiCastDtype
 - diopiCat
 - diopiCeil

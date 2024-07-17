@@ -125,6 +125,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/cat.cpp
     ${OLD_IMPL_DIR}/functions/pow.cpp
     ${OLD_IMPL_DIR}/functions/masked_fill.cpp
+    ${OLD_IMPL_DIR}/functions/bernoulli.cpp
     ${OLD_IMPL_DIR}/functions/topk.cpp
     ${OLD_IMPL_DIR}/functions/baddbmm.cpp
     ${OLD_IMPL_DIR}/functions/conv2d.cpp
