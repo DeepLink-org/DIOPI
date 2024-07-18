@@ -244,7 +244,7 @@ ascend:
 - diopiTriu
 - diopiTriuInp
 - diopiUniformInp
-- diopiUnique
+# - diopiUnique
 - diopiUpsampleLinear
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
@@ -279,3 +279,4 @@ ascend_npu:
 - diopiTensorDestructionHook
 - diopiTokenAttentionInference
 - diopiTokenSoftmaxReduceVInference
+- diopiUnique

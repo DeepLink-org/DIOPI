@@ -90,7 +90,7 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     ;
     ASCEND_CHECK_ABORT(indicesAt.dtype() == diopi_dtype_int32, "aclnnMaxPool2dWithIndices only support int32 indices");
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnMaxPool2dWithIndices,
+    DIOPI_ASCEND_CALL_ACLNN(aclnnMaxPool2dWithIndices, /* aclnnAdaptiveMaxPool2d */
                             ctx,
                             inputAt,
                             diopiSize_t{kernelSizeData, 2},

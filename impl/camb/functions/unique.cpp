@@ -11,7 +11,7 @@ namespace camb {
 diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, const int64_t* dim, bool sorted, bool returnCounts,
                          diopiTensorHandle_t indices, diopiTensorHandle_t* counts) {
 // version should be greater than 1.15.2
-#if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL >= 11502)
+// #if (CNNL_MAJOR * 10000 + CNNL_MINOR * 100 + CNNL_PATCHLEVEL >= 11502)
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     // input_tensor
@@ -36,10 +36,14 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, dio
     // output_tensor
     // require larger dimsize for output_tensor, it will be sliced to get final result
     DiopiTensor outputTensor =
-        (realDim != -1) ? requiresTensor(ctx, {inputTensor.shape()}, inputTensor.dtype()) : requiresTensor(ctx, {inputTensor.numel()}, inputTensor.dtype());
+        (realDim != -1) ? 
+        requiresTensor(ctx, {inputTensor.shape()}, inputTensor.dtype()) : 
+        requiresTensor(ctx, {inputTensor.numel()}, inputTensor.dtype());
     // index_tensor
     DiopiTensor indexTensor =
-        (realDim != -1) ? requiresTensor(ctx, {inputTensor.shape()[realDim]}, diopi_dtype_int32) : requiresTensor(ctx, inputTensor.shape(), diopi_dtype_int32);
+        (realDim != -1) 
+        ? requiresTensor(ctx, {inputTensor.shape()[realDim]}, diopi_dtype_int32) 
+        : requiresTensor(ctx, inputTensor.shape(), diopi_dtype_int32);
     // counts_tensor
     DiopiTensor countsTensor = (realDim != -1) ? requiresTensor(ctx, {outputTensor.shape()[realDim]}, diopi_dtype_int32)
                                                : requiresTensor(ctx, outputTensor.shape(), diopi_dtype_int32);

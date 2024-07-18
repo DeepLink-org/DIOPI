@@ -24,12 +24,10 @@ Standard:  Cpp11
 AllowAllParametersOfDeclarationOnNextLine: true
 BinPackParameters: true
 BinPackArguments: false
-BreakAfterAttributes: Leave
 ColumnLimit: 160
 DerivePointerAlignment: false
 PointerAlignment: Left
 ReferenceAlignment: Left
-InsertNewlineAtEOF: true
 SpacesBeforeTrailingComments: 2
 IncludeIsMainSourceRegex: (\.cu)$
 IncludeCategories:
