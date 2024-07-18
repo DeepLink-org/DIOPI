@@ -17,8 +17,8 @@ diopiError_t diopiDestIndexCopyKV(diopiContextHandle_t ctx, diopiTensorHandle_t 
     AscendTensor destLocAt(destLoc);
     std::vector<int64_t> destLocShape = destLocAt.shape();
 
-    if (destLocShape.size() != 1) {
-        setLastErrorString("only support destLoc.rank == 1");
+    if (destLocAt.dim() != 1) {
+        setLastErrorString("only support destLoc.dim == 1");
         return diopiNoImplement;
     }
 

@@ -25,50 +25,50 @@ diopiError_t diopiApplyPenaltyV2(diopiContextHandle_t ctx, diopiTensorHandle_t l
 
     logitsAt.view({logitsAt.numel()});
 
-    AscendTensor curLogits;
+    AscendTensor curLogitsAt;
     diopiDtype_t logitsDtype = logitsAt.dtype();
     std::vector<int64_t> pTokenIdsShape = pTokenIdsAt.shape();
-    std::vector<int64_t> curLogitsShape = logitsAt.shape();
-    curLogitsShape[dim] = pTokenIdsShape.data()[0];
-    makeTensor(ctx, curLogits, curLogitsShape, logitsDtype);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnIndexSelect, ctx, logitsAt, dim, pTokenIds, curLogits);
+    std::vector<int64_t> curLogitsAtShape = logitsAt.shape();
+    curLogitsAtShape[dim] = pTokenIdsShape[0];
+    makeTensor(ctx, curLogitsAt, curLogitsAtShape, logitsDtype);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnIndexSelect, ctx, logitsAt, dim, pTokenIds, curLogitsAt);
 
-    AscendTensor repoLogitsTensor;
-    makeTensor(ctx, repoLogitsTensor, curLogitsShape, logitsDtype);
+    AscendTensor repoLogitsTensorAt;
+    makeTensor(ctx, repoLogitsTensorAt, curLogitsAtShape, logitsDtype);
     diopiScalar_t zeroScalar = constructDiopiScalarT(diopi_dtype_float32, 0);
-    AscendTensor candTensor;
-    makeTensor(ctx, candTensor, curLogitsShape, logitsDtype);
+    AscendTensor candTensorAt;
+    makeTensor(ctx, candTensorAt, curLogitsAtShape, logitsDtype);
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnGtScalar, ctx, curLogits, &zeroScalar, candTensor);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnGtScalar, ctx, curLogitsAt, &zeroScalar, candTensorAt);
 
-    AscendTensor selfTensor;
-    makeTensor(ctx, selfTensor, curLogitsShape, logitsDtype);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnDiv, ctx, curLogits, repetitionPenalty, selfTensor);
+    AscendTensor selfTensorAt;
+    makeTensor(ctx, selfTensorAt, curLogitsAtShape, logitsDtype);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnDiv, ctx, curLogitsAt, repetitionPenalty, selfTensorAt);
 
-    AscendTensor otherTensor;
-    makeTensor(ctx, otherTensor, curLogitsShape, logitsDtype);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnMul, ctx, curLogits, repetitionPenalty, otherTensor);
+    AscendTensor otherTensorAt;
+    makeTensor(ctx, otherTensorAt, curLogitsAtShape, logitsDtype);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnMul, ctx, curLogitsAt, repetitionPenalty, otherTensorAt);
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnSWhere, ctx, candTensor, selfTensor, otherTensor, repoLogitsTensor);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnSWhere, ctx, candTensorAt, selfTensorAt, otherTensorAt, repoLogitsTensorAt);
 
-    AscendTensor frequencyPenaltyProduct;
-    std::vector<int64_t> frequencyPenaltyProductShape = inferSize(pTokenCountsAt.shape(), frequencyPenaltyAt.shape());
-    makeTensor(ctx, frequencyPenaltyProduct, frequencyPenaltyProductShape, logitsDtype);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnMul, ctx, pTokenCounts, frequencyPenalty, frequencyPenaltyProduct);
+    AscendTensor frequencyPenaltyProductAt;
+    std::vector<int64_t> frequencyPenaltyProductAtShape = inferSize(pTokenCountsAt.shape(), frequencyPenaltyAt.shape());
+    makeTensor(ctx, frequencyPenaltyProductAt, frequencyPenaltyProductAtShape, logitsDtype);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnMul, ctx, pTokenCounts, frequencyPenalty, frequencyPenaltyProductAt);
 
-    AscendTensor penaltySum;
-    std::vector<int64_t> penaltySumShape = inferSize(frequencyPenaltyProductShape, presencePenaltyAt.shape());
-    makeTensor(ctx, penaltySum, penaltySumShape, logitsDtype);
+    AscendTensor penaltySumAt;
+    std::vector<int64_t> penaltySumAtShape = inferSize(frequencyPenaltyProductAtShape, presencePenaltyAt.shape());
+    makeTensor(ctx, penaltySumAt, penaltySumAtShape, logitsDtype);
     diopiScalar_t oneScalar = constructDiopiScalarT(diopi_dtype_float32, 1);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnAdd, ctx, frequencyPenaltyProduct, presencePenalty, &oneScalar, penaltySum);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnAdd, ctx, frequencyPenaltyProductAt, presencePenalty, &oneScalar, penaltySumAt);
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnSub, ctx, repoLogitsTensor, penaltySum, &oneScalar, repoLogitsTensor);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnSub, ctx, repoLogitsTensorAt, penaltySumAt, &oneScalar, repoLogitsTensorAt);
 
     std::vector<int64_t> shape(pTokenIdsShape);
     shape.emplace_back(1);
 
     pTokenIdsAt.view(shape);
-    DIOPI_ASCEND_CALL_ACLNN(aclnnScatterNd, ctx, logitsAt, pTokenIdsAt, repoLogitsTensor, logitsAt);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnScatterNd, ctx, logitsAt, pTokenIdsAt, repoLogitsTensorAt, logitsAt);
     return diopiSuccess;
 }
 
