@@ -26,18 +26,11 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
     DiopiTensor expAvgSqTensor(expAvgSq);
     DiopiTensor maxExpAvgSqTensor(maxExpAvgSq);
 
-    DiopiTensor inputCasted = inputTensor;
-    DiopiTensor gradCasted = gradTensor;
-    DiopiTensor expAvgCasted = expAvgTensor;
-    DiopiTensor expAvgSqCasted = expAvgSqTensor;
-    DiopiTensor maxExpAvgSqCasted = maxExpAvgSqTensor;
-
-    std::vector<DiopiTensor*> tensors{&inputCasted, &gradCasted, &expAvgCasted, &expAvgSqCasted, &maxExpAvgSqCasted};
     if (amsgrad) {
         DIOPI_CALL(autoCastTensorType(
-            ctx, {&inputCasted, &gradCasted, &expAvgCasted, &expAvgSqCasted, &maxExpAvgSqCasted}, {diopi_dtype_float16, diopi_dtype_float32}));
+            ctx, {&inputTensor, &gradTensor, &expAvgTensor, &expAvgSqTensor, &maxExpAvgSqTensor}, {diopi_dtype_float16, diopi_dtype_float32}));
     } else {
-        DIOPI_CALL(autoCastTensorType(ctx, {&inputCasted, &gradCasted, &expAvgCasted, &expAvgSqCasted}, {diopi_dtype_float16, diopi_dtype_float32}));
+        DIOPI_CALL(autoCastTensorType(ctx, {&inputTensor, &gradTensor, &expAvgTensor, &expAvgSqTensor}, {diopi_dtype_float16, diopi_dtype_float32}));
     }
 
     float beta1CorrectionRecip = 1;
@@ -64,18 +57,18 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
     kDim.z = 1;
     cnrtFunctionType_t kType = CNRT_FUNC_TYPE_UNION1;
     cnrtDataType_t cnrtType;
-    if (inputCasted.dtype() == diopi_dtype_float32) {
+    if (inputTensor.dtype() == diopi_dtype_float32) {
         cnrtType = cnrtFloat32;
     } else {
         cnrtType = cnrtFloat16;
     }
 
-    bangAdamInternal(gradCasted.data(),
-                     expAvgCasted.data(),
-                     expAvgSqCasted.data(),
-                     maxExpAvgSqCasted.data(),
-                     inputCasted.data(),
-                     inputCasted.numel(),
+    bangAdamInternal(gradTensor.data(),
+                     expAvgTensor.data(),
+                     expAvgSqTensor.data(),
+                     maxExpAvgSqTensor.defined() ? maxExpAvgSqTensor.data() : nullptr,
+                     inputTensor.data(),
+                     inputTensor.numel(),
                      1,
                      beta1,
                      beta2,
@@ -89,13 +82,7 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
                      queue,
                      cnrtType,
                      amsgrad);
-    DIOPI_CALL(dataTypeCast(ctx, gradTensor, gradCasted));
-    DIOPI_CALL(dataTypeCast(ctx, inputTensor, inputCasted));
-    DIOPI_CALL(dataTypeCast(ctx, expAvgTensor, expAvgCasted));
-    DIOPI_CALL(dataTypeCast(ctx, expAvgSqTensor, expAvgSqCasted));
-    if (amsgrad) {
-        DIOPI_CALL(dataTypeCast(ctx, maxExpAvgSqTensor, maxExpAvgSqCasted));
-    }
+
     return diopiSuccess;
 }
 
