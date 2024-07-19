@@ -15,11 +15,11 @@ namespace ascend {
 
 diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, const int64_t* dim, bool sorted,
                          bool return_counts, diopiTensorHandle_t indices, diopiTensorHandle_t* counts) {
+    // aclnnUnique2 only support dim == nullptr
+    ASCEND_CHECK_ABORT(dim == nullptr, "dim is not supported in aclnnUnique2");
+
     bool return_inverse = (indices != nullptr) ? true : false;
     AscendTensor inputAt(input);
-    constexpr int64_t NoneN = 1000;
-    int64_t dim_value = dim ? (*dim < 0 ? *dim + inputAt.dim() : *dim) : NoneN;
-
     const std::vector<int64_t> inSizeVec = inputAt.shape();
     diopiSize_t inSize = {inSizeVec.data(), static_cast<int64_t>(inSizeVec.size())};
 
