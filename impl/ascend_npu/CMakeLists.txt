@@ -174,6 +174,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/flip.cpp
     ${OLD_IMPL_DIR}/functions/pool.cpp
     ${OLD_IMPL_DIR}/functions/uniform.cpp
+    ${OLD_IMPL_DIR}/functions/unique.cpp
     ${OLD_IMPL_DIR}/functions/batch_norm.cpp
     ${OLD_IMPL_DIR}/functions/minmax.cpp
     ${OLD_IMPL_DIR}/functions/norm.cpp
