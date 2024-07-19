@@ -54,8 +54,8 @@ case $1 in
     ;;
   ascend)
     mkdir -p build && cd build
-    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DCMAKE_BUILD_TYPE=Release -DTEST=ON -DENABLE_COVERAGE=${USE_COVERAGE}
-    make -j16
+    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DIMPL_OPT=ascend -DCMAKE_BUILD_TYPE=Debug -DTEST=ON -DENABLE_COVERAGE=${USE_COVERAGE}
+    make -j32
     ;;
   hip_pytorch)
     mkdir build && cd build

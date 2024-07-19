@@ -6372,10 +6372,10 @@ diopi_configs = {
         name=['unique'],
         interface=['torch'],
         para=dict(
-            sorted=[True, True, False, True, False, False, True, False],
-            return_inverse=[False, True, True, False, True, True, False, True],
-            return_counts=[False, False, True, True, True, False, True, False],
-            dim=[None, -1, 1, None, 2, 0, 1, -2],
+            sorted=         [True, True, False, True, False, False, True, False],
+            return_inverse= [False, True, True, False, True, True, False, True],
+            return_counts=  [False, False, True, True, True, False, True, False],
+            dim=            [None, -1,    1,     None, 2,    0,     1,    -2],
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',

@@ -139,6 +139,7 @@ class CheckOutput(CheckResult):
     def allclose(tensor_dev: np.ndarray, tensor_ref: np.ndarray, **kwargs) -> bool:
         var_name = kwargs.get('name', 'out')
         sum_to_compare = kwargs.get('sum_to_compare', False)
+        # sum_to_compare = False
         rtol = kwargs.get('rtol', 1e-5)
         atol = kwargs.get('atol', 1e-8)
         mismatch_ratio_threshold = kwargs.get('mismatch_ratio_threshold', 1e-3)
@@ -150,15 +151,20 @@ class CheckOutput(CheckResult):
         glob_vars.func_status[glob_vars.cur_test_func] = 'passed'
         if not passed:
             glob_vars.func_status[glob_vars.cur_test_func] = 'failed'
+            print(f"tensor_dev {tensor_dev}")
+            print(f"tensor_ref {tensor_ref}")
             sum1 = tensor_dev.sum()
             sum2 = tensor_ref.sum()
             mask = np.isclose(tensor_dev, tensor_ref, rtol, atol, equal_nan=True)
             count = np.count_nonzero(np.equal(mask, False))
             debug_level = glob_vars.debug_level
+            if debug_level < 1:
+                print(f'debug_level {debug_level}')
+                debug_level = 100
             if tensor_dev.dtype == np.bool_:
                 max_diff = 1
                 error_info = f"The count of elements that do not meet the accuracy requirement is {count}.\n" + \
-                    f"Max of diff is {max_diff}.\n"
+                    f"\n"
             elif tensor_dev.ndim == 0 and tensor_ref.ndim == 0:
                 # result is scalar array
                 error_info = f"The actual val is {tensor_dev} and the expected is {tensor_ref}.\n"
@@ -187,7 +193,7 @@ class CheckOutput(CheckResult):
                 if np.isnan(sum1) or np.isnan(sum2):
                     error_info += f"Exists nan, {var_name} is {sum1} and {var_name}_ref is {sum2}.\n"
                 else:
-                    error_info += f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}, Max of diff is {max_diff}.\n"
+                    error_info += f"Sum of {var_name} is {sum1}, Sum of {var_name}_ref is {sum2}.\n"
                 if debug_level > 1:
                     error_info += f"{var_name} is {tensor_dev},\n{var_name}_ref is {tensor_ref},\nMask is {mask}\n"
             raise OutputCheckFailedException(error_info)
