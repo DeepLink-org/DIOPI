@@ -31,6 +31,8 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
             ctx, {&inputTensor, &gradTensor, &expAvgTensor, &expAvgSqTensor, &maxExpAvgSqTensor}, {diopi_dtype_float16, diopi_dtype_float32}));
     } else {
         DIOPI_CALL(autoCastTensorType(ctx, {&inputTensor, &gradTensor, &expAvgTensor, &expAvgSqTensor}, {diopi_dtype_float16, diopi_dtype_float32}));
+        // To temporarily bypass the bug in the camb kernel, apply for a fake tensor
+        maxExpAvgSqTensor = requiresTensor(ctx, expAvgSqTensor.shape(), expAvgSqTensor.dtype());
     }
 
     float beta1CorrectionRecip = 1;
@@ -66,7 +68,7 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
     bangAdamInternal(gradTensor.data(),
                      expAvgTensor.data(),
                      expAvgSqTensor.data(),
-                     maxExpAvgSqTensor.defined() ? maxExpAvgSqTensor.data() : nullptr,
+                     maxExpAvgSqTensor.data(),
                      inputTensor.data(),
                      inputTensor.numel(),
                      1,

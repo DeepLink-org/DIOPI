@@ -5193,7 +5193,7 @@ diopi_configs = {
                     "gen_fn": 'Genfunc.randn',
                 },
                 {
-                    "ins": ['exp_avg', 'exp_avg_sq', 'max_exp_avg_sq'],
+                    "ins": ['exp_avg', 'exp_avg_sq'],
                     "shape": [(), (0,), (4, 0), (12, 0, 9)],
                     "gen_fn": 'Genfunc.randn',
                 },
