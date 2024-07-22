@@ -60,7 +60,9 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, dio
     uint64_t viewDimNum = 0;
     using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** viewDims, uint64_t* viewDimsNum);
     static aclGetViewShapeFunc aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(impl::ascend::aclnn_adaptor::getOpApiFuncAddr("aclGetViewShape"));
-    int ret = aclGetViewShape(std::get<4>(params), &viewDims, &viewDimNum);
+    // get out tensor shape, out tensor is the 5th tensor in aclnnUnique2, index = 4
+    constexpr int64_t outputTensorIndex = 4;
+    int ret = aclGetViewShape(std::get<outputTensorIndex>(params), &viewDims, &viewDimNum);
     ASCEND_CHECK_ABORT(ret == 0, "get out aclGetViewShape failed");
 
     // fill out tensor
@@ -87,7 +89,9 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, dio
     // fill counts tensor
     if (returnCounts) {
         AscendTensor countsTmpAt(countsTmp);
-        int ret2 = aclGetViewShape(std::get<6>(params), &viewDims, &viewDimNum);
+        // get counts tensor shape, counts tensor is the 7th tensor in aclnnUnique2, index = 6
+        constexpr int64_t countsTensorIndex = 6;
+        int ret2 = aclGetViewShape(std::get<countsTensorIndex>(params), &viewDims, &viewDimNum);
         ASCEND_CHECK_ABORT(ret2 == 0, "get count aclGetViewShape failed");
         diopiSize_t countShape{viewDims, static_cast<int64_t>(viewDimNum)};
         diopiRequireTensor(ctx, counts, &countShape, nullptr, countsTmpAt.dtype(), diopi_device);
