@@ -1061,21 +1061,6 @@ device_configs = {
         ),
     ),
 
-    'adam': dict(
-        name=['adam', 'adamw'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['param', 'param_grad'],
-                    # FIXME Run diopi_functions.adam failed, because of inputs: param_grad changed
-                    # FIXME 特定参数组合精度差距过大
-                    "shape": [Skip(()), Skip((512, 256, 3, 3)), Skip((512, 512, 3, 3))],
-                    "dtype": [Skip(np.float16)],
-                },
-            ]
-        ),
-    ),
-
     'cdist': dict(
         name=['cdist'],
         para=dict(
