@@ -5189,18 +5189,18 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    "shape": [(), (16,), (4, 8), (12, 3, 9)],
-                    "gen_fn": 'Genfunc.randn',
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "gen_fn": 'Genfunc.rand',
                 },
                 {
                     "ins": ['exp_avg', 'exp_avg_sq'],
-                    "shape": [(), (16,), (4, 8), (12, 3, 9)],
-                    "gen_fn": 'Genfunc.randn',
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "gen_fn": 'Genfunc.rand',
                 },
                 {
                     "ins": ['max_exp_avg_sq'],
-                    "shape": [None, None, (4, 8), (12, 3, 9)],
-                    "gen_fn": 'Genfunc.randn',
+                    "shape": [None, None, (4, 8), (12, 4, 8)],
+                    "gen_fn": 'Genfunc.rand',
                 },
             ]
         ),
