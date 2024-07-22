@@ -2733,7 +2733,7 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, dio
     auto atMaxExpAvgSq = impl::aten::buildATen(max_exp_avg_sq);
 
     atParam.mul_(1 - lr * weight_decay);
-    atExpAvg.mul_(beta1).add_(atGrad, 1 - beta1);
+    atExpAvg.lerp_(atGrad, 1 - beta1);
     atExpAvgSq.mul_(beta2).addcmul_(atGrad, atGrad, 1 - beta2);
 
     at::Tensor denom;
