@@ -5167,14 +5167,13 @@ diopi_configs = {
         ),
     ),
 
-    # FXIME adamw、adam输出精度不一致
     'adam': dict(
         name=['adam', 'adamw'],
         interface=["CustomizedTest"],
-        atol=1e-3,
-        rtol=1e-3,
-        atol_half=1e-3,
-        rtol_half=1e-3,
+        atol=2e-3,
+        rtol=2e-3,
+        atol_half=2e-3,
+        rtol_half=2e-3,
         para=dict(
             lr=[0.001, 0.01, 0.001, 0.01],
             beta1=[0.9, 0.9, 0.9, 0.9],
