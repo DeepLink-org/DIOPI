@@ -63,24 +63,6 @@ device_configs = {
         ),
     ),
 
-    'conv_2d': dict(
-        name=['conv2d'],
-        atol=1e-1,
-        rtol=1e-2,
-    ),
-
-    'conv_2d_no_contiguous': dict(
-        name=["conv2d"],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ["input"],
-                    "dtype": [Skip(np.float32), Skip(np.float16), Skip(np.float64)],
-                },
-            ]
-        ),
-    ),
-
     'gelu': dict(
         name=['gelu'],
         atol=1e-3,
@@ -212,7 +194,7 @@ device_configs = {
     ),
 
     'pointwise_op': dict(
-        name=['erfinv', 'asin'],
+        name=['asin'],
         tensor_para=dict(
             args=[
                 {
@@ -977,30 +959,6 @@ device_configs = {
                 {
                     "ins": ['input'],
                     "dtype": [Skip(np.bool_),Skip(np.uint8),],
-                },
-            ]
-        ),
-    ),
-
-    'bernoulli': dict(
-        name=['bernoulli'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
-    'bernoulli_int': dict(
-        name=['bernoulli'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),Skip(np.int32),Skip(np.int16),Skip(np.int8),Skip(np.uint8),Skip(np.bool_),],
                 },
             ]
         ),

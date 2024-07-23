@@ -9,9 +9,9 @@
 
 #include <stdint.h>
 
-#define DIOPI_ATTR_WEEK __attribute__((weak))
+#define DIOPI_ATTR_WEAK __attribute__((weak))
 
-#define DIOPI_API DIOPI_ATTR_WEEK
+#define DIOPI_API DIOPI_ATTR_WEAK
 #define DIOPI_RT_API
 
 #if defined(__cplusplus)
@@ -123,14 +123,19 @@ extern DIOPI_RT_API diopiError_t diopiGetTensorDataConst(diopiConstTensorHandle_
 extern DIOPI_RT_API diopiError_t diopiGetTensorShape(diopiConstTensorHandle_t th, diopiSize_t* size);
 extern DIOPI_RT_API diopiError_t diopiGetTensorStride(diopiConstTensorHandle_t th, diopiSize_t* stride);
 extern DIOPI_RT_API diopiError_t diopiGetTensorDtype(diopiConstTensorHandle_t th, diopiDtype_t* dtype);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorDevice(diopiConstTensorHandle_t th, diopiDevice_t* device);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorDevice(diopiConstTensorHandle_t th, diopiDevice_t* device);
 
 extern DIOPI_RT_API diopiError_t diopiGetTensorNumel(diopiConstTensorHandle_t th, int64_t* numel);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* itemsize);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStoragePtr(diopiConstTensorHandle_t th, void** pStoragePtr);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageOffset(diopiConstTensorHandle_t th, int64_t* pOffset);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorStorageNbytes(diopiConstTensorHandle_t th, size_t* pNbytes);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGetTensorDeviceIndex(diopiConstTensorHandle_t th, diopiDeviceIndex_t* pDevIndex);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorElemSize(diopiConstTensorHandle_t th, int64_t* itemsize);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorStoragePtr(diopiConstTensorHandle_t th, void** pStoragePtr);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorStorageOffset(diopiConstTensorHandle_t th, int64_t* pOffset);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorStorageNbytes(diopiConstTensorHandle_t th, size_t* pNbytes);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorDeviceIndex(diopiConstTensorHandle_t th, diopiDeviceIndex_t* pDevIndex);
+
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorCrowIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* crow_indices);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* col_indices);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diopiTensorHandle_t* values);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiIsTensorSparse(diopiConstTensorHandle_t th, bool* is_sparse);
 
 /**
  * operations to require Stream and Tensor instances from a Context handle
@@ -139,20 +144,20 @@ extern DIOPI_RT_API diopiError_t diopiGetStream(diopiContextHandle_t ctx, diopiS
 
 extern DIOPI_RT_API diopiError_t diopiRequireTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, const diopiSize_t* size, const diopiSize_t* stride,
                                                     const diopiDtype_t dtype, const diopiDevice_t device);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t num_bytes,
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiRequireBuffer(diopiContextHandle_t ctx, diopiTensorHandle_t* tensor, int64_t num_bytes,
                                                                     diopiDevice_t device);
 
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diopiConstTensorHandle_t state);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorGetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t* ptrSeed, uint64_t* ptrOffset);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiGeneratorSetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t seed, uint64_t offset);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGeneratorGetState(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t th, diopiTensorHandle_t* data);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGeneratorSetState(diopiGeneratorHandle_t th, diopiConstTensorHandle_t state);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGeneratorGetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t* ptrSeed, uint64_t* ptrOffset);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGeneratorSetSeedAndOffset(diopiGeneratorHandle_t th, uint64_t seed, uint64_t offset);
 
 /**
  * operations to manipulate profiler record objects.
  * Call diopiRecordStart at the beginning of code that you want to profile and call diopiRecordEnd at the end.
  **/
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRecordStart(const char* record_name, void** record);
-extern DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiRecordEnd(void** record);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiRecordStart(const char* record_name, void** record);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiRecordEnd(void** record);
 
 #if defined(__cplusplus)
 }

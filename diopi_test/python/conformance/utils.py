@@ -233,3 +233,10 @@ def gen_pytest_case_nodeid(dir, file, class_, func):
     ->
     gencases/diopi_case/test_diopi_adadelta_adadelta.py::TestMdiopiSadadeltaFadadelta::test_adadelta_0"""
     return f'{os.path.join(os.path.normpath(dir), file)}::{class_}::{func}'
+
+
+def is_sparse(para_key, config):
+    for arg in config.get('tensor_para', {}).get('args', []):
+        if arg['ins'] == para_key:
+            return arg.get('sparse', [False])[0]
+    return False

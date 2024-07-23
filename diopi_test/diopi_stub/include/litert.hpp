@@ -10,6 +10,7 @@
 #include <conform_test.h>
 #include <diopi/diopirt.h>
 #include <diopi/functions.h>
+#include <diopi/functions_sparse.h>
 #include <pybind11/pybind11.h>
 
 #include <cassert>
@@ -68,8 +69,17 @@ public:
     int64_t nbytes() const { return nbytes_; }
 };
 
+enum class Layout : int8_t {
+    Strided,
+    Sparse,
+    SparseCsr,
+    SparseCsc,
+    SparseBsr,
+    SparseBsc,
+};
+
 struct diopiTensor {
-private:
+protected:
     std::vector<int64_t> shape_;
     std::vector<int64_t> stride_;
     diopiDtype_t dtype_;
@@ -77,11 +87,13 @@ private:
     int64_t numel_;
     std::shared_ptr<Storage> storage_ = nullptr;
     diopiContextHandle_t context_;
+    Layout layout_;
 
 public:
-    diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context, const void* src);
+    diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context, const void* src,
+                Layout layout = Layout::Strided);
     diopiTensor() {}
-    ~diopiTensor() {}
+    virtual ~diopiTensor() {}
     diopiTensor& operator=(const diopiTensor& other);
 
     diopiSize_t shape() const {
@@ -100,6 +112,8 @@ public:
     diopiDevice_t device() const { return device_; }
     int64_t numel() const { return numel_; }
     int64_t elemSize() const { return itemsize(this->dtype()); }
+    Layout layout() const { return layout_; }
+    bool is_sparse() const { return layout_ != Layout::Strided; }
 
     void* data() { return storage_->data(); }
     const void* data() const { return storage_->data(); }
@@ -137,6 +151,53 @@ public:
     }
 
     diopiContextHandle_t getCtx() const { return context_; }
+};
+
+struct diopiSparseCsrTensor : public diopiTensor {
+private:
+    std::shared_ptr<diopiTensor> crow_indices_ = nullptr;
+    std::shared_ptr<diopiTensor> col_indices_ = nullptr;
+    std::shared_ptr<diopiTensor> values_ = nullptr;
+
+public:
+    diopiSparseCsrTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
+                         std::shared_ptr<diopiTensor> crow_indices, std::shared_ptr<diopiTensor> col_indices, std::shared_ptr<diopiTensor> values)
+        : diopiTensor(shape, stride, dtype, device, context, nullptr, Layout::SparseCsr),
+          crow_indices_(crow_indices),
+          col_indices_(col_indices),
+          values_(values) {}
+    diopiSparseCsrTensor() {}
+    ~diopiSparseCsrTensor() {}
+    diopiSparseCsrTensor& operator=(const diopiSparseCsrTensor& other) {
+        if (this != &other) {
+            diopiTensor::operator=(other);
+            this->crow_indices_ = other.crow_indices_;
+            this->col_indices_ = other.col_indices_;
+            this->values_ = other.values_;
+        }
+        return *this;
+    }
+
+    diopiTensor* get_crow_indices() const {
+        if (!crow_indices_) {
+            return nullptr;
+        }
+        return crow_indices_.get();
+    }
+
+    diopiTensor* get_col_indices() const {
+        if (!col_indices_) {
+            return nullptr;
+        }
+        return col_indices_.get();
+    }
+
+    diopiTensor* get_values() const {
+        if (!values_) {
+            return nullptr;
+        }
+        return values_.get();
+    }
 };
 
 struct diopiGenerator {
@@ -213,9 +274,9 @@ public:
     }
 };
 
-DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst);
+DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiTensorCopyToBuffer(diopiContextHandle_t ctx, diopiConstTensorHandle_t tensor, void* dst);
 
-DIOPI_RT_API DIOPI_ATTR_WEEK diopiError_t diopiTensorCopyFromBuffer(diopiContextHandle_t ctx, const void* src, diopiTensorHandle_t tensor);
+DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiTensorCopyFromBuffer(diopiContextHandle_t ctx, const void* src, diopiTensorHandle_t tensor);
 
 DIOPI_RT_API diopiError_t diopiInit();
 

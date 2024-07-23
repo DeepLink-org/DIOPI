@@ -231,7 +231,7 @@ def get_func_info(content: list) -> Tuple[list, list, list, dict]:
 
 
 def get_functions_support(source_dir: str) -> Tuple[dict, dict]:
-    files = ["functions.h", "functions_ext.h", "functions_lmdeploy.h"]
+    files = ["functions.h", "functions_ext.h", "functions_lmdeploy.h", "functions_sparse.h"]
     content = []
     for h in files:
         with open(os.path.join(source_dir, h), "r", encoding="utf8") as f:
