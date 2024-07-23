@@ -163,6 +163,7 @@ public:
     // Use AscendTensor obj like const diopiTensor*
     explicit operator diopiConstTensorHandle_t() { return tensor_; }
     explicit operator diopiConstTensorHandle_t() const { return tensor_; }
+    explicit operator diopiTensorHandle_t() { return const_cast<diopiTensorHandle_t>(tensor_); }
 
     // Get AscendTensor attribute. Those methods can not change ascend tensor attribute.
     diopiDevice_t device() const {

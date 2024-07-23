@@ -15,6 +15,7 @@ ascend:
 - diopiAddmm
 - diopiAll
 - diopiAny
+- diopiApplyPenaltyV2
 - diopiArange
 - diopiArgmax
 - diopiAtan
@@ -62,7 +63,12 @@ ascend:
 - diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
+- diopiCustomizedFlashAttention
+- diopiCustomizedFlashAttentionBackward
+- diopiCustomizedFlashAttentionVarLen
+- diopiCustomizedFlashAttentionVarLenBackward
 - diopiCumsum
+- diopiDestIndexCopyKV
 - diopiDiv
 - diopiDivInp
 - diopiDivInpScalar
@@ -153,6 +159,7 @@ ascend:
 - diopiMaskedSelect
 - diopiMaskedSelectBackward
 - diopiMatmul
+- diopiMatmulAllReduce
 - diopiMax
 - diopiMaxAll
 - diopiMaxPool2d
@@ -191,6 +198,7 @@ ascend:
 - diopiPowScalar
 - diopiPowTensor
 - diopiProd
+- diopiPromptFlashAttention
 - diopiRMSNorm
 - diopiRMSNormBackward
 - diopiReciprocal
@@ -252,26 +260,18 @@ ascend:
 - diopiWhere
 - diopiZeroInp
 - diopiZeros
-- diopiDestIndexCopyKV
-- diopiApplyPenaltyV2
 ascend_npu:
 - diopiApplyPenalty
 - diopiContextAttentionInference
-- diopiCustomizedFlashAttention
-- diopiCustomizedFlashAttentionBackward
-- diopiCustomizedFlashAttentionVarLen
-- diopiCustomizedFlashAttentionVarLenBackward
 - diopiGetNativeMemoryFormat
 - diopiIndex
 - diopiIndexBackward
-- diopiMatmulAllReduce
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNLLLossV2
 - diopiNLLLossV2Backward
 - diopiNativeMemoryFormatCast
 - diopiPagedAttention
-- diopiPromptFlashAttention
 - diopiRotaryEmbeddingV2
 - diopiScaledMaskedSoftmax
 - diopiScaledMaskedSoftmaxBackward

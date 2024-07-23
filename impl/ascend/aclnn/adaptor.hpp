@@ -77,6 +77,9 @@ inline aclFormat storageFormatByDimNum(int64_t dimNum) {
 }
 
 inline aclTensor* createAclTensorFromAscendTensor(const AscendTensor& input) {
+    if (!input.defined()) {
+        return nullptr;
+    }
     const auto& shape = input.shape();
     const auto& stride = input.stride();
     const auto storageSize = static_cast<int64_t>(input.storageNbytes() / input.elemsize());
@@ -193,12 +196,12 @@ decltype(auto) convertType(T&& param) {
     } else if constexpr (IsBoolStdArray<U>::value) {
         return createAclBoolArrayFromVector<std::tuple_size_v<U>>(std::forward<T>(param));
     } else {
-        static_assert(!std::is_class_v<U> && !std::is_pointer_v<U>);
+        static_assert(!std::is_class_v<U> && !std::is_class_v<std::remove_pointer_t<U>>);
         return std::forward<T>(param);
     }
 }
 
-template <class T, class U = std::remove_reference_t<T>, std::enable_if_t<!std::is_class_v<U> && !std::is_pointer_v<U>, int> = 0>
+template <class T>
 void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
 
 #define IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Type)        \
@@ -304,7 +307,7 @@ template <typename T>
 struct IsAclnnBuildInType
     : std::disjunction<std::is_same<T, aclTensor*>, std::is_same<T, aclScalar*>, std::is_same<T, aclIntArray*>, std::is_same<T, aclFloatArray*>,
                        std::is_same<T, aclBoolArray*>, std::is_same<T, aclTensorList*>, std::is_same<T, aclScalarList*>, std::is_same<T, aclDataType>,
-                       std::is_same<T, aclFormat>, std::is_fundamental<std::decay_t<T>>> {};
+                       std::is_same<T, aclFormat>, std::is_fundamental<std::decay_t<T>>, std::is_pod<T>> {};
 
 // enable if all the args meet the conditions
 template <const char* workspaceApi, typename... Args, std::enable_if_t<std::conjunction_v<IsAclnnBuildInType<Args>...>, void*> = nullptr>
