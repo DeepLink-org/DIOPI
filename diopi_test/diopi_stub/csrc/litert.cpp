@@ -266,6 +266,11 @@ DIOPI_RT_API diopiError_t diopiGetTensorDeviceIndex(diopiConstTensorHandle_t th,
     return diopiSuccess;
 }
 
+DIOPI_RT_API diopiError_t diopiGetCurrentDeviceIndex(diopiDeviceIndex_t* pDevIndex) {
+    *pDevIndex = 0;
+    return diopiSuccess;
+}
+
 DIOPI_RT_API diopiError_t diopiIsTensorSparse(diopiConstTensorHandle_t th, bool* is_sparse) {
     *is_sparse = th->is_sparse();
     return diopiSuccess;
