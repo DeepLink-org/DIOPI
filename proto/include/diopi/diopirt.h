@@ -136,6 +136,7 @@ extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorCrowIndices(diopi
 extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* col_indices);
 extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diopiTensorHandle_t* values);
 extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiIsTensorSparse(diopiConstTensorHandle_t th, bool* is_sparse);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetCurrentDeviceIndex(diopiDeviceIndex_t* pDevIndex);
 
 /**
  * operations to require Stream and Tensor instances from a Context handle
