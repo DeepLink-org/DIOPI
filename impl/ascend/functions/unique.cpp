@@ -5,54 +5,50 @@
  */
 
 #include <cstdint>
-#include <iostream>
 #include <vector>
 
 #include "../aclnn/adaptor.hpp"
+#include "../common/utils.hpp"
 
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, const int64_t* dim, bool sorted, bool returnCounts,
                          diopiTensorHandle_t indices, diopiTensorHandle_t* counts) {
-    // aclnnUnique2 only support dim == nullptr
+    // aclnnUnique2 only supports when dim is nullptr. If dim is not nullptr, aclnnUniqueDim should be used.
     ASCEND_CHECK_ABORT(dim == nullptr, "dim is not supported in aclnnUnique2");
-
-    bool returnInverse = (indices != nullptr) ? true : false;
-    AscendTensor inputAt(input);
-    const std::vector<int64_t>& inSizeVec = inputAt.shape();
-    diopiSize_t inSize = {inSizeVec.data(), static_cast<int64_t>(inSizeVec.size())};
-    std::vector<int64_t> numelSizeVec{inputAt.numel()};
-    diopiSize_t numelSize = {numelSizeVec.data(), static_cast<int64_t>(numelSizeVec.size())};
-    std::vector<int64_t> zeroSizeVec = {0};
-    diopiSize_t zeroSize = {zeroSizeVec.data(), 1};
 
     // allocate temp out tensor
     diopiTensorHandle_t outTmp = nullptr;
+    AscendTensor inputAt(input), outTmpAt(outTmp);
     if (dim) {
-        diopiRequireTensor(ctx, &outTmp, &inSize, nullptr, inputAt.dtype(), diopi_device);
+        ASCEND_CHECK_ABORT(false, "dim is not supported in aclnnUnique2, need use aclnnUniqueDim.");
     } else {
-        diopiRequireTensor(ctx, &outTmp, &numelSize, nullptr, inputAt.dtype(), diopi_device);
+        makeTensor(ctx, outTmpAt, {inputAt.numel()}, inputAt.dtype());
     }
 
     // allocate temp inverse tensor
     diopiTensorHandle_t inverseTmp = nullptr;
+    AscendTensor inverseTmpAt(inverseTmp);
+    bool returnInverse = (indices != nullptr) ? true : false;
+    std::vector<int64_t> zeroShape = {0};
     if (returnInverse || returnCounts) {
-        diopiRequireTensor(ctx, &inverseTmp, &inSize, nullptr, diopi_dtype_int64, diopi_device);
+        makeTensor(ctx, inverseTmpAt, inputAt.shape(), diopi_dtype_int64);
     } else {
-        diopiRequireTensor(ctx, &inverseTmp, &zeroSize, nullptr, diopi_dtype_int64, diopi_device);
+        makeTensor(ctx, inverseTmpAt, zeroShape, diopi_dtype_int64);
     }
 
     // allocate temp counts tensor
     diopiTensorHandle_t countsTmp = nullptr;
+    AscendTensor countsTmpAt(countsTmp);
     if (returnCounts) {
-        diopiRequireTensor(ctx, &countsTmp, &numelSize, nullptr, diopi_dtype_int64, diopi_device);
+        makeTensor(ctx, countsTmpAt, {inputAt.numel()}, diopi_dtype_int64);
     } else {
-        diopiRequireTensor(ctx, &countsTmp, &zeroSize, nullptr, diopi_dtype_int64, diopi_device);
+        makeTensor(ctx, countsTmpAt, zeroShape, diopi_dtype_int64);
     }
 
     // call aclnnUnique2
-    auto params = ::impl::ascend::aclnn_adaptor::convertParams(input, sorted, returnInverse, returnCounts, outTmp, inverseTmp, countsTmp).params();
+    auto params = ::impl::ascend::aclnn_adaptor::convertParams(input, sorted, returnInverse, returnCounts, outTmpAt, inverseTmpAt, countsTmpAt).params();
     DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(aclnnUnique2, ctx, params);
 
     // get true outShape by aclGetViewShape
@@ -66,39 +62,25 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, dio
     ASCEND_CHECK_ABORT(ret == 0, "get out aclGetViewShape failed");
 
     // fill out tensor
-    diopiSize_t outShape{viewDims, static_cast<int64_t>(viewDimNum)};
-    diopiRequireTensor(ctx, out, &outShape, nullptr, inputAt.dtype(), diopi_device);
-    AscendTensor outAt(*out);
-    AscendTensor outTmpAt(outTmp);
-    outTmpAt.view({outShape.data, outShape.data + outShape.len});
-    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, outAt, outTmpAt);
+    AscendTensor outReshapeAt;
+    reshape(ctx, outTmpAt, outReshapeAt, {viewDims, viewDims + viewDimNum});
+    *out = const_cast<diopiTensorHandle_t>(outReshapeAt.tensorHandle());
 
     // fill indices tensor
     if (returnInverse) {
-        AscendTensor inverseTmpAt(inverseTmp);
-
-        diopiSize_t inSize = {inverseTmpAt.shape().data(), static_cast<int64_t>(inverseTmpAt.shape().size())};
-        AscendTensor indicesTmpAt(indices);
-        if (indicesTmpAt.shape() != inverseTmpAt.shape()) {
-            diopiRequireTensor(ctx, &indices, &inSize, nullptr, diopi_dtype_int64, diopi_device);
-        }
-        AscendTensor indicesAt(indices);
-        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, indicesAt, inverseTmpAt);
+        indices = const_cast<diopiTensorHandle_t>(inverseTmpAt.tensorHandle());
     }
 
     // fill counts tensor
     if (returnCounts) {
-        AscendTensor countsTmpAt(countsTmp);
         // get counts tensor shape, counts tensor is the 7th tensor in aclnnUnique2, index = 6
         constexpr int64_t countsTensorIndex = 6;
         int ret2 = aclGetViewShape(std::get<countsTensorIndex>(params), &viewDims, &viewDimNum);
         ASCEND_CHECK_ABORT(ret2 == 0, "get count aclGetViewShape failed");
-        diopiSize_t countShape{viewDims, static_cast<int64_t>(viewDimNum)};
-        diopiRequireTensor(ctx, counts, &countShape, nullptr, countsTmpAt.dtype(), diopi_device);
-        AscendTensor countsAt(*counts);
-        countsTmpAt.view({countShape.data, countShape.data + countShape.len});
 
-        DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, countsAt, countsTmpAt);
+        AscendTensor countsReshapeAt;
+        reshape(ctx, countsTmpAt, countsReshapeAt, {viewDims, viewDims + viewDimNum});
+        *counts = const_cast<diopiTensorHandle_t>(countsReshapeAt.tensorHandle());
     }
 
     // delete viewDims pointer

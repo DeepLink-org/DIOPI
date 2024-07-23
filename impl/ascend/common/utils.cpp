@@ -7,6 +7,7 @@
 #include "utils.hpp"
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <numeric>
@@ -15,6 +16,7 @@
 #include <typeinfo>
 #include <utility>
 
+#include "../aclnn/adaptor.hpp"
 #include "../ascend_tensor.hpp"
 #include "acloprunner.hpp"
 
@@ -166,23 +168,17 @@ diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src) {
 }
 
 diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst, const std::vector<int64_t>& shape) {
-    ASCEND_CHECK_ABORT(src.isContiguous(), "now only contiguous tensor support reshape by shape.");
-    if (src.isSame(dst)) {
-        dst.view(shape);
+    if (src.isSame(dst) && dst.shape() == shape) {
         return diopiSuccess;
     }
 
-    // make dst tensor with `shape`
-    AscendTensor tmp = src;
+    diopiTensorHandle_t out = nullptr;
+    diopiSize_t outShape{shape.data(), static_cast<int64_t>(shape.size())};
+    diopiRequireTensor(ctx, &out, &outShape, nullptr, src.dtype(), diopi_device);
+    AscendTensor outAt(out), tmp(src);
     tmp.view(shape);
-    makeTensorLike(ctx, dst, tmp);
-
-    auto sourcePtr = const_cast<void*>(src.data());
-    auto destPtr = const_cast<void*>(dst.data());
-    diopiStreamHandle_t stream;
-    diopiGetStream(ctx, &stream);
-    aclrtMemcpyAsync(destPtr, dst.getAclMemBufferSize(), sourcePtr, src.getAclMemBufferSize(), ACL_MEMCPY_DEVICE_TO_DEVICE, stream);
-
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, outAt, tmp);
+    dst = outAt;
     return diopiSuccess;
 }
 
