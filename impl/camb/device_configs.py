@@ -1061,6 +1061,18 @@ device_configs = {
         ),
     ),
 
+    'adam': dict(
+        name=['adam', 'adamw'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['param'],
+                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
+                },
+            ]
+        ),
+    ),
+
     'cdist': dict(
         name=['cdist'],
         para=dict(
