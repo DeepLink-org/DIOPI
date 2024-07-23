@@ -10,18 +10,13 @@
 namespace impl {
 namespace ascend {
 
-namespace {
-
-const int64_t bitNumber = 128;
-const int64_t uInt8BitNumber = 8;
-
-}  // namespace
-
 diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* dropoutMask,
                                            diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum, diopiTensorHandle_t* softmaxOut,
                                            diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                            diopiConstTensorHandle_t alibiSlopes, diopiConstTensorHandle_t attentionMask, float pDropout, float softmaxScale,
                                            bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight, int32_t headNum, const char* inputLayout) {
+    static const int64_t alignBitNumber = 128;
+    static const int64_t uInt8BitNumber = 8;
     AscendTensor qAt(q), kAt(k), vAt(v), alibiSlopesAt(alibiSlopes), attentionMaskAt(attentionMask), attentionOutAt(attentionOut);
     ASCEND_CHECK_ABORT(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
     ASCEND_CHECK_ABORT(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
@@ -72,7 +67,7 @@ diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, diopiTensor
     diopiSize_t prefixN{nullptr, 0};
     if (pDropout > 0 && pDropout <= 1) {
         int64_t numels = b * n * s0 * s1;  // [B,N,S,S]
-        int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
+        int64_t length = (numels + alignBitNumber - 1) / alignBitNumber * alignBitNumber / uInt8BitNumber;
         makeTensor(ctx, dropoutMaskAt, {length}, diopi_dtype_uint8);
         if (pDropout == 1) {
             DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, dropoutMaskAt);

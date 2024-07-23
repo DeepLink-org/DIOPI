@@ -10,19 +10,14 @@
 namespace impl {
 namespace ascend {
 
-namespace {
-
-const int64_t bitNumber = 128;
-const int64_t uInt8BitNumber = 8;
-
-}  // namespace
-
 diopiError_t diopiCustomizedFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHandle_t attentionOut, diopiTensorHandle_t* dropoutMask,
                                                  diopiTensorHandle_t* softmaxMax, diopiTensorHandle_t* softmaxSum, diopiTensorHandle_t* softmaxOut,
                                                  diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k, diopiConstTensorHandle_t v,
                                                  diopiSize_t cumSeqQ, diopiSize_t cumSeqKV, diopiConstTensorHandle_t alibiSlopes,
                                                  diopiConstTensorHandle_t attentionMask, int32_t maxSeqLenQ, int32_t maxSeqLenKV, float pDropout,
                                                  float softmaxScale, bool isCausal, int32_t windowSizeLeft, int32_t windowSizeRight) {
+    static const int64_t alignBitNumber = 128;
+    static const int64_t uInt8BitNumber = 8;
     AscendTensor qAt(q), kAt(k), vAt(v), attentionMaskAt(attentionMask), attentionOutAt(attentionOut);
     ASCEND_CHECK_ABORT(alibiSlopes == nullptr, "For ascend, flash attention currently does not support Attention with Linear Biases (ALiBi)!");
     ASCEND_CHECK_ABORT(windowSizeLeft == -1 && windowSizeRight == -1, "For ascend, flash attention currently does not support sliding window local attention!");
@@ -48,7 +43,7 @@ diopiError_t diopiCustomizedFlashAttentionVarLen(diopiContextHandle_t ctx, diopi
         for (int64_t i = 1; i < cumSeqQ.len; i++) {
             accum += ((cumSeqQ.data[i] - cumSeqQ.data[i - 1]) * (cumSeqKV.data[i] - cumSeqKV.data[i - 1]));
         }
-        int64_t length = (numels + bitNumber - 1) / bitNumber * bitNumber / uInt8BitNumber;
+        int64_t length = (numels + alignBitNumber - 1) / alignBitNumber * alignBitNumber / uInt8BitNumber;
         makeTensor(ctx, dropoutMaskAt, {length}, diopi_dtype_uint8);
         if (pDropout == 1) {
             DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, dropoutMaskAt);

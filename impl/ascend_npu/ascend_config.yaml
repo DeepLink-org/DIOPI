@@ -15,6 +15,7 @@ ascend:
 - diopiAddmm
 - diopiAll
 - diopiAny
+- diopiApplyPenaltyV2
 - diopiArange
 - diopiArgmax
 - diopiAtan
@@ -67,6 +68,7 @@ ascend:
 - diopiCustomizedFlashAttentionVarLen
 - diopiCustomizedFlashAttentionVarLenBackward
 - diopiCumsum
+- diopiDestIndexCopyKV
 - diopiDiv
 - diopiDivInp
 - diopiDivInpScalar
@@ -260,9 +262,7 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiApplyPenalty
-- diopiApplyPenaltyV2
 - diopiContextAttentionInference
-- diopiDestIndexCopyKV
 - diopiGetNativeMemoryFormat
 - diopiIndex
 - diopiIndexBackward
