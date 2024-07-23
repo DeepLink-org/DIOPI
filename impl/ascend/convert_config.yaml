@@ -37,11 +37,9 @@
 
 - diopiConvolution2d:
     dtype: (float64)->float32
-    layout: ND
 
 - diopiConvolution2dBackward:
     dtype: (float64)->float32
-    layout: ND
 
 - diopiAdaptiveAvgPool2d:
     dtype: (float64)->float32
