@@ -7,7 +7,9 @@ option(DIOPI_TORCH_UNSAFE_BUILDATEN "Whether to use fast but unsafe buildATen (c
 include(cmake/TorchBaseFunc.cmake)
 InitFindTorch()
 
-find_package(Torch 2.0 REQUIRED)
+if (NOT Torch_FOUND)
+    find_package(Torch 2.0 REQUIRED)
+endif()
 if (Torch_FOUND)
     message(STATUS "TORCH_CXX_FLAGS: ${TORCH_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
