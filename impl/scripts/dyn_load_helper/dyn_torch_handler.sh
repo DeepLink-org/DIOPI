@@ -15,7 +15,6 @@ done
 # symbol in same lib name.
 function gen_versioned_torch() {
   for ((i=0; i<${#torch_raws[@]}; i++)); do
-    python elffile_remove_unique.py -i "${torch_raws[$i]}"
     cp ${torch_raws[$i]} ${torch_4diopi[$i]}
   done
 
@@ -77,6 +76,15 @@ function patch_diopi_dipu() {
   patchelf --add-needed libtorch_dipu.so libdiopi_real_impl.so
 }
 
+function remove_unique_symbol() {
+  group="torch_$1" # raws or 4diopi
+  place="${2:-.}"
+  array="$group[@]"
+  for name in "${!array}"; do
+    echo "PATCH $name"
+    python elffile_remove_unique.py -i "${place%%/}/$name"
+  done
+}
 
 WORK_DIR=$2
 cd ${WORK_DIR}
@@ -92,4 +100,8 @@ elif [[ "$1" == "patch_diopi" ]]; then
     # in torch_dipu.so which use external torch template class that cannot work with inner torch CppFunction.  
     patch_diopi_dipu
     patch_diopi_torch
+elif [[ "$1" == "rm_unique_raw" ]]; then
+  remove_unique_symbol raws
+elif [[ "$1" == "rm_unique_diopi" ]]; then
+  remove_unique_symbol 4diopi
 fi
