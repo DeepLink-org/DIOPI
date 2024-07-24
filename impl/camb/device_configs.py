@@ -1066,6 +1066,7 @@ device_configs = {
         tensor_para=dict(
             args=[
                 {
+                    # Temporarily skip all test cases for adamw op on camb due to the kernel bug.
                     "ins": ['param'],
                     "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
                 },
