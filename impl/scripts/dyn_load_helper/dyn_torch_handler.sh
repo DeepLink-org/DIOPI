@@ -15,6 +15,7 @@ done
 # symbol in same lib name.
 function gen_versioned_torch() {
   for ((i=0; i<${#torch_raws[@]}; i++)); do
+    python elffile_remove_unique.py -i "${torch_raws[$i]}"
     cp ${torch_raws[$i]} ${torch_4diopi[$i]}
   done
 
