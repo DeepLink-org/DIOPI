@@ -249,9 +249,12 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  * https://github.com/Dao-AILab/flash-attention/blob/main/csrc/flash_attn/flash_api.cpp
  * @param[in] ctx The diopi context.
  * @param[in] gen Handle for the random number generator used in dropout op.
- * @param[in] q Query tensor. shape = [batch_size, seq_len_q, head_num_q, head_dim]. type = [bfloat16, float16].
- * @param[in] k Key tensor. shape = [batch_size, seq_len_k, head_num_k, head_dim]. type = [bfloat16, float16].
- * @param[in] v Value tensor. shape = [batch_size, seq_len_v, head_num_v, head_dim]. type = [bfloat16, float16].
+ * @param[in] q Query tensor. shape = [batch_size, seq_len_q, head_num_q, head_dim] or [batch_size, head_num_q, seq_len_q, head_dim] or [batch_size, seq_len_q,
+ * hidden_size] or [seq_len_q, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[in] k Key tensor. shape = [batch_size, seq_len_k, head_num_k, head_dim] or [batch_size, head_num_k, seq_len_k, head_dim] or [batch_size, seq_len_k,
+ * hidden_size] or [seq_len_k, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[in] v Value tensor. shape = [batch_size, seq_len_v, head_num_v, head_dim] or [batch_size, head_num_v, seq_len_v, head_dim] or [batch_size, seq_len_v,
+ * hidden_size] or [seq_len_v, batch_size, hidden_size]. type = [bfloat16, float16].
  * @param[in] alibi_slopes Optional tensor used in Attention with Linear Biases (ALiBi). A bias of (-alibi_slope * |i - j|) is added to the attention score of
  * query i and key j. shape = [head_num_q]. type = [float32].
  * @param[in] attention_mask Attention mask tensor. shape = [seq_len_q, seq_len_k]. type = [bool].
@@ -262,8 +265,10 @@ DIOPI_API diopiError_t diopiFlashAttentionBackward(diopiContextHandle_t ctx, dio
  * attend to keys between [i - window_size_left, i + window_size_right] inclusive.
  * @param[in] window_size_right If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only
  * attend to keys between [i - window_size_left, i + window_size_right] inclusive.
- * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, seq_len_q, head_num_q, head_dim]. type = [bfloat16,
- * float16].
+ * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
+ * @param[in] input_layout The layout of input tensor. type = [char*], "BSND", "BNSD", "BSH", "SBH".
+ * @param[out] attention_out Tensor storing the result after applying flash attention. shape = [batch_size, seq_len_q, head_num_q, head_dim] or [batch_size,
+ * head_num_q, seq_len_q, head_dim] or [batch_size, seq_len_q, hidden_size] or [seq_len_q, batch_size, hidden_size]. type = [bfloat16, float16].
  * @param[out] dropout_mask Tensor storing the dropout mask for back propagation.
  * @param[out] softmax_max Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
  * @param[out] softmax_sum Tensor storing the intermediate calculation result of softmax op for back propagation. type = [float32].
@@ -273,19 +278,24 @@ DIOPI_API diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, d
                                                      diopiTensorHandle_t* softmax_max, diopiTensorHandle_t* softmax_sum, diopiTensorHandle_t* softmax_out,
                                                      diopiGeneratorHandle_t gen, diopiConstTensorHandle_t q, diopiConstTensorHandle_t k,
                                                      diopiConstTensorHandle_t v, diopiConstTensorHandle_t alibi_slopes, diopiConstTensorHandle_t attention_mask,
-                                                     float p_dropout, float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right);
+                                                     float p_dropout, float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right,
+                                                     int32_t head_num, const char* input_layout);
 
 /**
  * @brief Compute the back propagation for Flash Attention.
  * @param[in] ctx The diopi context.
- * @param[in] grad_output The gradient of the output tensor. shape = [batch_size, seq_len_q, head_num_q, head_dim]. type = [bfloat16, float16].
- * @param[in] q Query tensor. shape = [batch_size, seq_len_q, head_num_q, head_dim]. type = [bfloat16, float16].
- * @param[in] k Key tensor. shape = [batch_size, seq_len_k, head_num_k, head_dim]. type = [bfloat16, float16].
- * @param[in] v Value tensor. shape = [batch_size, seq_len_v, head_num_v, head_dim]. type = [bfloat16, float16].
+ * @param[in] grad_output The gradient of the output tensor. shape = [batch_size, seq_len_q, head_num_q, head_dim] or [batch_size, head_num_q, seq_len_q,
+ * head_dim] or [batch_size, seq_len_q, hidden_size] or [seq_len_q, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[in] q Query tensor. shape = [batch_size, seq_len_q, head_num_q, head_dim] or [batch_size, head_num_q, seq_len_q, head_dim] or [batch_size, seq_len_q,
+ * hidden_size] or [seq_len_q, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[in] k Key tensor. shape = [batch_size, seq_len_k, head_num_k, head_dim] or [batch_size, head_num_k, seq_len_k, head_dim] or [batch_size, seq_len_k,
+ * hidden_size] or [seq_len_k, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[in] v Value tensor. shape = [batch_size, seq_len_v, head_num_v, head_dim] or [batch_size, head_num_v, seq_len_v, head_dim] or [batch_size, seq_len_v,
+ * hidden_size] or [seq_len_v, batch_size, hidden_size]. type = [bfloat16, float16].
  * @param[in] alibi_slopes Optional tensor used in Attention with Linear Biases (ALiBi). A bias of (-alibi_slope * |i - j|) is added to the attention score of
  * query i and key j. shape = [head_num_q]. type = [float32].
- * @param[in] attention_out Tensor representing the forward propagation result. shape = [batch_size, seq_len_q, head_num_q, head_dim]. type = [bfloat16,
- * float16].
+ * @param[in] attention_out Tensor representing the forward propagation result. shape = [batch_size, seq_len_q, head_num_q, head_dim] or [batch_size,
+ * head_num_q, seq_len_q, head_dim] or [batch_size, seq_len_q, hidden_size] or [seq_len_q, batch_size, hidden_size]. type = [bfloat16, float16].
  * @param[in] attention_mask Attention mask tensor. shape = [seq_len_q, seq_len_k]. type = [bool].
  * @param[in] dropout_mask Tensor representing the generated dropout mask from the forward propagation.
  * @param[in] softmax_max Tensor representing the intermediate calculation result of softmax op from the forward propagation. type = [float32].
@@ -298,9 +308,14 @@ DIOPI_API diopiError_t diopiCustomizedFlashAttention(diopiContextHandle_t ctx, d
  * attend to keys between [i - window_size_left, i + window_size_right] inclusive.
  * @param[in] window_size_right If (window_size_left, window_size_right) != (-1, -1), implements sliding window local attention. Query at position i will only
  * attend to keys between [i - window_size_left, i + window_size_right] inclusive.
- * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, seq_len_q, head_num_q, head_dim]. type = [bfloat16, float16].
- * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, seq_len_k, head_num_k, head_dim]. type = [bfloat16, float16].
- * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, seq_len_v, head_num_v, head_dim]. type = [bfloat16, float16].
+ * @param[in] head_num Number of heads. This parameter is required when the input tensor is 3D.
+ * @param[in] input_layout The layout of input tensor. type = [char*], "BSND", "BNSD", "BSH", "SBH".
+ * @param[out] grad_q The gradient of the query tensor. shape = [batch_size, seq_len_q, head_num_q, head_dim] or [batch_size, head_num_q, seq_len_q, head_dim]
+ * or [batch_size, seq_len_q, hidden_size] or [seq_len_q, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[out] grad_k The gradient of the key tensor. shape = [batch_size, seq_len_k, head_num_k, head_dim] or [batch_size, head_num_k, seq_len_k, head_dim] or
+ * [batch_size, seq_len_k, hidden_size] or [seq_len_k, batch_size, hidden_size]. type = [bfloat16, float16].
+ * @param[out] grad_v The gradient of the value tensor. shape = [batch_size, seq_len_v, head_num_v, head_dim] or [batch_size, head_num_v, seq_len_v, head_dim]
+ * or [batch_size, seq_len_v, hidden_size] or [seq_len_v, batch_size, hidden_size]. type = [bfloat16, float16].
  */
 DIOPI_API diopiError_t diopiCustomizedFlashAttentionBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_q, diopiTensorHandle_t grad_k,
                                                              diopiTensorHandle_t grad_v, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t q,
@@ -308,7 +323,8 @@ DIOPI_API diopiError_t diopiCustomizedFlashAttentionBackward(diopiContextHandle_
                                                              diopiConstTensorHandle_t attention_out, diopiConstTensorHandle_t attention_mask,
                                                              diopiConstTensorHandle_t dropout_mask, diopiConstTensorHandle_t softmax_max,
                                                              diopiConstTensorHandle_t softmax_sum, diopiConstTensorHandle_t softmax_out, float p_dropout,
-                                                             float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right);
+                                                             float softmax_scale, bool is_causal, int32_t window_size_left, int32_t window_size_right,
+                                                             int32_t head_num, const char* input_layout);
 
 /**
  * @brief Compute the forward propagation for the variable length version of Flash Attention.

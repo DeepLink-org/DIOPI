@@ -3348,10 +3348,12 @@ diopi_configs = {
         para=dict(
             reduction=['mean', 'none', 'mean', 'sum',
                        'sum', 'sum', 'mean', 'none',
-                       'none', 'mean', 'sum', 'mean'],
+                       'none', 'mean', 'sum', 'mean',
+                       'mean'],
             ignore_index=[-100, 79, -100, 0,
                           79, 0, 79, 100,
-                          -100, 94, 62, 0],
+                          -100, 94, 62, 0,
+                          -100],
         ),
         dtype=[np.float16, np.float32, np.float64],
         tensor_para=dict(
@@ -3362,13 +3364,15 @@ diopi_configs = {
                     "requires_grad": [True],
                     "shape": ((100,), (200, 79), (2, 92, 29), (2, 150, 128, 128),
                               (79,), (180, 80), (2, 79, 64, 64), (3, 80, 25, 24, 5),
-                              (5, 16, 0), (0, 16,), (0, 5, 6, 1, 3), (4, 82, 0, 3)),
+                              (5, 16, 0), (0, 16,), (0, 5, 6, 1, 3), (4, 82, 0, 3),
+                              (2048, 320)),
                 },
                 {
                     "ins": ['target'],
                     "shape": ((), (200,), (2, 29), (2, 128, 128),
                               (), (180,), (2, 64, 64), (3, 25, 24, 5),
-                              (5, 0), (0,), (0, 6, 1, 3), (4, 0, 3)),
+                              (5, 0), (0,), (0, 6, 1, 3), (4, 0, 3),
+                              (2048,)),
                     "dtype": [np.int64],
                     "gen_fn": dict(fn='Genfunc.randint', low=0, high=80),
                 },
@@ -3376,7 +3380,8 @@ diopi_configs = {
                     "ins": ['weight'],
                     "shape": (None, (79, ), (92, ), None,
                               (79,), (80,), (79, ), (80, ),
-                              (16,), (16,), (5,), (82,)),
+                              (16,), (16,), (5,), (82,),
+                              None),
                 },
             ],
         ),
@@ -9198,6 +9203,8 @@ diopi_configs = {
             softmax_scale=[0.0883, None, 0.125, 0.125],
             window_size_left=[-1, -1, -1, -1],
             window_size_right=[-1, -1, -1, -1],
+            head_num=[64, 16, 32, 8],
+            input_layout=['BSND', 'BSND', 'BSND', 'BSND']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -9228,6 +9235,49 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'customized_flash_attention_mha_other_layout': dict(
+        name=['customized_flash_attention'],
+        interface=['CustomizedTest'],
+        saved_args=dict(out=0),
+        para=dict(
+            p_dropout=[0, 0, 0, 0, 0, 0],
+            is_causal=[True, False, True, False, True, False],
+            softmax_scale=[0.0883, None, 0.125, 0.125, None, 0.125],
+            window_size_left=[-1, -1, -1, -1, -1, -1],
+            window_size_right=[-1, -1, -1, -1, -1, -1],
+            head_num=[64, 32, 64, 32, 64, 32],
+            input_layout=['SBH', 'SBH', 'BSH', 'BSH', 'BNSD', 'BNSD']
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['q'],
+                    "shape": ((64, 1, 8192), (64, 1, 4096), (1, 64, 8192), (1, 64, 4096), (1, 64, 64, 128), (1, 32, 64, 128)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['k'],
+                    "shape": ((64, 1, 8192), (64, 1, 4096), (1, 64, 8192), (1, 64, 4096), (1, 64, 64, 128), (1, 32, 64, 128)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ['v'],
+                    "shape": ((64, 1, 8192), (64, 1, 4096), (1, 64, 8192), (1, 64, 4096), (1, 64, 64, 128), (1, 32, 64, 128)),
+                    "dtype": [np.float16,],
+                    "requires_grad": [True],
+                },
+                {
+                    "ins": ["alibi_slopes"],
+                    "shape": (None, None, None, None, None, None),
+                    "dtype": [np.float32,],
+                },
+            ],
+        ),
+    ),
 
     'customized_flash_attention_gqa': dict(
         name=['customized_flash_attention'],
@@ -9239,6 +9289,8 @@ diopi_configs = {
             softmax_scale=[0.0883, None, 0.125],
             window_size_left=[-1, -1, -1],
             window_size_right=[-1, -1, -1],
+            head_num=[64, 32, 32],
+            input_layout=['BSND', 'BSND', 'BSND']
         ),
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -9388,6 +9440,30 @@ diopi_configs = {
                     "shape": ((1, 64, 64, 128), (1, 256, 256, 64), (16, 6, 128, 128)),
                     "dtype": [np.bool_],
                     "gen_fn": 'Genfunc.mask'
+                },
+            ],
+        ),
+    ),
+
+    'spmm': dict(
+        name=['spmm'],
+        interface=['torch'],
+        sparse_format='csr',
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((8, 48), (4, 128), (256, 8)),
+                    "dtype": [np.float32],
+                    "sparse": [True, False],
+                    "gen_fn": dict(fn='Genfunc.uniform', low=0, high=1, density=0.1),
+                },
+                {
+                    "ins": ['mat2'],
+                    "shape": ((48, 128), (128, 128), (8, 1)),
+                    "dtype": [np.float32],
+                    "sparse": [True, False],
+                    "gen_fn": 'Genfunc.randn',
                 },
             ],
         ),

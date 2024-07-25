@@ -7,8 +7,13 @@
 #include "torch_npu/csrc/framework/DIOPIAdapter.h"
 
 #include <ATen/EmptyTensor.h>
+#include <ATen/core/Generator.h>
+#include <ATen/core/TensorBody.h>
 #include <ATen/native/CPUFallback.h>
 #include <ATen/record_function.h>
+#include <c10/core/ScalarType.h>
+#include <c10/util/Exception.h>
+#include <c10/util/Optional.h>
 #include <torch/library.h>
 
 #include "../../../ascend/common/gil_scoped_release.hpp"
@@ -39,7 +44,7 @@ inline bool enableDumpArgs() { return std::getenv("DIOPI_DEBUG_OP") != nullptr; 
 AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_AND_QINTS(ENUM_PAIR_FUNC)
 #undef ENUM_PAIR_FUNC
 
-#if DIOPI_TORCH_VERSION >= 20100
+#if DIOPI_TORCH_INT_VERSION >= 20100
 #define AT_ALL_SCALAR_TYPE_AND_ACL_DATATYPE_PAIR(_)    \
     _(at::ScalarType::Byte, ACL_UINT8)                 \
     _(at::ScalarType::Char, ACL_INT8)                  \
@@ -121,6 +126,10 @@ aclError AclrtMemcpyParamCheck(void* dst, size_t destMax, const void* src, size_
 }
 
 }  // namespace
+
+thread_local diopiContextHandle_t context = nullptr;
+thread_local int context_use_counter = 0;
+thread_local std::map<void*, diopiTensorHandle_t> requiredTensorMap;
 
 namespace c10_npu {
 namespace option {
@@ -508,7 +517,7 @@ at::Tensor metadata_convert_match(const at::Tensor& src, bool numelEq) {
 }
 
 at::Tensor metadata_convert_match_without_copy_optimize(const at::Tensor& src) {
-    TORCH_CHECK(src.device().type() == at_npu::key::NativeDeviceType,
+    TORCH_CHECK(src.is_cpu() == false,
                 "Expected all tensors to be on the same device. "
                 "Expected NPU tensor, please check whether the input tensor device is correct.");
     auto& src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
@@ -517,7 +526,7 @@ at::Tensor metadata_convert_match_without_copy_optimize(const at::Tensor& src) {
 }
 
 at::Tensor metadata_convert_match_with_copy_optimize(const at::Tensor& src) {
-    TORCH_CHECK(src.device().type() == at_npu::key::NativeDeviceType,
+    TORCH_CHECK(src.is_cpu() == false,
                 "Expected all tensors to be on the same device. "
                 "Expected NPU tensor, please check whether the input tensor device is correct.");
     auto& src_desc = torch_npu::NPUBridge::GetNpuStorageImpl(src)->npu_desc_;
@@ -1370,7 +1379,7 @@ bool TransContiguous::ContiguousOptimizeWithAnyFormat(at::Tensor& self, const at
 }
 
 c10::optional<at::Tensor> TransContiguous::ContiguousOptimizeWithAnyFormat(const at::Tensor& src, const OptimizationCases& opt_cases) {
-    TORCH_CHECK(src.device().type() == at_npu::key::NativeDeviceType,
+    TORCH_CHECK(src.is_cpu() == false,
                 "Expected all tensors to be on the same device. "
                 "Expected NPU tensor, please check whether the input tensor device is correct.");
     auto self = OpPreparation::ApplyTensorWithFormat(src.sizes(), src.options(), torch_npu::NPUBridge::GetNpuStorageImpl(src)->get_npu_desc().npu_format_);
@@ -1448,7 +1457,9 @@ at::Tensor empty_npu(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_o
     }
     auto ret = diopiRequireTensor(context, &tensorDiopi, &sizeDiopi, nullptr, dtypeDiopi, deviceDiopi);
     TORCH_CHECK(diopiSuccess == ret);
-    return impl::aten::buildATen(tensorDiopi);
+    auto out = impl::aten::buildATen(tensorDiopi);
+    requiredTensorMap[out.data_ptr()] = tensorDiopi;
+    return out;
 }
 
 at::Tensor empty_npu(at::IntArrayRef size, const at::TensorOptions& options) {
@@ -1550,9 +1561,7 @@ at::Tensor OpPreparation::apply_tensor_with_format(c10::IntArrayRef sizes, const
                 "Expected all tensors to be on the same device. "
                 "Expected NPU tensor, please check whether the input tensor device is correct. but got ",
                 options);
-    auto fixFormat = InferFormat::GuessStorageFormat(sizes, (aclFormat)format);
-    return NPUNativeFunctions::unsafe_empty_with_format(
-        sizes, optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), options.device_opt(), options.pinned_memory_opt(), fixFormat, keep_format);
+    return at_npu::native::empty_npu(sizes, options);
 }
 
 inline at::Tensor apply_tensor_use_empty(c10::IntArrayRef sizes, const c10::TensorOptions& options) { return at_npu::native::empty_npu(sizes, options); }
@@ -1581,19 +1590,10 @@ at::Tensor OpPreparation::copy_scalar_to_device(const c10::Scalar& cpu_scalar, a
     at::Tensor cpuPinMemTensor = cpu_tensor.pin_memory();
     int deviceIndex = 0;
     NPU_CHECK_ERROR(aclrtGetDevice(&deviceIndex));
-    return cpuPinMemTensor.to(c10::Device(c10::DeviceType::XLA, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
+    return cpuPinMemTensor.to(c10::Device(at_npu::key::NativeDeviceType, deviceIndex), cpuPinMemTensor.scalar_type(), true, true);
 }
 
-at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) {
-    diopiTensorHandle_t tensorDiopi = nullptr;
-    c10::DimVector sizeVec(1, size);
-    diopiError_t ret = diopiRequireBuffer(context, &tensorDiopi, size, diopi_device);
-    if (enableDumpArgs()) {
-        std::cout << __FUNCTION__ << ": diopiRequireBuffer: " << size << "(bytes)." << std::endl;
-    }
-    TORCH_CHECK(diopiSuccess == ret);
-    return impl::aten::buildATen(tensorDiopi);
-}
+at::Tensor OpPreparation::unsafe_empty_workspace(uint64_t size) { return at_npu::native::empty_npu({size}, at::make_optional(at::kChar)); }
 
 void OpPreparation::CheckOut(const std::initializer_list<at::Tensor>& inputs, at::Tensor& output, at::Tensor dst) {
     CheckOut(inputs, output, CalcuOpUtil::GetTensorNpuFormat(dst), dst.scalar_type(), dst.sizes());
@@ -1764,7 +1764,7 @@ void StorageDescHelper::UpdateDesc(torch_npu::NPUStorageDesc& npuDesc, const c10
 
     npuDesc.base_sizes_ = new_size;
 
-    // 计算连续场景下size对应的stride值
+    // 计算连续场景下 size 对应的 stride 值
     int64_t dim_ = static_cast<int64_t>(new_size.size());
     c10::SmallVector<int64_t, 5> new_stride(dim_);
     if (dim_ > 0) {
@@ -1825,6 +1825,9 @@ void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, c
 }
 
 void StorageDescHelper::SetDesc(at::Tensor& dst, const c10::IntArrayRef& size, const c10::IntArrayRef& strides, aclFormat format) {
+    if (kUsePerformanceBuildAten) {
+        return;
+    }
     diopiTensorHandle_t tmp_tensor = torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_.diopi_tensor_;
     torch_npu::NPUBridge::GetNpuStorageImpl(dst)->npu_desc_ = SetDesc(dst.dtype(), size, strides, format, tmp_tensor);
 }
@@ -1857,6 +1860,9 @@ torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dty
 torch_npu::NPUStorageDesc StorageDescHelper::SetDesc(const caffe2::TypeMeta& dtype, const c10::IntArrayRef& size, const c10::IntArrayRef& strides,
                                                      aclFormat format, diopiTensorHandle_t tensor) {
     struct torch_npu::NPUStorageDesc npu_desc;
+    if (kUsePerformanceBuildAten) {
+        TORCH_WARN("this fun should not be called");
+    }
     npu_desc.data_type_ = dtype;
     npu_desc.base_sizes_ = size;
     npu_desc.base_strides_ = strides;
@@ -2384,7 +2390,6 @@ private:
 void OpCommandImpl::Run(bool sync, c10::SmallVector<int64_t, N>& sync_index, c10::SmallVector<at::Tensor, N>& outputTensor) {
     NPU_LOGD("Op %s start run.", opName.c_str());
     // RECORD_FUNCTION(opName, std::vector<c10::IValue>({}));
-    diopi::GilScopedRelease gilReleaeGuard;
     ACL_REQUIRE_OK_OP(InnerRun(opName, execParam, sync, sync_index, outputTensor), opName.c_str());
     NPU_LOGD("Op %s run over.", opName.c_str());
 }
@@ -2489,6 +2494,7 @@ aclError OpCommandImpl::InnerRun(const string& name, AclExecParam& params, bool 
         }
 #endif
         diopi::StreamLockGuard streamLockGuard(stream.stream());
+        diopi::GilScopedRelease gilReleaeGuard;
         if (sync) {
             ret = AclopCompileAndExecuteV2(name.c_str(),
                                            inputSize,
@@ -2931,9 +2937,11 @@ std::pair<uint64_t, uint64_t> NPUGeneratorImpl::philox_engine_inputs(uint64_t in
     return ret;
 }
 
+at::Generator defaultGenerator;
+
 namespace detail {
 
-const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { INTERFACE_NOT_IMPL; }
+const at::Generator& getDefaultNPUGenerator(c10::DeviceIndex device_index) { return defaultGenerator; }
 
 }  // namespace detail
 
@@ -2943,8 +2951,6 @@ NPUGeneratorImpl::NPUGeneratorImpl(c10::DeviceIndex device_index)
 }
 
 }  // namespace at_npu
-
-thread_local diopiContextHandle_t context = nullptr;
 
 namespace c10_npu {
 namespace acl {
@@ -2969,7 +2975,7 @@ NPUStream getCurrentNPUStream(c10::DeviceIndex device_index) {
     diopiStreamHandle_t stream_handle = nullptr;
     diopiGetStream(context, &stream_handle);
     TORCH_CHECK(stream_handle);
-    c10::Device device(c10::DeviceType::XLA, device_index);
+    c10::Device device(at_npu::key::NativeDeviceType, device_index);
     c10::Stream atStream(c10::Stream::Default::DEFAULT, device);
     aclrtStream aclStream = reinterpret_cast<aclrtStream>(stream_handle);
     TORCH_CHECK(aclStream);
@@ -3009,42 +3015,20 @@ NPUTensorImpl* NPUBridge::GetNpuTensorImpl(const at::Tensor& tensor) { return st
 
 }  // namespace torch_npu
 
+namespace at_npu::key {
+
+c10::DeviceType NativeDeviceType = c10::DeviceType::XLA;
+c10::DispatchKey NativeDispatchKey = c10::DispatchKey::XLA;
+c10::DispatchKey NativeAutogradDispatchKey = c10::DispatchKey::AutogradXLA;
+c10::Backend NativeBackend = c10::Backend::XLA;
+std::string npu_device_str("npu");      // NOLINT
+std::string default_device_str("xla");  // NOLINT c10::DeviceType NativeDeviceType = c10::DeviceType::XLA;
+
+}  // namespace at_npu::key
+
 namespace impl {
 
 namespace aten {
-
-// We can use reinterpret_cast directly in the dipu,
-// but we cannot use this method directly in the consistency test,
-// although the performance will be worse.
-#define DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST 1
-
-#if DIOPI_ADAPTER_BUILD_TENSOR_NOR_USE_CAST
-
-class FakeAllocator : public c10::Allocator {
-    void* ptr_ = nullptr;
-    size_t size_ = 0;
-    c10::Device device_;
-
-public:
-    FakeAllocator(void* ptr, size_t size, c10::Device device) : ptr_(ptr), size_(size), device_(device) {}
-
-    FakeAllocator() : device_(c10::DeviceType::CPU) {}
-
-    void set(void* ptr, size_t size, c10::Device device) {
-        ptr_ = ptr;
-        size_ = size, device_ = device;
-    }
-
-    c10::DataPtr allocate(size_t n) const {
-        if (n == 0) {
-            return c10::InefficientStdFunctionContext::makeDataPtr(nullptr, c10::detail::deleteNothing, device_);
-        } else {
-            return c10::InefficientStdFunctionContext::makeDataPtr(ptr_, c10::detail::deleteNothing, device_);
-        }
-    }
-
-    c10::DeleterFnPtr raw_deleter() const { return c10::detail::deleteNothing; }
-};
 
 at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef strides, const at::TensorOptions& options) {
     auto device = options.device();
@@ -3055,7 +3039,7 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
     c10::intrusive_ptr<c10::StorageImpl> storage_impl = c10::make_intrusive<torch_npu::NPUStorageImpl>(
         at::StorageImpl::use_byte_size_t(), nbytes, c10::InefficientStdFunctionContext::makeDataPtr(data, c10::detail::deleteNothing, device), nullptr, false);
     auto dtype = options.dtype();
-    c10::DispatchKeySet ks{c10::DispatchKey::XLA};
+    c10::DispatchKeySet ks{at_npu::key::NativeDispatchKey};
     auto tensor = at::detail::make_tensor<at::TensorImpl>(std::move(storage_impl), ks, dtype);
     if (strides.size() > 0) {
         tensor.unsafeGetTensorImpl()->set_sizes_and_strides(sizes, strides);
@@ -3066,6 +3050,12 @@ at::Tensor fromPreAllocated(void* data, at::IntArrayRef sizes, at::IntArrayRef s
     at_npu::native::StorageDescHelper::SetDesc(tensor, sizes, tensor.strides());
     return tensor;
 }
+
+// We can use reinterpret_cast directly in the dipu,
+// but we cannot use this method directly in the consistency test,
+// although the performance will be worse.
+
+namespace compatibility {
 
 const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     if (tensor == nullptr) return at::Tensor();
@@ -3093,29 +3083,6 @@ const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
     at::Tensor out = fromPreAllocated(data, atDims, atStrides, options);
     torch_npu::NPUBridge::GetNpuStorageImpl(out)->npu_desc_.diopi_tensor_ = const_cast<diopiTensorHandle_t>(tensor);
     return out;
-}
-
-at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
-
-#else
-
-inline at::Tensor buildATen(diopiTensorHandle_t tensor) {
-    if (tensor == nullptr) return at::Tensor();
-    return *reinterpret_cast<at::Tensor*>(tensor);
-}
-
-inline const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
-    if (tensor == nullptr) return at::Tensor();
-    return *reinterpret_cast<const at::Tensor*>(tensor);
-}
-
-#endif
-
-at::Generator buildATen(diopiGeneratorHandle_t generator) {
-    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
-    auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
-    impl->generator_ = generator;
-    return gen;
 }
 
 void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
@@ -3175,6 +3142,90 @@ at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, con
     return out;
 }
 
+at::Generator buildATen(diopiGeneratorHandle_t generator) {
+    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
+    auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
+    impl->generator_ = generator;
+    at_npu::defaultGenerator = gen;
+    return gen;
+}
+}  // namespace compatibility
+
+namespace performance {
+
+c10::DeviceType NativeDeviceType = c10::DeviceType::XPU;
+c10::DispatchKey NativeDispatchKey = c10::DispatchKey::XPU;
+c10::DispatchKey NativeAutogradDispatchKey = c10::DispatchKey::AutogradXPU;
+c10::Backend NativeBackend = c10::Backend::XPU;
+std::string npu_device_str("npu");      // NOLINT
+std::string default_device_str("xpu");  // NOLINT c10::DeviceType NativeDeviceType = c10::DeviceType::XLA;
+
+const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
+    if (tensor == nullptr) return at::Tensor();
+    return *reinterpret_cast<const at::Tensor*>(tensor);
+}
+
+void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
+    TORCH_CHECK(out != nullptr);
+    if (!input.defined()) {
+        *out = nullptr;
+    }
+    auto iter = requiredTensorMap.find(input.data_ptr());
+    if (iter != requiredTensorMap.end()) {
+        *out = iter->second;
+        auto outAt = buildATen(*out);
+        if (outAt.sizes() != input.sizes()) {
+            outAt = outAt.view_as(input);
+        }
+    } else {
+        TORCH_WARN("op can be optimized: there is redundant copy op");
+        at::IntArrayRef atSize = input.sizes();
+        at::IntArrayRef atStride = input.strides();
+        diopiSize_t size{atSize.data(), static_cast<int64_t>(atSize.size())};
+        diopiSize_t stride{atStride.data(), static_cast<int64_t>(atStride.size())};
+        diopiDtype_t dtype = getDIOPITensorType(input);
+        diopiDevice_t device = getDIOPIDevice(input.device().type());
+        diopiRequireTensor(ctx, out, &size, &stride, dtype, device);
+        updateATen2Tensor(ctx, input, *out);
+    }
+}
+
+at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
+    if (strides.empty()) {
+        return input.reshape(sizes);
+    } else {
+        return input.as_strided(sizes, strides, storageOffset);
+    }
+}
+
+at::Generator buildATen(diopiGeneratorHandle_t generator) {
+    auto gen = at::make_generator<at_npu::NPUGeneratorImpl>(current_device());
+    auto impl = static_cast<at_npu::NPUGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
+    impl->generator_ = generator;
+    at_npu::defaultGenerator = gen;
+    return gen;
+}
+
+}  // namespace performance
+
+const at::Tensor buildATen(diopiConstTensorHandle_t tensor) {
+    return kUsePerformanceBuildAten ? performance::buildATen(tensor) : compatibility::buildATen(tensor);
+}
+
+void buildDiopiTensor(diopiContextHandle_t ctx, at::Tensor& input, diopiTensorHandle_t* out) {
+    kUsePerformanceBuildAten ? performance::buildDiopiTensor(ctx, input, out) : compatibility::buildDiopiTensor(ctx, input, out);
+}
+
+at::Tensor viewStorage(const at::Tensor input, const c10::IntArrayRef sizes, const c10::IntArrayRef strides, const int64_t storageOffset) {
+    return kUsePerformanceBuildAten ? performance::viewStorage(input, sizes, strides, storageOffset)
+                                    : compatibility::viewStorage(input, sizes, strides, storageOffset);
+}
+at::Generator buildATen(diopiGeneratorHandle_t generator) {
+    return kUsePerformanceBuildAten ? performance::buildATen(generator) : compatibility::buildATen(generator);
+}
+
+at::Tensor buildATen(diopiTensorHandle_t tensor) { return buildATen(static_cast<diopiConstTensorHandle_t>(tensor)); }
+
 c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List<c10::optional<at::Tensor>>& indices) {
     c10::List<c10::optional<at::Tensor>> result;
     for (c10::optional<at::Tensor> indexOpt : indices) {
@@ -3188,12 +3239,21 @@ c10::List<c10::optional<at::Tensor>> castIntIndicesToLongIndices(const c10::List
     return result;
 }
 
-void setCurCtx(diopiContextHandle_t ctx) {
-    context = ctx;
-    at_npu::native::markedOutputs.clear();
+ContextManger::ContextManger(diopiContextHandle_t ctx) {
+    if (context_use_counter == 0) {
+        context = ctx;
+        at_npu::native::markedOutputs.clear();
+    }
+    context_use_counter++;
 }
 
-void unsetCurCtx() { context = nullptr; }
+ContextManger::~ContextManger() {
+    context_use_counter--;
+    if (context_use_counter == 0) {
+        context = nullptr;
+        requiredTensorMap.clear();
+    }
+}
 
 }  // namespace aten
 
@@ -3265,7 +3325,7 @@ at::Tensor& wrapper_source_Storage_set_(at::Tensor& self, at::Storage src) {
     auto* selfImpl = self.unsafeGetTensorImpl();
     auto storage = selfImpl->unsafe_storage();
     auto storageImpl = storage.unsafeGetStorageImpl();
-#if DIOPI_TORCH_VERSION >= 20100
+#if DIOPI_TORCH_INT_VERSION >= 20100
     storageImpl->set_data_ptr(std::move(src.mutable_data_ptr()));
 #else
     storageImpl->set_data_ptr(std::move(src.data_ptr()));
@@ -3280,7 +3340,7 @@ at::Tensor& wrapper_source_Storage_storage_offset_set_(at::Tensor& self, at::Sto
     auto* selfImpl = self.unsafeGetTensorImpl();
     auto storage = selfImpl->unsafe_storage();
     auto storageImpl = storage.unsafeGetStorageImpl();
-#if DIOPI_TORCH_VERSION >= 20100
+#if DIOPI_TORCH_INT_VERSION >= 20100
     storageImpl->set_data_ptr(std::move(source.mutable_data_ptr()));
 #else
     storageImpl->set_data_ptr(std::move(source.data_ptr()));
@@ -3345,7 +3405,7 @@ at::Tensor wrapper__transpose(const at::Tensor& self, int64_t dim0, int64_t dim1
     dims[dim0] = dim1;
     dims[dim1] = dim0;
     auto outputSize = op_infer::transpose_npu_output_size(self, dims);
-    at::Tensor output = at_npu::native::OpPreparation::apply_tensor(self, outputSize);
+    at::Tensor output = at_npu::native::empty_npu(outputSize, self.options());
     at::IntArrayRef dimsAt(dims);
     EXEC_NPU_CMD(aclnnPermute, self, dimsAt, output);
     return output;

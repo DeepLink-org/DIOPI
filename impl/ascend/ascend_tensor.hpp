@@ -60,6 +60,16 @@ namespace ascend {
         }                                                             \
     } while (0);
 
+#define ASCEND_CHECK_THROW(condition, ...)                                                        \
+    do {                                                                                          \
+        if (!(condition)) {                                                                       \
+            printf("[%s:%s:%d]: ", __FILE__, __FUNCTION__, __LINE__);                             \
+            printf(__VA_ARGS__);                                                                  \
+            printf("\n");                                                                         \
+            throw std::runtime_error(std::string("ascend device error:") + aclGetRecentErrMsg()); \
+        }                                                                                         \
+    } while (0);
+
 #define ASCEND_CHECK_NULLPTR_ABORT(ptr) ASCEND_CHECK_ABORT(ptr, "Variable is nullptr, pls check.")
 
 inline void error(const char* file, int lineNum, const char* funcName, const char* format, ...) {
@@ -95,6 +105,7 @@ constexpr aclDataType diopiDtypeToAclDataType(diopiDtype_t dtype) noexcept {
         return acl_dtype;
 
     switch (dtype) {
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_bfloat16, ACL_BF16)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_float16, ACL_FLOAT16)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_float32, ACL_FLOAT)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_float64, ACL_DOUBLE)
@@ -107,6 +118,7 @@ constexpr aclDataType diopiDtypeToAclDataType(diopiDtype_t dtype) noexcept {
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_int64, ACL_INT64)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_uint64, ACL_UINT64)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_bool, ACL_BOOL)
+        DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_complex32, ACL_COMPLEX32)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_complex64, ACL_COMPLEX64)
         DIOPI_DTYPE_TO_ACL_DTYPE_CASE(diopi_dtype_complex128, ACL_COMPLEX128)
         default:
@@ -151,6 +163,7 @@ public:
     // Use AscendTensor obj like const diopiTensor*
     explicit operator diopiConstTensorHandle_t() { return tensor_; }
     explicit operator diopiConstTensorHandle_t() const { return tensor_; }
+    explicit operator diopiTensorHandle_t() { return const_cast<diopiTensorHandle_t>(tensor_); }
 
     // Get AscendTensor attribute. Those methods can not change ascend tensor attribute.
     diopiDevice_t device() const {

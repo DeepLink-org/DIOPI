@@ -4,14 +4,21 @@
  * @copyright  (c) 2023, DeepLink.
  */
 
-#include "../common/acloprunner.hpp"
-
+#include "../aclnn/adaptor.hpp"
 namespace impl {
 namespace ascend {
 
 diopiError_t diopiStack(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t* tensors, int64_t numInputs, int64_t dim) {
-    std::vector<diopiConstTensorHandle_t> dynamicInput(tensors, tensors + numInputs);
-    AclOpRunner<1, 1>("Pack", ctx).addDynamicInput(dynamicInput).setAttr("N", numInputs).setAttr("axis", dim).addOutput(out).run();
+    AscendTensor tensor(tensors[0]);
+    if (!tensor.defined() || tensor.numel() == 0) {
+        return diopiSuccess;
+    }
+
+    std::vector<diopiConstTensorHandle_t> tensorsVec(numInputs);
+    for (int i = 0; i < numInputs; i++) {
+        tensorsVec[i] = tensors[i];
+    }
+    DIOPI_ASCEND_CALL_ACLNN(aclnnStack, ctx, tensorsVec, dim, out);
     return diopiSuccess;
 }
 

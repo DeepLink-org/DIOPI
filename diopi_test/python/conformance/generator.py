@@ -69,6 +69,33 @@ class Genfunc:
         val = np.array(np.random.randn(*shape) + 1j * np.random.randn(*shape)).astype(dtype)
         return sp.special.log_softmax(val, dim)
 
+    @staticmethod
+    def uniform_sparse(low=0, high=1, shape=(1,), density=0.2, dtype=np.float32):
+        tensor = np.random.uniform(low, high, size=shape).astype(dtype)
+        mask = np.random.rand(*shape) < density
+        return tensor * mask
+
+    @staticmethod
+    def rand_sparse(shape, density=0.2, dtype=np.float32):
+        tensor = np.random.rand(*shape).astype(dtype)
+        mask = np.random.rand(*shape) < density
+        return tensor * mask
+
+    @staticmethod
+    def randn_sparse(shape, density=0.2, dtype=np.float32):
+        tensor = np.random.randn(*shape).astype(dtype)
+        mask = np.random.rand(*shape) < density
+        return tensor * mask
+
+    @staticmethod
+    def randint_sparse(low=0, high=10, shape=(1,), density=0.2, dtype=np.float32):
+        if dtype == np.uint8:
+            tensor = np.random.randint(low=0, high=high, size=shape).astype(dtype)
+        else:
+            tensor = np.random.randint(low, high, size=shape).astype(dtype)
+        mask = np.random.rand(*shape) < density
+        return tensor * mask
+
 
 # only for Genfunc test
 if __name__ == "__main__":

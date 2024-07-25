@@ -15,6 +15,7 @@ import numpy as np
 from conformance.diopi_runtime import Tensor, from_numpy_dtype, default_context
 from conformance.diopi_functions import ones_like, FunctionNotImplementedError, FunctionNotDefinedError
 from conformance.check_result import CheckResult, CheckInput, CheckOutput
+from conformance.utils import is_sparse
 ${test_diopi_head_import}
 
 data_path = './cache'
@@ -151,7 +152,9 @@ for para_key, para_val in function_kwargs.items():
 # to_tensor
 for para_key, para_val in function_kwargs.items():
     if isinstance(para_val, np.ndarray):
-        function_kwargs[para_key] = Tensor.from_numpy(para_val)
+        sparse = is_sparse(para_key, function_config)
+        sparse_format = function_config.get('sparse_format', None)
+        function_kwargs[para_key] = Tensor.from_numpy(para_val, is_sparse=sparse, sparse_format=sparse_format) 
     if para_key == 'dtype':
         function_kwargs[para_key] = from_numpy_dtype(para_val)
 """
