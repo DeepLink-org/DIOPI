@@ -113,7 +113,7 @@ jobs:
             set -e
             source ${ENV_PATH}/pt2.0_diopi
             cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python &&
-            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=20 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=30 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
             || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
             """
           else
