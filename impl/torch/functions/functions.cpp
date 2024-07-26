@@ -1165,6 +1165,17 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
     return diopiSuccess;
 }
 
+diopiError_t diopiForeachaddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* other) {
+    impl::aten::setCurStream(ctx);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atOut, out, selfSize)
+    DIOPI_IMPL_BUILD_ATEN_LIST(atSelf, self, selfSize)
+    for(int i=0; i<selfSize; i++) at::native::copy_(atOut[i], atSelf[i], true);
+    auto atOther = impl::aten::buildAtScalar(other);
+    CALL_ATEN_CUDA_FUNC(_foreach_add_,atOut,atOther);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiForeachaddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* other) {
     impl::aten::setCurStream(ctx);
     DIOPI_IMPL_BUILD_ATEN_LIST(atSelf, self, selfSize)

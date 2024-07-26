@@ -1107,6 +1107,16 @@ DIOPI_API diopiError_t diopiAddScalar(diopiContextHandle_t ctx, diopiTensorHandl
 DIOPI_API diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other, const diopiScalar_t* alpha);
 
 /**
+ * @brief The diopiForeachaddScalar.
+ * @param[in] ctx Context environment.
+ * @param[out] out the output tensor list and will be store the result tensor.  type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] self the input tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] selfSize the length of the input tensor list. type = [int64].
+ * @param[in] other The scalar value to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiForeachaddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* other);
+
+/**
  * @brief The in-place version of diopiForeachaddScalar.
  * @param[in] ctx Context environment.
  * @param[in] self the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
