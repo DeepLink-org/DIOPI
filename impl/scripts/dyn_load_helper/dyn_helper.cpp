@@ -22,7 +22,10 @@ void* dynLoadFile(const char* diopiRealName) {
         }
     }
     if (!handle) {
-        fprintf(stderr, "%s ", dlerror());
+        fprintf(stderr,
+                "! please note that dynamic loaded diopi_impl.so need explictly link to it's \
+                 diopi_rt (now is torch_dipu), so it cannot be used for diopi-test now \n");
+        fprintf(stderr, "%s \n", dlerror());
         throw std::runtime_error("diopi_init err");
     }
     return handle;

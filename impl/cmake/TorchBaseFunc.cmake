@@ -4,10 +4,13 @@ macro(diopi_find_torch)
     COMMAND sh -c "python -c 'import torch;print(torch.utils.cmake_prefix_path)'"
     OUTPUT_VARIABLE DIOPI_TORCH_CMAKE_PREFIX
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-  message(STATUS "DIOPI_TORCH_CMAKE_PREFIX:${DIOPI_TORCH_CMAKE_PREFIX}")
   if(DIOPI_TORCH_CMAKE_PREFIX)
+    # this config is appened to existing CMAKE_PREFIX_PATH and not overwrite
+    # user provided CMAKE_PREFIX_PATH.
     list(APPEND CMAKE_PREFIX_PATH ${DIOPI_TORCH_CMAKE_PREFIX})
   endif()
+  message(STATUS "diopi CMAKE_PREFIX_PATH:${CMAKE_PREFIX_PATH}")
+
 
   find_package(Torch REQUIRED)
   if (Torch_FOUND)

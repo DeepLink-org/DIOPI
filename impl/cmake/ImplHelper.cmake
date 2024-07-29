@@ -1,4 +1,5 @@
-function(diopi_use_adapter adaptor_dir diopi_impl_dir config_device base_device out_src_files)
+function(diopi_use_adapter adaptor_dir diopi_impl_dir config_device base_device
+         out_src_files)
     # NB: all augements passed by func parameters instead of global variables.
     file(GLOB ADAPTOR_TEMPLATE_CODE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${adaptor_dir}/codegen/*.py)
     add_custom_target(adaptor_gen_dependency DEPENDS ${ADAPTOR_TEMPLATE_CODE})
@@ -12,6 +13,7 @@ function(diopi_use_adapter adaptor_dir diopi_impl_dir config_device base_device 
         VERBATIM
         )
     list(APPEND ${out_src_files} ${ADAPTOR_CSRC_PATH}/convert.cpp ${ADAPTOR_CSRC_PATH}/diopi_adaptor.cpp ${ADAPTOR_CSRC_PATH}/composite_ops.cpp)
+    set(${out_src_files} ${${out_src_files}} PARENT_SCOPE)
 endfunction()
 
 

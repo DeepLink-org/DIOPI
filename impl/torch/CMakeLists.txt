@@ -23,7 +23,7 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/convert_config.yaml")
 endif()
 
 if(USE_ADAPTOR)
-    diopi_use_adapter(${ADAPTOR_DIR} ${DIOPI_IMPL_DIR} "torch" "" ${REAL_IMPL_SRC})
+    diopi_use_adapter(${ADAPTOR_DIR} ${DIOPI_IMPL_DIR} "torch" "" REAL_IMPL_SRC)
 endif()
 
 if(${DYLOAD})
