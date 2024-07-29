@@ -54,18 +54,13 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
-diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool unbiased) {
+diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, const diopiScalar_t* correction) {
     AscendTensor inputAt(input);
     AscendTensor outAt(out);
 
     bool keepdim = false;
     if (inputAt.dim() == outAt.dim()) {
         keepdim = true;
-    }
-
-    int64_t correction = 0;
-    if (unbiased) {
-        correction = 1;
     }
 
     if (dim.data == nullptr || dim.len == 0) {

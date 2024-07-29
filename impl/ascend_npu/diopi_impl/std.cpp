@@ -11,13 +11,12 @@
 
 namespace OP_IMPL_NS {
 
-diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool unbiased) {
-    BEGIN_CALL_ACL_OP(out, input, dim);
+diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, const diopiScalar_t* correction) {
+    BEGIN_CALL_ACL_OP(out, input, dim, correction);
     bool keepdim = false;
     if (inputAt.dim() == outAt.dim()) {
         keepdim = true;
     }
-    at::Scalar correction(static_cast<int64_t>(unbiased));
     if (0 == dim.len) {
         c10::DimVector adim(inputAt.dim());
         std::iota(adim.begin(), adim.end(), 0);

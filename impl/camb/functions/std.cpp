@@ -23,7 +23,8 @@ namespace camb {
  * @param unbiased whether to compute the unbiased standard deviation.
  * @param[out] out the output tensor depend on dim. type = [float32, float64, float16].
  */
-DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool unbiased) {
+DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim,
+                                const diopiScalar_t* correction) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     // shape of outTensor does not keep the dim.
@@ -77,7 +78,7 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
 
     CnnlResourceGuard<cnnlStdVarMeanDescriptor_t, cnnlCreateStdVarMeanDescriptor, cnnlDestroyStdVarMeanDescriptor> stdVarMeanObj;
     cnnlStdVarMeanDescriptor_t stdVarMeanDesc = stdVarMeanObj.get();
-    DIOPI_CALL_CNNL(cnnlSetStdVarMeanDescriptor(stdVarMeanDesc, CNNL_STD, axisNum, axis, unbiased));
+    DIOPI_CALL_CNNL(cnnlSetStdVarMeanDescriptor(stdVarMeanDesc, CNNL_STD, axisNum, axis, (bool)correction->ival));
     delete[] axis;
 
     size_t workspaceSize = 0;
