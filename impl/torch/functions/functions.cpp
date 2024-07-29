@@ -16,6 +16,7 @@
 // clang-format on
 
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 
 #ifdef USE_HIP
@@ -402,7 +403,11 @@ diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     if (atInput.dim() == atOut.dim()) {
         keepdim = true;
     }
-    CALL_ATEN_CUDA_FUNC(std_out, atOut, atInput, atDim, atCorrection, keepdim);
+    #if TORCH_MM_VERSION >= 2010
+        CALL_ATEN_CUDA_FUNC(std_out, atOut, atInput, atDim, atCorrection, keepdim);
+    #else
+        CALL_ATEN_CUDA_FUNC(std_out, atOut, atInput, atDim, atCorrection.value_or(0).to<int64_t>(), keepdim);
+    #endif
     return diopiSuccess;
 }
 
