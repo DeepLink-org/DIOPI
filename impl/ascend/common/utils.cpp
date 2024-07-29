@@ -698,8 +698,6 @@ diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, AscendTensor& src) {
 }
 
 diopiError_t deviceToHost(diopiContextHandle_t ctx, AscendTensor& deviceTensor, void* hostPtr) {
-    // void* ptrHost = malloc(deviceTensor.numel() * deviceTensor.elemsize());
-
     if (deviceTensor.device() == diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
