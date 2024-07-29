@@ -7,12 +7,12 @@
 #include <cstdlib>
 #include <vector>
 
+#include "../../../adaptor/csrc/impl_functions.hpp"
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
-#include "../../../adaptor/csrc/impl_functions.hpp"
 
 namespace impl {
-namespace ascend { 
+namespace ascend {
 
 diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t logics, diopiConstTensorHandle_t v,
                                                diopiConstTensorHandle_t bLoc, diopiConstTensorHandle_t bStartLoc, diopiConstTensorHandle_t bSeqLen,
@@ -23,7 +23,7 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
     int dim = vAt.shape(2);
     diopiDtype_t dtype = logicsAt.dtype();
     diopiDevice_t device = logicsAt.device();
-    
+
     void* bSeqLenHost = malloc(bSeqLenAt.numel() * bSeqLenAt.elemsize());
     deviceToHost(ctx, bSeqLenAt, bSeqLenHost);
     void* bStartLocHost = malloc(bStartLocAt.numel() * bStartLocAt.elemsize());
@@ -46,7 +46,7 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
         diopiConstTensorHandle_t indices[2] = {diopiConstTensorHandle_t(), indexAt.tensorHandle()};
         ascend_npu::diopiIndex(ctx, &indexOut, logicsAt.tensorHandle(), indices, 2);
         AscendTensor indexOutAt(indexOut);
-        
+
         AscendTensor softmaxOutAt;
         makeTensor(ctx, softmaxOutAt, indexOutAt.shape(), indexOutAt.dtype());
         DIOPI_ASCEND_CALL_ACLNN(aclnnSoftmax, ctx, indexOutAt, indexOutAt.dim() - 1, softmaxOutAt);

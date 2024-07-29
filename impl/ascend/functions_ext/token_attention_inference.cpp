@@ -6,9 +6,9 @@
 
 #include <cstdlib>
 
+#include "../../../adaptor/csrc/impl_functions.hpp"
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
-#include "../../../adaptor/csrc/impl_functions.hpp"
 
 namespace impl {
 namespace ascend {
@@ -79,7 +79,7 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
 
         diopiTensorHandle_t qIndex;
         diopiConstTensorHandle_t scalarTensorHandle = scalarTensor.tensorHandle();
-        ascend_npu::diopiIndex(ctx, &qIndex, qAt.tensorHandle(), &scalarTensorHandle , 1);
+        ascend_npu::diopiIndex(ctx, &qIndex, qAt.tensorHandle(), &scalarTensorHandle, 1);
 
         AscendTensor qIndexAt(qIndex);
 
@@ -93,7 +93,8 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
         permuteDims = vectorToDiopiSize(dims);
         DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, keyAt, permuteDims, keyTmp2At);
 
-        DIOPI_ASCEND_CALL_ACLNN(aclnnMatmul, ctx, qIndexAt.view({qIndexAt.shape(0), qIndexAt.shape(2), qIndexAt.shape(1), qIndexAt.shape(3)}), keyTmp2At, matmulOutAt, 0);
+        DIOPI_ASCEND_CALL_ACLNN(
+            aclnnMatmul, ctx, qIndexAt.view({qIndexAt.shape(0), qIndexAt.shape(2), qIndexAt.shape(1), qIndexAt.shape(3)}), keyTmp2At, matmulOutAt, 0);
 
         AscendTensor sqrtDimAt;
         diopiScalar_t sqrtDim = constructDiopiScalarT(qAt.dtype(), sqrt(dim));

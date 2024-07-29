@@ -677,7 +677,7 @@ diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandl
 
 diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, AscendTensor& src) {
     diopiDevice_t device = src.device();
-    
+
     if (device == diopi_host) {
         diopiTensorHandle_t dst;
         diopiSize_t size{src.shape().data(), src.dim()};
@@ -701,8 +701,12 @@ diopiError_t deviceToHost(diopiContextHandle_t ctx, AscendTensor& deviceTensor, 
     if (deviceTensor.device() == diopi_device) {
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
-        CALL_ACLRT(aclrtMemcpyAsync(
-            hostPtr, deviceTensor.numel() * deviceTensor.elemsize(), deviceTensor.data(), deviceTensor.numel() * deviceTensor.elemsize(), ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream)));
+        CALL_ACLRT(aclrtMemcpyAsync(hostPtr,
+                                    deviceTensor.numel() * deviceTensor.elemsize(),
+                                    deviceTensor.data(),
+                                    deviceTensor.numel() * deviceTensor.elemsize(),
+                                    ACL_MEMCPY_DEVICE_TO_HOST,
+                                    reinterpret_cast<aclrtStream>(stream)));
         CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
     } else {
         hostPtr = const_cast<void*>(deviceTensor.data());
