@@ -2943,7 +2943,14 @@ def batch_norm_backward(
         ), "if not trainging, running_mean and running_var must be defined"
     # running_mean = running_mean if running_mean is None else running_mean
     # running_var = running_var if running_var is None else running_var
-    out = {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+
+    requires_grad = kwargs.get("requires_grad", {})
+    out = {
+        k: v
+        for k, v in zip(["input", "weight", "bias"], [grad_input, grad_weight, grad_bias])
+        if requires_grad.get(k, False)
+    }
+
     func = check_function("diopiBatchNormBackward")
     grad_output = grad_outputs[0]
     ret = func(

@@ -272,6 +272,7 @@ f_bp_out = os.path.join(data_path, '${test_module_name}', 'outputs', '${bp_outpu
 if not isinstance(dev_foward_out, (list, tuple)):
     dev_foward_out = [dev_foward_out]
 requires_backward = function_config['requires_backward']
+requires_grad = function_paras.get("requires_grad", {})
 outputs_for_backward = dev_foward_out if len(requires_backward) == 0 \
     else [dev_foward_out[i] for i in requires_backward]
 backward_para = {}
@@ -283,7 +284,7 @@ for k, v in function_config['saved_args'].items():
 backward_para_origin = CheckResult.to_numpy(backward_para)
 inputs_origin_np = CheckResult.to_numpy(function_kwargs)
 try:
-    dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs, **backward_para)
+    dev_bp_out = ${test_diopi_bp_func_name}(**function_kwargs, **backward_para, requires_grad=requires_grad)
 except (FunctionNotImplementedError, FunctionNotDefinedError) as e:
     default_context.clear_tensors()
     pytest.xfail(str(e))
