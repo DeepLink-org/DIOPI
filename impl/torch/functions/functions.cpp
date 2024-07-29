@@ -394,7 +394,10 @@ diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     auto atDim = impl::aten::buildAtIntArray(dim);
-    auto atCorrection = impl::aten::buildAtScalar(correction);
+    c10::optional<at::Scalar> atCorrection = c10::optional<at::Scalar>();
+    if (correction != nullptr) {
+        atCorrection = impl::aten::buildAtScalar(correction);
+    }
     bool keepdim = false;
     if (atInput.dim() == atOut.dim()) {
         keepdim = true;
