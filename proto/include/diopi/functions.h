@@ -1860,11 +1860,10 @@ DIOPI_API diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t ou
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor, type = [float32, float64, float16].
  * @param[in] dim an array, dimension for reduction. type = [int32, int64].
- * @param[in] unbiased whether to compute the unbiased standard deviation.
+ * @param[in] correction difference between the sample size and sample degrees of freedom.
  * @param[out] out the output tensor depend on dim. type = [float32, float64, float16].
  */
-DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim,
-                                const diopiScalar_t* correction);
+DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, const diopiScalar_t* correction);
 
 /**
  * @brief Return the minimum value of each row in the input tensor along the given dimension dim.
