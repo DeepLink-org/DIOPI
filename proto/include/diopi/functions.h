@@ -1199,6 +1199,16 @@ DIOPI_API diopiError_t diopiMulScalar(diopiContextHandle_t ctx, diopiTensorHandl
 DIOPI_API diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t input, const diopiScalar_t* other);
 
 /**
+ * @brief The diopiForeachmulScalar.
+ * @param[in] ctx Context environment.
+ * @param[out] out the output tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] input the input tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] inputSize the length of the input tensor list. type = [int64].
+ * @param[in] other The scalar value to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiForeachmulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* other);
+
+/**
  * @brief The in-place version of diopiForeachmulScalar.
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
@@ -1206,6 +1216,15 @@ DIOPI_API diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHa
  * @param[in] other The scalar value to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  */
 DIOPI_API diopiError_t diopiForeachmulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* other);
+
+/*
+ * @brief The in-place version of diopiForeachmulScalar.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] inputSize the length of the input tensor list. type = [int64].
+ * @param[in] other The tensor to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
+ */
+DIOPI_API diopiError_t diopiForeachmulTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t* self, int64_t selfSize, const diopiConstTensorHandle_t other);
 
 /**
  * @brief The in-place version of diopiForeachmulScalar.
