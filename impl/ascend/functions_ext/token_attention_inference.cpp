@@ -5,6 +5,7 @@
  */
 
 #include <cstdlib>
+
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
 #include "../../../adaptor/csrc/impl_functions.hpp"
