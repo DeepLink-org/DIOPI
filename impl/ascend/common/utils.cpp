@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
+#include <vector>
 
 #include "../ascend_tensor.hpp"
 #include "acloprunner.hpp"
@@ -672,6 +673,43 @@ diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandl
     } else {
         return const_cast<diopiTensorHandle_t>(src);
     }
+}
+
+diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, AscendTensor& src) {
+    diopiDevice_t device = src.device();
+    
+    if (device == diopi_host) {
+        diopiTensorHandle_t dst;
+        diopiSize_t size{src.shape().data(), src.dim()};
+        diopiSize_t stride{src.stride().data(), (int64_t)src.stride().size()};
+        diopiDtype_t dtype = src.dtype();
+        diopiRequireTensor(ctx, &dst, &size, &stride, dtype, diopi_device);
+        const void* srcPtr = src.data();
+        void* dstPtr;
+        diopiGetTensorData(dst, &dstPtr);
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        int64_t elemsize = src.elemsize();
+        CALL_ACLRT(aclrtMemcpyAsync(dstPtr, elemsize, const_cast<void*>(srcPtr), elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
+        return dst;
+    } else {
+        return diopiTensorHandle_t(src);
+    }
+}
+
+diopiError_t deviceToHost(diopiContextHandle_t ctx, AscendTensor& deviceTensor, void* hostPtr) {
+    // void* ptrHost = malloc(deviceTensor.numel() * deviceTensor.elemsize());
+
+    if (deviceTensor.device() == diopi_device) {
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        CALL_ACLRT(aclrtMemcpyAsync(
+            hostPtr, deviceTensor.numel() * deviceTensor.elemsize(), deviceTensor.data(), deviceTensor.numel() * deviceTensor.elemsize(), ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream)));
+        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+    } else {
+        hostPtr = const_cast<void*>(deviceTensor.data());
+    }
+    return diopiSuccess;
 }
 
 static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes, diopiDtype_t* dtype) {
