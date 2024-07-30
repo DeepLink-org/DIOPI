@@ -647,7 +647,7 @@ DIOPI_API diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandl
                                       diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight, diopiReduction_t reduction, int64_t ignore_index);
 
 /**
- * @brief Compute the backward pass of diopiNLLLoss().
+ * @brief Compute the backward pass of diopiNLLLossV2().
  * @param[in] ctx Context environment.
  * @param[in] grad_output The gradient tensor with respect to the output of the forward pass.
  *        Shape:

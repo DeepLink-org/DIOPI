@@ -111,6 +111,7 @@
 - diopiLayerNormBackward:
     dtype: (float64)->float32
 
+# alcnnNLLLoss only support [float, float16, bfloat16]
 - diopiNLLLoss:
     dtype: (float64)->float32
     layout: ND

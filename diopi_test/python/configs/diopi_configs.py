@@ -3342,7 +3342,7 @@ diopi_configs = {
     # ),
 
     'nll_loss': dict(
-        name=["nll_loss"],
+        name=["nll_loss, nll_lossv2"],
         atol=1e-4,
         rtol=1e-5,
         para=dict(
@@ -3383,7 +3383,7 @@ diopi_configs = {
     ),
 
     'nll_loss_empty_tensor': dict(
-        name=["nll_loss"],
+        name=["nll_loss, nll_loss_v2"],
         atol=1e-4,
         rtol=1e-5,
         para=dict(

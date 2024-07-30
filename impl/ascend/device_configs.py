@@ -1399,18 +1399,6 @@ device_configs = {
             other=[Skip(False),],
         ),
     ),
-    
-    # 'nll_loss': dict(
-    #     name=["nll_loss"],
-    #     atol=1e-4,
-    #     rtol=1e-3,
-    # ),
-
-    # TODO(zhangqiu) Due to a bug in the software stack, this test will be skipped for now.
-    'nll_loss': dict(
-        name = ['nll_loss'],
-        skip_all = True
-    ),
 
     # temporarily skip all test cases for flash_attention_varlen due to the version of software stack on ascend
     'flash_attention_varlen': dict(
