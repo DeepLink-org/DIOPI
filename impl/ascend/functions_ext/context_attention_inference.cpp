@@ -65,8 +65,8 @@ AscendTensor torchContextAttention(diopiContextHandle_t ctx, AscendTensor xq, As
     xkTransposeAtShape[2] = xkTransposeAtShape[3];
     xkTransposeAtShape[3] = tmp;
     makeTensor(ctx, xkTransposeAt2, xkTransposeAtShape, xk.dtype());
-    std::vector<int64_t> xkTransposeAt_2Dims = {0, 1, 3, 2};
-    DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, xkTransposeAt, xkTransposeAt_2Dims, xkTransposeAt2);
+    std::vector<int64_t> xkTransposeAt2Dims = {0, 1, 3, 2};
+    DIOPI_ASCEND_CALL_ACLNN(aclnnPermute, ctx, xkTransposeAt, xkTransposeAt2Dims, xkTransposeAt2);
     std::vector<int64_t> scoresShapeAt = xqTransposeAt.shape();
     scoresShapeAt[3] = xkTransposeAtShape[3];
     makeTensor(ctx, scoresAt, scoresShapeAt, xq.dtype());
@@ -75,8 +75,8 @@ AscendTensor torchContextAttention(diopiContextHandle_t ctx, AscendTensor xq, As
     DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceDivs, ctx, scoresAt, &otherScalar);
 
     AscendTensor adjustedScoresAt;
-    std::vector<int64_t> adjusted_scoresAtShape = inferSize(scoresAt.shape(), maskRepeatAt.shape());
-    makeTensor(ctx, adjustedScoresAt, adjusted_scoresAtShape, scoresAt.dtype());
+    std::vector<int64_t> adjustedScoresAtShape = inferSize(scoresAt.shape(), maskRepeatAt.shape());
+    makeTensor(ctx, adjustedScoresAt, adjustedScoresAtShape, scoresAt.dtype());
     diopiScalar_t alphaScalar = constructDiopiScalarT(diopi_dtype_float32, 1);
     DIOPI_ASCEND_CALL_ACLNN(aclnnAdd, ctx, scoresAt, maskRepeatAt, &alphaScalar, adjustedScoresAt);
     DIOPI_ASCEND_CALL_ACLNN(aclnnSoftmax, ctx, adjustedScoresAt, adjustedScoresAt.dim() - 1, adjustedScoresAt);
@@ -107,8 +107,8 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     int head = qAt.shape()[1];
     int dim = qAt.shape()[2];
 
-    void* bStartLocDataPtr = AscendTensorDeviceToHost(ctx, bStartLocAt);
-    void* bSeqLenDataPtr = AscendTensorDeviceToHost(ctx, bSeqLenAt);
+    void* bStartLocDataPtr = ascendTensorDeviceToHost(ctx, bStartLocAt);
+    void* bSeqLenDataPtr = ascendTensorDeviceToHost(ctx, bSeqLenAt);
     for (int i = 0; i < batch; ++i) {
         int start = reinterpret_cast<int*>(bStartLocDataPtr)[i];
         int end = start + reinterpret_cast<int*>(bSeqLenDataPtr)[i];

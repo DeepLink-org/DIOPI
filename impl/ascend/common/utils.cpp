@@ -760,7 +760,7 @@ diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<Asce
     return diopiSuccess;
 }
 
-void* AscendTensorDeviceToHost(diopiContextHandle_t ctx, AscendTensor at) {
+void* ascendTensorDeviceToHost(diopiContextHandle_t ctx, AscendTensor at) {
     void* ptrHost = malloc(at.numel() * at.elemsize());
     diopiStreamHandle_t stream;
     diopiGetStream(ctx, &stream);

@@ -27,9 +27,9 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
     const int64_t dim = 0;
     diopiDtype_t logitsDtype = logitsAt.dtype();
 
-    void* curBatchIndexDataPtrHost = AscendTensorDeviceToHost(ctx, pCumsumSeqLenAt);
-    void* frequencyPenaltyDataPtrHost = AscendTensorDeviceToHost(ctx, frequencyPenaltyAt);
-    void* presencePenaltyDataPtrHost = AscendTensorDeviceToHost(ctx, presencePenaltyAt);
+    void* curBatchIndexDataPtrHost = ascendTensorDeviceToHost(ctx, pCumsumSeqLenAt);
+    void* frequencyPenaltyDataPtrHost = ascendTensorDeviceToHost(ctx, frequencyPenaltyAt);
+    void* presencePenaltyDataPtrHost = ascendTensorDeviceToHost(ctx, presencePenaltyAt);
     for (int i = 0; i < batch; ++i) {
         int curBatchStartIndex = reinterpret_cast<int*>(curBatchIndexDataPtrHost)[i];
         int curBatchEndIndex = reinterpret_cast<int*>(curBatchIndexDataPtrHost)[i + 1];
@@ -67,25 +67,25 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
         AscendTensor frequencyPenaltyAdjustmentAt;
         makeTensor(ctx, frequencyPenaltyAdjustmentAt, curTokenCountsAt.shape(), logitsDtype);
 
-        diopiScalar_t frequencyPenaltyAt_i_Scalar;
+        diopiScalar_t frequencyPenaltyAtIScalar;
         if (logitsDtype == diopi_dtype_float32) {
-            frequencyPenaltyAt_i_Scalar = constructDiopiScalarT(logitsDtype, reinterpret_cast<float*>(frequencyPenaltyDataPtrHost)[i]);
+            frequencyPenaltyAtIScalar = constructDiopiScalarT(logitsDtype, reinterpret_cast<float*>(frequencyPenaltyDataPtrHost)[i]);
         } else {
-            frequencyPenaltyAt_i_Scalar = constructDiopiScalarT(logitsDtype, reinterpret_cast<half_float::half*>(frequencyPenaltyDataPtrHost)[i]);
+            frequencyPenaltyAtIScalar = constructDiopiScalarT(logitsDtype, reinterpret_cast<half_float::half*>(frequencyPenaltyDataPtrHost)[i]);
         }
-        DIOPI_ASCEND_CALL_ACLNN(aclnnMuls, ctx, curTokenCounts, &frequencyPenaltyAt_i_Scalar, frequencyPenaltyAdjustmentAt);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnMuls, ctx, curTokenCounts, &frequencyPenaltyAtIScalar, frequencyPenaltyAdjustmentAt);
 
         AscendTensor totalPenaltyAdjustmentAt;
         makeTensor(ctx, totalPenaltyAdjustmentAt, curTokenCountsAt.shape(), logitsDtype);
 
-        diopiScalar_t presencePenaltyAt_i_Scalar;
+        diopiScalar_t presencePenaltyAtIScalar;
         if (logitsDtype == diopi_dtype_float32) {
-            presencePenaltyAt_i_Scalar = constructDiopiScalarT(logitsDtype, reinterpret_cast<float*>(presencePenaltyDataPtrHost)[i]);
+            presencePenaltyAtIScalar = constructDiopiScalarT(logitsDtype, reinterpret_cast<float*>(presencePenaltyDataPtrHost)[i]);
         } else {
-            presencePenaltyAt_i_Scalar = constructDiopiScalarT(logitsDtype, reinterpret_cast<half_float::half*>(presencePenaltyDataPtrHost)[i]);
+            presencePenaltyAtIScalar = constructDiopiScalarT(logitsDtype, reinterpret_cast<half_float::half*>(presencePenaltyDataPtrHost)[i]);
         }
         diopiScalar_t oneScalar = constructDiopiScalarT(logitsDtype, 1);
-        DIOPI_ASCEND_CALL_ACLNN(aclnnAdds, ctx, frequencyPenaltyAdjustmentAt, &presencePenaltyAt_i_Scalar, &oneScalar, totalPenaltyAdjustmentAt);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnAdds, ctx, frequencyPenaltyAdjustmentAt, &presencePenaltyAtIScalar, &oneScalar, totalPenaltyAdjustmentAt);
 
         DIOPI_ASCEND_CALL_ACLNN(aclnnSub, ctx, curLogitsAt, totalPenaltyAdjustmentAt, &oneScalar, curLogitsAt);
         std::vector<AscendTensor> indices;
