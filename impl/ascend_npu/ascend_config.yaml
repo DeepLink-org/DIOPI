@@ -15,6 +15,7 @@ ascend:
 - diopiAddmm
 - diopiAll
 - diopiAny
+- diopiApplyPenalty
 - diopiApplyPenaltyV2
 - diopiArange
 - diopiArgmax
@@ -55,6 +56,7 @@ ascend:
 - diopiClampMinScalar
 - diopiClampScalar
 - diopiCol2Im
+- diopiContextAttentionInference
 - diopiContiguous
 - diopiConvolution2d
 - diopiConvolution2dBackward
@@ -261,8 +263,6 @@ ascend:
 - diopiZeroInp
 - diopiZeros
 ascend_npu:
-- diopiApplyPenalty
-- diopiContextAttentionInference
 - diopiGetNativeMemoryFormat
 - diopiIndex
 - diopiIndexBackward

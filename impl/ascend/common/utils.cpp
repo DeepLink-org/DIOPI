@@ -760,5 +760,16 @@ diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<Asce
     return diopiSuccess;
 }
 
+void* AscendTensorDeviceToHost(diopiContextHandle_t ctx, AscendTensor at) {
+    void* ptrHost = malloc(at.numel() * at.elemsize());
+    diopiStreamHandle_t stream;
+    diopiGetStream(ctx, &stream);
+    // CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+    CALL_ACLRT(aclrtMemcpyAsync(
+        ptrHost, at.numel() * at.elemsize(), at.data(), at.numel() * at.elemsize(), ACL_MEMCPY_DEVICE_TO_HOST, reinterpret_cast<aclrtStream>(stream)));
+    CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+    return ptrHost;
+}
+
 }  // namespace ascend
 }  // namespace impl
