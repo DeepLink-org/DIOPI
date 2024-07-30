@@ -16,7 +16,6 @@
 // clang-format on
 
 #include <cmath>
-#include <cstdint>
 #include <cstring>
 
 #ifdef USE_HIP
@@ -401,17 +400,17 @@ diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         keepdim = true;
     }
 
-    #if TORCH_MM_VERSION >= 2010
-        c10::optional<at::Scalar> atCorrection = c10::optional<at::Scalar>();
-        if (correction != nullptr) {
-            atCorrection = impl::aten::buildAtScalar(correction);
-        }     
-    #else
-        c10::optional<int64_t> atCorrection = c10::optional<int64_t>();
-        if (correction != nullptr) {
-            atCorrection = impl::aten::buildAtScalar(correction).toInt();
-        }
-    #endif
+#if TORCH_MM_VERSION >= 2010
+    c10::optional<at::Scalar> atCorrection = c10::optional<at::Scalar>();
+    if (correction != nullptr) {
+        atCorrection = impl::aten::buildAtScalar(correction);
+    }
+#else
+    c10::optional<int64_t> atCorrection = c10::optional<int64_t>();
+    if (correction != nullptr) {
+        atCorrection = impl::aten::buildAtScalar(correction).toInt();
+    }
+#endif
 
     CALL_ATEN_CUDA_FUNC(std_out, atOut, atInput, atDim, atCorrection, keepdim);
     return diopiSuccess;
