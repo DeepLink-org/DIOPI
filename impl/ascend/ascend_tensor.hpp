@@ -233,7 +233,7 @@ public:
         return tensor_;
     }
 
-    bool isSame(const AscendTensor& t) const { return this->tensor_ == t.tensor_; }
+    bool isSame(const AscendTensor& t) const { return this->tensorHandle() == t.tensorHandle(); }
 
     int64_t getAclMemBufferSize() const;
     std::vector<int64_t> getAclMemShape() const;
