@@ -395,19 +395,25 @@ diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     auto atDim = impl::aten::buildAtIntArray(dim);
-    c10::optional<at::Scalar> atCorrection = c10::optional<at::Scalar>();
-    if (correction != nullptr) {
-        atCorrection = impl::aten::buildAtScalar(correction);
-    }
+
     bool keepdim = false;
     if (atInput.dim() == atOut.dim()) {
         keepdim = true;
     }
-#if TORCH_MM_VERSION >= 2010
+
+    #if TORCH_MM_VERSION >= 2010
+        c10::optional<at::Scalar> atCorrection = c10::optional<at::Scalar>();
+        if (correction != nullptr) {
+            atCorrection = impl::aten::buildAtScalar(correction);
+        }     
+    #else
+        c10::optional<int64_t> atCorrection = c10::optional<int64_t>();
+        if (correction != nullptr) {
+            atCorrection = impl::aten::buildAtScalar(correction).toInt();
+        }
+    #endif
+
     CALL_ATEN_CUDA_FUNC(std_out, atOut, atInput, atDim, atCorrection, keepdim);
-#else
-    CALL_ATEN_CUDA_FUNC(std_out, atOut, atInput, atDim, atCorrection.value_or(0).to<int64_t>(), keepdim);
-#endif
     return diopiSuccess;
 }
 

@@ -808,7 +808,7 @@ def mean(input, dim=None, keepdim=False, dtype=None) -> Tensor:
     return out
 
 
-def std(input, correction=2, dim=None, keepdim=False) -> Tensor:
+def std(input, correction=1, dim=None, keepdim=False) -> Tensor:
     assert (
         isinstance(dim, (int, list)) or dim is None
     ), "dim should be int or list or None"
@@ -816,6 +816,7 @@ def std(input, correction=2, dim=None, keepdim=False) -> Tensor:
     dim, out = reduce_op_process(input, dim, keepdim)
     dim1 = Sizes(list(dim))
     func = check_function("diopiStd")
+    correction = Scalar(correction)
     ret = func(input.context(), out, input, dim1, correction)
     check_returncode(ret)
     return out
