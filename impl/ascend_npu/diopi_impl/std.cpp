@@ -13,6 +13,9 @@ namespace OP_IMPL_NS {
 
 diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, const diopiScalar_t* correction) {
     BEGIN_CALL_ACL_OP(out, input, dim, correction);
+    if (correction == nullptr) {
+        correctionAt = 1;  // default correction value in torch_std is 1
+    }
     bool keepdim = false;
     if (inputAt.dim() == outAt.dim()) {
         keepdim = true;
