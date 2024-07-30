@@ -108,12 +108,12 @@ void buildDiopiTensor(diopiContextHandle_t ctx, const at::Tensor& input, diopiTe
 // new cuda generator and pass dipu generator state into cuda generator state
 at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
     auto gen = at::cuda::detail::createCUDAGenerator();
-    diopiTensorHandle_t state_handle = nullptr;
-    diopiGeneratorGetState(ctx, generator, &state_handle);
-    auto state = impl::aten::buildATen(state_handle);
+    uint64_t seed, offset;
+    diopiGeneratorGetSeedAndOffset(const_cast<diopiGeneratorHandle_t>(generator), &seed, &offset);
     {
         std::lock_guard<std::mutex> lock(gen.mutex());
-        gen.set_state(state);
+        gen.set_current_seed(seed);
+        gen.set_offset(offset);
     }
     return gen;
 }
