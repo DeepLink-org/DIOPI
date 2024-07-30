@@ -1643,6 +1643,45 @@ def clip_grad_norm_(tensors, max_norm, norm_type=2.0, error_if_nonfinite=False):
 
     return out.value
 
+def _foreach_add(self, scalar):
+    assert isinstance(scalar, (int, float)), "norm_type must be a int or float"
+
+    ctx = self[0].context()
+    num_tensors = len(self)
+    func = check_function("diopiForeachaddScalar")
+    out = []
+    for i in range(num_tensors):
+        out.append(Tensor(self[i].size(),self[i].get_dtype()))
+    ret = func(
+        ctx,
+        get_capsule(out),
+        self,
+        num_tensors,
+        scalar
+    )
+    check_returncode(ret)
+
+    return out.value
+
+def _foreach_mul(self, scalar):
+    assert isinstance(scalar, (int, float)), "norm_type must be a int or float"
+
+    ctx = self[0].context()
+    num_tensors = len(self)
+    func = check_function("diopiForeachmulScalar")
+    out = []
+    for i in range(num_tensors):
+        out.append(Tensor(self[i].size(),self[i].get_dtype()))
+    ret = func(
+        ctx,
+        get_capsule(out),
+        self,
+        num_tensors,
+        scalar
+    )
+    check_returncode(ret)
+
+    return out.value
 
 def batch_norm(
     input,
