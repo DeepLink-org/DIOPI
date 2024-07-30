@@ -1222,10 +1222,10 @@ device_configs = {
     ),
     
     # TODO(zhangqiu) Due to a bug in the software stack, this test will be skipped for now.
-    'token_attention': dict(
-        name=['token_attention'],
-        skip_all=True
-    ),
+    # 'token_attention': dict(
+    #     name=['token_attention'],
+    #     skip_all=False
+    # ),
 
     'rotary_emb': dict(
         name=["rotary_emb"],
@@ -1252,10 +1252,10 @@ device_configs = {
     # ),
     
     # TODO(zhangqiu) Due to a bug in the software stack, this test will be skipped for now.
-    'token_softmax_reducev': dict(
-        name=['token_softmax_reducev'],
-        skip_all=True
-    ),
+    # 'token_softmax_reducev': dict(
+    #     name=['token_softmax_reducev'],
+    #     skip_all=False
+    # ),
 
     # temp for 910B
     'normal_': dict(
