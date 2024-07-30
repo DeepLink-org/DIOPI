@@ -182,6 +182,10 @@ ascend:
 - diopiNeScalar
 - diopiNeg
 - diopiNegInp
+- diopiNLLLoss
+- diopiNLLLossBackward
+- diopiNLLLossV2
+- diopiNLLLossV2Backward
 - diopiNonzero
 - diopiNorm
 - diopiNormal
@@ -266,10 +270,6 @@ ascend_npu:
 - diopiGetNativeMemoryFormat
 - diopiIndex
 - diopiIndexBackward
-- diopiNLLLoss
-- diopiNLLLossBackward
-- diopiNLLLossV2
-- diopiNLLLossV2Backward
 - diopiNativeMemoryFormatCast
 - diopiPagedAttention
 - diopiRotaryEmbeddingV2
