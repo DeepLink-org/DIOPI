@@ -1109,21 +1109,22 @@ DIOPI_API diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHa
 /**
  * @brief The diopiForeachaddScalar.
  * @param[in] ctx Context environment.
- * @param[out] out the output tensor list and will be store the result tensor.  type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
- * @param[in] self the input tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
- * @param[in] selfSize the length of the input tensor list. type = [int64].
+ * @param[out] outs the output tensor list and will be store the result tensor.  type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] inputs the input tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] inputSize the length of the input tensor list. type = [int64].
  * @param[in] other The scalar value to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  */
-DIOPI_API diopiError_t diopiForeachaddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* other);
+DIOPI_API diopiError_t diopiForeachaddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputSize,
+                                             const diopiScalar_t* other);
 
 /**
  * @brief The in-place version of diopiForeachaddScalar.
  * @param[in] ctx Context environment.
- * @param[in] self the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
- * @param[in] selfSize the length of the input tensor list. type = [int64].
+ * @param[in] input the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] inputSize the length of the input tensor list. type = [int64].
  * @param[in] other The scalar value to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  */
-DIOPI_API diopiError_t diopiForeachaddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* other);
+DIOPI_API diopiError_t diopiForeachaddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* inputs, int64_t inputSize, const diopiScalar_t* other);
 /**
  * @brief  Perform subtraction operations between tensors.
  * @param[in] ctx Context environment.
@@ -1201,39 +1202,42 @@ DIOPI_API diopiError_t diopiMulInpScalar(diopiContextHandle_t ctx, diopiTensorHa
 /**
  * @brief The diopiForeachmulScalar.
  * @param[in] ctx Context environment.
- * @param[out] out the output tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
- * @param[in] input the input tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[out] outs the output tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] inputs the input tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
  * @param[in] inputSize the length of the input tensor list. type = [int64].
  * @param[in] other The scalar value to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  */
-DIOPI_API diopiError_t diopiForeachmulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* other);
+DIOPI_API diopiError_t diopiForeachmulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputSize,
+                                             const diopiScalar_t* other);
 
 /**
  * @brief The in-place version of diopiForeachmulScalar.
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] inputs the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
  * @param[in] inputSize the length of the input tensor list. type = [int64].
  * @param[in] other The scalar value to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  */
-DIOPI_API diopiError_t diopiForeachmulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* other);
+DIOPI_API diopiError_t diopiForeachmulInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* inputs, int64_t inputSize, const diopiScalar_t* other);
 
 /*
- * @brief The in-place version of diopiForeachmulScalar.
+ * @brief The diopiForeachmulTensor
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] puts the output tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] inputs the input tensor list. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
  * @param[in] inputSize the length of the input tensor list. type = [int64].
  * @param[in] other The tensor to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  */
-DIOPI_API diopiError_t diopiForeachmulTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t* self, int64_t selfSize, const diopiConstTensorHandle_t other);
+DIOPI_API diopiError_t diopiForeachmulTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputSize,
+                                             const diopiConstTensorHandle_t other);
 
 /**
- * @brief The in-place version of diopiForeachmulScalar.
+ * @brief The in-place version of diopiForeachmulTensor.
  * @param[in] ctx Context environment.
- * @param[in] input the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
+ * @param[in] inputs the input tensor list and will be stored result tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
  * @param[in] inputSize the length of the input tensor list. type = [int64].
  * @param[in] other The tensor to be multiplied. type = [float64, float32, float16, int64, int32, int16, int8, uint8].
  */
-DIOPI_API diopiError_t diopiForeachmulInpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* self, int64_t selfSize, const diopiConstTensorHandle_t other);
+DIOPI_API diopiError_t diopiForeachmulInpTensor(diopiContextHandle_t ctx, diopiTensorHandle_t* inputs, int64_t inputSize, const diopiConstTensorHandle_t other);
 
 /**
  * @brief Divides each element of input tensor by the corresponding element in other tensor.
@@ -1243,7 +1247,7 @@ DIOPI_API diopiError_t diopiForeachmulInpTensor(diopiContextHandle_t ctx, diopiT
  * @param[in] rounding_mode Rounding mode applied to the result, None: no rounding is performed, if both input and other are integer types,
  * the inputs are promoted to the default scalar type; trunc: truncate towards zero; floor: round down towards negative infinity for the result of the division.
  * @param[out] out the output tensor. type = [float64, float32, float16, int64, int32, int16, int8, uint8, bool].
-*/
+ */
 
 DIOPI_API diopiError_t diopiDiv(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t other,
                                 diopiRoundMode_t rounding_mode);
@@ -2947,11 +2951,13 @@ DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t o
 /**
  * @brief Returns the matrix norm or vector norm of a given tensor list.
  * @param[in] ctx Context environment.
- * @param[out] out the output tesnor list, type=[float32, float64, float16].
- * @param[in] input the input tesnor list, type=[float32, float64, float16].
+ * @param[out] outs the output tesnor list, type=[float32, float64, float16].
+ * @param[in] inputs the input tesnor list, type=[float32, float64, float16].
+ * @param[in] inputSize the input size
  * @param[in] p an array, the order of norm.
  */
-DIOPI_API diopiError_t diopiForeachnormScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t* self, int64_t selfSize, const diopiScalar_t* p);
+DIOPI_API diopiError_t diopiForeachnormScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputSize,
+                                              const diopiScalar_t* p);
 /**
  * \brief Applies Group Normalization over a mini-batch of inputs.
  * @param[in] ctx Context environment.
