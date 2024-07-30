@@ -62,8 +62,7 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, dio
     ASCEND_CHECK_ABORT(ret == 0, "get out aclGetViewShape failed");
 
     // fill out tensor
-    AscendTensor outReshapeAt;
-    reshape(ctx, outTmpAt, outReshapeAt, {viewDims, viewDims + viewDimNum});
+    AscendTensor outReshapeAt = reshape(ctx, outTmpAt, {viewDims, viewDims + viewDimNum});
     *out = const_cast<diopiTensorHandle_t>(outReshapeAt.tensorHandle());
 
     // fill indices tensor
@@ -78,8 +77,7 @@ diopiError_t diopiUnique(diopiContextHandle_t ctx, diopiTensorHandle_t* out, dio
         int ret2 = aclGetViewShape(std::get<countsTensorIndex>(params), &viewDims, &viewDimNum);
         ASCEND_CHECK_ABORT(ret2 == 0, "get count aclGetViewShape failed");
 
-        AscendTensor countsReshapeAt;
-        reshape(ctx, countsTmpAt, countsReshapeAt, {viewDims, viewDims + viewDimNum});
+        AscendTensor countsReshapeAt = reshape(ctx, countsTmpAt, {viewDims, viewDims + viewDimNum});
         *counts = const_cast<diopiTensorHandle_t>(countsReshapeAt.tensorHandle());
     }
 

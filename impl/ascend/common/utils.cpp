@@ -182,6 +182,22 @@ diopiError_t reshape(diopiContextHandle_t ctx, const AscendTensor& src, AscendTe
     return diopiSuccess;
 }
 
+AscendTensor reshape(diopiContextHandle_t ctx, const AscendTensor& src, const std::vector<int64_t>& shape) {
+    ASCEND_CHECK_ABORT(src.defined(), "input tensor is nullptr.");
+
+    // if shape is the same as src, return src directly.
+    if (src.shape() == shape) {
+        return src;
+    }
+
+    // if shape is not the same as src, create a new tensor, then copy the data from src to the new tensor.
+    AscendTensor result, srcCopy(src);
+    makeTensor(ctx, result, shape, srcCopy.dtype());
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, result, srcCopy.view(shape));
+
+    return AscendTensor(result.tensorHandle());
+}
+
 diopiError_t aclAsStridedCore(diopiContextHandle_t ctx, const AscendTensor& src, AscendTensor& dst) {
     diopiTensorHandle_t targetObj = const_cast<diopiTensorHandle_t>(static_cast<diopiConstTensorHandle_t>(dst));
     AclOpRunner<4, 1>("AsStrided", ctx)
