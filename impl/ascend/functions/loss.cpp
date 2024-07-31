@@ -29,7 +29,7 @@ diopiError_t diopiNLLLossV2(diopiContextHandle_t ctx, diopiTensorHandle_t out, d
     AscendTensor inputAt(input);
     if (inputAt.numel() <= 0) {
         if (diopiReduction_t::ReductionMean == reduction) {
-            diopiScalar_t nans{diopi_dtype_float64, std::nanf("")};
+            diopiScalar_t nans{diopi_dtype_float64, {std::nanf("")}};
             DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceFillScalar, ctx, out, &nans);
         } else if (diopiReduction_t::ReductionSum == reduction || diopiReduction_t::ReductionNone == reduction) {
             DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceZero, ctx, out);
