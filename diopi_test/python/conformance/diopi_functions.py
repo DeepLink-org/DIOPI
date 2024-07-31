@@ -2327,7 +2327,7 @@ def sigmoid_focal_loss_backward(
         reduction,
     )
     check_returncode(ret)
-    return {"input": grad_input} if grad_input.requires_grad else {}
+    return {"inputs": grad_input} if grad_input.requires_grad else {}
 
 
 def roi_align_backward(
