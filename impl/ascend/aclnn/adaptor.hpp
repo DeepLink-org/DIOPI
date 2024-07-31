@@ -367,7 +367,7 @@ void callAclnnImpl(diopiContextHandle_t ctx, const std::tuple<Args...>& tuple) {
         static constexpr const char kWorkspaceApiName[] = #api "GetWorkspaceSize";                                \
         auto convertedParams = ::impl::ascend::aclnn_adaptor::convertParams(__VA_ARGS__);                         \
         ::impl::ascend::aclnn_adaptor::callAclnnImpl<kApiName, kWorkspaceApiName>(ctx, convertedParams.params()); \
-    } while (false)
+    } while (false);
 
 #define DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(api, ctx, ...)                                             \
     do {                                                                                             \
@@ -377,12 +377,12 @@ void callAclnnImpl(diopiContextHandle_t ctx, const std::tuple<Args...>& tuple) {
         diopiStreamHandle_t stream;                                                                  \
         diopiGetStream(ctx, &stream);                                                                \
         CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));                   \
-    } while (false)
+    } while (false);
 
 #define DIOPI_ASCEND_CALL_ACLNN_SYNC(api, ctx, ...)                                       \
     do {                                                                                  \
         auto convertedParams = ::impl::ascend::aclnn_adaptor::convertParams(__VA_ARGS__); \
         DIOPI_ASECND_CALL_ACLNN_TYPE_SYNC(api, ctx, convertedParams.params())             \
-    } while (false)
+    } while (false);
 
 #endif  // IMPL_ASCEND_ACLNN_ADAPTOR_HPP_

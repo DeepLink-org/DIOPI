@@ -23,7 +23,7 @@ set(EXPORT_SRC
 message("CXX_LITERT_SRC:" ${CXX_LITERT_SRC})
 
 pybind11_add_module(${DIOPIRT} SHARED ${EXPORT_SRC})
-add_library(diopirt SHARED ${RUNTIME_SRC})
+cuda_add_library(diopirt SHARED ${RUNTIME_SRC})
 
 target_link_libraries(${DIOPIRT} PRIVATE diopirt)
 target_link_libraries(diopirt ${DEVICEIMPL})
