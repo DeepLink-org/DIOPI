@@ -125,7 +125,8 @@ at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle
 }
 
 void updateGeneratorHandleSeedAndOffset(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiGeneratorHandle_t generator) {
-    uint64_t seed, offset;
+    uint64_t seed = 0;
+    uint64_t offset = 0;
     {
         std::lock_guard<std::mutex> lock(cuda_gen.mutex());
 #if TORCH_MM_VERSION >= TORCH_2_1_MM_VERSION
