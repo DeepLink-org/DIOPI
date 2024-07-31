@@ -4058,6 +4058,27 @@ diopi_configs = {
     #         ],
     #     ),
     # ),
+    
+    'foreach_op': dict(
+        name=["_foreach_mul","_foreach_add"],
+        interface=["torch"],
+        para=dict(
+            scalar=[1.0, 5, 2.0, -1.2, 3, 10, 8, -0.5, 0, -2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["self"],
+                    "shape": ((), (10,), (10, 2, 5), (20,), (10, 5, 1), (20, 3, 4, 5), (20, 2, 3, 4, 5),
+                              (0,), (0, 10), (5, 0, 9)),
+                    "gen_fn": 'Genfunc.randn',
+                    "dtype": [np.float32, np.float16, np.float64],
+                    "gen_policy": 'gen_tensor_list',
+                    "gen_num_range": [1, 5]
+                },
+            ],
+        ),
+    ),
 
     'tril': dict(
         name=["tril"],
