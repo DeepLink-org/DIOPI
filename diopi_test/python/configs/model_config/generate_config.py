@@ -50,7 +50,7 @@ func_interface = {
               'arange', 'log2', 'sign', 'eq', 'nonzero', 'triangular_solve',
               'ne', 'mul', 'linspace', 'index_fill', 'atan', 'le', 'sgn',
               'logical_and', 'permute', 'div', 'log10', 'roll', 'ge', 'lt', 'any',
-              '_foreach_add','_foreach_mul'],
+              '_foreach_add', '_foreach_mul', '_foreach_norm'],
     'torch.nn.functional': ['conv2d', 'batch_norm'],
     'torch.Tensor': ['fill_', 'repeat', 'unfold', 'copy_', 'expand'],
     'CustomizedTest': ['linalgqr', 'adadelta', 'cast_np', 'batch_norm_elemt',

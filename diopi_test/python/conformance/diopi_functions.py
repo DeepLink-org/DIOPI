@@ -1687,6 +1687,25 @@ def _foreach_mul(self, scalar):
 
     return out_tensorV
 
+def _foreach_norm(self):
+    ctx = self[0].context()
+    num_tensors = len(self)
+    func = check_function("diopiForeachnormScalar")
+    input_tensors = list([TensorP(input) for input in self])
+    out_tensorV = list([Tensor([],self[i].get_dtype()) for i in range(num_tensors)])
+    out_tensors = list([TensorP(out_tensor) for out_tensor in out_tensorV])
+    other = Scalar(2)
+    ret = func(
+        ctx,
+        out_tensors,
+        input_tensors,
+        num_tensors,
+        other
+    )
+    check_returncode(ret)
+
+    return out_tensorV
+
 def batch_norm(
     input,
     running_mean,

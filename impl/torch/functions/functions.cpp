@@ -3311,14 +3311,13 @@ diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 }
 
 diopiError_t diopiForeachnormScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputSize,
-                                    const diopiScalar_t* p) {
+                                    const diopiScalar_t* ord) {
     DIOPI_CHECK_PTR(outs);
     impl::aten::setCurStream(ctx);
     DIOPI_IMPL_BUILD_ATEN_LIST(atInputs, inputs, inputSize)
-    auto atP = impl::aten::buildAtScalar(p);
-    auto tempOut = CALL_ATEN_CUDA_FUNC(_foreach_norm, atInputs, atP);
+    auto atOrd = impl::aten::buildAtScalar(ord);
+    auto tempOut = CALL_ATEN_CUDA_FUNC(_foreach_norm, atInputs, atOrd);
     for (int i = 0; i < inputSize; i++) {
-        //WARN NO NEED TO COPY HERE, WE NEED FASTER UPDATE HERE
         impl::aten::updateATen2Tensor(ctx, tempOut[i], outs[i]);
     }
 

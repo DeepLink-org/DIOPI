@@ -2957,7 +2957,7 @@ DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t o
  * @param[in] p an array, the order of norm.
  */
 DIOPI_API diopiError_t diopiForeachnormScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputSize,
-                                              const diopiScalar_t* p);
+                                              const diopiScalar_t* ord);
 /**
  * \brief Applies Group Normalization over a mini-batch of inputs.
  * @param[in] ctx Context environment.
