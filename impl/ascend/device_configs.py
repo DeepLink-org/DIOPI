@@ -428,6 +428,18 @@ device_configs = {
         ),
     ),
 
+    'foreach_op': dict(
+        name=["_foreach_mul","_foreach_add"],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['self'],
+                    "shape": [Skip(()),Skip((10,)),Skip((10, 2, 5)),Skip((20)),Skip((10, 5, 1)),Skip((20, 3, 4, 5)),Skip((20, 2, 3, 4, 5)),Skip((0,)), Skip((0, 10)), Skip((5, 0, 9))],
+                },
+            ]
+        )
+    ),
+
     'sigmoid_focal_loss': dict(
         name=['sigmoid_focal_loss'],
         tensor_para=dict(

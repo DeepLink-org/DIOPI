@@ -1168,12 +1168,11 @@ diopiError_t diopiAddInpScalar(diopiContextHandle_t ctx, diopiTensorHandle_t inp
 diopiError_t diopiForeachaddScalar(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputSize,
                                    const diopiScalar_t* other) {
     impl::aten::setCurStream(ctx);
-    DIOPI_IMPL_BUILD_ATEN_LIST(atOuts, outs, inputSize)
     DIOPI_IMPL_BUILD_ATEN_LIST(atInputs, inputs, inputSize)
     auto atOther = impl::aten::buildAtScalar(other);
     auto tempOut = CALL_ATEN_CUDA_FUNC(_foreach_add, atInputs, atOther);
-    for (int i = 0; i < inputSize; i++) {
-        *(reinterpret_cast<at::Tensor*>(outs[i])) = tempOut[i];
+    for (int i = 0; i < inputSize; ++i) {
+        impl::aten::updateATen2Tensor(ctx, tempOut[i].contiguous(), outs[i]);
     }
 
     return diopiSuccess;
@@ -1284,11 +1283,10 @@ diopiError_t diopiForeachmulScalar(diopiContextHandle_t ctx, diopiTensorHandle_t
     DIOPI_CHECK_PTR(outs);
     impl::aten::setCurStream(ctx);
     DIOPI_IMPL_BUILD_ATEN_LIST(atInputs, inputs, inputSize)
-    DIOPI_IMPL_BUILD_ATEN_LIST(atOuts, outs, inputSize)
     auto atOther = impl::aten::buildAtScalar(other);
     auto tempOut = CALL_ATEN_CUDA_FUNC(_foreach_mul, atInputs, atOther);
-    for (int i = 0; i < inputSize; i++) {
-        *(reinterpret_cast<at::Tensor*>(outs[i])) = tempOut[i];
+    for (int i = 0; i < inputSize; ++i) {
+        impl::aten::updateATen2Tensor(ctx, tempOut[i].contiguous(), outs[i]);
     }
 
     return diopiSuccess;
@@ -1308,11 +1306,10 @@ diopiError_t diopiForeachmulTensor(diopiContextHandle_t ctx, diopiTensorHandle_t
     DIOPI_CHECK_PTR(outs);
     impl::aten::setCurStream(ctx);
     DIOPI_IMPL_BUILD_ATEN_LIST(atInputs, inputs, inputSize)
-    DIOPI_IMPL_BUILD_ATEN_LIST(atOuts, outs, inputSize)
     auto atOther = impl::aten::buildATen(other);
     auto tempOut = CALL_ATEN_CUDA_FUNC(_foreach_mul, atInputs, atOther);
-    for (int i = 0; i < inputSize; i++) {
-        *(reinterpret_cast<at::Tensor*>(outs[i])) = tempOut[i];
+    for (int i = 0; i < inputSize; ++i) {
+        impl::aten::updateATen2Tensor(ctx, tempOut[i].contiguous(), outs[i]);
     }
 
     return diopiSuccess;

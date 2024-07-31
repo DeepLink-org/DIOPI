@@ -1649,19 +1649,22 @@ def _foreach_add(self, scalar):
     ctx = self[0].context()
     num_tensors = len(self)
     func = check_function("diopiForeachaddScalar")
-    out = []
+    tensors_in = []
+    tensors_out = []
     for i in range(num_tensors):
-        out.append(Tensor(self[i].size(),self[i].get_dtype()))
+        item_out = Tensor(self[i].size(),self[i].get_dtype())
+        tensors_in.append(TensorP(self[i]))
+        tensors_out.append(TensorP(item_out))
     ret = func(
         ctx,
-        get_capsule(out),
-        self,
+        list(tensors_out),
+        list(tensors_in),
         num_tensors,
-        scalar
+        Scalar(scalar)
     )
     check_returncode(ret)
 
-    return out.value
+    return tensors_out
 
 def _foreach_mul(self, scalar):
     assert isinstance(scalar, (int, float)), "norm_type must be a int or float"
@@ -1669,19 +1672,22 @@ def _foreach_mul(self, scalar):
     ctx = self[0].context()
     num_tensors = len(self)
     func = check_function("diopiForeachmulScalar")
-    out = []
+    tensors_in = []
+    tensors_out = []
     for i in range(num_tensors):
-        out.append(Tensor(self[i].size(),self[i].get_dtype()))
+        item_out = Tensor(self[i].size(),self[i].get_dtype())
+        tensors_in.append(TensorP(self[i]))
+        tensors_out.append(TensorP(item_out))
     ret = func(
         ctx,
-        get_capsule(out),
-        self,
+        list(tensors_out),
+        list(tensors_in),
         num_tensors,
-        scalar
+        Scalar(scalar)
     )
     check_returncode(ret)
 
-    return out.value
+    return tensors_out
 
 def batch_norm(
     input,
