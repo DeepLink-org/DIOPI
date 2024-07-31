@@ -5174,10 +5174,14 @@ def rms_norm_backward(grad_outputs, input, weight, bias, normalized_shape, eps):
         eps,
     )
     check_returncode(ret)
-    out = {"input": grad_input, "weight": grad_weight}
-    if bias is not None:
+    out = {}
+    if bias is not None and bias.requires_grad:
         out['bias'] = grad_bias
-    return {k: v for k, v in out.items() if v.requires_grad}
+    if input.requires_grad:
+        out["input"] = grad_input
+    if weight.requires_grad:
+        out["weight"] = grad_weight
+    return out
 
 
 def multihead_attention(
