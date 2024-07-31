@@ -105,28 +105,39 @@ void buildDiopiTensor(diopiContextHandle_t ctx, const at::Tensor& input, diopiTe
     updateATen2Tensor(ctx, input, *out);
 }
 
-// new cuda generator and pass dipu generator state into cuda generator state
+// new cuda generator and pass dipu generator state(seed & offset) into cuda generator state(seed & offset)
 at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator) {
     auto gen = at::cuda::detail::createCUDAGenerator();
     uint64_t seed, offset;
     diopiGeneratorGetSeedAndOffset(const_cast<diopiGeneratorHandle_t>(generator), &seed, &offset);
     {
         std::lock_guard<std::mutex> lock(gen.mutex());
+#if TORCH_MM_VERSION >= TORCH_2_1_MM_VERSION
         gen.set_current_seed(seed);
         gen.set_offset(offset);
+#else
+        auto gen_impl = static_cast<at::CUDAGeneratorImpl*>(gen.unsafeGetGeneratorImpl());
+        gen_impl->set_current_seed(seed);
+        gen_impl->set_philox_offset_per_thread(offset);
+#endif
     }
     return gen;
 }
 
-void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiGeneratorHandle_t generator) {
-    at::Tensor new_state;
+void updateGeneratorHandleSeedAndOffset(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiGeneratorHandle_t generator) {
+    uint64_t seed, offset;
     {
         std::lock_guard<std::mutex> lock(cuda_gen.mutex());
-        new_state = cuda_gen.get_state();
+#if TORCH_MM_VERSION >= TORCH_2_1_MM_VERSION
+        seed = cuda_gen.current_seed();
+        offset = cuda_gen.get_offset();
+#else
+        auto gen_impl = static_cast<at::CUDAGeneratorImpl*>(cuda_gen.unsafeGetGeneratorImpl());
+        seed = gen_impl->current_seed();
+        offset = gen_impl->philox_offset_per_thread();
+#endif
     }
-    diopiTensorHandle_t new_state_handle = nullptr;
-    buildDiopiTensor(ctx, new_state, &new_state_handle);
-    diopiGeneratorSetState(generator, new_state_handle);
+    diopiGeneratorSetSeedAndOffset(generator, seed, offset);
 }
 
 at::Tensor nllLossNdBackward(at::Tensor& atInput, at::Tensor& atGradOutput, at::Tensor& atTarget, diopiConstTensorHandle_t weight, int64_t reduction,
