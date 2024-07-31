@@ -2633,7 +2633,7 @@ def embedding_backward(
         sparse,
     )
     check_returncode(ret)
-    return {"weight": grad_weight} if grad_weight.requires_grad else {}
+    return {"weight": grad_weight} if weight.requires_grad else {}
 
 
 def mse_loss_backward(
@@ -3361,7 +3361,7 @@ def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
             grad_x1 = np.sum(grad_x1, axis=index, keepdims=True)
     grad_x1 = Tensor.from_numpy(grad_x1)
     check_returncode(ret)
-    return {"x1": grad_x1} if grad_x1.requires_grad else {}
+    return {"x1": grad_x1} if x1.requires_grad else {}
 
 
 def reciprocal(input, inplace=False) -> Tensor:
@@ -5920,7 +5920,7 @@ def scaled_masked_softmax_backward(
         fixed_triu_mask,
     )
     check_returncode(ret)
-    return {"input": grad_input} if grad_input.requires_grad else {}
+    return {"input": grad_input} if input.requires_grad else {}
 
 
 def apply_penalty(
