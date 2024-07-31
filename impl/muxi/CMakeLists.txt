@@ -19,12 +19,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 file(GLOB REAL_IMPL_SRC
     ${BASE_TORCH_DIR}/functions/error.cpp
     ${BASE_TORCH_DIR}/functions/functions.cpp
+    ${BASE_TORCH_DIR}/functions/functions_sparse.cpp
     ${BASE_TORCH_DIR}/functions/functions_lightllm.cpp
     ${BASE_TORCH_DIR}/functions/functions_mmcv.cpp
     ${BASE_TORCH_DIR}/helper.cpp
     ${BASE_TORCH_DIR}/functions/functions_mmcv/*.cu
     ${BASE_TORCH_DIR}/functions/functions_ext.cpp
     ${BASE_TORCH_DIR}/functions/functions_ext/*.cu
+    ${BASE_TORCH_DIR}/functions/functions_sparse/*.cu
     ${BASE_TORCH_DIR}/build_aten.cpp
     # mx cpp
     functions/functions.cpp
