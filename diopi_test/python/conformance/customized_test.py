@@ -167,7 +167,8 @@ class CustomizedTest(object):
         exp_avgs = [exp_avg]
         exp_avg_sqs = [exp_avg_sq]
         max_exp_avg_sqs = [max_exp_avg_sq]
-        state_steps = [torch.tensor(float(step))]
+        # state_steps = [torch.tensor(float(step))]
+        state_steps = [step]
 
         torch.optim._functional.adamw(
             params_with_grad,

@@ -1,5 +1,13 @@
 # Copyright (c) 2023, DeepLink.
 import numpy as np
+import torch
+
+
+# def Genfunc_step(shape, values):
+#     if len(values) != shape[0]:
+#         raise ValueError("false")
+#     tensor = np.array(values, dtype=np.int64).reshape(shape)
+#     return tensor
 
 
 diopi_configs = {
@@ -5187,18 +5195,31 @@ diopi_configs = {
             beta1=[0, -2, 4.3, 0],
             beta2=[0.3, 1, -4, 0],
             eps=[-1e-02, 0, 2, 1e-4],
-            step=[3, 2, 4, 5],
+            # step=[3, 2, 4, 5],
+            # step = [
+            #     torch.tensor([3], dtype=torch.float32),
+            #     torch.tensor([2], dtype=torch.float32),
+            #     torch.tensor([4], dtype=torch.float32),
+            #     torch.tensor([5], dtype=torch.float32)
+            # ],
+            step = [
+                np.array([3], dtype=np.float32),
+                np.array([2], dtype=np.float32),
+                np.array([4], dtype=np.float32),
+                np.array([5], dtype=np.float32)
+            ],
             weight_decay=[-0.2, 2.5, 0, -3],
             amsgrad=[False, False, True, True],
         ),
         tensor_para=dict(
-            dtype=[np.float16, np.float32, np.float64],
+            # dtype=[np.float16, np.float32, np.float64],
             args=[
                 {
                     "ins": ['param', 'param_grad'],
                     # "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
                     #           (0,), (4, 0), (12, 0, 9)],
                     "shape": [(), (0,), (4, 0), (12, 0, 9)],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
                 {
@@ -5206,8 +5227,19 @@ diopi_configs = {
                     # "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
                     #           (0,), (4, 0), (12, 0, 9)],
                     "shape": [(), (0,), (4, 0), (12, 0, 9)],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
+                # {
+                #     "ins": ['step'],
+                #     "shape": [(1,), (1,), (1,), (1,)],
+                #     "dtype": [np.int64],
+                #     # "gen_policy": 'gen_tensor_lst_diff_shape',
+                #     # "gen_fn": 'Genfunc.randn',
+                #     "gen_fn": 'Genfunc_step',  
+                #     "gen_fn_args": [[3], [2], [4], [5]],
+                # }
+               
             ]
         ),
     ),

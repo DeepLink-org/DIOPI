@@ -2407,7 +2407,7 @@ DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorH
  */
 DIOPI_API diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
                                   diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps,
-                                  float weight_decay, int64_t step, bool amsgrad);
+                                  float weight_decay, diopiTensorHandle_t step, bool amsgrad);
 
 /**
  * @brief Applies a 2D transposed convolution operator over an input image composed of several input planes, sometimes also called “deconvolution”.
