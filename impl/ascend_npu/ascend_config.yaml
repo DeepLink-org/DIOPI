@@ -258,6 +258,7 @@ ascend:
 - diopiTriu
 - diopiTriuInp
 - diopiUniformInp
+- diopiUnique
 - diopiUpsampleLinear
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest

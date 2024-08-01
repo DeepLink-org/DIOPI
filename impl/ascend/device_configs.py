@@ -795,25 +795,17 @@ device_configs = {
 
     'unique': dict(
         name=['unique'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
+        para=dict(
+            # aclnnUnique2 only support that the value of dim is None
+            dim=[Skip(-2), Skip(-1), Skip(0), Skip(1), Skip(2)],
         ),
     ),
 
     'unique_same_value': dict(
         name=['unique'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.int64),Skip(np.float32),Skip(np.float64),Skip(np.float16),Skip(np.int16),Skip(np.int32),Skip(np.uint8),Skip(np.int8),Skip(np.bool_),],
-                },
-            ]
+        para=dict(
+            # aclnnUnique2 only support that the value of dim is None
+            dim=[Skip(-1), Skip(1)],
         ),
     ),
 
