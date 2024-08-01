@@ -24,6 +24,9 @@ ascend:
 - diopiBaddbmmInp
 - diopiBatchNorm
 - diopiBatchNormBackward
+- diopiBatchNormStats
+- diopiBatchNormBackwardReduce
+- diopiBatchNormGatherStatsWithCounts
 - diopiBitwiseAnd
 - diopiBitwiseAndInp
 - diopiBitwiseAndInpScalar

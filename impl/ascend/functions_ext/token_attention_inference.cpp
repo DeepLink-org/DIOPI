@@ -6,9 +6,9 @@
 
 #include <cstdlib>
 
-#include "../../../adaptor/csrc/impl_functions.hpp"
-#include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
+#include "../common/acloprunner.hpp"
+#include "impl_functions.hpp"
 
 namespace impl {
 namespace ascend {
@@ -48,10 +48,10 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
         diopiScalar_t sliceIndexScalar = constructDiopiScalarT(diopi_dtype_int32, i);
         AscendTensor sliceIndexAt;
         makeTensorFromScalar(ctx, sliceIndexAt, &sliceIndexScalar, bLocAt.device());
-        DIOPI_ASCEND_CALL_ACLNN(aclnnIndexSelect, ctx, bLocAt, (int64_t)0, sliceIndexAt, bLocAtSlice);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnIndexSelect, ctx, bLocAt, 0, sliceIndexAt, bLocAtSlice);
         bLocAtSlice.view({bLocAt.shape(1)});
         makeTensor(ctx, kLocAt, {curSeqLen}, bLocAt.dtype());
-        DIOPI_ASCEND_CALL_ACLNN(aclnnIndexSelect, ctx, bLocAtSlice, (int64_t)0, indexAt, kLocAt);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnIndexSelect, ctx, bLocAtSlice, 0, indexAt, kLocAt);
 
         diopiTensorHandle_t keyTmp;
         diopiConstTensorHandle_t indexAtHandle = kLocAt.tensorHandle();
