@@ -382,7 +382,7 @@ def silu_backward(input, grad_outputs, **kwargs) -> Tensor:
     func = check_function("diopiSiluBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def sqrt(input, inplace=False) -> Tensor:
@@ -2266,7 +2266,7 @@ def adaptive_max_pool2d_backward(input, grad_outputs, output_size, **kwargs) -> 
     func = check_function("diopiAdaptiveMaxPool2dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input, indices)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def slice_op_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
@@ -2286,7 +2286,7 @@ def slice_op_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
         index.step,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def adaptive_avg_pool2d_backward(input, grad_outputs, **kwargs) -> Tensor:
@@ -2295,7 +2295,7 @@ def adaptive_avg_pool2d_backward(input, grad_outputs, **kwargs) -> Tensor:
     func = check_function("diopiAdaptiveAvgPool2dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def index_backward(input, grad_outputs, **kwargs) -> Tensor:
@@ -2331,7 +2331,7 @@ def index_backward(input, grad_outputs, **kwargs) -> Tensor:
         grad_outputs[0],
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def leaky_relu_backward(
@@ -2352,7 +2352,7 @@ def leaky_relu_backward(
         input_is_result,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def sigmoid_focal_loss_backward(
@@ -2389,7 +2389,7 @@ def sigmoid_focal_loss_backward(
         reduction,
     )
     check_returncode(ret)
-    return {"inputs": grad_input}
+    return {"inputs": grad_input} if grad_input.requires_grad else {}
 
 
 def roi_align_backward(
@@ -2435,7 +2435,7 @@ def roi_align_backward(
         aligned,
     )
     check_returncode(ret)
-    return {"input": out}
+    return {"input": out} if out.requires_grad else {}
 
 
 def conv2d_backward(
@@ -2467,7 +2467,10 @@ def conv2d_backward(
 
     grad_input = raw_like(input)
     grad_weight = raw_like(weight)
-    out = {"input": grad_input, "weight": grad_weight}
+
+    keys = ["input", "weight"]
+    grads = [grad_input, grad_weight]
+    out = {k: v for k, v in zip(keys, grads) if v.requires_grad}
 
     if bias is None:
         grad_bias = None
@@ -2556,7 +2559,7 @@ def conv_transpose2d_backward(
         groups,
     )
     check_returncode(ret)
-    return out
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 
 def hardtanh_backward(
@@ -2570,7 +2573,7 @@ def hardtanh_backward(
     func = check_function("diopiHardtanhBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input, min_val, max_val)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def hardswish_backward(input, grad_outputs, **kwargs) -> Tensor:
@@ -2579,7 +2582,7 @@ def hardswish_backward(input, grad_outputs, **kwargs) -> Tensor:
     func = check_function("diopiHardswishBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def gelu_backward(input, grad_outputs, approximate="none", **kwargs) -> Tensor:
@@ -2595,7 +2598,7 @@ def gelu_backward(input, grad_outputs, approximate="none", **kwargs) -> Tensor:
         approximate.encode("UTF-8"),
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def avg_pool2d_backward(
@@ -2652,7 +2655,7 @@ def avg_pool2d_backward(
         )
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def embedding_backward(
@@ -2692,7 +2695,7 @@ def embedding_backward(
         sparse,
     )
     check_returncode(ret)
-    return {"weight": grad_weight}
+    return {"weight": grad_weight} if weight.requires_grad else {}
 
 
 def mse_loss_backward(
@@ -2712,7 +2715,7 @@ def mse_loss_backward(
         reduction_mode,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def tanh_backward(input, grad_outputs, output, **kwargs) -> Tensor:
@@ -2722,7 +2725,7 @@ def tanh_backward(input, grad_outputs, output, **kwargs) -> Tensor:
     func = check_function("diopiTanhBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], output)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def index_select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
@@ -2733,7 +2736,7 @@ def index_select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     func = check_function("diopiIndexSelectBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], inputSize, dim, index)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
@@ -2744,7 +2747,7 @@ def select_backward(input, grad_outputs, dim, index, **kwargs) -> Tensor:
     func = check_function("diopiSelectBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], inputSize, dim, index)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
@@ -2754,7 +2757,7 @@ def softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
     func = check_function("diopiSoftmaxBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], output, dim)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def log_softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
@@ -2764,7 +2767,7 @@ def log_softmax_backward(input, grad_outputs, output, dim, **kwargs) -> Tensor:
     func = check_function("diopiLogSoftmaxBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], output, dim)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def sigmoid_backward(input, grad_outputs, output, **kwargs) -> Tensor:
@@ -2774,7 +2777,7 @@ def sigmoid_backward(input, grad_outputs, output, **kwargs) -> Tensor:
     func = check_function("diopiSigmoidBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], output)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
@@ -2785,7 +2788,7 @@ def threshold_backward(input, grad_outputs, threshold, **kwargs) -> Tensor:
     func = check_function("diopiThresholdBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input, threshold)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def binary_cross_entropy_backward(
@@ -2817,7 +2820,7 @@ def binary_cross_entropy_backward(
         reduction_mode,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def binary_cross_entropy_with_logits_backward(
@@ -2859,7 +2862,7 @@ def binary_cross_entropy_with_logits_backward(
         reduction_mode,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 # todo: impl for diopiNLLLossV2Backward
@@ -2892,7 +2895,7 @@ def nll_loss_backward(
         ignore_index,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def nll_loss_v2_backward(
@@ -2926,7 +2929,7 @@ def nll_loss_v2_backward(
         ignore_index,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def max_pool2d_backward(
@@ -2977,7 +2980,7 @@ def max_pool2d_backward(
         indices,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def batch_norm_backward(
@@ -3005,7 +3008,10 @@ def batch_norm_backward(
         ), "if not trainging, running_mean and running_var must be defined"
     # running_mean = running_mean if running_mean is None else running_mean
     # running_var = running_var if running_var is None else running_var
-    out = {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+    keys = ["input", "weight", "bias"]
+    grads = [grad_input, grad_weight, grad_bias]
+    out = {k: v for k, v in zip(keys, grads) if v.requires_grad}
+
     func = check_function("diopiBatchNormBackward")
     grad_output = grad_outputs[0]
     ret = func(
@@ -3417,7 +3423,7 @@ def cdist_backward(x1, grad_outputs, output, x2, p, **kwargs):
             grad_x1 = np.sum(grad_x1, axis=index, keepdims=True)
     grad_x1 = Tensor.from_numpy(grad_x1)
     check_returncode(ret)
-    return {"x1": grad_x1}
+    return {"x1": grad_x1} if x1.requires_grad else {}
 
 
 def reciprocal(input, inplace=False) -> Tensor:
@@ -3562,7 +3568,7 @@ def smooth_l1_loss_backward(
         beta,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def maximum(input, other) -> Tensor:
@@ -3705,7 +3711,7 @@ def conv3d_backward(
         groups,
     )
     check_returncode(ret)
-    return out
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 
 def expand(input, size) -> Tensor:
@@ -3762,7 +3768,7 @@ def unfold_backward(input, grad_outputs, dimension, size, step, **kwargs):
         step,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def masked_select(input, mask) -> Tensor:
@@ -3783,7 +3789,7 @@ def masked_select_backward(input, grad_outputs, mask) -> Tensor:
     func = check_function("diopiMaskedSelectBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input, mask)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def index_fill(input, dim, index, value, inplace=False) -> Tensor:
@@ -3919,7 +3925,7 @@ def group_norm_backward(
         num_groups,
     )
     check_returncode(ret)
-    return out
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 
 def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05):
@@ -3999,7 +4005,7 @@ def layer_norm_backward(
         Sizes(normalized_shape),
     )
     check_returncode(ret)
-    return out
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 
 def adaptive_avg_pool3d(input, output_size):
@@ -4037,7 +4043,7 @@ def adaptive_avg_pool3d_backward(input, grad_outputs, **kwargs) -> Tensor:
     func = check_function("diopiAdaptiveAvgPool3dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def adaptive_max_pool3d(input, output_size, return_indices=False):
@@ -4086,7 +4092,7 @@ def adaptive_max_pool3d_backward(input, grad_outputs, output_size, **kwargs) -> 
     func = check_function("diopiAdaptiveMaxPool3dBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input, indices)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def max_pool3d(
@@ -4212,7 +4218,7 @@ def max_pool3d_backward(
         indices,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def permute(input, dims=None) -> Tensor:
@@ -4259,7 +4265,7 @@ def gather_backward(input, grad_outputs, dim, index, **kwargs):
     func = check_function("diopiGatherBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], input, dim, index)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def remainder(other, input=None, self=None):
@@ -4375,11 +4381,8 @@ def ctc_loss_backward(
         zero_infinity,
     )
     check_returncode(ret)
-    return {
-        "log_probs": log_softmax_backward(log_probs, [grad_input], log_probs_, 2)[
-            "input"
-        ]
-    }
+    grad_log_probs = log_softmax_backward(log_probs, [grad_input], log_probs_, 2).get("input", None)
+    return {"log_probs": grad_log_probs} if grad_log_probs and grad_log_probs.requires_grad else {}
 
 
 def index_put(
@@ -4543,7 +4546,7 @@ def interpolate_backward(
             mode.encode("UTF-8"),
         )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def pad(input, pad, mode="constant", value=None):
@@ -4674,9 +4677,10 @@ def linear_backward(input, grad_outputs, weight, bias=None, **kwargs):
         weight,
     )
     check_returncode(ret)
-    if bias is None:
-        return {"input": grad_input, "weight": grad_weight}
-    return {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+    out = {"input": grad_input, "weight": grad_weight}
+    if bias is not None:
+        out["bias"] = grad_bias
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 
 def cross_entropy_backward(
@@ -4717,7 +4721,7 @@ def cross_entropy_backward(
         label_smoothing,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def erfinv(input, inplace=False) -> Tensor:
@@ -4828,7 +4832,7 @@ def cholesky_ex_backward(input, grad_outputs, output, upper=False, **kwargs):
     func = check_function("diopiCholeskyBackward")
     ret = func(input.context(), grad_input, grad_outputs[0], output, upper)
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def triangular_solve(input, A, upper=True, transpose=False, unitriangular=False):
@@ -4885,7 +4889,8 @@ def triangular_solve_backward(
         unitriangular,
     )
     check_returncode(ret)
-    return {"input": grad_input, "A": grad_A}
+    out = {"input": grad_input, "A": grad_A}
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 
 def repeat(input, repeats):
@@ -5231,9 +5236,14 @@ def rms_norm_backward(grad_outputs, input, weight, bias, normalized_shape, eps):
         eps,
     )
     check_returncode(ret)
-    if bias is None:
-        return {"input": grad_input, "weight": grad_weight}
-    return {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+    out = {}
+    if bias is not None and bias.requires_grad:
+        out['bias'] = grad_bias
+    if input.requires_grad:
+        out["input"] = grad_input
+    if weight.requires_grad:
+        out["weight"] = grad_weight
+    return out
 
 
 def multihead_attention(
@@ -5314,7 +5324,8 @@ def multihead_attention_backward(
             raise RuntimeError("execute diopiMultiHeadAttentionBackward failed!")
     else:
         check_returncode(ret)
-        return {"q": grad_q, "k": grad_k, "v": grad_v}
+        out = {"q": grad_q, "k": grad_k, "v": grad_v}
+        return {k: v for k, v in out.items() if v.requires_grad}
 
 
 def multihead_attention_varlen(
@@ -5427,7 +5438,8 @@ def multihead_attention_varlen_backward(
             raise RuntimeError("execute diopiMultiHeadAttentionVarLenBackward failed!")
     else:
         check_returncode(ret)
-        return {"q": grad_q, "k": grad_k, "v": grad_v}
+        out = {"q": grad_q, "k": grad_k, "v": grad_v}
+        return {k: v for k, v in out.items() if v.requires_grad}
 
 def flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right):
     call = "diopiFlashAttention"
@@ -5511,7 +5523,8 @@ def flash_attention_backward(
         else:
             raise
     check_returncode(ret)
-    return {"q": grad_q, "k": grad_k, "v": grad_v}
+    out = {"q": grad_q, "k": grad_k, "v": grad_v}
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 # diopiCustomizedFlashAttention is designed for ascend, please do not use it with other devices.
 def customized_flash_attention(q, k, v, alibi_slopes, p_dropout, softmax_scale, is_causal, window_size_left, window_size_right, head_num, input_layout):
@@ -5654,7 +5667,8 @@ def customized_flash_attention_backward(
         input_layout,
     )
     check_returncode(ret)
-    return {"q": grad_q, "k": grad_k, "v": grad_v}
+    out = {"q": grad_q, "k": grad_k, "v": grad_v}
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 def flash_attention_varlen(
     q,
@@ -5779,7 +5793,8 @@ def flash_attention_varlen_backward(
         else:
             raise
     check_returncode(ret)
-    return {"q": grad_q, "k": grad_k, "v": grad_v}
+    out = {"q": grad_q, "k": grad_k, "v": grad_v}
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 # diopiCustomizedFlashAttentionVarLen is designed for ascend, please do not use it with other devices.
 def customized_flash_attention_varlen(
@@ -5931,7 +5946,8 @@ def customized_flash_attention_varlen_backward(
         window_size_right,
     )
     check_returncode(ret)
-    return {"q": grad_q, "k": grad_k, "v": grad_v}
+    out = {"q": grad_q, "k": grad_k, "v": grad_v}
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 def scaled_masked_softmax(input, mask, scale, fixed_triu_mask):
     call = "diopiScaledMaskedSoftmax"
@@ -5966,7 +5982,7 @@ def scaled_masked_softmax_backward(
         fixed_triu_mask,
     )
     check_returncode(ret)
-    return {"input": grad_input}
+    return {"input": grad_input} if input.requires_grad else {}
 
 
 def apply_penalty(
