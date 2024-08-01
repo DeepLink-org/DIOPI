@@ -308,30 +308,7 @@ device_configs = {
         rtol=1e-4,
     ),
 
-    'cross_entropy': dict(
-        name=['cross_entropy'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((1024, 81)),Skip((3, 9)),Skip((64, 9)),Skip((5, 9, 12, 4)),Skip((0, 16)),Skip((0, 5, 6)),Skip((4, 6, 0, 3)),],
-                },
-            ]
-        ),
-    ),
-
-    'cross_entropy_empty_tensor': dict(
-        name=['cross_entropy'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": [Skip((5, 0)),],
-                },
-            ]
-        ),
-    ),
-
+    # target not implemented for DT_FLOAT, should be in dtype support list [DT_INT64,DT_UINT8,DT_INT32,].
     'cross_entropy_prob_target': dict(
         name=['cross_entropy'],
         tensor_para=dict(
