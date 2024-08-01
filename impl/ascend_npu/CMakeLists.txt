@@ -22,14 +22,14 @@ add_custom_target(op_plugin_gen
 add_subdirectory(third_party/acl)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/acl/inc)
 
-#find python3
+# find python3
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 MESSAGE(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
 MESSAGE(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
 include_directories(SYSTEM ${Python_INCLUDE_DIRS})
 link_directories(${Python_LIBRARIES})
 
-#find torch
+# find torch
 if(NOT DEFINED PYTORCH_DIR)
   execute_process(
     COMMAND sh -c "python -c 'import torch;print(torch.__path__[0])'"
@@ -47,7 +47,7 @@ message(STATUS "TORCH_INCLUDE_DIRS:" ${TORCH_INCLUDE_DIRS})
 include_directories(SYSTEM ${TORCH_INCLUDE_DIRS})
 link_directories(${TORCH_INSTALL_PREFIX}/lib)
 
-#Because many interfaces have not yet been implemented, -Wreturn - type = 0 option is temporarily added.
+# Because many interfaces have not yet been implemented, -Wreturn-type=0 option is temporarily added.
 set(CMAKE_CXX_FLAGS
     "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable "
 )
