@@ -1643,6 +1643,68 @@ def clip_grad_norm_(tensors, max_norm, norm_type=2.0, error_if_nonfinite=False):
 
     return out.value
 
+def _foreach_add(self, scalar):
+    ctx = self[0].context()
+    num_tensors = len(self)
+    func = check_function("diopiForeachaddScalar")
+    input_tensors = list([TensorP(input) for input in self])
+    out_tensorV = list([Tensor(self[i].size(),self[i].get_dtype()) for i in range(num_tensors)])
+    out_tensors = list([TensorP(out_tensor) for out_tensor in out_tensorV])
+    if isinstance(scalar, Tensor):
+        other = scalar
+    else:
+        other = Scalar(scalar)
+    ret = func(
+        ctx,
+        out_tensors,
+        input_tensors,
+        num_tensors,
+        other
+    )
+    check_returncode(ret)
+
+    return out_tensorV
+
+def _foreach_mul(self, scalar):
+    ctx = self[0].context()
+    num_tensors = len(self)
+    func = check_function("diopiForeachmulScalar")
+    input_tensors = list([TensorP(input) for input in self])
+    out_tensorV = list([Tensor(self[i].size(),self[i].get_dtype()) for i in range(num_tensors)])
+    out_tensors = list([TensorP(out_tensor) for out_tensor in out_tensorV])
+    if isinstance(scalar, Tensor):
+        other = scalar
+    else:
+        other = Scalar(scalar)
+    ret = func(
+        ctx,
+        out_tensors,
+        input_tensors,
+        num_tensors,
+        other
+    )
+    check_returncode(ret)
+
+    return out_tensorV
+
+def _foreach_norm(self):
+    ctx = self[0].context()
+    num_tensors = len(self)
+    func = check_function("diopiForeachnormScalar")
+    input_tensors = list([TensorP(input) for input in self])
+    out_tensorV = list([Tensor([],self[i].get_dtype()) for i in range(num_tensors)])
+    out_tensors = list([TensorP(out_tensor) for out_tensor in out_tensorV])
+    other = Scalar(2)
+    ret = func(
+        ctx,
+        out_tensors,
+        input_tensors,
+        num_tensors,
+        other
+    )
+    check_returncode(ret)
+
+    return out_tensorV
 
 def batch_norm(
     input,
