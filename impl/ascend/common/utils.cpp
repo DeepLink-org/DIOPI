@@ -6,9 +6,12 @@
 
 #include "utils.hpp"
 
+#include <acl/acl_rt.h>
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <functional>
 #include <numeric>
 #include <string>
@@ -693,43 +696,47 @@ diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandl
     }
 }
 
-diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, AscendTensor& src) {
-    diopiDevice_t device = src.device();
+AscendTensor hostToDevice(diopiContextHandle_t ctx, AscendTensor& hostTensor) {
+    diopiDevice_t device = hostTensor.device();
 
     if (device == diopi_host) {
         diopiTensorHandle_t dst;
-        diopiSize_t size{src.shape().data(), src.dim()};
-        diopiSize_t stride{src.stride().data(), (int64_t)src.stride().size()};
-        diopiDtype_t dtype = src.dtype();
+        diopiSize_t size{hostTensor.shape().data(), hostTensor.dim()};
+        diopiSize_t stride{hostTensor.stride().data(), (int64_t)hostTensor.stride().size()};
+        diopiDtype_t dtype = hostTensor.dtype();
         diopiRequireTensor(ctx, &dst, &size, &stride, dtype, diopi_device);
-        const void* srcPtr = src.data();
+        const void* srcPtr = hostTensor.data();
         void* dstPtr;
         diopiGetTensorData(dst, &dstPtr);
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
-        int64_t elemsize = src.elemsize();
+        int64_t elemsize = hostTensor.numel() * hostTensor.elemsize();
         CALL_ACLRT(aclrtMemcpyAsync(dstPtr, elemsize, const_cast<void*>(srcPtr), elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
-        return dst;
+        return AscendTensor(dst);
     } else {
-        return diopiTensorHandle_t(src);
+        return hostTensor;
     }
 }
 
-diopiError_t deviceToHost(diopiContextHandle_t ctx, AscendTensor& deviceTensor, void* hostPtr) {
+AscendTensor deviceToHost(diopiContextHandle_t ctx, const AscendTensor& deviceTensor) {
     if (deviceTensor.device() == diopi_device) {
+        diopiTensorHandle_t dst;
+        diopiSize_t size{deviceTensor.shape().data(), deviceTensor.dim()};
+        diopiSize_t stride{deviceTensor.stride().data(), (int64_t)deviceTensor.stride().size()};
+        diopiDtype_t dtype = deviceTensor.dtype();
+        diopiRequireTensor(ctx, &dst, &size, &stride, dtype, diopi_host);
+        const void* srcPtr = deviceTensor.data();
+        void* dstPtr;
+        diopiGetTensorData(dst, &dstPtr);
         diopiStreamHandle_t stream;
         diopiGetStream(ctx, &stream);
-        CALL_ACLRT(aclrtMemcpyAsync(hostPtr,
-                                    deviceTensor.numel() * deviceTensor.elemsize(),
-                                    deviceTensor.data(),
-                                    deviceTensor.numel() * deviceTensor.elemsize(),
-                                    ACL_MEMCPY_DEVICE_TO_HOST,
-                                    reinterpret_cast<aclrtStream>(stream)));
-        CALL_ACLRT(aclrtSynchronizeStream(reinterpret_cast<aclrtStream>(stream)));
+        int64_t elemsize = deviceTensor.numel() * deviceTensor.elemsize();
+        CALL_ACLRT(aclrtMemcpyAsync(dstPtr, elemsize, const_cast<void*>(srcPtr), elemsize, ACL_MEMCPY_DEVICE_TO_HOST, stream));
+        CALL_ACLRT(aclrtSynchronizeStream(stream));
+        return AscendTensor(dst);
     } else {
-        hostPtr = const_cast<void*>(deviceTensor.data());
+        return deviceTensor;
     }
-    return diopiSuccess;
 }
 
 static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes, diopiDtype_t* dtype) {

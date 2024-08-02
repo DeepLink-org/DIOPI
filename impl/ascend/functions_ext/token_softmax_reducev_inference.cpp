@@ -24,13 +24,11 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
     diopiDtype_t dtype = logicsAt.dtype();
     diopiDevice_t device = logicsAt.device();
 
-    void* bSeqLenHost = malloc(bSeqLenAt.numel() * bSeqLenAt.elemsize());
-    deviceToHost(ctx, bSeqLenAt, bSeqLenHost);
-    void* bStartLocHost = malloc(bStartLocAt.numel() * bStartLocAt.elemsize());
-    deviceToHost(ctx, bStartLocAt, bStartLocHost);
+    AscendTensor bSeqLenHostAt = deviceToHost(ctx, bSeqLenAt);
+    AscendTensor bStartLocHostAt = deviceToHost(ctx, bStartLocAt);
 
-    int* bSeqLenAtData = reinterpret_cast<int*>(bSeqLenHost);
-    int* bStartLocAtData = reinterpret_cast<int*>(bStartLocHost);
+    const int* bSeqLenAtData = reinterpret_cast<const int*>(bSeqLenHostAt.data());
+    const int* bStartLocAtData = reinterpret_cast<const int*>(bStartLocHostAt.data());
 
     for (int i = 0; i < batch; i++) {
         int curSeqLen = *(bSeqLenAtData + i);
@@ -99,8 +97,6 @@ diopiError_t diopiTokenSoftmaxReduceVInference(diopiContextHandle_t ctx, diopiTe
         std::vector<AscendTensor> indexPutIndices{tensorI};
         DIOPI_ASCEND_CALL_ACLNN(aclnnIndexPutImpl, ctx, outAt, indexPutIndices, matmulOutAt.view({head, dim}), false, true);
     }
-    free(bSeqLenHost);
-    free(bStartLocHost);
     return diopiSuccess;
 }
 

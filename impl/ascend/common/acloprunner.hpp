@@ -64,9 +64,9 @@ diopiError_t makeOnesLike(diopiContextHandle_t ctx, diopiTensorHandle_t* out, di
 
 diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandle_t src);
 
-diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, AscendTensor& src);
+AscendTensor hostToDevice(diopiContextHandle_t ctx, AscendTensor& hostTensor);
 
-diopiError_t deviceToHost(diopiContextHandle_t ctx, AscendTensor& deviceTensor, void* hostPtr);
+AscendTensor deviceToHost(diopiContextHandle_t ctx, const AscendTensor& deviceTensor);
 
 inline std::vector<int64_t> calcStrides(int ndims, diopiSize_t size, diopiMemoryFormat_t format = diopiMemoryFormat_t::Contiguous) {
     std::vector<int64_t> strides;
