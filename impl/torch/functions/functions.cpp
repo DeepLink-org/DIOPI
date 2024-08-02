@@ -389,17 +389,30 @@ diopiError_t diopiSum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     return diopiSuccess;
 }
 
-diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool unbiased) {
+diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, const diopiScalar_t* correction) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     auto atDim = impl::aten::buildAtIntArray(dim);
+
     bool keepdim = false;
     if (atInput.dim() == atOut.dim()) {
         keepdim = true;
     }
-    CALL_ATEN_CUDA_FUNC(std_out, atOut, atInput, atDim, unbiased, keepdim);
 
+#if TORCH_MM_VERSION >= 2010
+    c10::optional<at::Scalar> atCorrection = c10::optional<at::Scalar>();
+    if (correction != nullptr) {
+        atCorrection = impl::aten::buildAtScalar(correction);
+    }
+#else
+    c10::optional<int64_t> atCorrection = c10::optional<int64_t>();
+    if (correction != nullptr) {
+        atCorrection = impl::aten::buildAtScalar(correction).toInt();
+    }
+#endif
+
+    CALL_ATEN_CUDA_FUNC(std_out, atOut, atInput, atDim, atCorrection, keepdim);
     return diopiSuccess;
 }
 

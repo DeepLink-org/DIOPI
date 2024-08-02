@@ -3116,7 +3116,7 @@ diopi_configs = {
         interface=['torch'],
         para=dict(
             dim=[-1, 0, 1, [0, 1], 2, [-1, 0, -3], [0, 2, 3, -1], -1, [-1, -2], 2, None, None],
-            unbiased=[True, True, False, True, False, True, False, False, True, False, False, True],
+            correction=[1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1],
         ),
         atol=1e-4,
         rtol=1e-5,

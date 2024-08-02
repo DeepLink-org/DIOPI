@@ -54,7 +54,7 @@ diopiError_t diopiMean(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
-diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool unbiased) {
+diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, const diopiScalar_t* correction) {
     AscendTensor inputAt(input);
     AscendTensor outAt(out);
 
@@ -63,18 +63,18 @@ diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
         keepdim = true;
     }
 
-    int64_t correction = 0;
-    if (unbiased) {
-        correction = 1;
+    int64_t correctionInt = 1;
+    if (correction != nullptr) {
+        correctionInt = correction->ival;
     }
 
     if (dim.data == nullptr || dim.len == 0) {
         std::vector<int64_t> allDim(inputAt.dim());
         std::iota(allDim.begin(), allDim.end(), 0);
         diopiSize_t rDim = vectorToDiopiSize(allDim);
-        DIOPI_ASCEND_CALL_ACLNN(aclnnStd, ctx, input, rDim, correction, keepdim, out);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnStd, ctx, input, rDim, correctionInt, keepdim, out);
     } else {
-        DIOPI_ASCEND_CALL_ACLNN(aclnnStd, ctx, input, dim, correction, keepdim, out);
+        DIOPI_ASCEND_CALL_ACLNN(aclnnStd, ctx, input, dim, correctionInt, keepdim, out);
     }
     return diopiSuccess;
 }
