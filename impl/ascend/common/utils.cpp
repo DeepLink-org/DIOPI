@@ -6,19 +6,15 @@
 
 #include "utils.hpp"
 
-#include <acl/acl_rt.h>
-
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <functional>
 #include <numeric>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
-#include <vector>
 
 #include "../aclnn/adaptor.hpp"
 #include "../ascend_tensor.hpp"

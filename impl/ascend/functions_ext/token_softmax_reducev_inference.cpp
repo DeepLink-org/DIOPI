@@ -4,7 +4,6 @@
  * @copyright  (c) 2024, DeepLink.
  */
 
-#include <cstdlib>
 #include <vector>
 
 #include "../aclnn/adaptor.hpp"

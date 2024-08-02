@@ -4,8 +4,6 @@
  * @copyright  (c) 2024, DeepLink.
  */
 
-#include <cstdlib>
-
 #include "../aclnn/adaptor.hpp"
 #include "../common/acloprunner.hpp"
 #include "impl_functions.hpp"
