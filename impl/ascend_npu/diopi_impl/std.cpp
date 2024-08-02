@@ -11,21 +11,23 @@
 
 namespace OP_IMPL_NS {
 
-diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool unbiased) {
-    BEGIN_CALL_ACL_OP(out, input, dim);
+diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, const diopiScalar_t* correction) {
+    BEGIN_CALL_ACL_OP(out, input, dim, correction);
+    if (correction == nullptr) {
+        correctionAt = 1;  // default correction value in torch_std is 1
+    }
     bool keepdim = false;
     if (inputAt.dim() == outAt.dim()) {
         keepdim = true;
     }
-    at::Scalar correction(static_cast<int64_t>(unbiased));
     if (0 == dim.len) {
         c10::DimVector adim(inputAt.dim());
         std::iota(adim.begin(), adim.end(), 0);
         at::IntArrayRef rdim(adim.data(), adim.size());
-        op_api::std_out(inputAt, rdim, correction, keepdim, outAt);
+        op_api::std_out(inputAt, rdim, correctionAt, keepdim, outAt);
     } else {
         at::IntArrayRef rdim(dim.data, dim.len);
-        op_api::std_out(inputAt, rdim, correction, keepdim, outAt);
+        op_api::std_out(inputAt, rdim, correctionAt, keepdim, outAt);
     }
     return diopiSuccess;
 }

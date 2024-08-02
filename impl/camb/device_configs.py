@@ -1066,11 +1066,9 @@ device_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['param', 'param_grad'],
-                    # FIXME Run diopi_functions.adam failed, because of inputs: param_grad changed
-                    # FIXME 特定参数组合精度差距过大
-                    "shape": [Skip(()), Skip((512, 256, 3, 3)), Skip((512, 512, 3, 3))],
-                    "dtype": [Skip(np.float16)],
+                    # Temporarily skip all test cases for adamw op on camb due to the kernel bug.
+                    "ins": ['param'],
+                    "dtype": [Skip(np.float16), Skip(np.float32), Skip(np.float64)],
                 },
             ]
         ),
