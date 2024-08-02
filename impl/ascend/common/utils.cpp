@@ -692,7 +692,7 @@ diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandl
     }
 }
 
-AscendTensor hostToDevice(diopiContextHandle_t ctx, AscendTensor& hostTensor) {
+AscendTensor hostToDeviceAsync(diopiContextHandle_t ctx, const AscendTensor& hostTensor) {
     diopiDevice_t device = hostTensor.device();
 
     if (device == diopi_host) {
@@ -714,7 +714,7 @@ AscendTensor hostToDevice(diopiContextHandle_t ctx, AscendTensor& hostTensor) {
     }
 }
 
-AscendTensor deviceToHost(diopiContextHandle_t ctx, const AscendTensor& deviceTensor) {
+AscendTensor deviceToHostSync(diopiContextHandle_t ctx, const AscendTensor& deviceTensor) {
     if (deviceTensor.device() == diopi_device) {
         diopiTensorHandle_t dst;
         diopiSize_t size{deviceTensor.shape().data(), deviceTensor.dim()};

@@ -22,8 +22,8 @@ diopiError_t diopiTokenAttentionInference(diopiContextHandle_t ctx, diopiTensorH
     diopiDtype_t dtype = qAt.dtype();
     diopiDevice_t device = qAt.device();
 
-    AscendTensor bSeqLenHostAt = deviceToHost(ctx, bSeqLenAt);
-    AscendTensor bStartLocHostAt = deviceToHost(ctx, bStartLocAt);
+    AscendTensor bSeqLenHostAt = deviceToHostSync(ctx, bSeqLenAt);
+    AscendTensor bStartLocHostAt = deviceToHostSync(ctx, bStartLocAt);
 
     const int* bSeqLenAtData = reinterpret_cast<const int*>(bSeqLenHostAt.data());
     const int* bStartLocAtData = reinterpret_cast<const int*>(bStartLocHostAt.data());
