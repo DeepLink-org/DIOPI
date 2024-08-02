@@ -20,11 +20,11 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
                       diopiTensorHandle_t expAvgSq, diopiTensorHandle_t maxExpAvgSq, float lr, float beta1, float beta2, float eps, float weightDecay,
                       int64_t step, bool amsgrad, int adamMode = 0) {
     cnrtQueue_t queue = getStream(ctx);
-    DiopiTensor inputTensor = DiopiTensor(input);
-    DiopiTensor gradTensor = DiopiTensor(grad);
-    DiopiTensor expAvgTensor = DiopiTensor(expAvg);
-    DiopiTensor expAvgSqTensor = DiopiTensor(expAvgSq);
-    DiopiTensor maxExpAvgSqTensor = DiopiTensor(maxExpAvgSq);
+    DiopiTensor inputTensor(input);
+    DiopiTensor gradTensor(grad);
+    DiopiTensor expAvgTensor(expAvg);
+    DiopiTensor expAvgSqTensor(expAvgSq);
+    DiopiTensor maxExpAvgSqTensor(maxExpAvgSq);
 
     DiopiTensor inputCasted = inputTensor;
     DiopiTensor gradCasted = gradTensor;
@@ -32,8 +32,14 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
     DiopiTensor expAvgSqCasted = expAvgSqTensor;
     DiopiTensor maxExpAvgSqCasted = maxExpAvgSqTensor;
 
-    std::vector<DiopiTensor*> tensors{&inputCasted, &gradCasted, &expAvgCasted, &expAvgSqCasted, &maxExpAvgSqCasted};
-    DIOPI_CALL(autoCastTensorType(ctx, tensors, {diopi_dtype_float16, diopi_dtype_float32}));
+    if (amsgrad) {
+        DIOPI_CALL(autoCastTensorType(
+            ctx, {&inputCasted, &gradCasted, &expAvgCasted, &expAvgSqCasted, &maxExpAvgSqCasted}, {diopi_dtype_float16, diopi_dtype_float32}));
+    } else {
+        DIOPI_CALL(autoCastTensorType(ctx, {&inputCasted, &gradCasted, &expAvgCasted, &expAvgSqCasted}, {diopi_dtype_float16, diopi_dtype_float32}));
+        // To temporarily bypass the bug in the camb kernel, apply for a fake tensor
+        maxExpAvgSqCasted = requiresTensor(ctx, expAvgSqCasted.shape(), expAvgSqCasted.dtype());
+    }
 
     float beta1CorrectionRecip = 1;
     float beta2CorrectionRecip = 1;
@@ -84,11 +90,14 @@ diopiError_t bangAdam(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopi
                      queue,
                      cnrtType,
                      amsgrad);
+
     DIOPI_CALL(dataTypeCast(ctx, gradTensor, gradCasted));
     DIOPI_CALL(dataTypeCast(ctx, inputTensor, inputCasted));
     DIOPI_CALL(dataTypeCast(ctx, expAvgTensor, expAvgCasted));
     DIOPI_CALL(dataTypeCast(ctx, expAvgSqTensor, expAvgSqCasted));
-    DIOPI_CALL(dataTypeCast(ctx, maxExpAvgSqTensor, maxExpAvgSqCasted));
+    if (amsgrad) {
+        DIOPI_CALL(dataTypeCast(ctx, maxExpAvgSqTensor, maxExpAvgSqCasted));
+    }
     return diopiSuccess;
 }
 
