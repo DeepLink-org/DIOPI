@@ -1,4 +1,5 @@
 import pickle
+from typing import Iterable
 import numpy as np
 import os
 from functools import partial
@@ -27,10 +28,10 @@ class GenInputData(object):
 
     @staticmethod
     def run(
-        diopi_item_config_path="diopi_case_items.cfg",
-        input_path="data/inputs/",
-        fname=["all_ops"],
-        model_name="diopi",
+        diopi_item_config_path = "diopi_case_items.cfg",
+        input_path = "data/inputs/",
+        fname: Iterable[str] = ("all_ops"),
+        model_name = "diopi",
     ):
         if not os.path.exists(input_path):
             os.makedirs(input_path)
