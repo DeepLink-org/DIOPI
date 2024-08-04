@@ -6,9 +6,11 @@
 
 #include "ascend_tensor.hpp"
 
+// #include <algorithm>
 #include <array>
 #include <cstdint>
 #include <mutex>
+#include <numeric>
 #include <utility>
 
 #include "common/debug.hpp"
@@ -79,6 +81,39 @@ bool AscendTensor::isContiguous(diopiMemoryFormat_t format) const {
 AscendTensor& AscendTensor::asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride) {
     this->shape_ = shape;
     this->stride_ = stride;
+    return *this;
+}
+
+AscendTensor& AscendTensor::resize(const std::vector<int64_t>& shape) {
+    int64_t numElem = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int64_t>());
+    std::vector<int64_t> stride(shape.size(), 1);
+    for (int64_t j = shape.size() - 2; j >= 0; j--) {
+        stride[j] = stride[j + 1] * shape[j + 1];
+    }
+
+    this->numel_ = numElem;
+    this->shape_ = shape;
+    this->stride_ = stride;
+
+    return *this;
+}
+AscendTensor& AscendTensor::select(int64_t dim, int64_t index) {
+    auto shape = this->shape();
+    auto stride = this->stride();
+
+    ASCEND_CHECK_ABORT(dim >= 0 && dim < shape.size(), "selected dim [%ld] execeed the tensor dims [%ld].", dim, shape.size());
+
+    if (dim < shape.size() - 1) {
+        int64_t offset = dim * shape[dim] * stride[dim];
+        this->storageOffset_ = offset;
+    }
+    this->numel_ /= shape[dim];
+
+    shape.erase(shape.begin() + dim);
+    stride.erase(stride.begin() + dim);
+    this->shape_ = shape;
+    this->stride_ = stride;
+
     return *this;
 }
 
