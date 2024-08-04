@@ -84,6 +84,73 @@ AscendTensor& AscendTensor::asStrided(const std::vector<int64_t>& shape, const s
     return *this;
 }
 
+AscendTensor& AscendTensor::permute(std::vector<int64_t> dims) {
+    ASCEND_CHECK_ABORT(this->dim() == dims.size(), "permute dims does not match the tensor dims.");
+
+    std::vector<int64_t> newShape(dims.size(), 0);
+    std::vector<int64_t> newStride(dims.size(), 0);
+
+    for (size_t i = 0; i < dims.size(); i++) {
+        newShape[i] = this->shape(dims[i]);
+        newStride[i] = this->stride(dims[i]);
+    }
+
+    this->shape_ = newShape;
+    this->stride_ = newStride;
+
+    return *this;
+}
+
+AscendTensor& AscendTensor::expand(std::vector<int64_t> shape) {
+    ASCEND_CHECK_ABORT(shape.size() >= this->dim(),
+                       "the number of sizes provided[% ld] must be greater or eaqual to the number of dimensions of the tensor[% ld].",
+                       shape.size(),
+                       this->dim());
+
+    // todo: dim() == 0
+    int64_t expandDims = shape.size() - this->shape().size();
+    std::vector<int64_t> tShapeExp(expandDims, 0);
+    auto tShape = this->shape();
+    tShapeExp.insert(tShapeExp.end(), tShape.begin(), tShape.end());
+    std::vector<int64_t> newShape = shape;
+
+    for (int64_t i = 0; i < newShape.size(); i++) {
+        if (newShape[i] < 0 && i < expandDims) {
+            ASCEND_CHECK_ABORT(false, "The expanded size of the tensor (%ld) isn't allowed in a leading, non-existing dimension %ld", newShape[i], i);
+        }
+
+        if (i >= expandDims) {
+            if (newShape[i] == -1) {
+                newShape[i] = tShapeExp[i];
+            } else {
+                ASCEND_CHECK_ABORT(tShapeExp[i] == 1 || newShape[i] == tShapeExp[i],
+                                   "The expanded size of the tensor (%ld) must match the existing size (%ld) at non-singleton dimension %ld.",
+                                   newShape[i],
+                                   tShapeExp[i],
+                                   i);
+            }
+        }
+    }
+
+    int64_t numElem = std::accumulate(newShape.begin(), newShape.end(), 1, std::multiplies<int64_t>());
+    std::vector<int64_t> newStride(expandDims, 0);
+    auto tStride = this->stride();
+    newStride.insert(newStride.end(), tStride.begin(), tStride.end());
+    for (int64_t i = expandDims; i < shape.size(); i++) {
+        if (shape[i] == -1 || shape[i] == tShapeExp[i]) {
+            continue;
+        } else {
+            newStride[i] = 0;
+        }
+    }
+
+    this->numel_ = numElem;
+    this->shape_ = newShape;
+    this->stride_ = newStride;
+
+    return *this;
+}
+
 AscendTensor& AscendTensor::resize(const std::vector<int64_t>& shape) {
     int64_t numElem = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int64_t>());
     std::vector<int64_t> stride(shape.size(), 1);
