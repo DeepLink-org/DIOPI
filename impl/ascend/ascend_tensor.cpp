@@ -132,7 +132,7 @@ AscendTensor& AscendTensor::expand(std::vector<int64_t> shape) {
         }
     }
 
-    int64_t numElem = std::accumulate(newShape.begin(), newShape.end(), 1, std::multiplies<int64_t>());
+    int64_t numElem = std::accumulate(newShape.begin(), newShape.end(), 1, std::multiplies<>());
     std::vector<int64_t> newStride(expandDims, 0);
     auto tStride = this->stride();
     newStride.insert(newStride.end(), tStride.begin(), tStride.end());
@@ -152,7 +152,7 @@ AscendTensor& AscendTensor::expand(std::vector<int64_t> shape) {
 }
 
 AscendTensor& AscendTensor::resize(const std::vector<int64_t>& shape) {
-    int64_t numElem = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int64_t>());
+    int64_t numElem = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<>());
     std::vector<int64_t> stride(shape.size(), 1);
     for (int64_t j = shape.size() - 2; j >= 0; j--) {
         stride[j] = stride[j + 1] * shape[j + 1];

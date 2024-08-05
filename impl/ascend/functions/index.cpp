@@ -16,7 +16,7 @@ static std::vector<AscendTensor> castIntIndicesToLongIndices(diopiContextHandle_
     std::vector<AscendTensor> result;
     for (auto& t : indices) {
         if (!t.defined()) {
-            result.push_back(AscendTensor(nullptr));
+            result.emplace_back(nullptr);
             continue;
         }
         if (t.dtype() == diopi_dtype_int32) {
@@ -25,10 +25,10 @@ static std::vector<AscendTensor> castIntIndicesToLongIndices(diopiContextHandle_
             diopiSize_t size = vectorToDiopiSize(shape);
             diopiRequireTensor(ctx, &indexHandle, &size, nullptr, diopi_dtype_int64, diopi_device);
             DIOPI_ASCEND_CALL_ACLNN(aclnnCast, ctx, t, diopi_dtype_int64, indexHandle);
-            result.push_back(AscendTensor(indexHandle));
+            result.emplace_back(indexHandle);
         } else {
             if (t.device() == diopi_host) {
-                result.push_back(AscendTensor(hostToDevice(ctx, t.tensorHandle())));
+                result.emplace_back(hostToDevice(ctx, t.tensorHandle()));
             } else {
                 result.emplace_back(t);
             }
@@ -204,7 +204,7 @@ static std::vector<int64_t> indexReshape(std::vector<AscendTensor> endIndices, i
 static std::vector<int64_t> indexOutputSize(const AscendTensor& self, std::vector<AscendTensor>& indices) {
     std::vector<AscendTensor> midIndices = indicesExpandedOutplace(indices);
     while (midIndices.size() < (size_t)self.dim()) {
-        midIndices.push_back(AscendTensor(nullptr));
+        midIndices.emplace_back(nullptr);
     }
 
     AscendTensor src = self;
@@ -278,7 +278,6 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
         }
     }
 
-    std::vector<int64_t> outShapeRef{34, 2, 6, 197};
     std::vector<int64_t> outShape = indexOutputSize(inputAt, indicesExpanded);
 
     diopiSize_t outSize = vectorToDiopiSize(outShape);
