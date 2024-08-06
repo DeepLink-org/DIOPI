@@ -2386,28 +2386,58 @@ DIOPI_API diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHand
  */
 DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 
+// /**
+//  * @brief The function is used to implement the AdamW optimizer. Its functionality is to perform a single parameter update.
+//  * @param[in] ctx Context environment.
+//  * @param[inout] param the param tensor. type=[float16, float32, float64].
+//  * @param[in] grad the grad tensor. type=[float16, float32, float64].
+//  * @param[inout] exp_avg the first momentum is related to the number of iterations, that is, the gradient mean value of the i th iteration. type=[float16,
+//  * float32, float64].
+//  * @param[inout] exp_avg_sq the second momentum is related to the number of iterations, that is, the mean value of the gradient square of the i iteration.
+//  * type=[float16, float32, float64].
+//  * @param[inout] max_exp_avg_sq the maximum second momentum. When the parameter 'amsgrad' is true, it will replace the second momentum to participate in the
+//  * calculation. type=[float16, float32, float64].
+//  * @param[in] lr learning rate.
+//  * @param[in] beta1 coefficients used for computing running averages of gradient.
+//  * @param[in] beta2 square of coefficients.
+//  * @param[in] eps term added to the denominator to improve numerical stability.
+//  * @param[in] weight_decay weight decay coefficient.
+//  * @param[in] step step. type = [int64].
+//  * @param[in] amsgrad whether to use the AMSGrad variant of this algorithm from the paper `On the Convergence of Adam and Beyond`_.
+//  */
+// // DIOPI_API diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+// //                                   diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps,
+// //                                   float weight_decay, diopiTensorHandle_t step, bool amsgrad);
+
+
+
+
 /**
- * @brief The function is used to implement the AdamW optimizer. Its functionality is to perform a single parameter update.
+ * @brief The function is used to implement the AdamW optimizer.
  * @param[in] ctx Context environment.
- * @param[inout] param the param tensor. type=[float16, float32, float64].
- * @param[in] grad the grad tensor. type=[float16, float32, float64].
- * @param[inout] exp_avg the first momentum is related to the number of iterations, that is, the gradient mean value of the i th iteration. type=[float16,
- * float32, float64].
- * @param[inout] exp_avg_sq the second momentum is related to the number of iterations, that is, the mean value of the gradient square of the i iteration.
- * type=[float16, float32, float64].
- * @param[inout] max_exp_avg_sq the maximum second momentum. When the parameter 'amsgrad' is true, it will replace the second momentum to participate in the
- * calculation. type=[float16, float32, float64].
+ * @param[inout] params the list of param tensor. type=[float16, float32, float64].
+ * @param[in] grads the list of grad tensor. type=[float16, float32, float64].
+ * @param[inout] exp_avgs the first momentum is related to the number of iterations, that is, the gradient mean value of the i th iteration. the list of exp_avg
+ * tensor. type=[float16, float32, float64].
+ * @param[inout] exp_avg_sqs the second momentum is related to the number of iterations, that is, the mean value of the gradient square of the i iteration. the
+ * list of exp_avg_sq tensor. type=[float16, float32, float64].
+ * @param[inout] max_exp_avg_sqs the maximum second momentum. When the parameter 'amsgrad' is true, it will replace the second momentum to participate in the
+ * calculation. the list of max_exp_avg_sq tensor. type=[float16, float32, float64].
+ * @param[in] state_steps the list of step tensor. type = [int64].
+ * @param[in] nums the length of the tensor list.
  * @param[in] lr learning rate.
- * @param[in] beta1 coefficients used for computing running averages of gradient.
- * @param[in] beta2 square of coefficients.
+ * @param[in] beta1 coefficient used for computing running averages of gradient.
+ * @param[in] beta2 coefficient used for computing the square of running averages of gradient.
  * @param[in] eps term added to the denominator to improve numerical stability.
  * @param[in] weight_decay weight decay coefficient.
- * @param[in] step step. type = [int64].
- * @param[in] amsgrad whether to use the AMSGrad variant of this algorithm from the paper `On the Convergence of Adam and Beyond`_.
+ * @param[in] amsgrad whether to use the AMSGrad variant of this algorithm from the paper `On the Convergence of Adam and Beyond`.
+ * @param[in] maximize maximize the objective with respect to the params, instead of minimizing.
+ * @param[in] insNum the number of elements in tensorlist
  */
-DIOPI_API diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
-                                  diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps,
-                                  float weight_decay, diopiTensorHandle_t step, bool amsgrad);
+DIOPI_API diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
+                                  diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps, int64_t nums,
+                                  float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize, int64_t insNum);
+
 
 /**
  * @brief Applies a 2D transposed convolution operator over an input image composed of several input planes, sometimes also called “deconvolution”.

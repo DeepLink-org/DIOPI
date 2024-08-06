@@ -244,6 +244,9 @@ def get_functions_support(source_dir: str) -> Tuple[dict, dict]:
     sa_func = None
     for idx, row in enumerate(content):
         if row.startswith(" * type"):
+            print("*************************")
+            print(func_dtypes)
+            print("*************************")
             assert len(func_dtypes) == 0
             r = re.match(r" \* type *= *\[(.*)\].*", row)
             func_dtypes = r.group(1).replace(" ", "").split(",")

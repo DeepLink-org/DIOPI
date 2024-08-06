@@ -2794,19 +2794,58 @@ diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, 
 
 
 
-diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
-                        diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps, float weight_decay,
-                        diopiTensorHandle_t step, bool amsgrad){
-    impl::aten::setCurStream(ctx);
-    auto atParam = impl::aten::buildATen(param);
-    auto atGrad = impl::aten::buildATen(grad);
-    auto atExpAvg = impl::aten::buildATen(exp_avg);
-    auto atExpAvgSq = impl::aten::buildATen(exp_avg_sq);
-    auto atMaxExpAvgSq = impl::aten::buildATen(max_exp_avg_sq);
-    auto atstep = impl::aten::buildATen(step);
+// diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
+//                         diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps, float weight_decay,
+//                         diopiTensorHandle_t step, bool amsgrad){
+//     impl::aten::setCurStream(ctx);
+//     auto atParam = impl::aten::buildATen(param);
+//     auto atGrad = impl::aten::buildATen(grad);
+//     auto atExpAvg = impl::aten::buildATen(exp_avg);
+//     auto atExpAvgSq = impl::aten::buildATen(exp_avg_sq);
+//     auto atMaxExpAvgSq = impl::aten::buildATen(max_exp_avg_sq);
+//     auto atstep = impl::aten::buildATen(step);
 
-    // maximize is not supported in diopi for now
-    bool maximize = false;
+//     // maximize is not supported in diopi for now
+//     bool maximize = false;
+
+//     if(amsgrad){
+//         CALL_ATEN_CUDA_FUNC(_fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, atMaxExpAvgSq, 
+//                         atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
+//     }else{
+        
+//         std::vector<at::Tensor> tensorList;
+//         at::TensorList tensorListRef(tensorList);
+//         CALL_ATEN_CUDA_FUNC(_fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, tensorList, 
+//                         atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
+//     }
+
+//     return diopiSuccess;
+// }
+
+
+diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
+                                  diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps, int64_t nums,
+                                  float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize, int64_t insNum){
+    impl::aten::setCurStream(ctx);
+ 
+    DIOPI_CHECK_PTR(params);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atParam, params, insNum);
+
+    DIOPI_CHECK_PTR(grads);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atGrad, grads, insNum);
+
+    DIOPI_CHECK_PTR(exp_avgs);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvg, exp_avgs, insNum);
+
+    DIOPI_CHECK_PTR(exp_avg_sqs);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvgSq, exp_avg_sqs, insNum);
+
+    DIOPI_CHECK_PTR(max_exp_avg_sqs);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atMaxExpAvgSq, max_exp_avg_sqs, insNum);
+
+    DIOPI_CHECK_PTR(state_steps);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atstep, state_steps, insNum);
+
 
     if(amsgrad){
         CALL_ATEN_CUDA_FUNC(_fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, atMaxExpAvgSq, 
@@ -2821,6 +2860,7 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, dio
 
     return diopiSuccess;
 }
+
 
 
 diopiError_t diopiAdam(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
