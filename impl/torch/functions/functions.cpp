@@ -2825,26 +2825,26 @@ diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, 
 
 diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
                                   diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps, int64_t nums,
-                                  float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize, int64_t insNum){
+                                  float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize){
     impl::aten::setCurStream(ctx);
  
     DIOPI_CHECK_PTR(params);
-    DIOPI_IMPL_BUILD_ATEN_LIST(atParam, params, insNum);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atParam, params, nums);
 
     DIOPI_CHECK_PTR(grads);
-    DIOPI_IMPL_BUILD_ATEN_LIST(atGrad, grads, insNum);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atGrad, grads, nums);
 
     DIOPI_CHECK_PTR(exp_avgs);
-    DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvg, exp_avgs, insNum);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvg, exp_avgs, nums);
 
     DIOPI_CHECK_PTR(exp_avg_sqs);
-    DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvgSq, exp_avg_sqs, insNum);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvgSq, exp_avg_sqs, nums);
 
     DIOPI_CHECK_PTR(max_exp_avg_sqs);
-    DIOPI_IMPL_BUILD_ATEN_LIST(atMaxExpAvgSq, max_exp_avg_sqs, insNum);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atMaxExpAvgSq, max_exp_avg_sqs, nums);
 
     DIOPI_CHECK_PTR(state_steps);
-    DIOPI_IMPL_BUILD_ATEN_LIST(atstep, state_steps, insNum);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atstep, state_steps, nums);
 
 
     if(amsgrad){

@@ -3082,7 +3082,7 @@ def adamw(
     amsgrad=False,
 ):
     func = check_function("diopiAdamW")
-    insNum = len(param)
+    nums = len(param)
     ret = func(
         param.context(),
         param,
@@ -3090,14 +3090,14 @@ def adamw(
         exp_avg,
         exp_avg_sq,
         max_exp_avg_sq,
+        step,
+        nums,
         lr,
         beta1,
         beta2,
         eps,
         weight_decay,
-        step,
         amsgrad,
-        insNum,
     )
     check_returncode(ret)
     return param, exp_avg, exp_avg_sq, max_exp_avg_sq

@@ -2436,7 +2436,7 @@ DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorH
  */
 DIOPI_API diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
                                   diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps, int64_t nums,
-                                  float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize, int64_t insNum);
+                                  float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize);
 
 
 /**
