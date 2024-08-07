@@ -44,6 +44,7 @@ typedef enum {
     diopiNoRegisteredGetLastErrorFunction = 11,
     diopi5DNotSupported = 12,
     diopiNoImplement = 13,
+    diopiForceFallbackToCPU = 14,
     diopiDtypeNotSupported = 1000,
 } diopiError_t;
 
