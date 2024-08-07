@@ -1023,6 +1023,14 @@ DIOPI_API diopiError_t diopiLog10Inp(diopiContextHandle_t ctx, diopiTensorHandle
  */
 DIOPI_API diopiError_t diopiLog10(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
+/**
+ * @brief Compute the element-wise natural logarithm of 1 plus the input tensor.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type = [float32, float64, int16, int32].
+ * @param[out] out the output tensor. type = [float32, float64].
+ */
+DIOPI_API diopiError_t diopiLog1p(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
 DIOPI_API diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 DIOPI_API diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
@@ -3643,6 +3651,8 @@ DIOPI_API diopiError_t diopiGetNativeMemoryFormat(diopiContextHandle_t ctx, diop
  */
 DIOPI_API diopiError_t diopiTensorDestructionHook(diopiContextHandle_t ctx, void* ptr);
 // ============================================custom api end========================================
+
+
 
 #if defined(__cplusplus)
 }

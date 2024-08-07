@@ -428,6 +428,8 @@ def log2(input, inplace=False) -> Tensor:
 def log10(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiLog10", promote_type(input, Dtype.float32))
 
+def log1p(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiLog1p")
 
 def erf(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiErf", promote_type(input, Dtype.float32))

@@ -8,7 +8,10 @@
 #include <diopi/diopirt.h>
 
 #include <cstdio>
+#include <vector>
 #include <mutex>
+
+#include "litert.hpp"
 
 extern "C" {
 
@@ -79,6 +82,15 @@ const char* device_get_last_error_string() {
 diopiError_t initLibrary() { return diopiSuccess; }
 
 diopiError_t finalizeLibrary() { return diopiSuccess; }
+
+diopiError_t buildGeneratorState(diopiContextHandle_t ctx, diopiTensorHandle_t out) {
+    std::vector<int64_t> vec{808};
+    diopiSize_t size{vec.data(), static_cast<int64_t>(vec.size())};
+    diopiTensorHandle_t tensor = nullptr;
+    diopiRequireTensor(ctx, &tensor, &size, nullptr, diopi_dtype_uint8, diopi_host);
+    *out = *tensor;
+    return diopiSuccess;
+}
 
 }  // extern "C"
 
