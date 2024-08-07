@@ -3067,46 +3067,6 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
     return out
 
 
-# def adamw(
-#     params,
-#     grads,
-#     exp_avgs,
-#     exp_avg_sqs,
-#     max_exp_avg_sqs,
-#     state_steps,
-#     lr,
-#     beta1,
-#     beta2,
-#     eps,
-#     weight_decay,
-#     amsgrad=False,
-#     maximize=False,
-# ):
-#     func = check_function("diopiAdamW")
-#     nums = len(params)
-#     ret = func(
-#         params.context(),
-#         params,
-#         grads,
-#         exp_avgs,
-#         exp_avg_sqs,
-#         max_exp_avg_sqs,
-#         state_steps,
-#         nums,
-#         lr,
-#         beta1,
-#         beta2,
-#         eps,
-#         weight_decay,
-#         amsgrad,
-#         maximize,
-#     )
-#     check_returncode(ret)
-#     return params, exp_avgs, exp_avg_sqs, max_exp_avg_sqs
-
-
-
-
 def adamw(
     params,
     grads,
