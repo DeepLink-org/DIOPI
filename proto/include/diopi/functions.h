@@ -3652,8 +3652,6 @@ DIOPI_API diopiError_t diopiGetNativeMemoryFormat(diopiContextHandle_t ctx, diop
 DIOPI_API diopiError_t diopiTensorDestructionHook(diopiContextHandle_t ctx, void* ptr);
 // ============================================custom api end========================================
 
-
-
 #if defined(__cplusplus)
 }
 #endif  // __cplusplus
