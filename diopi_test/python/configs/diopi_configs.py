@@ -1153,6 +1153,23 @@ diopi_configs = {
         ),
     ),
 
+    'log1p': dict(
+        name=['log1p'],
+        interface=['torch'],
+        dtype=[np.float32, np.float64],
+        tensor_para=dict(
+            gen_fn='Genfunc.positive',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40)),
+                },
+            ],
+        ),
+    ),
+
     'log_zero_input': dict(
         name=['log', 'log2', 'log10'],
         interface=['torch'],
