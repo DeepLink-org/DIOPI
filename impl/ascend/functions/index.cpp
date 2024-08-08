@@ -12,7 +12,8 @@
 namespace impl {
 namespace ascend {
 
-static std::vector<AscendTensor> castIntIndicesToLongIndices(diopiContextHandle_t ctx, std::vector<AscendTensor>& indices) {
+namespace indexProcess {
+std::vector<AscendTensor> castIntIndicesToLongIndices(diopiContextHandle_t ctx, std::vector<AscendTensor>& indices) {
     std::vector<AscendTensor> result;
     for (auto& t : indices) {
         if (!t.defined()) {
@@ -37,7 +38,7 @@ static std::vector<AscendTensor> castIntIndicesToLongIndices(diopiContextHandle_
     return result;
 }
 
-static void checkIndexTensorTypes(const std::vector<AscendTensor>& indices) {
+void checkIndexTensorTypes(const std::vector<AscendTensor>& indices) {
     for (const auto& t : indices) {
         if (t.defined()) {
             diopiDtype_t type = t.dtype();
@@ -47,7 +48,7 @@ static void checkIndexTensorTypes(const std::vector<AscendTensor>& indices) {
     }
 }
 
-static AscendTensor nonZeroTensor(diopiContextHandle_t ctx, const AscendTensor& self) {
+AscendTensor nonZeroTensor(diopiContextHandle_t ctx, const AscendTensor& self) {
     int64_t numELem = self.numel() * self.dim();
     std::vector<int64_t> nShape{self.numel(), self.dim()};
     std::vector<int64_t> nStride(nShape.size(), 1);
@@ -86,7 +87,7 @@ static AscendTensor nonZeroTensor(diopiContextHandle_t ctx, const AscendTensor& 
     return AscendTensor(nzTrans);
 }
 
-static std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, const AscendTensor& self, const std::vector<AscendTensor>& indices) {
+std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, const AscendTensor& self, const std::vector<AscendTensor>& indices) {
     std::vector<AscendTensor> result;
     for (auto& t : indices) {
         if (!t.defined()) {
@@ -117,7 +118,7 @@ static std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, 
     return result;
 }
 
-static aclTensor* createEmptyAclTensor() {
+aclTensor* createEmptyAclTensor() {
     std::vector<int64_t> nShape{0};
     std::vector<int64_t> nStride{1};
     int64_t storageSize = 0;
@@ -152,7 +153,7 @@ static std::vector<AscendTensor> indicesExpandedOutplace(std::vector<AscendTenso
     return result;
 }
 
-static bool hasContiguousSubspace(std::vector<AscendTensor> indices) {  // true if all the non-null tensors are adjacent
+bool hasContiguousSubspace(std::vector<AscendTensor> indices) {  // true if all the non-null tensors are adjacent
     auto isDefined = [](const AscendTensor& tensor) { return tensor.defined(); };
     auto isNull = [](const AscendTensor& tensor) { return !tensor.defined(); };
     auto start = std::find_if(indices.begin(), indices.end(), isDefined);
@@ -161,7 +162,7 @@ static bool hasContiguousSubspace(std::vector<AscendTensor> indices) {  // true 
     return it == stop.base();
 }
 
-static std::tuple<AscendTensor, std::vector<AscendTensor>> transposeToFront(AscendTensor self, std::vector<AscendTensor> indices) {
+std::tuple<AscendTensor, std::vector<AscendTensor>> transposeToFront(AscendTensor self, std::vector<AscendTensor> indices) {
     std::vector<int64_t> dims;
     std::vector<AscendTensor> transposedIndices;
 
@@ -183,7 +184,7 @@ static std::tuple<AscendTensor, std::vector<AscendTensor>> transposeToFront(Asce
     return std::make_tuple(self.permute(dims), transposedIndices);
 }
 
-static std::vector<int64_t> indexReshape(std::vector<AscendTensor> endIndices, int64_t dimsBefore, int64_t dimsAfter) {
+std::vector<int64_t> indexReshape(std::vector<AscendTensor> endIndices, int64_t dimsBefore, int64_t dimsAfter) {
     std::vector<int64_t> indexShape;
     for (auto& idx : endIndices) {
         if (idx.defined()) {
@@ -201,7 +202,7 @@ static std::vector<int64_t> indexReshape(std::vector<AscendTensor> endIndices, i
     return indexShape;
 }
 
-static std::vector<int64_t> indexOutputSize(const AscendTensor& self, std::vector<AscendTensor>& indices) {
+std::vector<int64_t> indexOutputSize(const AscendTensor& self, std::vector<AscendTensor>& indices) {
     std::vector<AscendTensor> midIndices = indicesExpandedOutplace(indices);
     while (midIndices.size() < (size_t)self.dim()) {
         midIndices.emplace_back(nullptr);
@@ -253,6 +254,7 @@ static std::vector<int64_t> indexOutputSize(const AscendTensor& self, std::vecto
 
     return outputSize;
 }
+}  // namespace indexProcess
 
 diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t* indices, int64_t nums) {
     AscendTensor inputAt(input);
@@ -263,13 +265,13 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
         }
     }
 
-    std::vector<AscendTensor> indicesList = castIntIndicesToLongIndices(ctx, indicesOrigin);
-    checkIndexTensorTypes(indicesList);
+    std::vector<AscendTensor> indicesList = indexProcess::castIntIndicesToLongIndices(ctx, indicesOrigin);
+    indexProcess::checkIndexTensorTypes(indicesList);
 
-    auto indicesExpanded = expandIndicesTensors(ctx, inputAt, indicesList);
+    auto indicesExpanded = indexProcess::expandIndicesTensors(ctx, inputAt, indicesList);
 
     std::vector<aclTensor*> allDefinedIndices;
-    auto emptyTensor = createEmptyAclTensor();
+    auto emptyTensor = indexProcess::createEmptyAclTensor();
     for (const auto& idx : indicesExpanded) {
         if (idx.defined()) {
             allDefinedIndices.push_back(aclnn_adaptor::createAclTensorFromAscendTensor(idx));
@@ -278,7 +280,7 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
         }
     }
 
-    std::vector<int64_t> outShape = indexOutputSize(inputAt, indicesExpanded);
+    std::vector<int64_t> outShape = indexProcess::indexOutputSize(inputAt, indicesExpanded);
 
     diopiSize_t outSize = vectorToDiopiSize(outShape);
     diopiRequireTensor(ctx, out, &outSize, nullptr, inputAt.dtype(), diopi_device);
