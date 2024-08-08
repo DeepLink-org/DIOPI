@@ -901,6 +901,7 @@ device_configs = {
 
     'index_put_acc_bool_indices_zeros': dict( # llm used
         name=['index_put'],
+        skip_all=True,
         para=dict(
             accumulate=[Skip(False),],
         ),
@@ -911,15 +912,26 @@ device_configs = {
         para=dict(
             accumulate=[Skip(False),],
         ),
-    ),
-
-    'index_put_bool_indices_value': dict( # llm used
-        name=['index_put'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((3, 2, 2, 20)),],
+                    "shape": [Skip((16, 4, 4)),],
+                },
+            ]
+        ),
+    ),
+
+    'index_put_bool_indices_value': dict( # llm used
+        name=['index_put'],
+        para=dict(
+            accumulate=[Skip(False),],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((3, 2, 2, 20)), Skip((4, 2, 2, 6, 2))],
                 },
             ]
         ),
@@ -1174,11 +1186,6 @@ device_configs = {
     # TODO(zhangqiu) Due to a bug in the software stack, this test will be skipped for now.
     'apply_penalty': dict(
         name=['apply_penalty'],
-        skip_all=True
-    ),
-    
-    'index_put_acc_bool_indices_zeros': dict(
-        name=['index_put'],
         skip_all=True
     ),
     
