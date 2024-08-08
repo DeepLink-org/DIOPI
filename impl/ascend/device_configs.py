@@ -1177,6 +1177,11 @@ device_configs = {
         skip_all=True
     ),
     
+    'index_put_acc_bool_indices_zeros': dict(
+        name=['index_put'],
+        skip_all=True
+    ),
+    
     # TODO(zhangqiu) Due to a bug in the software stack, this test will be skipped for now.
     'embedding': dict(
         name=['embedding'],

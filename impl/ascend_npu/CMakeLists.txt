@@ -167,6 +167,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/arange.cpp
     ${OLD_IMPL_DIR}/functions/gather.cpp
     ${OLD_IMPL_DIR}/functions/layer_norm.cpp
+    ${OLD_IMPL_DIR}/functions/index.cpp
     ${OLD_IMPL_DIR}/functions/index_put.cpp
     ${OLD_IMPL_DIR}/functions/index_select.cpp
     ${OLD_IMPL_DIR}/functions/repeat.cpp

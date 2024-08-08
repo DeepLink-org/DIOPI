@@ -1,8 +1,10 @@
 /**
  * @file
  * @author DeepLink
- * @copyright  (c) 2023, DeepLink.
+ * @copyright  (c) 2024, DeepLink.
  */
+
+#include <ostream>
 
 #include "../aclnn/acl_scalar.hpp"
 #include "../aclnn/adaptor.hpp"
@@ -114,7 +116,6 @@ static std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, 
     }
     return result;
 }
-
 
 static aclTensor* createEmptyAclTensor() {
     std::vector<int64_t> nShape{0};
@@ -253,19 +254,20 @@ static std::vector<int64_t> indexOutputSize(const AscendTensor& self, std::vecto
     return outputSize;
 }
 
-diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t values,
-                           diopiConstTensorHandle_t* indices, int64_t indicesCounts, bool accumulate) {
-    diopiCopyInp(ctx, input, out);
+diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t* indices, int64_t nums) {
     AscendTensor inputAt(input);
-    std::vector<AscendTensor> indicesOrigin(indicesCounts);
-    for (int64_t i = 0; i < indicesCounts; i++) {
+    std::vector<AscendTensor> indicesOrigin(nums);
+    for (int64_t i = 0; i < nums; i++) {
         if (indices[i] != nullptr) {
             indicesOrigin[i] = AscendTensor(indices[i]);
         }
     }
+
     std::vector<AscendTensor> indicesList = castIntIndicesToLongIndices(ctx, indicesOrigin);
     checkIndexTensorTypes(indicesList);
+
     auto indicesExpanded = expandIndicesTensors(ctx, inputAt, indicesList);
+
     std::vector<aclTensor*> allDefinedIndices;
     auto emptyTensor = createEmptyAclTensor();
     for (const auto& idx : indicesExpanded) {
@@ -276,34 +278,41 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
         }
     }
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnIndexPutImpl, ctx, out, allDefinedIndices, values, accumulate, false);
-    return diopiSuccess;
+    std::vector<int64_t> outShape = indexOutputSize(inputAt, indicesExpanded);
 
+    diopiSize_t outSize = vectorToDiopiSize(outShape);
+    diopiRequireTensor(ctx, out, &outSize, nullptr, inputAt.dtype(), diopi_device);
+
+    DIOPI_ASCEND_CALL_ACLNN(aclnnIndex, ctx, inputAt, allDefinedIndices, *out);
+    return diopiSuccess;
 }
 
-diopiError_t diopiIndexPutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t values, diopiConstTensorHandle_t* indices,
-                              int64_t indicesCounts, bool accumulate) {
-    AscendTensor inputAt(input);
-    std::vector<AscendTensor> indicesOrigin(indicesCounts);
-    for (int64_t i = 0; i < indicesCounts; i++) {
-        if (indices[i] != nullptr) {
-            indicesOrigin[i] = AscendTensor(indices[i]);
-        }
+diopiError_t diopiIndexBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gradInput, diopiTensorHandle_t zerosLikeInput, diopiConstTensorHandle_t* indices,
+                                int64_t nums, diopiConstTensorHandle_t gradOutput) {
+    AscendTensor gradInputTensor(gradInput);
+    AscendTensor gradOutputTensor(gradOutput);
+    if (gradInputTensor.numel() == 0 || gradOutputTensor.numel() == 0) {
+        return diopiSuccess;
     }
-    std::vector<AscendTensor> indicesList = castIntIndicesToLongIndices(ctx, indicesOrigin);
-    checkIndexTensorTypes(indicesList);
-    auto indicesExpanded = expandIndicesTensors(ctx, inputAt, indicesList);
-    std::vector<aclTensor*> allDefinedIndices;
-    auto emptyTensor = createEmptyAclTensor();
-    for (const auto& idx : indicesExpanded) {
-        if (idx.defined()) {
-            allDefinedIndices.push_back(aclnn_adaptor::createAclTensorFromAscendTensor(idx));
+
+    std::vector<diopiConstTensorHandle_t> indicesVec;
+    indicesVec.reserve(nums);
+
+    for (int i = 0; i < nums; i++) {
+        if (indices[i] != nullptr) {
+            indicesVec.emplace_back(indices[i]);
         } else {
-            allDefinedIndices.push_back(emptyTensor);
+            int64_t array[1] = {0};
+            diopiSize_t size = {array, 1};
+            diopiTensorHandle_t emptyTensor = nullptr;
+            diopiRequireTensor(ctx, &emptyTensor, &size, nullptr, gradOutputTensor.dtype(), diopi_device);
+            indicesVec.emplace_back(emptyTensor);
         }
     }
 
-    DIOPI_ASCEND_CALL_ACLNN(aclnnIndexPutImpl, ctx, input, allDefinedIndices, values, accumulate, false);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnInplaceCopy, ctx, gradInput, zerosLikeInput);
+    DIOPI_ASCEND_CALL_ACLNN(aclnnIndexPutImpl, ctx, gradInput, indicesVec, gradOutput, true, false);
+
     return diopiSuccess;
 }
 
