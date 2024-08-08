@@ -2915,7 +2915,11 @@ diopiError_t diopiRmsprop(diopiContextHandle_t ctx, diopiTensorHandle_t param, d
     at::Tensor atAvg;
 
     if (centered) {
+#if TORCH_MM_VERSION >= 2010
+        atGradAvg.lerp_(atGrad, 1 - alpha);
+#else
         atGradAvg.mul_(alpha).add_(atGrad, 1 - alpha);
+#endif
         atAvg = atSquareAvg.addcmul(atGradAvg, atGradAvg, -1).sqrt_().add_(eps);
     } else {
         atAvg = atSquareAvg.sqrt().add_(eps);
