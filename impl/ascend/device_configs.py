@@ -901,7 +901,6 @@ device_configs = {
 
     'index_put_acc_bool_indices_zeros': dict( # llm used
         name=['index_put'],
-        skip_all=True,
         para=dict(
             accumulate=[Skip(False),],
         ),

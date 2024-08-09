@@ -21,6 +21,10 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
                            diopiConstTensorHandle_t* indices, int64_t indicesCounts, bool accumulate) {
     diopiCopyInp(ctx, input, out);
     AscendTensor inputAt(input);
+    AscendTensor valuesAt(values);
+    if (inputAt.numel() == 0 || valuesAt.numel() == 0) {
+        return diopiSuccess;
+    }
     std::vector<AscendTensor> indicesOrigin(indicesCounts);
     for (int64_t i = 0; i < indicesCounts; i++) {
         if (indices[i] != nullptr) {
@@ -47,6 +51,10 @@ diopiError_t diopiIndexPut(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
 diopiError_t diopiIndexPutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, diopiConstTensorHandle_t values, diopiConstTensorHandle_t* indices,
                               int64_t indicesCounts, bool accumulate) {
     AscendTensor inputAt(input);
+    AscendTensor valuesAt(values);
+    if (inputAt.numel() == 0 || valuesAt.numel() == 0) {
+        return diopiSuccess;
+    }
     std::vector<AscendTensor> indicesOrigin(indicesCounts);
     for (int64_t i = 0; i < indicesCounts; i++) {
         if (indices[i] != nullptr) {
