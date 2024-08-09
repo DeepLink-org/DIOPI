@@ -93,7 +93,7 @@ static std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, 
             result.push_back(t);
         } else {
             if (t.dtype() == diopi_dtype_uint8 || t.dtype() == diopi_dtype_bool) {
-                ASCEND_CHECK(t.dtype() == diopi_dtype_uint8,
+                ASCEND_CHECK(t.dtype() != diopi_dtype_uint8,
                              "indexing with dtype torch.uint8 is now deprecated,"
                              " please use a dtype torch.bool instead.");
                 for (uint64_t j = 0; j < static_cast<uint64_t>(t.dim()); j++) {
