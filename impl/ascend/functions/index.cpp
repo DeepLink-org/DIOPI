@@ -94,7 +94,7 @@ std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, const A
             result.push_back(t);
         } else {
             if (t.dtype() == diopi_dtype_uint8 || t.dtype() == diopi_dtype_bool) {
-                ASCEND_CHECK(t.dtype() == diopi_dtype_uint8,
+                ASCEND_CHECK(t.dtype() == diopi_dtype_bool,
                              "indexing with dtype torch.uint8 is now deprecated,"
                              " please use a dtype torch.bool instead.");
                 for (uint64_t j = 0; j < static_cast<uint64_t>(t.dim()); j++) {
@@ -281,7 +281,6 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     }
 
     std::vector<int64_t> outShape = indexProcess::indexOutputSize(inputAt, indicesExpanded);
-
     diopiSize_t outSize = vectorToDiopiSize(outShape);
     diopiRequireTensor(ctx, out, &outSize, nullptr, inputAt.dtype(), diopi_device);
 
