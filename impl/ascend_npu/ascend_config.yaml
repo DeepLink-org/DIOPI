@@ -63,6 +63,8 @@ ascend:
 - diopiCosInp
 - diopiCrossEntropyLoss
 - diopiCrossEntropyLossBackward
+- diopiCrossEntropyLossWithTotalWeight
+- diopiCrossEntropyLossWithTotalWeightBackward
 - diopiCustomizedFlashAttention
 - diopiCustomizedFlashAttentionBackward
 - diopiCustomizedFlashAttentionVarLen
@@ -184,6 +186,8 @@ ascend:
 - diopiNeScalar
 - diopiNeg
 - diopiNegInp
+- diopiNLLLossV2
+- diopiNLLLossV2Backward
 - diopiNonzero
 - diopiNorm
 - diopiNormal
@@ -269,8 +273,6 @@ ascend_npu:
 - diopiGetNativeMemoryFormat
 - diopiNLLLoss
 - diopiNLLLossBackward
-- diopiNLLLossV2
-- diopiNLLLossV2Backward
 - diopiNativeMemoryFormatCast
 - diopiPagedAttention
 - diopiRotaryEmbeddingV2
