@@ -254,6 +254,7 @@ std::vector<int64_t> indexOutputSize(const AscendTensor& self, std::vector<Ascen
 
     return outputSize;
 }
+
 }  // namespace indexProcess
 
 diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t* indices, int64_t nums) {

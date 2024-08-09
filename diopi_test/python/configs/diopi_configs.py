@@ -959,6 +959,7 @@ diopi_configs = {
                     "shape": ((), (16,), (72,),
                               (2, 11856), (2, 741, 80), (4, 4, 16, 20),
                               (0,), (4, 0), (9, 0, 16)),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=0, high=1),
                 },
                 {
                     "ins": ['weight'],
@@ -5236,7 +5237,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ['max_exp_avg_sq'],
-                    "shape": [None, None, (4, 8), (12, 4, 8)],
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
                     "gen_fn": 'Genfunc.rand',
                 },
             ]
@@ -6020,13 +6021,13 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((8, 0), (0, 128), (256, 8)),
-                    "dtype": [np.float32, np.float16, np.float64],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
                 {
                     "ins": ['mat2'],
                     "shape": ((0, 128), (128, 128), (8, 0)),
-                    "dtype": [np.float16, np.float64, np.float32],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
             ],
