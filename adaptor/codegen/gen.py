@@ -196,7 +196,7 @@ def prepare() -> Tuple[dict, str]:
 
     impl_plugin = options.impl_plugin
     base_device = options.base_device
-    assert(base_device is None or base_device == "" or base_device == "torch", f"invalid base_device:{base_device}")
+    assert base_device is None or base_device == "" or base_device == "torch", f"invalid base_device:{base_device}"
     if base_device == "":
         base_device = None
     def create_if_not_exist(name):
