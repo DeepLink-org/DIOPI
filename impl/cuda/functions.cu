@@ -215,3 +215,26 @@ extern "C" diopiError_t diopiLog1p(diopiContextHandle_t ctx, diopiTensorHandle_t
 
     return diopiSuccess;
 }
+
+template<typename T> __global__
+void vecLog1pInp(void* a, const int numel) {
+    int id = blockIdx.x * blockDim.x + threadIdx.x;
+    T* A = static_cast<T*>(a);
+    if (id < numel) {
+        A[id] = logf(1 + A[id]);
+    }
+}
+
+extern "C" diopiError_t diopiLog1pInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+
+    auto stream  = impl::cuda::getStream(ctx);
+    auto trInput = impl::cuda::makeTensor(input);
+
+    int blockSize = 256;
+    int gridSize  = (trInput.numel() + blockSize - 1) / blockSize;
+
+    DISPATCH_DTYPE(vecLog1pInp, trInput.dtype(), gridSize, blockSize, stream,
+            trInput.data(), trInput.numel());
+
+    return diopiSuccess;
+}

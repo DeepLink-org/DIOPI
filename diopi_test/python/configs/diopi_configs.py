@@ -1119,7 +1119,7 @@ diopi_configs = {
     ),
 
     'pointwise_op_abs_input': dict(
-        name=['log', 'log2', 'log10', 'sqrt', 'rsqrt'],
+        name=['log', 'log2', 'log10', 'log1p', 'sqrt', 'rsqrt'],
         interface=['torch'],
         is_inplace=True,
         dtype=[np.float16, np.float32, np.float64],
@@ -1137,7 +1137,7 @@ diopi_configs = {
     ),
 
     'log_integer_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.int16, np.int32, np.int64, np.uint8, np.int8],
         tensor_para=dict(
@@ -1153,25 +1153,8 @@ diopi_configs = {
         ),
     ),
 
-    'log1p': dict(
-        name=['log1p'],
-        interface=['torch'],
-        dtype=[np.float32, np.float64],
-        tensor_para=dict(
-            gen_fn='Genfunc.positive',
-            args=[
-                {
-                    "ins": ['input'],
-                    "shape": ((1, ), (1024,), (364800, 4), (2, 128, 3072),
-                              (256, 128, 3, 3),
-                              (2, 31, 512, 6, 40)),
-                },
-            ],
-        ),
-    ),
-
     'log_zero_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
@@ -1190,7 +1173,7 @@ diopi_configs = {
     ),
 
     'log_neg_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
