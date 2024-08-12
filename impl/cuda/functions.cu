@@ -202,7 +202,6 @@ void vecLog1p(const void* a, void* b, const int numel) {
 }
 
 extern "C" diopiError_t diopiLog1p(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
-
     auto stream  = impl::cuda::getStream(ctx);
     auto trInput = impl::cuda::makeTensor(input);
     auto trOut   = impl::cuda::makeTensor(out);
@@ -226,7 +225,6 @@ void vecLog1pInp(void* a, const int numel) {
 }
 
 extern "C" diopiError_t diopiLog1pInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
-
     auto stream  = impl::cuda::getStream(ctx);
     auto trInput = impl::cuda::makeTensor(input);
 

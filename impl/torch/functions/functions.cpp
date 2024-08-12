@@ -1081,7 +1081,7 @@ diopiError_t diopiLog1p(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopi
 diopiError_t diopiLog1pInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
-    at::log1p_(atInput);
+    CALL_ATEN_CUDA_FUNC(log1p_, atInput);
 
     return diopiSuccess;
 }

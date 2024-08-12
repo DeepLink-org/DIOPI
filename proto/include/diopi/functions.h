@@ -1024,20 +1024,20 @@ DIOPI_API diopiError_t diopiLog10Inp(diopiContextHandle_t ctx, diopiTensorHandle
 DIOPI_API diopiError_t diopiLog10(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
- * @brief Compute the element-wise natural logarithm of 1 plus the input tensor.
- * @param[in] ctx Context environment.
- * @param[in] input the input tensor.
- * @param[out] out the output tensor.
- */
-DIOPI_API diopiError_t diopiLog1p(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
-
-/**
  * @brief The in-place version of diopiLog1p.
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor.
  * @param[out] out the output tensor.
  */
 DIOPI_API diopiError_t diopiLog1pInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+
+/**
+ * @brief Compute the element-wise natural logarithm of 1 plus the input tensor.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor.
+ * @param[out] out the output tensor.
+ */
+DIOPI_API diopiError_t diopiLog1p(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 DIOPI_API diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 DIOPI_API diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
