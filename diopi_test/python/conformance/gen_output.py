@@ -104,11 +104,15 @@ class GenOutputData(object):
             if isinstance(tensors[0], (list, tuple)):
                 for i in range(len(tensors)):
                     ndarrays_temp = []
-                    for j in range(len(tensors[i])):
-                        if isinstance(tensors[i][j], torch.Tensor):
-                            ndarrays_temp.append(tensors[i][j].detach().cpu().numpy())
-                        else:
-                            ndarrays_temp.append(tensors[i][j])
+                    if tensors[i] is not None:
+                        for j in range(len(tensors[i])):
+                            if isinstance(tensors[i][j], torch.Tensor):
+                                ndarrays_temp.append(tensors[i][j].detach().cpu().numpy())
+                            else:
+                                ndarrays_temp.append(tensors[i][j])
+                    elif tensors[i] is None:
+                        ndarrays_temp_s = None
+                        ndarrays_temp = [ndarrays_temp_s]
                     ndarrays.append(ndarrays_temp)
             else:
                 for i in range(len(tensors)):

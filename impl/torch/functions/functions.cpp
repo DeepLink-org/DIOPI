@@ -2744,7 +2744,7 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, d
                         atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
     }else{
         std::vector<at::Tensor> tensorList;
-        at::TensorList tensorListRef(tensorList);
+        //at::TensorList tensorListRef(tensorList);
         CALL_ATEN_CUDA_FUNC(_fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, tensorList, 
                         atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
     }

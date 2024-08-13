@@ -5181,7 +5181,8 @@ diopi_configs = {
             beta2=[0.999, 0.999, 0.999, 0.999],
             eps=[1e-8, 1e-8, 1e-8, 1e-8],
             weight_decay=[1e-2, 1e-3, 1e-2, 1e-3],
-            amsgrad=[True, True, True, True],
+            # amsgrad=[True, True, True, True],
+            amsgrad=[False, False, True, True],
             maximize=[False, False, False, False],
         ),
         tensor_para=dict(
@@ -5205,7 +5206,8 @@ diopi_configs = {
                 },
                 {
                     "ins": ['max_exp_avg_sqs'],
-                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    # "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "shape": [None, None, (4, 8), (12, 4, 8)],
                     "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.rand',
                     "gen_policy": 'gen_tensor_list',
