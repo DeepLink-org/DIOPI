@@ -1,14 +1,5 @@
 # Copyright (c) 2023, DeepLink.
 import numpy as np
-import torch
-
-
-# def Genfunc_step(shape, values):
-#     if len(values) != shape[0]:
-#         raise ValueError("false")
-#     tensor = np.array(values, dtype=np.int64).reshape(shape)
-#     return tensor
-
 
 diopi_configs = {
     # FIXME batch_norm输入0size的张量报错
