@@ -839,21 +839,8 @@ device_configs = {
             # aclnn not support index out of size
             args=[
                 {
-                    "ins": ['idx3'],
-                    "shape": [Skip((224, 224)),],
-                },
-            ],
-        ),
-    ),
-    
-    'index': dict(
-        name=['index'],
-        tensor_para=dict(
-            # aclnn not support index out of size
-            args=[
-                {
-                    "ins": ['idx3'],
-                    "shape": [Skip((224, 224)),],
+                    "ins": ['input'],
+                    "shape": [Skip((2, 3, 224, 224)), Skip(((128, 2, 2)))],
                 },
             ],
         ),
