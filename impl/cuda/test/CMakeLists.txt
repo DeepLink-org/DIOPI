@@ -48,6 +48,6 @@ add_dependencies(${DIOPIFUNCTIONS} test_code_gen)
 
 file(MAKE_DIRECTORY ${DIOPI_TEST_DIR}/python)
 add_custom_target(python_copy ALL
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
-    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${CMAKE_SOURCE_DIR}/../diopi_test/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIFUNCTIONS}> ${DIOPI_TEST_DIR}/python/diopilib
+    COMMAND ln -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${DIOPIRT}> ${DIOPI_TEST_DIR}/python/diopilib
     DEPENDS ${DIOPIFUNCTIONS} ${DIOPIRT})
