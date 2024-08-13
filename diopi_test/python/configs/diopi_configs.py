@@ -5167,8 +5167,8 @@ diopi_configs = {
     ),
 
     # FXIME adamw、adam输出精度不一致
-    'adam': dict(
-         name=['adam', 'adamw'],
+    'adamw': dict(
+         name=['adamw'],
          interface=["CustomizedTest"],
          atol=1e-2,
          rtol=2e-3,
@@ -5222,46 +5222,43 @@ diopi_configs = {
         ),    
     ),
 
-
-
-
-    # 'adam': dict(
-    #     name=['adam', 'adamw'],
-    #     interface=["CustomizedTest"],
-    #     atol=2e-3,
-    #     rtol=2e-3,
-    #     atol_half=2e-3,
-    #     rtol_half=2e-3,
-    #     para=dict(
-    #         lr=[0.001, 0.01, 0.001, 0.01],
-    #         beta1=[0.9, 0.9, 0.9, 0.9],
-    #         beta2=[0.999, 0.999, 0.999, 0.999],
-    #         eps=[1e-8, 1e-8, 1e-8, 1e-8],
-    #         step=[2, 3, 2, 3],
-    #         weight_decay=[1e-2, 1e-3, 1e-2, 1e-3],
-    #         amsgrad=[False, False, True, True],
-    #     ),
-    #     tensor_para=dict(
-    #         dtype=[np.float16, np.float32, np.float64],
-    #         args=[
-    #             {
-    #                 "ins": ['param', 'param_grad'],
-    #                 "shape": [(), (16,), (4, 8), (12, 4, 8)],
-    #                 "gen_fn": 'Genfunc.rand',
-    #             },
-    #             {
-    #                 "ins": ['exp_avg', 'exp_avg_sq'],
-    #                 "shape": [(), (16,), (4, 8), (12, 4, 8)],
-    #                 "gen_fn": 'Genfunc.rand',
-    #             },
-    #             {
-    #                 "ins": ['max_exp_avg_sq'],
-    #                 "shape": [None, None, (4, 8), (12, 4, 8)],
-    #                 "gen_fn": 'Genfunc.rand',
-    #             },
-    #         ]
-    #     ),
-    # ),
+    'adam': dict(
+        name=['adam'],
+        interface=["CustomizedTest"],
+        atol=2e-3,
+        rtol=2e-3,
+        atol_half=2e-3,
+        rtol_half=2e-3,
+        para=dict(
+            lr=[0.001, 0.01, 0.001, 0.01],
+            beta1=[0.9, 0.9, 0.9, 0.9],
+            beta2=[0.999, 0.999, 0.999, 0.999],
+            eps=[1e-8, 1e-8, 1e-8, 1e-8],
+            step=[2, 3, 2, 3],
+            weight_decay=[1e-2, 1e-3, 1e-2, 1e-3],
+            amsgrad=[False, False, True, True],
+        ),
+        tensor_para=dict(
+            dtype=[np.float16, np.float32, np.float64],
+            args=[
+                {
+                    "ins": ['param', 'param_grad'],
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "gen_fn": 'Genfunc.rand',
+                },
+                {
+                    "ins": ['exp_avg', 'exp_avg_sq'],
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "gen_fn": 'Genfunc.rand',
+                },
+                {
+                    "ins": ['max_exp_avg_sq'],
+                    "shape": [None, None, (4, 8), (12, 4, 8)],
+                    "gen_fn": 'Genfunc.rand',
+                },
+            ]
+        ),
+    ),
 
     # FIXME conv_transpose2d特定参数组合，反向传播失败
     'conv_transpose2d': dict(
