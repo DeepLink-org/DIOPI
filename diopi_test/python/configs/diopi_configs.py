@@ -1,6 +1,7 @@
 # Copyright (c) 2023, DeepLink.
 import numpy as np
 
+
 diopi_configs = {
     # FIXME batch_norm输入0size的张量报错
     'batch_norm': dict(

@@ -3116,7 +3116,6 @@ def adamw(
         c_state_steps.append(TensorP(state_step))
 
     func = check_function("diopiAdamW")
-
     ret = func(
         params[0].context(),
         list(c_params),
@@ -3136,9 +3135,6 @@ def adamw(
     )
     check_returncode(ret)
     return params, exp_avgs, exp_avg_sqs, max_exp_avg_sqs
-
-
-
 
 
 def adam(

@@ -148,7 +148,6 @@ class CustomizedTest(object):
         )
         return param, exp_avg, exp_avg_sq, max_exp_avg_sq
 
-
     def adamw(
         params,
         grads,
@@ -181,9 +180,6 @@ class CustomizedTest(object):
         )
         return params, exp_avgs, exp_avg_sqs, max_exp_avg_sqs
         
-
-
-
     def adadelta(param, param_grad, square_avg, acc_delta, lr, rho, eps, weight_decay):
         params_with_grad = [param]
         grads = [param_grad]

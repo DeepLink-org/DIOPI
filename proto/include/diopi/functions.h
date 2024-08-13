@@ -2386,7 +2386,6 @@ DIOPI_API diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHand
  */
 DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 
-
 /**
  * @brief The function is used to implement the AdamW optimizer.
  * @param[in] ctx Context environment.
@@ -2412,7 +2411,6 @@ DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorH
 DIOPI_API diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
                                   diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps, int64_t nums,
                                   float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize);
-
 
 /**
  * @brief Applies a 2D transposed convolution operator over an input image composed of several input planes, sometimes also called “deconvolution”.
