@@ -3099,19 +3099,14 @@ def adamw(
 
     for param in params:
         c_params.append(TensorP(param))
-    
     for grad in grads:
         c_grads.append(TensorP(grad))
-    
     for exp_avg in exp_avgs:
         c_exp_avgs.append(TensorP(exp_avg))
-    
     for exp_avg_sq in exp_avg_sqs:
         c_exp_avg_sqs.append(TensorP(exp_avg_sq))
-    
     for max_exp_avg_sq in max_exp_avg_sqs:
         c_max_exp_avg_sqs.append(TensorP(max_exp_avg_sq))
-    
     for state_step in state_steps:
         c_state_steps.append(TensorP(state_step))
 
