@@ -1120,7 +1120,7 @@ diopi_configs = {
     ),
 
     'pointwise_op_abs_input': dict(
-        name=['log', 'log2', 'log10', 'sqrt', 'rsqrt'],
+        name=['log', 'log2', 'log10', 'log1p', 'sqrt', 'rsqrt'],
         interface=['torch'],
         is_inplace=True,
         dtype=[np.float16, np.float32, np.float64],
@@ -1138,7 +1138,7 @@ diopi_configs = {
     ),
 
     'log_integer_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.int16, np.int32, np.int64, np.uint8, np.int8],
         tensor_para=dict(
@@ -1155,7 +1155,7 @@ diopi_configs = {
     ),
 
     'log_zero_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
@@ -1174,7 +1174,7 @@ diopi_configs = {
     ),
 
     'log_neg_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
