@@ -101,11 +101,21 @@ class GenOutputData(object):
             ndarrays = tensors.detach().cpu().numpy()
         elif isinstance(tensors, (list, tuple)):
             ndarrays = []
-            for i in range(len(tensors)):
-                if isinstance(tensors[i], torch.Tensor):
-                    ndarrays.append(tensors[i].detach().cpu().numpy())
-                else:
-                    ndarrays.append(tensors[i])
+            if isinstance(tensors[0], (list, tuple)):
+                for i in range(len(tensors)):
+                    ndarrays_temp = []
+                    for j in range(len(tensors[i])):
+                        if isinstance(tensors[i][j], torch.Tensor):
+                            ndarrays_temp.append(tensors[i][j].detach().cpu().numpy())
+                        else:
+                            ndarrays_temp.append(tensors[i][j])
+                    ndarrays.append(ndarrays_temp)
+            else:
+                for i in range(len(tensors)):
+                    if isinstance(tensors[i], torch.Tensor):
+                        ndarrays.append(tensors[i].detach().cpu().numpy())
+                    else:
+                        ndarrays.append(tensors[i])
         elif isinstance(tensors, dict):
             ndarrays = {}
             for k, v in tensors.items():
