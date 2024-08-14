@@ -32,7 +32,7 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
     AscendTensor frequencyPenaltyHostAt = deviceToHostSync(ctx, frequencyPenaltyAt);
     AscendTensor presencePenaltyHostAt = deviceToHostSync(ctx, presencePenaltyAt);
 
-    const int *curBatchIndexData = reinterpret_cast<const int*>(curBatchIndexHostAt.data());
+    const int* curBatchIndexData = reinterpret_cast<const int*>(curBatchIndexHostAt.data());
 
     for (int i = 0; i < batch; ++i) {
         int curBatchStartIndex = *(curBatchIndexData + i);
@@ -73,10 +73,10 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
 
         diopiScalar_t frequencyPenaltyAtIScalar;
         if (logitsDtype == diopi_dtype_float32) {
-            const float *frequencyPenaltyData = reinterpret_cast<const float*>(frequencyPenaltyHostAt.data());
+            const float* frequencyPenaltyData = reinterpret_cast<const float*>(frequencyPenaltyHostAt.data());
             frequencyPenaltyAtIScalar = constructDiopiScalarT(logitsDtype, *(frequencyPenaltyData + i));
         } else {
-            const half_float::half *frequencyPenaltyData = reinterpret_cast<const half_float::half*>(frequencyPenaltyHostAt.data());
+            const half_float::half* frequencyPenaltyData = reinterpret_cast<const half_float::half*>(frequencyPenaltyHostAt.data());
             frequencyPenaltyAtIScalar = constructDiopiScalarT(logitsDtype, *(frequencyPenaltyData + i));
         }
         DIOPI_ASCEND_CALL_ACLNN(aclnnMuls, ctx, curTokenCounts, &frequencyPenaltyAtIScalar, frequencyPenaltyAdjustmentAt);
@@ -86,10 +86,10 @@ diopiError_t diopiApplyPenalty(diopiContextHandle_t ctx, diopiTensorHandle_t log
 
         diopiScalar_t presencePenaltyAtIScalar;
         if (logitsDtype == diopi_dtype_float32) {
-            const float *presencePenaltyData = reinterpret_cast<const float*>(presencePenaltyHostAt.data());
+            const float* presencePenaltyData = reinterpret_cast<const float*>(presencePenaltyHostAt.data());
             presencePenaltyAtIScalar = constructDiopiScalarT(logitsDtype, *(presencePenaltyData + i));
         } else {
-            const half_float::half *presencePenaltyData = reinterpret_cast<const half_float::half*>(presencePenaltyHostAt.data());
+            const half_float::half* presencePenaltyData = reinterpret_cast<const half_float::half*>(presencePenaltyHostAt.data());
             presencePenaltyAtIScalar = constructDiopiScalarT(logitsDtype, *(presencePenaltyData + i));
         }
         diopiScalar_t oneScalar = constructDiopiScalarT(logitsDtype, 1);

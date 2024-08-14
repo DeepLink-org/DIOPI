@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "../aclnn/adaptor.hpp"
-#include "impl_functions.hpp"
 #include "../common/acloprunner.hpp"
+#include "impl_functions.hpp"
 
 namespace impl {
 namespace ascend {
@@ -111,8 +111,8 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     AscendTensor bStartLocHostAt = deviceToHostSync(ctx, bStartLocAt);
     AscendTensor bSeqLenHostAt = deviceToHostSync(ctx, bSeqLenAt);
 
-    const int *bStartLocData = reinterpret_cast<const int*>(bStartLocHostAt.data());
-    const int *bSeqLenData = reinterpret_cast<const int*>(bSeqLenHostAt.data());
+    const int* bStartLocData = reinterpret_cast<const int*>(bStartLocHostAt.data());
+    const int* bSeqLenData = reinterpret_cast<const int*>(bSeqLenHostAt.data());
 
     for (int i = 0; i < batch; ++i) {
         int start = *(bStartLocData + i);
