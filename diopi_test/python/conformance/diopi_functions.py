@@ -404,11 +404,18 @@ def sin(input, inplace=False) -> Tensor:
 def cos(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiCos", promote_type(input, Dtype.float32))
 
+
 def acos(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiAcos", promote_type(input, Dtype.float32))
 
+
 def tan(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiTan", promote_type(input, Dtype.float32))
+
+
+def sinh(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiSinh", promote_type(input, Dtype.float32))
+
 
 def tanh(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiTanh", promote_type(input, Dtype.float32))
@@ -420,6 +427,7 @@ def atan(input, inplace=False) -> Tensor:
 
 def exp(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiExp", promote_type(input, Dtype.float32))
+
 
 def expm1(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiExpm1", promote_type(input, Dtype.float32))

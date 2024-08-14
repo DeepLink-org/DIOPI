@@ -911,6 +911,21 @@ DIOPI_API diopiError_t diopiTanInp(diopiContextHandle_t ctx, diopiTensorHandle_t
 DIOPI_API diopiError_t diopiTan(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
+ * @brief The in-place version of diopiSinh().
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type = [float16, float32, float64].
+ */
+DIOPI_API diopiError_t diopiSinhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+
+/**
+ * @brief Returns a new tensor with the hyperbolic sine of the elements of input.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type = [float16, float32, float64].
+ * @param[out] out the input tensor. type = [float16, float32, float64].
+ */
+DIOPI_API diopiError_t diopiSinh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
  * @brief The in-place version of diopiTanh().
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor. type = [float16, float32, float64].
