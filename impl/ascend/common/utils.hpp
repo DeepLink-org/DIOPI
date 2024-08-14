@@ -125,8 +125,6 @@ diopiError_t fillNan(diopiContextHandle_t ctx, AscendTensor& src);
 
 diopiError_t autoCastTensorType(diopiContextHandle_t ctx, const std::vector<AscendTensor*>& pTensors, const std::set<diopiDtype_t>& opSupportedDtype);
 
-void* ascendTensorDeviceToHost(diopiContextHandle_t ctx, AscendTensor at);
-
 }  // namespace ascend
 }  // namespace impl
 

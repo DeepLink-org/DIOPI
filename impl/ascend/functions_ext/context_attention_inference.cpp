@@ -9,6 +9,7 @@
 
 #include "../aclnn/adaptor.hpp"
 #include "impl_functions.hpp"
+#include "../common/acloprunner.hpp"
 
 namespace impl {
 namespace ascend {
@@ -107,11 +108,15 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     int head = qAt.shape()[1];
     int dim = qAt.shape()[2];
 
-    void* bStartLocDataPtr = ascendTensorDeviceToHost(ctx, bStartLocAt);
-    void* bSeqLenDataPtr = ascendTensorDeviceToHost(ctx, bSeqLenAt);
+    AscendTensor bStartLocHostAt = deviceToHostSync(ctx, bStartLocAt);
+    AscendTensor bSeqLenHostAt = deviceToHostSync(ctx, bSeqLenAt);
+
+    const int *bStartLocData = reinterpret_cast<const int*>(bStartLocAt.data());
+    const int *bSeqLenData = reinterpret_cast<const int*>(bSeqLenAt.data());
+
     for (int i = 0; i < batch; ++i) {
-        int start = reinterpret_cast<int*>(bStartLocDataPtr)[i];
-        int end = start + reinterpret_cast<int*>(bSeqLenDataPtr)[i];
+        int start = *(bStartLocData + i);
+        int end = start + *(bSeqLenData + i);
 
         AscendTensor sliceAt;
         std::vector<int64_t> sliceAtShape(1, end - start);
@@ -133,7 +138,7 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
 
         AscendTensor valuesAt;
         AscendTensor qIndexAt(qIndex), kIndexAt(kIndex), vIndexAt(vIndex);
-        valuesAt = torchContextAttention(ctx, qIndexAt, kIndexAt, vIndexAt, 1, reinterpret_cast<int*>(bSeqLenDataPtr)[i], head, dim);
+        valuesAt = torchContextAttention(ctx, qIndexAt, kIndexAt, vIndexAt, 1, *(bSeqLenData + i), head, dim);
 
         std::vector<AscendTensor> indices = {sliceAt};
         DIOPI_ASCEND_CALL_ACLNN(aclnnIndexPutImpl, ctx, out, indices, valuesAt, false, true);
