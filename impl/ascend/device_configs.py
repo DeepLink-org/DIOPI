@@ -470,18 +470,6 @@ device_configs = {
         ),
     ),
 
-    'conv_transpose2d': dict(
-        name=['conv_transpose2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
     'unfold': dict(
         name=['unfold'],
         tensor_para=dict(

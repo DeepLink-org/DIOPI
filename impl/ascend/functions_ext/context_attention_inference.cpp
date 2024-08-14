@@ -111,8 +111,8 @@ diopiError_t diopiContextAttentionInference(diopiContextHandle_t ctx, diopiTenso
     AscendTensor bStartLocHostAt = deviceToHostSync(ctx, bStartLocAt);
     AscendTensor bSeqLenHostAt = deviceToHostSync(ctx, bSeqLenAt);
 
-    const int *bStartLocData = reinterpret_cast<const int*>(bStartLocAt.data());
-    const int *bSeqLenData = reinterpret_cast<const int*>(bSeqLenAt.data());
+    const int *bStartLocData = reinterpret_cast<const int*>(bStartLocHostAt.data());
+    const int *bSeqLenData = reinterpret_cast<const int*>(bSeqLenHostAt.data());
 
     for (int i = 0; i < batch; ++i) {
         int start = *(bStartLocData + i);

@@ -63,6 +63,8 @@ ascend:
 - diopiContiguous
 - diopiConvolution2d
 - diopiConvolution2dBackward
+- diopiConvTranspose2d
+- diopiConvTranspose2dBackward
 - diopiCopyInp
 - diopiCos
 - diopiCosInp
