@@ -25,6 +25,9 @@ ascend:
 - diopiBaddbmmInp
 - diopiBatchNorm
 - diopiBatchNormBackward
+- diopiBatchNormStats
+- diopiBatchNormBackwardReduce
+- diopiBatchNormGatherStatsWithCounts
 - diopiBitwiseAnd
 - diopiBitwiseAndInp
 - diopiBitwiseAndInpScalar
@@ -114,6 +117,8 @@ ascend:
 - diopiHardtanh
 - diopiHardtanhBackward
 - diopiHardtanhInp
+- diopiIndex
+- diopiIndexBackward
 - diopiIndexPut
 - diopiIndexPutInp
 - diopiIndexSelect
@@ -249,12 +254,15 @@ ascend:
 - diopiThreshold
 - diopiThresholdBackward
 - diopiThresholdInp
+- diopiTokenAttentionInference
+- diopiTokenSoftmaxReduceVInference
 - diopiTopk
 - diopiTranspose
 - diopiTril
 - diopiTriu
 - diopiTriuInp
 - diopiUniformInp
+- diopiUnique
 - diopiUpsampleLinear
 - diopiUpsampleLinearBackward
 - diopiUpsampleNearest
@@ -264,8 +272,6 @@ ascend:
 - diopiZeros
 ascend_npu:
 - diopiGetNativeMemoryFormat
-- diopiIndex
-- diopiIndexBackward
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNLLLossV2
@@ -276,5 +282,3 @@ ascend_npu:
 - diopiScaledMaskedSoftmax
 - diopiScaledMaskedSoftmaxBackward
 - diopiTensorDestructionHook
-- diopiTokenAttentionInference
-- diopiTokenSoftmaxReduceVInference

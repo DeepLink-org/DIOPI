@@ -154,7 +154,8 @@ for para_key, para_val in function_kwargs.items():
     if isinstance(para_val, np.ndarray):
         sparse = is_sparse(para_key, function_config)
         sparse_format = function_config.get('sparse_format', None)
-        function_kwargs[para_key] = Tensor.from_numpy(para_val, is_sparse=sparse, sparse_format=sparse_format) 
+        requires_grad = function_paras.get("requires_grad", {}).get(para_key, [False])[0]
+        function_kwargs[para_key] = Tensor.from_numpy(para_val, is_sparse=sparse, sparse_format=sparse_format, requires_grad=requires_grad) 
     if para_key == 'dtype':
         function_kwargs[para_key] = from_numpy_dtype(para_val)
 """

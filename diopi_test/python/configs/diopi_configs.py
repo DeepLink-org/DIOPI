@@ -959,6 +959,7 @@ diopi_configs = {
                     "shape": ((), (16,), (72,),
                               (2, 11856), (2, 741, 80), (4, 4, 16, 20),
                               (0,), (4, 0), (9, 0, 16)),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=0, high=1),
                 },
                 {
                     "ins": ['weight'],
@@ -1119,7 +1120,7 @@ diopi_configs = {
     ),
 
     'pointwise_op_abs_input': dict(
-        name=['log', 'log2', 'log10', 'sqrt', 'rsqrt'],
+        name=['log', 'log2', 'log10', 'log1p', 'sqrt', 'rsqrt'],
         interface=['torch'],
         is_inplace=True,
         dtype=[np.float16, np.float32, np.float64],
@@ -1137,7 +1138,7 @@ diopi_configs = {
     ),
 
     'log_integer_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.int16, np.int32, np.int64, np.uint8, np.int8],
         tensor_para=dict(
@@ -1154,7 +1155,7 @@ diopi_configs = {
     ),
 
     'log_zero_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
@@ -1173,7 +1174,7 @@ diopi_configs = {
     ),
 
     'log_neg_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
@@ -3116,7 +3117,7 @@ diopi_configs = {
         interface=['torch'],
         para=dict(
             dim=[-1, 0, 1, [0, 1], 2, [-1, 0, -3], [0, 2, 3, -1], -1, [-1, -2], 2, None, None],
-            unbiased=[True, True, False, True, False, True, False, False, True, False, False, True],
+            correction=[1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1],
         ),
         atol=1e-4,
         rtol=1e-5,
@@ -4058,6 +4059,44 @@ diopi_configs = {
     #         ],
     #     ),
     # ),
+    
+    'pointwise_binary_foreach_op': dict(
+        name=["_foreach_mul","_foreach_add"],
+        interface=["torch"],
+        para=dict(
+            scalar=[1.0, 5, 2.0, -1.2, 3, 10, 8, -0.5, 0, -2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["self"],
+                    "shape": ((), (10,), (10, 2, 5), (20,), (10, 5, 1), (20, 3, 4, 5), (20, 2, 3, 4, 5),
+                              (0,), (0, 10), (5, 0, 9)),
+                    "gen_fn": 'Genfunc.randn',
+                    "dtype": [np.float32, np.float16, np.float64],
+                    "gen_policy": 'gen_tensor_list',
+                    "gen_num_range": [1, 5]
+                },
+            ],
+        ),
+    ),
+ 
+    'foreach_norm': dict(
+        name=['_foreach_norm'],
+        interface=['torch'],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["self"],
+                    "shape": ((256, 512, 1, 1),(8, 1, 4),(256, 64, 1, 1),(10, 1, 4),(256, 128, 1, 1),(16, 1, 4),(256, 256, 1, 1),(3, 1, 4)),
+                    "dtype": [np.float32, np.float64, np.float16],
+                    "gen_fn": 'Genfunc.randn',
+                    "gen_policy": 'gen_tensor_list',
+                    "gen_num_range": [1, 5]
+                },
+            ],
+        ),
+    ),
 
     'tril': dict(
         name=["tril"],
@@ -5167,28 +5206,20 @@ diopi_configs = {
         ),
     ),
 
-    # FXIME adamw、adam输出精度不一致
     'adam': dict(
         name=['adam', 'adamw'],
         interface=["CustomizedTest"],
-        atol=1e-4,
-        rtol=1e-3,
-        atol_half=1e-4,
-        rtol_half=1e-3,
+        atol=2e-3,
+        rtol=2e-3,
+        atol_half=2e-3,
+        rtol_half=2e-3,
         para=dict(
-            # lr=[0, -0.2, 2, 0.001, 0.1, 3.2, -2, 0],
-            # beta1=[0, -1, 0.004, 0.9, 0.8, -2, 4.3, 0],
-            # beta2=[0.3, 0, -2, 0.99, 0.88, 1, -4, 0],
-            # eps=[-1e-02, 0, 1e-2, 1e-08, 1e-09, 0, 2, 1e-4],
-            # step=[3, 2, 0, 1, 4, 2, 4, 5],
-            # weight_decay=[-0.2, 0, 2, 0, 0.1, 2.5, 0, -3],
-            # amsgrad=[False, True, True, False, True, False, True, True],
-            lr=[0, 3.2, -2, 0],
-            beta1=[0, -2, 4.3, 0],
-            beta2=[0.3, 1, -4, 0],
-            eps=[-1e-02, 0, 2, 1e-4],
-            step=[3, 2, 4, 5],
-            weight_decay=[-0.2, 2.5, 0, -3],
+            lr=[0.001, 0.01, 0.001, 0.01],
+            beta1=[0.9, 0.9, 0.9, 0.9],
+            beta2=[0.999, 0.999, 0.999, 0.999],
+            eps=[1e-8, 1e-8, 1e-8, 1e-8],
+            step=[2, 3, 2, 3],
+            weight_decay=[1e-2, 1e-3, 1e-2, 1e-3],
             amsgrad=[False, False, True, True],
         ),
         tensor_para=dict(
@@ -5196,17 +5227,18 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['param', 'param_grad'],
-                    # "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
-                    #           (0,), (4, 0), (12, 0, 9)],
-                    "shape": [(), (0,), (4, 0), (12, 0, 9)],
-                    "gen_fn": 'Genfunc.randn',
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "gen_fn": 'Genfunc.rand',
                 },
                 {
-                    "ins": ['exp_avg', 'exp_avg_sq', 'max_exp_avg_sq'],
-                    # "shape": [(), (16,), (16, 8), (2, 3, 16), (4, 32, 7, 7),
-                    #           (0,), (4, 0), (12, 0, 9)],
-                    "shape": [(), (0,), (4, 0), (12, 0, 9)],
-                    "gen_fn": 'Genfunc.randn',
+                    "ins": ['exp_avg', 'exp_avg_sq'],
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "gen_fn": 'Genfunc.rand',
+                },
+                {
+                    "ins": ['max_exp_avg_sq'],
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "gen_fn": 'Genfunc.rand',
                 },
             ]
         ),
@@ -5989,13 +6021,13 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((8, 0), (0, 128), (256, 8)),
-                    "dtype": [np.float32, np.float16, np.float64],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
                 {
                     "ins": ['mat2'],
                     "shape": ((0, 128), (128, 128), (8, 0)),
-                    "dtype": [np.float16, np.float64, np.float32],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
             ],

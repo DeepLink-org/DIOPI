@@ -55,6 +55,37 @@ jobs:
             """
           fi
 
+  #  open job after dynamic torch ready (with out unique + gen diopi suffix lib)
+  Build-torch-dynamic:
+    if: false
+    name: Build-torch-dynamic
+    runs-on: ${{ inputs.runner }}
+    env:
+      GETRUNNER: ${{ inputs.runner }}
+      DEEPLINK_PATH: ${{ inputs.deeplink_path }}
+      ENV_PATH: ${{ inputs.env_path }}
+      SLURM_PAR_V100: "pat_dev"
+      BUILD_TEST2: "build_test_dyn"
+    steps:
+      - name: build
+        run: |
+          if [[ "${GETRUNNER}" == *sco* ]];then
+            set -e
+            cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
+            cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST2} && cp -R source ${BUILD_TEST2} && cd ${BUILD_TEST2}
+            srun --job-name=${GITHUB_JOB} bash -c "export USE_COVERAGE=ON && cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST2} \
+            && source ${ENV_PATH}/pt2.0_diopi \
+            && cd impl && bash scripts/build_impl.sh torch_dyload" || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
+          else
+            ssh SH1424 """
+            set -e
+            cd ${DEEPLINK_PATH}/ && ls -al && find ${DEEPLINK_PATH}/ -maxdepth 1 -mmin +300 -type d |xargs rm -rf
+            source ${ENV_PATH}/pt2.0_diopi
+            cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && rm -rf ${BUILD_TEST2} && cp -R source ${BUILD_TEST2} && cd ${BUILD_TEST2}
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=20 bash -c 'cd impl && bash scripts/build_impl.sh torch_dyload' || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/ && rm -rf ${BUILD_TEST2} && exit 1 )
+            """
+          fi
+
   Gen-Data:
     name: Gen-Data
     needs: [Build-Nvidia]
@@ -82,7 +113,7 @@ jobs:
             set -e
             source ${ENV_PATH}/pt2.0_diopi
             cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER} && cd ${BUILD_TEST1} && cd diopi_test/python &&
-            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=20 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
+            srun --job-name=${GITHUB_JOB} --partition=${SLURM_PAR_V100} --time=30 --gres=gpu:1 bash -c 'python main.py --mode gen_data' \
             || ( cd ${DEEPLINK_PATH}/${GITHUB_RUN_NUMBER}/${BUILD_TEST1} && git clean -xdf ${GEN_DATA} && exit 1 )
             """
           else

@@ -15,7 +15,7 @@ set(RUNTIME_SRC
     # use torch cuda runtime
     ${BASE_TORCH_DIR}/test/conform_test.cpp
 )
-add_library(diopirt SHARED ${RUNTIME_SRC})
+cuda_add_library(diopirt SHARED ${RUNTIME_SRC})
 message(STATUS "test diopirt CUDA_LIBRARIES is:" ${CUDA_LIBRARIES})
 target_link_libraries(diopirt ${CUDA_LIBRARIES})
 

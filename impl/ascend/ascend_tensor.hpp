@@ -245,6 +245,10 @@ public:
     AscendTensor& asStrided(const std::vector<int64_t>& shape, const std::vector<int64_t>& stride);
     AscendTensor& unsqueeze(int dim);
     AscendTensor& view(const std::vector<int64_t>& shape);
+    AscendTensor& resize(const std::vector<int64_t>& shape);
+    AscendTensor& select(int64_t dim, int64_t index);
+    AscendTensor& permute(std::vector<int64_t> dims);
+    AscendTensor& expand(std::vector<int64_t> shape);
 
 private:
     // diopi origin tensor
