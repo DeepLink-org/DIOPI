@@ -404,6 +404,8 @@ def sin(input, inplace=False) -> Tensor:
 def cos(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiCos", promote_type(input, Dtype.float32))
 
+def tan(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiTan", promote_type(input, Dtype.float32))
 
 def tanh(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiTanh", promote_type(input, Dtype.float32))
