@@ -417,6 +417,10 @@ def sinh(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiSinh", promote_type(input, Dtype.float32))
 
 
+def cosh(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiCosh", promote_type(input, Dtype.float32))
+
+
 def tanh(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiTanh", promote_type(input, Dtype.float32))
 
