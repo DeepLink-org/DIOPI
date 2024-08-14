@@ -879,6 +879,22 @@ DIOPI_API diopiError_t diopiCosInp(diopiContextHandle_t ctx, diopiTensorHandle_t
 DIOPI_API diopiError_t diopiCos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
+ * @brief The in-place version of diopiAcos().
+ * @param[in] ctx Context environment.
+ * @param[in] input the input and output tensor and will be stored result tensor,
+ * type = [float16, float32, float64, int16, int32, int64, uint8, int8].
+ */
+DIOPI_API diopiError_t diopiAcosInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+
+/**
+ * @brief Compute the element-wise arccosine values of the input tensor input.
+ * @param[in] ctx Context environment.
+ * @param[in] input Input tensor, type = [float16, float32, float64, int16, int32, int64, uint8, int8].
+ * @param[out] out the output tensor. type = [float16, float32, float64].
+ */
+DIOPI_API diopiError_t diopiAcos(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
  * @brief The in-place version of diopiTan().
  * @param[in] ctx Context environment.
  * @param[in] input the input and output tensor and will be stored result tensor,
