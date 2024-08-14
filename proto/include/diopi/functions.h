@@ -978,6 +978,21 @@ DIOPI_API diopiError_t diopiAtan(diopiContextHandle_t ctx, diopiTensorHandle_t o
 DIOPI_API diopiError_t diopiAtanInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 
 /**
+ * @brief The in-place version of diopiAsinh().
+ * @param[in] ctx Context environment.
+ * @param[inout] input the input tensor and will be stroed reuslt tensor. type = [float16, float32, float64].
+ */
+DIOPI_API diopiError_t diopiAsinhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+
+/**
+ * @brief Returns a new tensor with the arc hyperbolic sine of the elements of input.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type = [float16, float32, float64].
+ * @param[out] out the output tensor. type = [float16, float32, float64].
+ */
+DIOPI_API diopiError_t diopiAsinh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
  * @brief The in-place version of diopiSigmoid().
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor and will be stroed reuslt tensor. type = [float16, float32].
