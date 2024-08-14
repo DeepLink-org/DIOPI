@@ -3210,6 +3210,16 @@ diopiError_t diopiArgmin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     return diopiSuccess;
 }
 
+diopiError_t diopiArgsort(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, bool stable, const int64_t* dim, bool descending) {
+    impl::aten::setCurStream(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atInput = impl::aten::buildATen(input);
+    atOut = CALL_ATEN_CUDA_FUNC(argsort, atInput, stable, (dim ? *dim : -1), descending);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiSmoothL1Loss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                diopiReduction_t reduction, double beta) {
     impl::aten::setCurStream(ctx);

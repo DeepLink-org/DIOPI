@@ -5595,6 +5595,48 @@ diopi_configs = {
         ),
     ),
 
+    'argsort': dict(
+        name=['argsort'],
+        interface=["torch"],
+        para=dict(
+            dim=[0, -1, 0, 1, -1, 0, 2, 1],
+            stable=[True, False, True, False, False, True, True, False],
+            descending=[True, False, True, False, False, True, True, False],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1,), (1024, 80), (2, 256, 256), (2, 1, 64, 64),
+                              (12, 0), (2, 0, 9), (0, 9, 8, 7)),
+                    "dtype": [np.float64, np.float16, np.float32, np.int32, np.int16,
+                              np.int64, np.uint8, np.int8],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+
+    'argsort_same_value': dict(
+        name=['argsort'],
+        interface=["torch"],
+        para=dict(
+            dim=[-1, 0, -1, 1],
+            stable=[True, False, True, False],
+            descending=[True, False, True, False],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1,), (1024, 80), (2, 256, 256), (2, 1, 64, 64)),
+                    "dtype": [np.float32],
+                    "gen_fn": 'Genfunc.zeros',
+                },
+            ],
+        ),
+    ),
+
     'adadelta': dict(
         name=["adadelta"],
         interface=["CustomizedTest"],

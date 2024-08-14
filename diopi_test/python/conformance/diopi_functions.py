@@ -3586,6 +3586,14 @@ def argmin(input, dim=None, keepdim=False):
 
     return out
 
+def argsort(input, dim=-1, descending=False, stable=False):
+    out = Tensor(input.size().data, from_numpy_dtype(glob_vars.int_type))
+    func = check_function("diopiArgsort")
+    ret = func(input.context(), out, input, stable, dim, descending)
+    check_returncode(ret)
+
+    return out
+
 
 def smooth_l1_loss(input, target, reduction="mean", beta=1.0):
     assert (
