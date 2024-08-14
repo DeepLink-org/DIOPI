@@ -487,3 +487,12 @@
 - diopiCrossEntropyLossWithTotalWeightBackward:
     dtype: (float64)->float32
     layout: ND
+
+- diopiBatchNormStats:
+    dtype: (float64)->float32
+
+- diopiBatchNormGatherStatsWithCounts:
+    dtype: (float64)->float32
+
+- diopiBatchNormBackwardReduce:
+    dtype: (float64)->float32

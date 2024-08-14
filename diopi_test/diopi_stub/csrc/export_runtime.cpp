@@ -20,15 +20,25 @@ PYBIND11_MODULE(export_runtime, m) {
     py::options options;
     options.disable_function_signatures();
 
+    py::enum_<diopiLayout>(m, "diopiLayout")
+        .value("Strided", diopiLayout::Strided)
+        .value("Sparse", diopiLayout::Sparse)
+        .value("SparseCsr", diopiLayout::SparseCsr)
+        .value("SparseCsc", diopiLayout::SparseCsc)
+        .value("SparseBsr", diopiLayout::SparseBsr)
+        .value("SparseBsc", diopiLayout::SparseBsc)
+        .export_values();
+
     py::class_<diopiTensor, std::shared_ptr<diopiTensor>>(m, "diopiTensor", py::buffer_protocol())
-        .def(py::init([](diopiSize_t* shape, diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context, const void* src) {
-            auto tensor = diopiTensor(shape, stride, dtype, device, context, src);
-            return tensor;
-        }))
-        .def(py::init([](diopiSize_t* shape, diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context) {
-            auto tensor = diopiTensor(shape, stride, dtype, device, context, nullptr);
-            return tensor;
-        }))
+        .def(py::init<const diopiSize_t*, const diopiSize_t*, diopiDtype_t, diopiDevice_t, diopiContextHandle_t, const void*, diopiLayout, bool>(),
+             py::arg("shape"),
+             py::arg("stride"),
+             py::arg("dtype"),
+             py::arg("device"),
+             py::arg("context"),
+             py::arg("src") = nullptr,
+             py::arg("layout") = diopiLayout::Strided,
+             py::arg("requires_grad") = false)
         .def(py::init([]() {
             auto tensor = diopiTensor();
             return tensor;
@@ -41,6 +51,8 @@ PYBIND11_MODULE(export_runtime, m) {
         .def("reset_shape", &diopiTensor::resetShape)
         .def("itemsize", &diopiTensor::elemSize)
         .def("context", &diopiTensor::getCtx)
+        .def_property_readonly("is_sparse", &diopiTensor::isSparse)
+        .def_property_readonly("requires_grad", &diopiTensor::requiresGrad)
         .def_buffer(&diopiTensor::buffer);
 
     py::class_<diopiSparseCsrTensor, std::shared_ptr<diopiSparseCsrTensor>, diopiTensor>(m, "diopiSparseCsrTensor", py::buffer_protocol())

@@ -1150,21 +1150,19 @@ Example::
 add_docstr("std", r"""
 Calculates the standard deviation of each row of attr:`input` tensor in the given
 dimension :attr:`dim`.
-If :attr:`unbiased` is ``True``, Bessel's correction will be used.
-Otherwise, the sample deviation is calculated, without any correction.
 
 Args:
     {input}
     {dim}
 
 Keyword args:
-    unbiased (bool): whether to use Bessel's correction (:math:`\delta N = 1`).
+    correction (int): difference between the sample size and sample degrees of freedom. Defaults to Bessel’s correction. (:math:`\delta N = 1`).
     {keepdim}
 
 Example::
 
     >>> a = tensor([[-0.8166, -1.3802, -0.3560]])
-    >>> std(a, unbiased=False)
+    >>> std(a, correction=0)
     tensor(0.4188)
 """.format(**multi_dim_common))
 

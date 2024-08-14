@@ -23,7 +23,8 @@ namespace camb {
  * @param unbiased whether to compute the unbiased standard deviation.
  * @param[out] out the output tensor depend on dim. type = [float32, float64, float16].
  */
-DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim, bool unbiased) {
+DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t dim,
+                                const diopiScalar_t* correction) {
     cnnlHandle_t handle = cnnlHandlePool.get(ctx);
 
     // shape of outTensor does not keep the dim.
@@ -31,13 +32,18 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     DiopiTensor inputTensor(input);
     auto outDtype = outTensor.dtype();
 
+    bool unbiased = true;
+    if (correction != nullptr) {
+        unbiased = correction->ival;
+    }
+
     bool keepDim = false;
     if (outTensor.dim() == inputTensor.dim()) {
         keepDim = true;
     }
 
     int axisNum = 0;
-    int *axis = nullptr;
+    int* axis = nullptr;
     if (0 == dim.len) {
         axisNum = inputTensor.dim();
         axis = new int[axisNum];
@@ -65,7 +71,7 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     }
 
     // cast supported dtyeps for tensors.
-    std::vector<DiopiTensor *> tensorVecPtr{&outTensor, &inputTensor};
+    std::vector<DiopiTensor*> tensorVecPtr{&outTensor, &inputTensor};
     std::set<diopiDtype_t> supportedDtype{diopi_dtype_float16, diopi_dtype_float32, diopi_dtype_float64};
     DIOPI_CALL(autoCastTensorType(ctx, tensorVecPtr, supportedDtype));
     outTensor = *tensorVecPtr[0];
@@ -81,7 +87,7 @@ DIOPI_API diopiError_t diopiStd(diopiContextHandle_t ctx, diopiTensorHandle_t ou
     delete[] axis;
 
     size_t workspaceSize = 0;
-    void *workspace = nullptr;
+    void* workspace = nullptr;
     DIOPI_CALL_CNNL(cnnlGetStdVarMeanWorkspaceSize(handle, stdVarMeanDesc, inputDesc.get(), &workspaceSize));
     if (workspaceSize > 0) {
         workspace = requiresBuffer(ctx, workspaceSize).data();
