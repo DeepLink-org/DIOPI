@@ -2714,6 +2714,16 @@ DIOPI_API diopiError_t diopiCdistBackward(diopiContextHandle_t ctx, diopiTensorH
 DIOPI_API diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim);
 
 /**
+ * @brief Returns the indices of the minimum values of a tensor across a dimension.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type=[float32, float64, float16, int16, int32, int64, uint8, int8, bool].
+ * @param[in] dim the dimension to do the operation over. type=[int32, int64].
+ * @param[in] keepdim whether the output tensor has dim retained or not.
+ * @param[out] out the output tensor. type=[int32, int64].
+ */
+DIOPI_API diopiError_t diopiArgmin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim);
+
+/**
  * @brief The function is used to implement the Adadelta optimizer. Its functionality is to perform a single parameter update.
  * @param[in] ctx Context environment.
  * @param[inout] param the param tensor. type=[float16, float32, float64].

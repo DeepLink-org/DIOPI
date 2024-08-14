@@ -3200,6 +3200,16 @@ diopiError_t diopiArgmax(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     return diopiSuccess;
 }
 
+diopiError_t diopiArgmin(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const int64_t* dim, bool keepdim) {
+    impl::aten::setCurStream(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atInput = impl::aten::buildATen(input);
+    c10::optional<int64_t> atDim = dim ? c10::optional<int64_t>(*dim) : c10::nullopt;
+    CALL_ATEN_CUDA_FUNC(argmin_out, atOut, atInput, atDim, keepdim);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiSmoothL1Loss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                                diopiReduction_t reduction, double beta) {
     impl::aten::setCurStream(ctx);

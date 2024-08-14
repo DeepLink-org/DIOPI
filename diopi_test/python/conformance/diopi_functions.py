@@ -3563,6 +3563,29 @@ def argmax(input, dim=None, keepdim=False):
 
     return out
 
+def argmin(input, dim=None, keepdim=False):
+    sizeO = list(input.size().data)
+    if len(sizeO) > 0 and dim is not None:
+        assert dim < len(sizeO), "dim out of index"
+        if keepdim:
+            sizeO[dim] = 1
+        else:
+            sizeO = sizeO[:dim] + sizeO[dim + 1 :]
+    else:
+        sizeO = [1]
+
+    out = Tensor(sizeO, from_numpy_dtype(glob_vars.int_type))
+    func = check_function("diopiArgmin")
+    # todo: check the reason of using keepdim
+    ret = (
+        func(input.context(), out, input, keepdim)
+        if dim is None
+        else func(input.context(), out, input, dim, keepdim)
+    )
+    check_returncode(ret)
+
+    return out
+
 
 def smooth_l1_loss(input, target, reduction="mean", beta=1.0):
     assert (

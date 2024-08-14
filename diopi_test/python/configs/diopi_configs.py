@@ -1196,7 +1196,6 @@ diopi_configs = {
         name=['sinh', 'cosh', 'asinh', 'acosh', 'atanh'],
         interface=['torch'],
         is_inplace=True,
-        saved_args=dict(output=0),
         dtype=[np.float16, np.float32, np.float64],
         tensor_para=dict(
             gen_fn='Genfunc.randn',
@@ -5539,6 +5538,46 @@ diopi_configs = {
 
     'argmax_same_value': dict(
         name=['argmax'],
+        interface=["torch"],
+        para=dict(
+            dim=[-1, 0, None, 1],
+            keepdim=[True, False, True, False],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((1,), (1024, 80), (2, 256, 256), (2, 1, 64, 64)),
+                    "dtype": [np.float32],
+                    "gen_fn": 'Genfunc.zeros',
+                },
+            ],
+        ),
+    ),
+
+    'argmin': dict(
+        name=['argmin'],
+        interface=["torch"],
+        para=dict(
+            dim=[0, -1, 0, 1, None, -2, 2, 1],
+            keepdim=[True, False, True, False, False, True, True, False],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1,), (1024, 80), (2, 256, 256), (2, 1, 64, 64),
+                              (12, 0), (2, 0, 9), (0, 9, 8, 7)),
+                    "dtype": [np.float64, np.float16, np.float32, np.int32, np.int16,
+                              np.int64, np.uint8, np.int8],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+
+    'argmin_same_value': dict(
+        name=['argmin'],
         interface=["torch"],
         para=dict(
             dim=[-1, 0, None, 1],
