@@ -1008,6 +1008,21 @@ DIOPI_API diopiError_t diopiAcoshInp(diopiContextHandle_t ctx, diopiTensorHandle
 DIOPI_API diopiError_t diopiAcosh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
+ * @brief The in-place version of diopiAtanh().
+ * @param[in] ctx Context environment.
+ * @param[inout] input the input tensor and will be stroed reuslt tensor. type = [float16, float32, float64].
+ */
+DIOPI_API diopiError_t diopiAtanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+
+/**
+ * @brief Returns a new tensor with the arc hyperbolic tangent of the elements of input.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type = [float16, float32, float64].
+ * @param[out] out the output tensor. type = [float16, float32, float64].
+ */
+DIOPI_API diopiError_t diopiAtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
  * @brief The in-place version of diopiSigmoid().
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor and will be stroed reuslt tensor. type = [float16, float32].

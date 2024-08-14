@@ -1060,6 +1060,23 @@ diopiError_t diopiAcoshInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) 
     return diopiSuccess;
 }
 
+diopiError_t diopiAtanh(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    CALL_ATEN_CUDA_FUNC(atanh_out, atOut, atInput);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiAtanhInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    CALL_ATEN_CUDA_FUNC(atanh_, atInput);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);

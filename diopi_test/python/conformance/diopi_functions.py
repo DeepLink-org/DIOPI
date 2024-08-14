@@ -436,6 +436,9 @@ def asinh(input, inplace=False) -> Tensor:
 def acosh(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiAcosh", promote_type(input, Dtype.float32))
 
+def atanh(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiAtanh", promote_type(input, Dtype.float32))
+
 
 def exp(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiExp", promote_type(input, Dtype.float32))

@@ -1383,6 +1383,44 @@ diopi_configs = {
         ),
     ),
 
+    'atanh': dict(
+        name=['atanh'],
+        interface=['torch'],
+        is_inplace=True,
+        saved_args=dict(output=0),
+        dtype=[np.float16, np.float32, np.float64],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40),
+                              (0,), (16, 0), (1, 0, 6)),
+                },
+            ],
+        ),
+    ),
+
+    'atanh_not_float': dict(
+        name=['atanh'],
+        interface=['torch'],
+        dtype=[np.int16, np.int32, np.int64, np.uint8, np.int8, np.bool_],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40),
+                              (0,), (16, 0), (1, 0, 6)),
+                },
+            ],
+        ),
+    ),
+
     'sign': dict(
         name=['sign'],
         interface=['torch'],
