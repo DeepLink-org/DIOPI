@@ -979,6 +979,22 @@ DIOPI_API diopiError_t diopiExpInp(diopiContextHandle_t ctx, diopiTensorHandle_t
 DIOPI_API diopiError_t diopiExp(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
+ * @brief The in-place version of diopiExpm1().
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor and will be stroed reuslt tensor. type = [float16, float32, float64]
+ */
+DIOPI_API diopiError_t diopiExpm1Inp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
+
+/**
+ * @brief Returns a new tensor with the exponential of the elements of the input tensor input and minus 1
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor. type = [float16, float32, float64, int16, int32,
+ * int64, uint8, int8, bool].
+ * @param[out] out the output tensor. type = [float16, float32, float64].
+ */
+DIOPI_API diopiError_t diopiExpm1(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
  * @brief The in-place version of diopiLog().
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor and will be stroed reuslt tensor. type = [float16, float32, float64, int16, int32, int64, uint8, int8].
