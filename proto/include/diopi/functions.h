@@ -2487,6 +2487,20 @@ DIOPI_API diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t v
                                  bool descending, const bool* pStable);
 
 /**
+ * @brief Computes the gradient of the input tensor with respect to the sorted output tensor during backpropagation.
+ * @param[in] ctx Context environment.
+ * @param[in] grad_output Tensor containing the gradient of the loss with respect to the sorted output.
+ * @param[in] dim The dimension along which the sorting was performed. This is used to correctly align the gradients with the corresponding dimension.
+ * @param[in] indices Tensor containing the indices that were used to sort the input tensor.
+ * @param[in] sizes The size of the tensor, which is necessary to manage the shape and alignment during gradient computation.
+ * @param[in] keepdim Boolean flag indicating whether to retain the reduced dimensions or not. If `true`, the dimensions that were reduced are retained with
+ * size one, which affects how gradients are accumulated.
+ * @param[out] grad_input Tensor to store the gradient with respect to the input tensor. This tensor will be updated with the computed gradient.
+ */
+DIOPI_API diopiError_t diopiSortBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, int64_t dim,
+                                         diopiConstTensorHandle_t indices, diopiSize_t sizes, bool keepdim);
+
+/**
  * @brief Returns the k largest elements of the given input tensor along a given dimension.
  * @param[in] ctx Context environment.
  * @param[in] input the input tesnor.type=[float16, float32, float64, int16, int32, int64, uint8, int8]

@@ -755,6 +755,19 @@ diopiError_t diopiSort(diopiContextHandle_t ctx, diopiTensorHandle_t values, dio
     return diopiSuccess;
 }
 
+diopiError_t diopiSortBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, int64_t dim,
+                               diopiConstTensorHandle_t indices, diopiSize_t sizes, bool keepdim = 1) {
+    impl::aten::setCurStream(ctx);
+    auto atGrad_input = impl::aten::buildATen(grad_input);
+    auto atGrad_output = impl::aten::buildATen(grad_output);
+    auto atIndices = impl::aten::buildATen(indices);
+    auto atSizes = impl::aten::buildAtIntArray(sizes);
+    atGrad_input = CALL_ATEN_FUNC(value_selecting_reduction_backward, atGrad_output, dim, atIndices, atSizes, keepdim);
+    impl::aten::updateATen2Tensor(ctx, atGrad_input, grad_input);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t k,
                        int64_t dim, bool largest, bool sorted) {
     impl::aten::setCurStream(ctx);

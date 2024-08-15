@@ -1509,6 +1509,16 @@ def sort(input, dim=-1, descending=False, stable=None):
     return vals, indices
 
 
+def sort_backward(input, grad_outputs, dim, indice, **kwargs):
+    grad_outputs = grad_outputs[0]
+    grad_input = raw_like(grad_outputs)
+
+    func = check_function("diopiSortBackward")
+    ret = func(input.context(), grad_input, grad_outputs, dim, indice, input.size(), True)
+    check_returncode(ret)
+    return {"input": grad_input} if grad_input.requires_grad else {}
+
+
 def topk(input, k, dim=-1, largest=True, sorted=True):
     sizeI = input.size().data
     if len(sizeI) > 0:

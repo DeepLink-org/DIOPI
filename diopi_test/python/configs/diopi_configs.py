@@ -4384,6 +4384,31 @@ diopi_configs = {
         ),
     ),
 
+    'sort_backward': dict(
+        name=["sort"],
+        interface=['CustomizedTest'],
+        saved_args=dict(indice=1),
+        requires_backward = [0],
+        para=dict(
+            dim=[-1, 0, 1],
+            descending=[True, False, False],
+            stable=[True, True, True],
+        ),
+        dtype=[np.float16, np.float32],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((11400, ),
+                              (4, 4, 16, 20),
+                              (4, 4, 16, 2, 20)),
+                },
+            ],
+        ),
+    ),
+
     # FIXME topk输入0-d张量，且k为0时，结果精度不一致
     'topk_nonzero': dict(
         name=['topk'],
