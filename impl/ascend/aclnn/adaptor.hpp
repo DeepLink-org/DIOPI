@@ -201,8 +201,11 @@ decltype(auto) convertType(T&& param) {
     }
 }
 
-template <class T>
+template <class T, class U = std::remove_reference_t<T>, std::enable_if_t<!std::is_class_v<U> && !std::is_pointer_v<U>, int> = 0>
 void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
+
+// Overload for const char* const&
+inline void releaseConverted(const char* const& param [[maybe_unused]]) {}
 
 #define IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Type)        \
     inline void releaseConverted(const acl##Type* param) { \
