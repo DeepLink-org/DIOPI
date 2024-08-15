@@ -201,6 +201,7 @@ decltype(auto) convertType(T&& param) {
     }
 }
 
+// For the case that the input is not a class or a pointer, do nothing.
 template <class T, class U = std::remove_reference_t<T>, std::enable_if_t<!std::is_class_v<U> && !std::is_pointer_v<U>, int> = 0>
 void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
 
