@@ -149,6 +149,10 @@ struct IsBoolStdArray<std::array<bool, N>> : std::true_type {};
 
 inline aclIntArray* createAclIntArrayFromIntVector(const std::vector<int64_t>& vec) { return ::aclCreateIntArray(vec.data(), vec.size()); }
 
+inline aclTensorList* createAclTensorListFromAclTensorVector(const std::vector<aclTensor*>& tensorsVec) {
+    return ::aclCreateTensorList(tensorsVec.data(), tensorsVec.size());
+}
+
 inline aclTensorList* createAclTensorListFromAscendTensorVector(const std::vector<AscendTensor>& tensorsVec) {
     std::vector<const aclTensor*> tList(tensorsVec.size());
     for (size_t i = 0; i < tensorsVec.size(); i++) {
@@ -175,7 +179,11 @@ inline aclTensorList* createAclTensorListFromConstDiopiTensorVector(const std::v
 
 template <class T, class U = std::remove_cv_t<std::remove_reference_t<T>>>
 decltype(auto) convertType(T&& param) {
-    if constexpr (std::is_same_v<U, AscendTensor>) {
+    if constexpr (std::is_same_v<U, aclTensor*>) {
+        return std::forward<T>(param);
+    } else if constexpr (std::is_same_v<U, std::vector<aclTensor*>>) {
+        return createAclTensorListFromAclTensorVector(std::forward<T>(param));
+    } else if constexpr (std::is_same_v<U, AscendTensor>) {
         return createAclTensorFromAscendTensor(std::forward<T>(param));
     } else if constexpr (std::is_same_v<U, diopiTensorHandle_t> || std::is_same_v<U, diopiConstTensorHandle_t>) {
         return createAclTensorFromDiopiTensor(std::forward<T>(param));

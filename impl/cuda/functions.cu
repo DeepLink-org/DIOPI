@@ -12,6 +12,8 @@
 #include "helper.hpp"
 #include "cuda_helper.hpp"
 
+#include <cmath>
+
 template<typename T> __global__
 void vecAdd(const void* a, const void* b, void* c, const int numel, const T alpha) {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
@@ -100,7 +102,7 @@ extern "C" diopiError_t diopiAdd(diopiContextHandle_t ctx, diopiTensorHandle_t o
 
     int blockSize = 256;
     double coff = 0.0;
-    if (trInput.dtype() <= 7) {
+    if (alpha->stype <= 7) {
         coff = alpha->ival;
     } else {
         coff = alpha->fval;
@@ -185,6 +187,52 @@ extern "C" diopiError_t diopiFill(diopiContextHandle_t ctx, diopiTensorHandle_t 
         int gridSize  = (numel + blockSize - 1) / blockSize;
         DISPATCH_DTYPE(vecFill, dtype, gridSize, blockSize, stream, tr.data(), val, numel);
     }
+
+    return diopiSuccess;
+}
+
+template<typename T> __global__
+void vecLog1p(const void* a, void* b, const int numel) {
+    int id = blockIdx.x * blockDim.x + threadIdx.x;
+    const T* A = static_cast<const T*>(a);
+    T* B = static_cast<T*>(b);
+    if (id < numel) {
+        B[id] = logf(1 + A[id]);
+    }
+}
+
+extern "C" diopiError_t diopiLog1p(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    auto stream  = impl::cuda::getStream(ctx);
+    auto trInput = impl::cuda::makeTensor(input);
+    auto trOut   = impl::cuda::makeTensor(out);
+
+    int blockSize = 256;
+    int gridSize  = (trOut.numel() + blockSize - 1) / blockSize;
+
+    DISPATCH_DTYPE(vecLog1p, trInput.dtype(), gridSize, blockSize, stream,
+            trInput.data(), trOut.data(), trInput.numel());
+
+    return diopiSuccess;
+}
+
+template<typename T> __global__
+void vecLog1pInp(void* a, const int numel) {
+    int id = blockIdx.x * blockDim.x + threadIdx.x;
+    T* A = static_cast<T*>(a);
+    if (id < numel) {
+        A[id] = logf(1 + A[id]);
+    }
+}
+
+extern "C" diopiError_t diopiLog1pInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    auto stream  = impl::cuda::getStream(ctx);
+    auto trInput = impl::cuda::makeTensor(input);
+
+    int blockSize = 256;
+    int gridSize  = (trInput.numel() + blockSize - 1) / blockSize;
+
+    DISPATCH_DTYPE(vecLog1pInp, trInput.dtype(), gridSize, blockSize, stream,
+            trInput.data(), trInput.numel());
 
     return diopiSuccess;
 }

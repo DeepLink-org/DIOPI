@@ -1069,6 +1069,23 @@ diopiError_t diopiLog10Inp(diopiContextHandle_t ctx, diopiTensorHandle_t input) 
     return diopiSuccess;
 }
 
+diopiError_t diopiLog1p(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    CALL_ATEN_CUDA_FUNC(log1p_out, atOut, atInput);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiLog1pInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    CALL_ATEN_CUDA_FUNC(log1p_, atInput);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
@@ -2915,7 +2932,11 @@ diopiError_t diopiRmsprop(diopiContextHandle_t ctx, diopiTensorHandle_t param, d
     at::Tensor atAvg;
 
     if (centered) {
+#if TORCH_MM_VERSION >= 2010
+        atGradAvg.lerp_(atGrad, 1 - alpha);
+#else
         atGradAvg.mul_(alpha).add_(atGrad, 1 - alpha);
+#endif
         atAvg = atSquareAvg.addcmul(atGradAvg, atGradAvg, -1).sqrt_().add_(eps);
     } else {
         atAvg = atSquareAvg.sqrt().add_(eps);
