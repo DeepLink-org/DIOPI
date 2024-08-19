@@ -209,8 +209,8 @@ decltype(auto) convertType(T&& param) {
     }
 }
 
-template <class T>
-void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
+template <class X>
+void releaseConverted(X&& param [[maybe_unused]]) {}  // no conversion, do nothing
 
 #define IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Type)        \
     inline void releaseConverted(const acl##Type* param) { \
