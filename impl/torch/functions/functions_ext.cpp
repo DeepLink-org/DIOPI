@@ -373,7 +373,6 @@ diopiError_t diopiFlashAttentionVarLen(diopiContextHandle_t ctx, diopiTensorHand
     auto atV = impl::aten::buildATen(v);
     auto atCumSeqQ = impl::aten::buildATen(cum_seq_q);
     auto atCumSeqKV = impl::aten::buildATen(cum_seq_kv);
-    DIOPI_CHECK(alibi_slopes == nullptr, "alibi_slopes is not yet supported in DIOPI torch impl");
     DIOPI_IMPL_BUILD_ATEN_OPTIONAL(optLinearBiasSlopes, alibi_slopes);
 
     auto headSize = atQ.sizes()[3];
