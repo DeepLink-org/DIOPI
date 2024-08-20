@@ -119,7 +119,7 @@ static std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, 
 
 static aclTensor* createEmptyAclTensor() {
     std::vector<int64_t> nShape{0};
-    std::vector<int64_t> nStride{1};
+    std::vector<int64_t> nStride{0};
     int64_t storageSize = 0;
     void* storage = nullptr;
 
@@ -269,11 +269,11 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     auto indicesExpanded = expandIndicesTensors(ctx, inputAt, indicesList);
 
     std::vector<aclTensor*> allDefinedIndices;
-    auto emptyTensor = createEmptyAclTensor();
     for (const auto& idx : indicesExpanded) {
         if (idx.defined()) {
             allDefinedIndices.push_back(aclnn_adaptor::createAclTensorFromAscendTensor(idx));
         } else {
+            auto emptyTensor = createEmptyAclTensor();
             allDefinedIndices.push_back(emptyTensor);
         }
     }
