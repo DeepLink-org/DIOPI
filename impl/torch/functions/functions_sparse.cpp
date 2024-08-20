@@ -36,6 +36,7 @@ diopiError_t diopiSpMM(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
         auto atColInd = impl::aten::buildATen(col_indices);
         auto atValue = impl::aten::buildATen(values);
         auto atOut = impl::aten::buildATen(out);
+        atOut.zero_();
         sparse::ops::row_balance_row_major_seq_reduce_kernel(atOut, atRowPtr, atColInd, atValue, atMat2);
         return diopiSuccess;
 
