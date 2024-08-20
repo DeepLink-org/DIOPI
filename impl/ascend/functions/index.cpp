@@ -119,7 +119,7 @@ static std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, 
 
 static aclTensor* createEmptyAclTensor() {
     std::vector<int64_t> nShape{0};
-    std::vector<int64_t> nStride{0};
+    std::vector<int64_t> nStride{1};
     int64_t storageSize = 0;
     void* storage = nullptr;
 
