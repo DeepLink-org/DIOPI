@@ -3691,6 +3691,14 @@ DIOPI_API diopiError_t diopiTriu(diopiContextHandle_t ctx, diopiTensorHandle_t o
 DIOPI_API diopiError_t diopiTriuInp(diopiContextHandle_t ctx, diopiTensorHandle_t input, int64_t diagonal);
 
 /**
+ * @brief Create a complex tensor with real part and image part.
+ * @param[in] ctx Context environment.
+ * @param[in] real the real part of the tensor.
+ * @param[in] imag the image part of the tensor.
+ */
+DIOPI_API diopiError_t diopiComplex(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t real, diopiConstTensorHandle_t imag);
+
+/**
  * @brief Create a tensor filled with one.
  * @param[in] ctx Context environment.
  * @param[in] size Out tensor size.

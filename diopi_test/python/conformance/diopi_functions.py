@@ -1518,6 +1518,17 @@ def sort_backward(input, grad_outputs, dim, indice, **kwargs):
     check_returncode(ret)
     return {"input": grad_input} if grad_input.requires_grad else {}
 
+def complex(real, imag):
+    out_shape = infer_size(real.size().data, imag.size().data)
+    if real.get_dtype() == Dtype.float64:
+        out = Tensor(out_shape, Dtype.complex128)
+    elif real.get_dtype() == Dtype.float32:
+        out = Tensor(out_shape, Dtype.complex64)
+    func = check_function("diopiComplex")
+    ret = func(real.context(), out, real, imag)
+
+    check_returncode(ret)
+    return out
 
 def topk(input, k, dim=-1, largest=True, sorted=True):
     sizeI = input.size().data

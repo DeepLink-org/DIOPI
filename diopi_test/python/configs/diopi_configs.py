@@ -4409,6 +4409,29 @@ diopi_configs = {
         ),
     ),
 
+    'complex': dict(
+        name=["complex"],
+        interface=['torch'],
+        dtype=[np.float32, np.float64],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['real'],
+                    "shape": ((11400, ),
+                              (4, 4, 16, 20),
+                              (4, 4, 16, 2, 20)),
+                },
+                {
+                    "ins": ['imag'],
+                    "shape": ((11400, ),
+                              (4, 4, 16, 20),
+                              (4, 4, 16, 2, 20)),
+                },
+            ],
+        ),
+    ),
+
     # FIXME topk输入0-d张量，且k为0时，结果精度不一致
     'topk_nonzero': dict(
         name=['topk'],

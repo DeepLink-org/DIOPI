@@ -768,6 +768,16 @@ diopiError_t diopiSortBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gra
     return diopiSuccess;
 }
 
+diopiError_t diopiComplex(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t real, diopiConstTensorHandle_t imag) {
+    auto atReal = impl::aten::buildATen(real);
+    auto atImag = impl::aten::buildATen(imag);
+    auto atOut = impl::aten::buildATen(out);
+    atOut = torch::complex(atReal, atImag);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t k,
                        int64_t dim, bool largest, bool sorted) {
     impl::aten::setCurStream(ctx);
