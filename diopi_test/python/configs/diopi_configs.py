@@ -4449,8 +4449,8 @@ diopi_configs = {
         ),
     ),
 
-    'imag': dict(
-        name=["imag"],
+    'real_imag': dict(
+        name=["real", "imag"],
         interface=['torch'],
         dtype=[np.complex64, np.complex128],
         tensor_para=dict(
