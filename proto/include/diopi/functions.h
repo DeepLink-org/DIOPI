@@ -3707,6 +3707,14 @@ DIOPI_API diopiError_t diopiComplex(diopiContextHandle_t ctx, diopiTensorHandle_
 DIOPI_API diopiError_t diopiConj(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
+ * @brief Return the image part of the input tensor.
+ * @param[in] ctx Context environment.
+ * @param[in] input the input tensor.
+ * @param[in] out the image part of the input tensor.
+ */
+DIOPI_API diopiError_t diopiImag(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
  * @brief Create a tensor filled with one.
  * @param[in] ctx Context environment.
  * @param[in] size Out tensor size.

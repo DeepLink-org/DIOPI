@@ -1537,6 +1537,14 @@ def conj(input):
     check_returncode(ret)
     return out
 
+def imag(input):
+    out = raw_like(input)
+    func = check_function("diopiImag")
+    ret = func(input.context(), out, input)
+
+    check_returncode(ret)
+    return out
+
 def topk(input, k, dim=-1, largest=True, sorted=True):
     sizeI = input.size().data
     if len(sizeI) > 0:

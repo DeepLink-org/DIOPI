@@ -778,10 +778,19 @@ diopiError_t diopiComplex(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     return diopiSuccess;
 }
 
-DIOPI_API diopiError_t diopiConj(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+diopiError_t diopiConj(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     atOut = torch::conj(atInput);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiImag(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    atOut = torch::imag(atInput);
     impl::aten::updateATen2Tensor(ctx, atOut, out);
 
     return diopiSuccess;
