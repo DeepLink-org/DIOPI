@@ -215,9 +215,9 @@ struct NeedReleaseType : std::disjunction<std::is_same<std::remove_cv_t<T>, aclT
                                           std::is_same<std::remove_cv_t<T>, aclIntArray*>, std::is_same<std::remove_cv_t<T>, aclBoolArray*>,
                                           std::is_same<std::remove_cv_t<T>, aclFloatArray*>> {};
 
-// For the case that the input is not a class or a pointer, do nothing.
+// For the case that the input is not NeedReleaseType , do nothing.
 template <class T, std::enable_if_t<!NeedReleaseType<T>::value, int> = 0>
-void releaseConverted(T param) {}  // no conversion, do nothing
+void releaseConverted(T param [[maybe_unused]]) {}  // no conversion, do nothing
 
 #define IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Type)        \
     inline void releaseConverted(const acl##Type* param) { \
