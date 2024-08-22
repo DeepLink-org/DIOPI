@@ -778,6 +778,15 @@ diopiError_t diopiComplex(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiConj(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    atOut = torch::conj(atInput);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiTopk(diopiContextHandle_t ctx, diopiTensorHandle_t values, diopiTensorHandle_t indices, diopiConstTensorHandle_t input, int64_t k,
                        int64_t dim, bool largest, bool sorted) {
     impl::aten::setCurStream(ctx);

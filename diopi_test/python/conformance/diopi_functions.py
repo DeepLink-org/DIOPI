@@ -1526,6 +1526,13 @@ def complex(real, imag):
         out = Tensor(out_shape, Dtype.complex64)
     func = check_function("diopiComplex")
     ret = func(real.context(), out, real, imag)
+    check_returncode(ret)
+    return out
+
+def conj(input):
+    out = raw_like(input)
+    func = check_function("diopiConj")
+    ret = func(input.context(), out, input)
 
     check_returncode(ret)
     return out
