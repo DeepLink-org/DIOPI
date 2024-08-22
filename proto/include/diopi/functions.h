@@ -2695,6 +2695,15 @@ DIOPI_API diopiError_t diopiUnfoldBackward(diopiContextHandle_t ctx, diopiTensor
 DIOPI_API diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, int64_t dim);
 
 /**
+ * @brief Computes the backward pass for diopiCumsum()
+ * @param[in] ctx Context environment.
+ * @param[in] grad_output the grad tensor of output, with the same shape as the forward pass output. type=[float16, float32, float64].
+ * @param[in] dim the dimension to do the operation over. type = [int64].
+ * @param[out] grad_input the grad tensor of input, with the same shape as the forward pass input. type=[float16, float32, float64].
+ */
+DIOPI_API diopiError_t diopiCumsumBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, int64_t dim);
+
+/**
  * @brief Computes batched the p-norm distance between each pair of the two collections of row vectors.
  * @param[in] ctx Context environment.
  * @param[in] input1 input tensor of shape B * P * M. type=[float32, float64].

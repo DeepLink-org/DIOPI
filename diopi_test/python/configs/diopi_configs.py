@@ -4384,11 +4384,11 @@ diopi_configs = {
         ),
     ),
 
-    'sort_backward': dict(
+    'sort_stable_for_backward': dict(
         name=["sort"],
         interface=['CustomizedTest'],
         saved_args=dict(indice=1),
-        requires_backward = [0],
+        requires_backward=[0],
         para=dict(
             dim=[-1, 0, 1],
             descending=[True, False, False],
@@ -5428,6 +5428,29 @@ diopi_configs = {
                               (0,), (5, 0), (4, 0, 12)),
                     "dtype": [np.float32, np.float64, np.float16, np.int16, np.int32,
                               np.int64, np.uint8, np.int8, np.bool_],
+                    "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+
+    'cumsum_float_for_backward': dict(
+        name=["cumsum"],
+        interface=['torch'],
+        atol=1e-6,
+        rtol=1e-5,
+        requires_backward=[0],
+        dtype=[np.float32],
+        para=dict(
+            dim=[0, -1, 1],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((), (12,), (2, 22, 33)),
+                    "dtype": [np.float32, np.float64, np.float16],
                     "gen_fn": 'Genfunc.randn',
                 },
             ],

@@ -3382,6 +3382,15 @@ def cumsum(input, dim, dtype=None):
     return out
 
 
+def cumsum_backward(input, grad_outputs, dim, **kwargs):
+    grad_output = grad_outputs[0]
+    grad_input = raw_like(input)
+    func = check_function("diopiCumsumBackward")
+    ret = func(input.context(), grad_input, grad_output, dim)
+    check_returncode(ret)
+    return {"input": grad_input} if grad_input.requires_grad else {}
+
+
 def infer_size(a, b):
     dimsA = len(a)
     dimsB = len(b)

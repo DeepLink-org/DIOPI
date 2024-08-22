@@ -3127,6 +3127,15 @@ diopiError_t diopiCumsum(diopiContextHandle_t ctx, diopiTensorHandle_t out, diop
     return diopiSuccess;
 }
 
+diopiError_t diopiCumsumBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, int64_t dim) {
+    impl::aten::setCurStream(ctx);
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atGradInput = atGradOutput;
+    impl::aten::updateATen2Tensor(ctx, atGradInput.flip(dim).cumsum(dim).flip(dim), grad_input);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiCdist(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input1, diopiConstTensorHandle_t input2, double p,
                         const int64_t* compute_mode) {
     impl::aten::setCurStream(ctx);
