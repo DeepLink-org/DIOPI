@@ -110,9 +110,9 @@ class GenOutputData(object):
                                 ndarrays_temp.append(tensors[i][j].detach().cpu().numpy())
                             else:
                                 ndarrays_temp.append(tensors[i][j])
-                    elif tensors[i] is None:
+                    else:
                         ndarrays_temp_s = None
-                        ndarrays_temp = [ndarrays_temp_s]
+                        ndarrays_temp.append(ndarrays_temp_s)
                     ndarrays.append(ndarrays_temp)
             else:
                 for i in range(len(tensors)):
