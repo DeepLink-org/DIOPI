@@ -209,12 +209,15 @@ decltype(auto) convertType(T&& param) {
     }
 }
 
-// For the case that the input is not a class or a pointer, do nothing.
-template <class T, class U = std::remove_reference_t<T>, std::enable_if_t<!std::is_class_v<U> && !std::is_pointer_v<U>, int> = 0>
-void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
+template<class T>
+struct NeedReleaseType : std::disjunction<std::is_same<std::remove_cv_t<T>, aclTensor*>, std::is_same<std::remove_cv_t<T>, aclTensorList*>,
+                                          std::is_same<std::remove_cv_t<T>, aclScalar*>, std::is_same<std::remove_cv_t<T>, aclScalarList*>,
+                                          std::is_same<std::remove_cv_t<T>, aclIntArray*>, std::is_same<std::remove_cv_t<T>, aclBoolArray*>,
+                                          std::is_same<std::remove_cv_t<T>, aclFloatArray*>> {};
 
-// Overload for const char* const&
-inline void releaseConverted(const char* const& param [[maybe_unused]]) {}
+// For the case that the input is not a class or a pointer, do nothing.
+template <class T, std::enable_if_t<!NeedReleaseType<T>::value, int> = 0>
+void releaseConverted(T param) {}  // no conversion, do nothing
 
 #define IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Type)        \
     inline void releaseConverted(const acl##Type* param) { \
