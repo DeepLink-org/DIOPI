@@ -209,7 +209,7 @@ decltype(auto) convertType(T&& param) {
     }
 }
 
-template<class T>
+template <class T>
 struct NeedReleaseType : std::disjunction<std::is_same<std::remove_cv_t<T>, aclTensor*>, std::is_same<std::remove_cv_t<T>, aclTensorList*>,
                                           std::is_same<std::remove_cv_t<T>, aclScalar*>, std::is_same<std::remove_cv_t<T>, aclScalarList*>,
                                           std::is_same<std::remove_cv_t<T>, aclIntArray*>, std::is_same<std::remove_cv_t<T>, aclBoolArray*>,
