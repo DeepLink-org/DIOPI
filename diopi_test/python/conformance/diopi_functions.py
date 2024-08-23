@@ -5097,6 +5097,16 @@ def meshgrid(tensors, shape=None):
     check_returncode(ret)
     return out
 
+def grid_sample(input, grid, mode="bilinear"):
+    if len(input.size().data) == 4:
+        out = Tensor(size=(input.size().data[0], input.size().data[1], grid.size().data[1], grid.size().data[2],), dtype=input.dtype())
+    else:
+        out = Tensor(size=(input.size().data[0], input.size().data[1], grid.size().data[1], grid.size().data[2], grid.size().data[3],), dtype=input.dtype())
+    func = check_function("diopiGridSample")
+    ret = func(input.context(), out, input, grid, mode)
+    check_returncode(ret)
+    return out
+
 
 def cast_dtype(input, out) -> Tensor:
     call = "diopiCastDtype"

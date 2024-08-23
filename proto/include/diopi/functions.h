@@ -389,6 +389,12 @@ DIOPI_API diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiSize_t dilation, bool ceil_mode, diopiConstTensorHandle_t indices);
 
 /**
+TODO
+ */
+DIOPI_API diopiError_t diopiPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* mode, diopiSize_t kernel_size,
+                                   diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode, bool exclusive, bool adaptive);
+
+/**
  * @brief Applies a 2D adaptive average pooling over an input signal composed of several input planes.
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor. type = [float16, float32, float64]
@@ -3502,6 +3508,17 @@ DIOPI_API diopiError_t diopiNormalInp(diopiContextHandle_t ctx, diopiTensorHandl
  * @param[out] outs the output tensor. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, diopiConstTensorHandle_t* inputs, int64_t inputsNum);
+
+/**
+ * @brief Compute grid sample.
+ * @param[in] ctx Context environment.
+ * @param[in] input the original tensor to be sampled.
+ * @param[in] grid the pixel locations of sampling.
+ * @param[in] mode the sampling mode. [bilinear, nearest].
+ * @param[out] out the result sampling tensor.
+ */
+DIOPI_API diopiError_t diopiGridSample(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t grid,
+                                       const char* mode);
 
 /**
  * @brief Returns a tensor where each row contains num_samples indices sampled from the

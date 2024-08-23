@@ -8202,6 +8202,31 @@ diopi_configs = {
         ),
     ),
 
+    'grid_sample': dict(
+        name=["grid_sample"],
+        interface=['torch.nn.functional'],
+        para=dict(
+            mode=["bilinear", "nearest", "bilinear", "nearest"],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 3, 15, 15), (3, 3, 20, 20, 20), (2, 3, 25, 25), (3, 3, 30, 30, 30)),
+                    "dtype": [np.float16, np.float32, np.float64],
+                    "gen_fn": 'Genfunc.randn',
+                },
+                {
+                    "ins": ['grid'],
+                    "shape": ((2, 5, 5, 2), (3, 10, 10, 10, 3), (2, 20, 20, 2), (3, 60, 60, 60, 3)),
+                    "dtype": [np.float16, np.float32, np.float64],
+                    "gen_fn": 'Genfunc.randn',
+                    "gen_num_range": [1, 19],
+                },                
+            ],
+        ),
+    ),
+
     'multinomial': dict(
         name=["multinomial"],
         interface=['torch'],

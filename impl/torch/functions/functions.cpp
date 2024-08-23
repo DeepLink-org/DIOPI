@@ -133,6 +133,29 @@ diopiError_t diopiMaxPool2dWithIndices(diopiContextHandle_t ctx, diopiTensorHand
     return diopiSuccess;
 }
 
+// TODO
+diopiError_t diopiPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* mode, diopiSize_t kernel_size,
+                         diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode, bool exclusive, bool adaptive) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    at::IntArrayRef atKernelSize = impl::aten::buildAtIntArray(kernel_size);
+    at::IntArrayRef atStride = impl::aten::buildAtIntArray(stride);
+    at::IntArrayRef atPadding = impl::aten::buildAtIntArray(padding);
+    at::IntArrayRef atDilation = impl::aten::buildAtIntArray(dilation);
+    bool atCeilMode = ceil_mode;
+    at::Tensor atOut = {};
+    if (strcmp(mode, "max") == 0 && adaptive) {
+    }
+    if (strcmp(mode, "max") == 0 && !adaptive) {
+    }
+    if (strcmp(mode, "avg") == 0 && adaptive) {
+    }
+    if (strcmp(mode, "avg") == 0 && !adaptive) {
+    }
+
+    return diopiSuccess;
+}
+
 /**
  * @brief
  * @param rounding_mode supported in pytorch>=1.8
@@ -769,6 +792,7 @@ diopiError_t diopiSortBackward(diopiContextHandle_t ctx, diopiTensorHandle_t gra
 }
 
 diopiError_t diopiComplex(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t real, diopiConstTensorHandle_t imag) {
+    impl::aten::setCurStream(ctx);
     auto atReal = impl::aten::buildATen(real);
     auto atImag = impl::aten::buildATen(imag);
     auto atOut = impl::aten::buildATen(out);
@@ -779,6 +803,7 @@ diopiError_t diopiComplex(diopiContextHandle_t ctx, diopiTensorHandle_t out, dio
 }
 
 diopiError_t diopiConj(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     atOut = torch::conj(atInput);
@@ -788,6 +813,7 @@ diopiError_t diopiConj(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 }
 
 diopiError_t diopiImag(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     atOut = torch::imag(atInput);
@@ -797,6 +823,7 @@ diopiError_t diopiImag(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
 }
 
 diopiError_t diopiReal(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     atOut = torch::real(atInput);
@@ -3014,6 +3041,22 @@ diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, 
     for (int i = 0; i < outsNum; ++i) {
         impl::aten::updateATen2Tensor(ctx, atOuts[i].contiguous(), outs[i]);
     }
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiGridSample(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t grid,
+                             const char* mode) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atGrid = impl::aten::buildATen(grid);
+    auto atOut = impl::aten::buildATen(out);
+    int interpolation_mode = 0;
+    if (strcmp(mode, "bilinear") != 0) {
+        interpolation_mode = 1;
+    }
+    atOut = CALL_ATEN_FUNC(grid_sampler, atInput, atGrid, interpolation_mode, 0, 0);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
 
     return diopiSuccess;
 }
