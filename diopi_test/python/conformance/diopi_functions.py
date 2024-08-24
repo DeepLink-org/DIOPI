@@ -405,6 +405,22 @@ def cos(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiCos", promote_type(input, Dtype.float32))
 
 
+def acos(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiAcos", promote_type(input, Dtype.float32))
+
+
+def tan(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiTan", promote_type(input, Dtype.float32))
+
+
+def sinh(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiSinh", promote_type(input, Dtype.float32))
+
+
+def cosh(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiCosh", promote_type(input, Dtype.float32))
+
+
 def tanh(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiTanh", promote_type(input, Dtype.float32))
 
@@ -413,8 +429,23 @@ def atan(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiAtan", promote_type(input, Dtype.float32))
 
 
+def asinh(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiAsinh", promote_type(input, Dtype.float32))
+
+
+def acosh(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiAcosh", promote_type(input, Dtype.float32))
+
+def atanh(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiAtanh", promote_type(input, Dtype.float32))
+
+
 def exp(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiExp", promote_type(input, Dtype.float32))
+
+
+def expm1(input, inplace=False) -> Tensor:
+    return unary_op(input, inplace, "diopiExpm1", promote_type(input, Dtype.float32))
 
 
 def log(input, inplace=False) -> Tensor:
@@ -1477,6 +1508,50 @@ def sort(input, dim=-1, descending=False, stable=None):
         return vals
     return vals, indices
 
+
+def sort_backward(input, grad_outputs, dim, indice, **kwargs):
+    grad_outputs = grad_outputs[0]
+    grad_input = raw_like(grad_outputs)
+
+    func = check_function("diopiSortBackward")
+    ret = func(input.context(), grad_input, grad_outputs, dim, indice, input.size(), True)
+    check_returncode(ret)
+    return {"input": grad_input} if grad_input.requires_grad else {}
+
+def complex(real, imag):
+    out_shape = infer_size(real.size().data, imag.size().data)
+    if real.get_dtype() == Dtype.float64:
+        out = Tensor(out_shape, Dtype.complex128)
+    elif real.get_dtype() == Dtype.float32:
+        out = Tensor(out_shape, Dtype.complex64)
+    func = check_function("diopiComplex")
+    ret = func(real.context(), out, real, imag)
+    check_returncode(ret)
+    return out
+
+def conj(input):
+    out = raw_like(input)
+    func = check_function("diopiConj")
+    ret = func(input.context(), out, input)
+
+    check_returncode(ret)
+    return out
+
+def imag(input):
+    out = raw_like(input)
+    func = check_function("diopiImag")
+    ret = func(input.context(), out, input)
+
+    check_returncode(ret)
+    return out
+
+def real(input):
+    out = raw_like(input)
+    func = check_function("diopiReal")
+    ret = func(input.context(), out, input)
+
+    check_returncode(ret)
+    return out
 
 def topk(input, k, dim=-1, largest=True, sorted=True):
     sizeI = input.size().data
@@ -3341,6 +3416,15 @@ def cumsum(input, dim, dtype=None):
     return out
 
 
+def cumsum_backward(input, grad_outputs, dim, **kwargs):
+    grad_output = grad_outputs[0]
+    grad_input = raw_like(input)
+    func = check_function("diopiCumsumBackward")
+    ret = func(input.context(), grad_input, grad_output, dim)
+    check_returncode(ret)
+    return {"input": grad_input} if grad_input.requires_grad else {}
+
+
 def infer_size(a, b):
     dimsA = len(a)
     dimsB = len(b)
@@ -3528,6 +3612,37 @@ def argmax(input, dim=None, keepdim=False):
         if dim is None
         else func(input.context(), out, input, dim, keepdim)
     )
+    check_returncode(ret)
+
+    return out
+
+def argmin(input, dim=None, keepdim=False):
+    sizeO = list(input.size().data)
+    if len(sizeO) > 0 and dim is not None:
+        assert dim < len(sizeO), "dim out of index"
+        if keepdim:
+            sizeO[dim] = 1
+        else:
+            sizeO = sizeO[:dim] + sizeO[dim + 1 :]
+    else:
+        sizeO = [1]
+
+    out = Tensor(sizeO, from_numpy_dtype(glob_vars.int_type))
+    func = check_function("diopiArgmin")
+    # todo: check the reason of using keepdim
+    ret = (
+        func(input.context(), out, input, keepdim)
+        if dim is None
+        else func(input.context(), out, input, dim, keepdim)
+    )
+    check_returncode(ret)
+
+    return out
+
+def argsort(input, dim=-1, descending=False, stable=False):
+    out = Tensor(input.size().data, from_numpy_dtype(glob_vars.int_type))
+    func = check_function("diopiArgsort")
+    ret = func(input.context(), out, input, stable, dim, descending)
     check_returncode(ret)
 
     return out
@@ -4979,6 +5094,16 @@ def meshgrid(tensors, shape=None):
         co_tensors.append(TensorP(tensor))
     func = check_function("diopiMeshGrid")
     ret = func(tensors[0].context(), co_tensors, c_tensors, inputsNum)
+    check_returncode(ret)
+    return out
+
+def grid_sample(input, grid, mode="bilinear"):
+    if len(input.size().data) == 4:
+        out = Tensor(size=(input.size().data[0], input.size().data[1], grid.size().data[1], grid.size().data[2],), dtype=input.dtype())
+    else:
+        out = Tensor(size=(input.size().data[0], input.size().data[1], grid.size().data[1], grid.size().data[2], grid.size().data[3],), dtype=input.dtype())
+    func = check_function("diopiGridSample")
+    ret = func(input.context(), out, input, grid, mode)
     check_returncode(ret)
     return out
 
