@@ -167,6 +167,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/arange.cpp
     ${OLD_IMPL_DIR}/functions/gather.cpp
     ${OLD_IMPL_DIR}/functions/layer_norm.cpp
+    ${OLD_IMPL_DIR}/functions/index.cpp
     ${OLD_IMPL_DIR}/functions/index_put.cpp
     ${OLD_IMPL_DIR}/functions/index_select.cpp
     ${OLD_IMPL_DIR}/functions/repeat.cpp
@@ -192,6 +193,8 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions/max_pool2d.cpp
     ${OLD_IMPL_DIR}/functions/equal.cpp
     ${OLD_IMPL_DIR}/functions/masked_select.cpp
+    ${OLD_IMPL_DIR}/functions/unique.cpp
+    ${OLD_IMPL_DIR}/functions/syn_batch_norm.cpp
     ${OLD_IMPL_DIR}/functions_mmcv/roi_align_npu.cpp
     ${OLD_IMPL_DIR}/functions_ext/rms_norm.cpp
     ${OLD_IMPL_DIR}/functions_ext/rotary_embedding.cpp
@@ -203,6 +206,8 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions_ext/prompt_flash_attention.cpp
     ${OLD_IMPL_DIR}/functions_ext/paged_attention.cpp
     ${OLD_IMPL_DIR}/functions_ext/matmul_all_reduce.cpp
+    ${OLD_IMPL_DIR}/functions_ext/token_attention_inference.cpp
+    ${OLD_IMPL_DIR}/functions_ext/token_softmax_reducev_inference.cpp
     #${OLD_IMPL_DIR}/test/export_functions.cpp
     #${OLD_IMPL_DIR}/test/conform_test.cpp
     ${OLD_IMPL_DIR}/common/utils.cpp

@@ -121,8 +121,8 @@ const char* deviceToStr(const diopiDevice_t device) {
 }
 
 diopiTensor::diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
-                         const void* src, Layout layout)
-    : dtype_(dtype), device_(device), context_(context), layout_(layout) {
+                         const void* src, diopiLayout layout, bool requires_grad)
+    : dtype_(dtype), device_(device), context_(context), layout_(layout), requires_grad_(requires_grad) {
     assert(shape);
 
     shape_.resize(shape->len);
@@ -272,34 +272,34 @@ DIOPI_RT_API diopiError_t diopiGetCurrentDeviceIndex(diopiDeviceIndex_t* pDevInd
 }
 
 DIOPI_RT_API diopiError_t diopiIsTensorSparse(diopiConstTensorHandle_t th, bool* is_sparse) {
-    *is_sparse = th->is_sparse();
+    *is_sparse = th->isSparse();
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiGetTensorCrowIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* crow_indices) {
+DIOPI_RT_API diopiError_t diopiGetTensorCrowIndices(diopiConstTensorHandle_t th, diopiConstTensorHandle_t* crow_indices) {
     diopiSparseCsrTensor* spTh = dynamic_cast<diopiSparseCsrTensor*>(const_cast<diopiTensor*>(th));
     if (!spTh) {
         return diopiErrorOccurred;
     }
-    *crow_indices = spTh->get_crow_indices();
+    *crow_indices = spTh->getCrowIndices();
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* col_indices) {
+DIOPI_RT_API diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, diopiConstTensorHandle_t* col_indices) {
     diopiSparseCsrTensor* spTh = dynamic_cast<diopiSparseCsrTensor*>(const_cast<diopiTensor*>(th));
     if (!spTh) {
         return diopiErrorOccurred;
     }
-    *col_indices = spTh->get_col_indices();
+    *col_indices = spTh->getColIndices();
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diopiTensorHandle_t* values) {
+DIOPI_RT_API diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diopiConstTensorHandle_t* values) {
     diopiSparseCsrTensor* spTh = dynamic_cast<diopiSparseCsrTensor*>(const_cast<diopiTensor*>(th));
     if (!spTh) {
         return diopiErrorOccurred;
     }
-    *values = spTh->get_values();
+    *values = spTh->getValues();
     return diopiSuccess;
 }
 

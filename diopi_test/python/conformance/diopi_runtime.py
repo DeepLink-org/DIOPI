@@ -248,6 +248,7 @@ class Tensor(diopiTensor):
         context=default_context,
         data_ptr=None,
         device=Device.AIChip,
+        requires_grad=False,
     ):
         if size is None:
             return diopiTensor.__init__(self)
@@ -259,9 +260,9 @@ class Tensor(diopiTensor):
             stride = Sizes(list(stride))
 
         if data_ptr is None:
-            diopiTensor.__init__(self, size, stride, dtype, device, context)
+            diopiTensor.__init__(self, size, stride, dtype, device, context, requires_grad=requires_grad)
         else:
-            diopiTensor.__init__(self, size, stride, dtype, device, context, data_ptr)
+            diopiTensor.__init__(self, size, stride, dtype, device, context, data_ptr, requires_grad=requires_grad)
 
     def __str__(self):
         # array = self.numpy()
@@ -284,6 +285,7 @@ class Tensor(diopiTensor):
             stride=stride,
             context=self.context(),
             device=self.get_device(),
+            requires_grad=self.requires_grad,
         )
 
     def size(self):
@@ -297,7 +299,15 @@ class Tensor(diopiTensor):
         self.reset_shape(Sizes(list(shape)))
 
     @classmethod
-    def from_numpy(cls, darray, context=None, device=Device.AIChip, is_sparse=False, sparse_format=None):
+    def from_numpy(
+            cls, 
+            darray, 
+            context=None, 
+            device=Device.AIChip, 
+            is_sparse=False, 
+            sparse_format=None,
+            requires_grad=False,
+        ):
         if not isinstance(darray, (np.generic, np.ndarray)):
             raise TypeError(f"expected np.ndarray (got {type(darray)})")
         dtype = from_numpy_dtype(darray.dtype)
@@ -338,6 +348,7 @@ class Tensor(diopiTensor):
             data_ptr=capsule,
             context=context if context else default_context,
             device=device,
+            requires_grad=requires_grad,
         )
 
     def numpy(self) -> np.ndarray:

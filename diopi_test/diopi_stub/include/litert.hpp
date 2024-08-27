@@ -69,7 +69,7 @@ public:
     int64_t nbytes() const { return nbytes_; }
 };
 
-enum class Layout : int8_t {
+enum class diopiLayout : int8_t {
     Strided,
     Sparse,
     SparseCsr,
@@ -87,11 +87,12 @@ protected:
     int64_t numel_;
     std::shared_ptr<Storage> storage_ = nullptr;
     diopiContextHandle_t context_;
-    Layout layout_;
+    diopiLayout layout_;
+    bool requires_grad_;
 
 public:
-    diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context, const void* src,
-                Layout layout = Layout::Strided);
+    diopiTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
+                const void* src = nullptr, diopiLayout layout = diopiLayout::Strided, bool requires_grad = false);
     diopiTensor() {}
     virtual ~diopiTensor() {}
     diopiTensor& operator=(const diopiTensor& other);
@@ -112,8 +113,9 @@ public:
     diopiDevice_t device() const { return device_; }
     int64_t numel() const { return numel_; }
     int64_t elemSize() const { return itemsize(this->dtype()); }
-    Layout layout() const { return layout_; }
-    bool is_sparse() const { return layout_ != Layout::Strided; }
+    diopiLayout layout() const { return layout_; }
+    bool isSparse() const { return layout_ != diopiLayout::Strided; }
+    bool requiresGrad() const { return requires_grad_; }
 
     void* data() { return storage_->data(); }
     const void* data() const { return storage_->data(); }
@@ -162,7 +164,7 @@ private:
 public:
     diopiSparseCsrTensor(const diopiSize_t* shape, const diopiSize_t* stride, diopiDtype_t dtype, diopiDevice_t device, diopiContextHandle_t context,
                          std::shared_ptr<diopiTensor> crow_indices, std::shared_ptr<diopiTensor> col_indices, std::shared_ptr<diopiTensor> values)
-        : diopiTensor(shape, stride, dtype, device, context, nullptr, Layout::SparseCsr),
+        : diopiTensor(shape, stride, dtype, device, context, nullptr, diopiLayout::SparseCsr, false),
           crow_indices_(crow_indices),
           col_indices_(col_indices),
           values_(values) {}
@@ -178,21 +180,21 @@ public:
         return *this;
     }
 
-    diopiTensor* get_crow_indices() const {
+    diopiTensor* getCrowIndices() const {
         if (!crow_indices_) {
             return nullptr;
         }
         return crow_indices_.get();
     }
 
-    diopiTensor* get_col_indices() const {
+    diopiTensor* getColIndices() const {
         if (!col_indices_) {
             return nullptr;
         }
         return col_indices_.get();
     }
 
-    diopiTensor* get_values() const {
+    diopiTensor* getValues() const {
         if (!values_) {
             return nullptr;
         }

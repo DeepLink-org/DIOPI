@@ -27,6 +27,7 @@
 #define TORCH_1_10_MM_VERSION 1100
 #define TORCH_1_11_MM_VERSION 1110
 #define TORCH_1_12_MM_VERSION 1120
+#define TORCH_2_1_MM_VERSION 2010
 
 #define ATEN_NOT_IMPLEMENT()                                                                                         \
     std::cerr << __FILE__ << ":" << __LINE__ << ": ";                                                                \
@@ -160,7 +161,7 @@ void buildDiopiTensor(diopiContextHandle_t ctx, const at::Tensor& input, diopiTe
 // new cuda generator and pass dipu generator state into cuda generator state
 at::Generator buildGenerator(diopiContextHandle_t ctx, diopiConstGeneratorHandle_t generator);
 
-void updateGeneratorHandleState(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiGeneratorHandle_t generator);
+void updateGeneratorHandleSeedAndOffset(diopiContextHandle_t ctx, at::Generator& cuda_gen, diopiGeneratorHandle_t generator);
 
 inline c10::optional<c10::string_view> getRoundingMode(diopiRoundMode_t rounding_mode) {
     switch (rounding_mode) {

@@ -534,11 +534,10 @@ add_docstr("mean", r"""
 
 add_docstr("std", r"""
     释义
-        如果 *unbiased* 为 ``True``, 则将使用 *Bessel* 校正。 否则, 将直接计算样本偏差, 而不进行任何校正。
         如果 *dim* 等于 ``None``, 将对所有元素计算标准差。
     参数
         - *input* ( **Tensor** ) : 输入张量
-        - *unbiased* ( **bool** ) : 是否使用Bessel校正
+        - *correction* ( **int** ) : Bessel校正的修正值
         - *dim* ( **int** 或者 **list(int)** ) : 进行归约的维度
         - *keepdim* ( **bool** ) : 结果是否保留原有维度
     C API
