@@ -2832,10 +2832,9 @@ diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, 
     return diopiSuccess;
 }
 
-<<<<<<< HEAD
 diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
-                                  diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps, int64_t nums,
-                                  float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize){
+                        diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps, int64_t nums, float lr,
+                        float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize) {
     impl::aten::setCurStream(ctx);
     DIOPI_CHECK_PTR(params);
     DIOPI_IMPL_BUILD_ATEN_LIST(atParam, params, nums);
@@ -2850,38 +2849,13 @@ diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, d
     DIOPI_CHECK_PTR(state_steps);
     DIOPI_IMPL_BUILD_ATEN_LIST(atstep, state_steps, nums);
 
-    if(amsgrad){
-        CALL_ATEN_CUDA_FUNC(_fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, atMaxExpAvgSq, 
-                        atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
-    }else{
-        std::vector<at::Tensor> tensorList;
-        //at::TensorList tensorListRef(tensorList);
-        CALL_ATEN_CUDA_FUNC(_fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, tensorList, 
-                        atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
-=======
-diopiError_t diopiAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t param, diopiConstTensorHandle_t grad, diopiTensorHandle_t exp_avg,
-                        diopiTensorHandle_t exp_avg_sq, diopiTensorHandle_t max_exp_avg_sq, float lr, float beta1, float beta2, float eps, float weight_decay,
-                        int64_t step, bool amsgrad) {
-    impl::aten::setCurStream(ctx);
-    auto atParam = impl::aten::buildATen(param);
-    auto atGrad = impl::aten::buildATen(grad);
-    auto atExpAvg = impl::aten::buildATen(exp_avg);
-    auto atExpAvgSq = impl::aten::buildATen(exp_avg_sq);
-    auto atMaxExpAvgSq = impl::aten::buildATen(max_exp_avg_sq);
-
-    atParam.mul_(1 - lr * weight_decay);
-    atExpAvg.lerp_(atGrad, 1 - beta1);
-    atExpAvgSq.mul_(beta2).addcmul_(atGrad, atGrad, 1 - beta2);
-
-    at::Tensor denom;
-    auto bias_correction1 = 1 - pow(beta1, step);
-    auto bias_correction2 = 1 - pow(beta2, step);
     if (amsgrad) {
-        CALL_ATEN_CUDA_FUNC(maximum_out, atMaxExpAvgSq, atMaxExpAvgSq, atExpAvgSq);
-        denom = atMaxExpAvgSq.sqrt().div_(sqrt(bias_correction2)).add_(eps);
+        CALL_ATEN_CUDA_FUNC(
+            _fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, atMaxExpAvgSq, atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
     } else {
-        denom = atExpAvgSq.sqrt().div_(sqrt(bias_correction2)).add_(eps);
->>>>>>> 6333a0d62a310b84719aee64ff3c85d833a36bbc
+        std::vector<at::Tensor> tensorList;
+        // at::TensorList tensorListRef(tensorList);
+        CALL_ATEN_CUDA_FUNC(_fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, tensorList, atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
     }
 
     return diopiSuccess;
