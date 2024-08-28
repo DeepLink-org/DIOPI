@@ -182,10 +182,12 @@ class GenTensor(object):
 
     def gen_tensor_list(self):
         tensor_list = []
-        # XXX gen tensors_num in parser?
-        tensors_num = np.random.randint(
-            self.arg["gen_num_range"][0], self.arg["gen_num_range"][1]
-        )
+        if self.arg["gen_num_range"][0] == self.arg["gen_num_range"][1]:
+            tensors_num = self.arg["gen_num_range"][0]
+        else:
+            tensors_num = np.random.randint(
+                self.arg["gen_num_range"][0], self.arg["gen_num_range"][1]
+            )
         self.arg.setdefault("tensors_num", tensors_num)
         for _ in range(tensors_num):
             value = self.gen_tensor(self.shape, self.dtype)
