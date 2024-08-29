@@ -3179,7 +3179,7 @@ def fused_adamw(
     for state_step in state_steps:
         c_state_steps.append(TensorP(state_step))
 
-    func = check_function("diopiFused_AdamW")
+    func = check_function("diopiFusedAdamW")
     ret = func(
         params[0].context(),
         list(c_params),

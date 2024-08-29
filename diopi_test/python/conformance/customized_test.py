@@ -177,6 +177,7 @@ class CustomizedTest(object):
             weight_decay=weight_decay,
             eps=eps,
             maximize=maximize,
+            fused=True,
         )
         return params, exp_avgs, exp_avg_sqs, max_exp_avg_sqs
 
