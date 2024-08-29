@@ -2467,9 +2467,8 @@ DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorH
  * @param[in] weight_decay weight decay coefficient.
  * @param[in] amsgrad whether to use the AMSGrad variant of this algorithm from the paper `On the Convergence of Adam and Beyond`.
  * @param[in] maximize maximize the objective with respect to the params, instead of minimizing.
- * @param[in] insNum the number of elements in tensorlist
  */
-DIOPI_API diopiError_t diopiFusedAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
+DIOPI_API diopiError_t diopiFused_AdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
                                        diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps,
                                        int64_t nums, float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize);
 

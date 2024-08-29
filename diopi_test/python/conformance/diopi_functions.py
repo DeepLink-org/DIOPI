@@ -3136,7 +3136,7 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
     return out
 
 
-def fusedadamw(
+def fused_adamw(
     params,
     grads,
     exp_avgs,
@@ -3179,7 +3179,7 @@ def fusedadamw(
     for state_step in state_steps:
         c_state_steps.append(TensorP(state_step))
 
-    func = check_function("diopiFusedAdamW")
+    func = check_function("diopiFused_AdamW")
     ret = func(
         params[0].context(),
         list(c_params),

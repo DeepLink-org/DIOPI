@@ -5205,9 +5205,9 @@ diopi_configs = {
         ),
     ),
 
-    # FXIME adamw、adam输出精度不一致
-    'fusedadamw': dict(
-         name=['fusedadamw'],
+    
+    'fused_adamw': dict(
+         name=['fused_adamw'],
          interface=["CustomizedTest"],
          atol=1e-2,
          rtol=2e-3,
@@ -5219,7 +5219,6 @@ diopi_configs = {
             beta2=[0.999, 0.999, 0.999, 0.999],
             eps=[1e-8, 1e-8, 1e-8, 1e-8],
             weight_decay=[1e-2, 1e-3, 1e-2, 1e-3],
-            # amsgrad=[True, True, True, True],
             amsgrad=[False, False, True, True],
             maximize=[False, False, False, False],
         ),
@@ -5244,7 +5243,6 @@ diopi_configs = {
                 },
                 {
                     "ins": ['max_exp_avg_sqs'],
-                   # "shape": [(), (16,), (4, 8), (12, 4, 8)],
                     "shape": [(0,), (0,),(4, 8), (12, 4, 8)],
                     "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.rand',
