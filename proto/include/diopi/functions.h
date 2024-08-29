@@ -2457,7 +2457,8 @@ DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorH
  * @param[inout] exp_avg_sqs the second momentum is related to the number of iterations, that is, the mean value of the gradient square of the i iteration. the
  * list of exp_avg_sq tensor. type=[float16, float32, float64].
  * @param[inout] max_exp_avg_sqs the maximum second momentum. When the parameter 'amsgrad' is true, it will replace the second momentum to participate in the
- * calculation. the list of max_exp_avg_sq tensor. type=[float16, float32, float64].
+ * calculation. the list of max_exp_avg_sq tensor. type=[float16, float32, float64]. Only when the ams_grad is true, this parameter will pass a tensorlist containing 
+ the actual valid tensor, and if the ams_grad is false, the parameter will not pass anything.
  * @param[in] state_steps the list of step tensor. type = [int64].
  * @param[in] nums the length of the tensor list.
  * @param[in] lr learning rate.
