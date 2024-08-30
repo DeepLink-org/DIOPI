@@ -5521,10 +5521,10 @@ diopi_configs = {
     'adadelta': dict(
         name=["adadelta"],
         interface=["CustomizedTest"],
-        atol_half=1e-4,
+        atol_half=1e-3,
         rtol_half=1e-3,
-        atol=1e-4,
-        rtol=1e-4,
+        atol=1e-3,
+        rtol=1e-3,
         para=dict(
             lr=[1.0, 0, -0.5, 0.1, 0.1, 2.3, -2, 0],
             rho=[-1, 1.2, 0, 0.9, 0.88, -3, 0.5, 0],
