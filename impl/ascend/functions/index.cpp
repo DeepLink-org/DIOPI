@@ -269,11 +269,11 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     auto indicesExpanded = expandIndicesTensors(ctx, inputAt, indicesList);
 
     std::vector<aclTensor*> allDefinedIndices;
-    auto emptyTensor = createEmptyAclTensor();
     for (const auto& idx : indicesExpanded) {
         if (idx.defined()) {
             allDefinedIndices.push_back(aclnn_adaptor::createAclTensorFromAscendTensor(idx));
         } else {
+            auto emptyTensor = createEmptyAclTensor();
             allDefinedIndices.push_back(emptyTensor);
         }
     }
