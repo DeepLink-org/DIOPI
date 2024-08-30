@@ -1350,6 +1350,11 @@ device_configs = {
         skip_all = True
     ),
     
+    'nll_loss_v2': dict(
+        name = ['nll_loss_v2'],
+        atol = 1e-1
+    ),
+    
     # aclnnMseloss not support float64
     # TODO(zhangqiu): skip float64 temporarily, as mse_loss can not pass the test with float64 cast to float32
     'mse_loss': dict(
