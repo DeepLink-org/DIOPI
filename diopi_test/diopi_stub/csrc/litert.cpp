@@ -276,7 +276,7 @@ DIOPI_RT_API diopiError_t diopiIsTensorSparse(diopiConstTensorHandle_t th, bool*
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiGetTensorCrowIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* crow_indices) {
+DIOPI_RT_API diopiError_t diopiGetTensorCrowIndices(diopiConstTensorHandle_t th, diopiConstTensorHandle_t* crow_indices) {
     diopiSparseCsrTensor* spTh = dynamic_cast<diopiSparseCsrTensor*>(const_cast<diopiTensor*>(th));
     if (!spTh) {
         return diopiErrorOccurred;
@@ -285,7 +285,7 @@ DIOPI_RT_API diopiError_t diopiGetTensorCrowIndices(diopiConstTensorHandle_t th,
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* col_indices) {
+DIOPI_RT_API diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, diopiConstTensorHandle_t* col_indices) {
     diopiSparseCsrTensor* spTh = dynamic_cast<diopiSparseCsrTensor*>(const_cast<diopiTensor*>(th));
     if (!spTh) {
         return diopiErrorOccurred;
@@ -294,7 +294,7 @@ DIOPI_RT_API diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, 
     return diopiSuccess;
 }
 
-DIOPI_RT_API diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diopiTensorHandle_t* values) {
+DIOPI_RT_API diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diopiConstTensorHandle_t* values) {
     diopiSparseCsrTensor* spTh = dynamic_cast<diopiSparseCsrTensor*>(const_cast<diopiTensor*>(th));
     if (!spTh) {
         return diopiErrorOccurred;

@@ -11,6 +11,19 @@ foreach(CC ${CURRENT_GPU_LIST})
   endif()
 endforeach()
 
+set(FLASH_ATTN_LIB_PATH_2_0 "/mnt/cache/share/platform/dep/DIOPI_pytorch/flash-attention2.4.3_pt2.0")
+set(FLASH_ATTN_LIB_PATH_2_1 "/mnt/cache/share/platform/dep/DIOPI_pytorch/flash-attention2.4.3_pt2.1")
+
+if(${Torch_VERSION_MAJOR} EQUAL 2 AND ${Torch_VERSION_MINOR} EQUAL 0)
+  set(FLASH_ATTN_LIB_PATH "${FLASH_ATTN_LIB_PATH_2_0}")
+elseif(${Torch_VERSION_MAJOR} EQUAL 2 AND ${Torch_VERSION_MINOR} EQUAL 1)
+  set(FLASH_ATTN_LIB_PATH "${FLASH_ATTN_LIB_PATH_2_1}")
+else()
+  message(FATAL_ERROR "No valid torch version for setting FLASH_ATTN_LIB_PATH")
+endif()
+
+message(STATUS "FLASH_ATTN_LIB_PATH: ${FLASH_ATTN_LIB_PATH}")
+
 if(ENABLE_TORCH_EXT_FLASH_ATTN)
   # Note: it's really a bad idea to hardcode name and path here.
   find_library(
@@ -20,7 +33,7 @@ if(ENABLE_TORCH_EXT_FLASH_ATTN)
     flash_attn_2_cuda.cpython-310-x86_64-linux-gnu.so # fallback name of library
     PATHS
     ENV FLASH_ATTN_LIB_DIR # alternative path to search
-    /mnt/cache/share/platform/dep/DIOPI_pytorch/flash-attention # fallback path
+    ${FLASH_ATTN_LIB_PATH} # fallback path
   )
 endif()
 

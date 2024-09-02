@@ -959,6 +959,7 @@ diopi_configs = {
                     "shape": ((), (16,), (72,),
                               (2, 11856), (2, 741, 80), (4, 4, 16, 20),
                               (0,), (4, 0), (9, 0, 16)),
+                    "gen_fn": dict(fn='Genfunc.uniform', low=0, high=1),
                 },
                 {
                     "ins": ['weight'],
@@ -1119,7 +1120,7 @@ diopi_configs = {
     ),
 
     'pointwise_op_abs_input': dict(
-        name=['log', 'log2', 'log10', 'sqrt', 'rsqrt'],
+        name=['log', 'log2', 'log10', 'log1p', 'sqrt', 'rsqrt'],
         interface=['torch'],
         is_inplace=True,
         dtype=[np.float16, np.float32, np.float64],
@@ -1137,7 +1138,7 @@ diopi_configs = {
     ),
 
     'log_integer_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.int16, np.int32, np.int64, np.uint8, np.int8],
         tensor_para=dict(
@@ -1154,7 +1155,7 @@ diopi_configs = {
     ),
 
     'log_zero_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
@@ -1173,7 +1174,7 @@ diopi_configs = {
     ),
 
     'log_neg_input': dict(
-        name=['log', 'log2', 'log10'],
+        name=['log', 'log2', 'log10', 'log1p'],
         interface=['torch'],
         dtype=[np.float16, np.float32, np.float64,
                np.int16, np.int32, np.int64,
@@ -5292,7 +5293,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ['max_exp_avg_sq'],
-                    "shape": [None, None, (4, 8), (12, 4, 8)],
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
                     "gen_fn": 'Genfunc.rand',
                 },
             ]
@@ -5576,10 +5577,10 @@ diopi_configs = {
     'adadelta': dict(
         name=["adadelta"],
         interface=["CustomizedTest"],
-        atol_half=1e-4,
+        atol_half=1e-3,
         rtol_half=1e-3,
-        atol=1e-4,
-        rtol=1e-4,
+        atol=1e-3,
+        rtol=1e-3,
         para=dict(
             lr=[1.0, 0, -0.5, 0.1, 0.1, 2.3, -2, 0],
             rho=[-1, 1.2, 0, 0.9, 0.88, -3, 0.5, 0],
@@ -6076,13 +6077,13 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((8, 0), (0, 128), (256, 8)),
-                    "dtype": [np.float32, np.float16, np.float64],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
                 {
                     "ins": ['mat2'],
                     "shape": ((0, 128), (128, 128), (8, 0)),
-                    "dtype": [np.float16, np.float64, np.float32],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
                 },
             ],

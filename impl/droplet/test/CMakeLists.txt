@@ -52,7 +52,7 @@ endif()
 
 target_link_libraries(${DIOPI_EXPORT_RT} PRIVATE -Wl,--no-as-needed diopiruntime -Wl,--as-needed)
 target_link_libraries(diopiruntime tangrt_shared)
-target_link_libraries(diopiruntime ${DIOPI_DROPLET_LIB})
+target_link_libraries(diopiruntime ${DEVICEIMPL})
 
 set(FUNCTION_SAVE_PATH "${DIOPI_TEST_DIR}/diopi_stub/csrc")
 
