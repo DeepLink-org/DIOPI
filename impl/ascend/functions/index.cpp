@@ -120,8 +120,9 @@ static std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, 
                 std::vector<int64_t> splitSize(non.shape(0), 1);
                 diopiSize_t splitSizeDiopi = vectorToDiopiSize(splitSize);
                 DIOPI_ASCEND_CALL_ACLNN(aclnnSplitWithSize, ctx, non, splitSizeDiopi, 0, nons);
-                for (int64_t j = 0; j < nons.size(); j++) {
-                    result.push_back(AscendTensor(nons[j]).squeeze(0));
+                for (const auto nj : nons) {
+                    AscendTensor njTensor(nj);
+                    result.push_back(njTensor.squeeze(0));
                 }
             } else {
                 result.push_back(t);
