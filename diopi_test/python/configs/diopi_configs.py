@@ -4953,6 +4953,33 @@ diopi_configs = {
         ),
     ),
 
+    'index_mask': dict(
+        name=["index"],
+        interface=["CustomizedTest"],
+        # input[:, mask]
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((3,4,5), (4,5,6,7), (5,6,7,8,9)),
+                    "gen_fn": 'Genfunc.randn',
+                    "dtype": [np.int16, np.int32, np.int64, np.uint8, np.int8, np.bool_, np.float16, np.float32, np.float64],
+                },
+                {
+                    "ins": ['idx1'],
+                    "shape": (None, None, None),
+                    "dtype": [np.int64]
+                },
+                {
+                    "ins": ['idx2'],
+                    "shape": ((4,5), (5,6,7), (6,7,8,9)),
+                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=2),
+                    "dtype": [np.bool_]
+                }
+            ]
+        )
+    ),
+
     'sgd': dict(
         name=["sgd"],
         interface=["CustomizedTest"],
