@@ -3140,6 +3140,71 @@ def masked_fill(input, mask, value, inplace=False) -> Tensor:
     return out
 
 
+def fused_adamw(
+    params,
+    grads,
+    exp_avgs,
+    exp_avg_sqs,
+    max_exp_avg_sqs,
+    state_steps,
+    lr,
+    beta1,
+    beta2,
+    eps,
+    weight_decay,
+    amsgrad=False,
+    maximize=False,
+):
+    assert isinstance(params, (list, tuple)), "params must be a list or tuple"
+    assert isinstance(grads, (list, tuple)), "grads must be a list or tuple"
+    assert isinstance(exp_avgs, (list, tuple)), "exp_avgs must be a list or tuple"
+    assert isinstance(exp_avg_sqs, (list, tuple)), "exp_avg_sqs must be a list or tuple"
+    assert isinstance(max_exp_avg_sqs, (list, tuple)), "max_exp_avg_sqs must be a list or tuple"
+    assert isinstance(state_steps, (list, tuple)), "state_step must be a list or tuple"
+
+    nums = len(params)
+    c_params = [] 
+    c_grads = []
+    c_exp_avgs = []
+    c_exp_avg_sqs = []
+    c_max_exp_avg_sqs = []
+    c_state_steps = []
+
+    for param in params:
+        c_params.append(TensorP(param))
+    for grad in grads:
+        c_grads.append(TensorP(grad))
+    for exp_avg in exp_avgs:
+        c_exp_avgs.append(TensorP(exp_avg))
+    for exp_avg_sq in exp_avg_sqs:
+        c_exp_avg_sqs.append(TensorP(exp_avg_sq))
+    for max_exp_avg_sq in max_exp_avg_sqs:
+        c_max_exp_avg_sqs.append(TensorP(max_exp_avg_sq))
+    for state_step in state_steps:
+        c_state_steps.append(TensorP(state_step))
+
+    func = check_function("diopiFusedAdamW")
+    ret = func(
+        params[0].context(),
+        list(c_params),
+        list(c_grads),
+        list(c_exp_avgs),
+        list(c_exp_avg_sqs),
+        list(c_max_exp_avg_sqs),
+        list(c_state_steps),
+        nums,
+        lr,
+        beta1,
+        beta2,
+        eps,
+        weight_decay,
+        amsgrad,
+        maximize,
+    )
+    check_returncode(ret)
+    return params, exp_avgs, exp_avg_sqs, max_exp_avg_sqs
+
+
 def adamw(
     param,
     param_grad,

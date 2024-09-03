@@ -2464,6 +2464,32 @@ DIOPI_API diopiError_t diopiReciprocal(diopiContextHandle_t ctx, diopiTensorHand
 DIOPI_API diopiError_t diopiReciprocalInp(diopiContextHandle_t ctx, diopiTensorHandle_t input);
 
 /**
+ * @brief The function is used to implement the AdamW optimizer.
+ * @param[in] ctx Context environment.
+ * @param[inout] params the list of param tensor. type=[float16, float32, float64].
+ * @param[in] grads the list of grad tensor. type=[float16, float32, float64].
+ * @param[inout] exp_avgs the first momentum is related to the number of iterations, that is, the gradient mean value of the i th iteration. the list of exp_avg
+ * tensor. type=[float16, float32, float64].
+ * @param[inout] exp_avg_sqs the second momentum is related to the number of iterations, that is, the mean value of the gradient square of the i iteration. the
+ * list of exp_avg_sq tensor. type=[float16, float32, float64].
+ * @param[inout] max_exp_avg_sqs the maximum second momentum. When the parameter 'amsgrad' is true, it will replace the second momentum to participate in the
+ * calculation. the list of max_exp_avg_sq tensor. type=[float16, float32, float64]. Only when the ams_grad is true, this parameter will pass a tensorlist
+ containing the actual valid tensor, and if the ams_grad is false, the parameter will not pass anything.
+ * @param[in] state_steps the list of step tensor. type = [int64].
+ * @param[in] nums the length of the tensor list.
+ * @param[in] lr learning rate.
+ * @param[in] beta1 coefficient used for computing running averages of gradient.
+ * @param[in] beta2 coefficient used for computing the square of running averages of gradient.
+ * @param[in] eps term added to the denominator to improve numerical stability.
+ * @param[in] weight_decay weight decay coefficient.
+ * @param[in] amsgrad whether to use the AMSGrad variant of this algorithm from the paper `On the Convergence of Adam and Beyond`.
+ * @param[in] maximize maximize the objective with respect to the params, instead of minimizing.
+ */
+DIOPI_API diopiError_t diopiFusedAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
+                                       diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps,
+                                       int64_t nums, float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize);
+
+/**
  * @brief The function is used to implement the AdamW optimizer. Its functionality is to perform a single parameter update.
  * @param[in] ctx Context environment.
  * @param[inout] param the param tensor. type=[float16, float32, float64].
