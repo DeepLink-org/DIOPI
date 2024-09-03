@@ -201,6 +201,9 @@ AscendTensor& AscendTensor::unsqueeze(int dim) {
 
 AscendTensor& AscendTensor::squeeze(int dim) {
     auto shape = this->shape();
+    if (shape[dim] != 1) {
+        return *this;
+    }
     auto strides = this->stride();
 
     shape.erase(shape.begin() + dim);
