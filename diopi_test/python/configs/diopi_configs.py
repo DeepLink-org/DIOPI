@@ -4973,7 +4973,7 @@ diopi_configs = {
                 {
                     "ins": ['idx2'],
                     "shape": ((4,5), (5,6,7), (6,7,8,9)),
-                    "gen_fn": dict(fn='Genfunc.randint', low=0, high=2),
+                    "gen_fn": 'Genfunc.mask',
                     "dtype": [np.bool_]
                 }
             ]
