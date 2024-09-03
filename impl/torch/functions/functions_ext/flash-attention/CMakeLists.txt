@@ -19,7 +19,7 @@ if(${Torch_VERSION_MAJOR} EQUAL 2 AND ${Torch_VERSION_MINOR} EQUAL 0)
 elseif(${Torch_VERSION_MAJOR} EQUAL 2 AND ${Torch_VERSION_MINOR} EQUAL 1)
   set(FLASH_ATTN_LIB_PATH "${FLASH_ATTN_LIB_PATH_2_1}")
 else()
-  message(FATAL_ERROR "No valid torch version for setting FLASH_ATTN_LIB_PATH")
+  message(STATUS "No valid torch version for setting FLASH_ATTN_LIB_PATH")
 endif()
 
 message(STATUS "FLASH_ATTN_LIB_PATH: ${FLASH_ATTN_LIB_PATH}")
