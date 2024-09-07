@@ -470,18 +470,6 @@ device_configs = {
         ),
     ),
 
-    'conv_transpose2d': dict(
-        name=['conv_transpose2d'],
-        tensor_para=dict(
-            args=[
-                {
-                    "ins": ['input'],
-                    "dtype": [Skip(np.float32),Skip(np.float64),Skip(np.float16),],
-                },
-            ]
-        ),
-    ),
-
     'unfold': dict(
         name=['unfold'],
         tensor_para=dict(
@@ -1144,24 +1132,6 @@ device_configs = {
                 },
             ],
         ),
-    ),
-
-    # 'apply_penalty': dict(
-    #     name=['apply_penalty'],
-    #     tensor_para=dict(
-    #         args=[
-    #             {
-    #                 "ins": ['logits'],
-    #                 "dtype": [Skip(np.float64)],
-    #             },
-    #         ]
-    #     )
-    # ),
-
-    # TODO(zhangqiu) Due to a bug in the software stack, this test will be skipped for now.
-    'apply_penalty': dict(
-        name=['apply_penalty'],
-        skip_all=True
     ),
     
     # TODO(zhangqiu) Due to a bug in the software stack, this test will be skipped for now.

@@ -122,5 +122,105 @@ diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diopiTensorHan
     return diopiSuccess;
 }
 
+DIOPI_API diopiError_t diopiConvTranspose2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                            diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t output_padding, int64_t groups,
+                                            diopiSize_t dilation) {
+    bool transposed = true;
+    int8_t cubeMathType = 0;
+
+    ASCEND_CHECK_ABORT(stride.len == 1 || stride.len == 2, "the dim of stride must be 1 or 2!");
+    ASCEND_CHECK_ABORT(padding.len == 1 || padding.len == 2, "the dim of padding must be 1 or 2!");
+    ASCEND_CHECK_ABORT(dilation.len == 1 || dilation.len == 2, "the dim of dilation must be 1 or 2!");
+
+    int64_t strideExpandData[2];
+    int64_t paddingExpandData[2];
+    int64_t dilationExpandData[2];
+
+    strideExpandData[0] = stride.data[0];
+    strideExpandData[1] = (stride.len == 1) ? stride.data[0] : stride.data[1];
+
+    paddingExpandData[0] = padding.data[0];
+    paddingExpandData[1] = (padding.len == 1) ? padding.data[0] : padding.data[1];
+
+    dilationExpandData[0] = dilation.data[0];
+    dilationExpandData[1] = (dilation.len == 1) ? dilation.data[0] : dilation.data[1];
+
+    DIOPI_ASCEND_CALL_ACLNN(aclnnConvolution,
+                            ctx,
+                            input,
+                            weight,
+                            bias,
+                            diopiSize_t{strideExpandData, 2},
+                            diopiSize_t{paddingExpandData, 2},
+                            diopiSize_t{dilationExpandData, 2},
+                            transposed,
+                            output_padding,
+                            groups,
+                            out,
+                            cubeMathType);
+    return diopiSuccess;
+}
+
+DIOPI_API diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+                                                    diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                    diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
+                                                    diopiSize_t dilation, diopiSize_t output_padding, int64_t groups) {
+    bool transposed = true;
+    int8_t cubeMathType = 0;
+
+    std::array<bool, 3> gradMask = {true, true, true};
+    if (nullptr == grad_input) {
+        gradMask[0] = false;
+    }
+    if (nullptr == grad_weight) {
+        gradMask[1] = false;
+    }
+    if (nullptr == grad_bias) {
+        gradMask[2] = false;
+    }
+
+    ASCEND_CHECK_ABORT(stride.len == 1 || stride.len == 2, "the dim of stride must be 1 or 2!");
+    ASCEND_CHECK_ABORT(padding.len == 1 || padding.len == 2, "the dim of padding must be 1 or 2!");
+    ASCEND_CHECK_ABORT(dilation.len == 1 || dilation.len == 2, "the dim of dilation must be 1 or 2!");
+
+    int64_t strideExpandData[2];
+    int64_t paddingExpandData[2];
+    int64_t dilationExpandData[2];
+
+    strideExpandData[0] = stride.data[0];
+    strideExpandData[1] = (stride.len == 1) ? stride.data[0] : stride.data[1];
+
+    paddingExpandData[0] = padding.data[0];
+    paddingExpandData[1] = (padding.len == 1) ? padding.data[0] : padding.data[1];
+
+    dilationExpandData[0] = dilation.data[0];
+    dilationExpandData[1] = (dilation.len == 1) ? dilation.data[0] : dilation.data[1];
+
+    AscendTensor gradBiasAt(grad_bias);
+    std::vector<int64_t> biasShape;
+    if (grad_bias != nullptr) {
+        biasShape = gradBiasAt.shape();
+    }
+
+    DIOPI_ASCEND_CALL_ACLNN(aclnnConvolutionBackward,
+                            ctx,
+                            grad_output,
+                            input,
+                            weight,
+                            biasShape,
+                            diopiSize_t{strideExpandData, 2},
+                            diopiSize_t{paddingExpandData, 2},
+                            diopiSize_t{dilationExpandData, 2},
+                            transposed,
+                            output_padding,
+                            groups,
+                            gradMask,
+                            cubeMathType,
+                            grad_input,
+                            grad_weight,
+                            grad_bias);
+    return diopiSuccess;
+}
+
 }  // namespace ascend
 }  // namespace impl
