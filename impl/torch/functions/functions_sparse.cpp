@@ -23,19 +23,20 @@ diopiError_t diopiSpMM(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     diopiIsTensorSparse(mat2, &is_sparse_mat2);
 
     if (is_sparse_input && !is_sparse_mat2) {
-        diopiTensorHandle_t crow_indices;
+        diopiConstTensorHandle_t crow_indices;
         diopiGetTensorCrowIndices(input, &crow_indices);
 
-        diopiTensorHandle_t col_indices;
+        diopiConstTensorHandle_t col_indices;
         diopiGetTensorColIndices(input, &col_indices);
 
-        diopiTensorHandle_t values;
+        diopiConstTensorHandle_t values;
         diopiGetTensorValues(input, &values);
 
         auto atRowPtr = impl::aten::buildATen(crow_indices);
         auto atColInd = impl::aten::buildATen(col_indices);
         auto atValue = impl::aten::buildATen(values);
         auto atOut = impl::aten::buildATen(out);
+        atOut.zero_();
         sparse::ops::row_balance_row_major_seq_reduce_kernel(atOut, atRowPtr, atColInd, atValue, atMat2);
         return diopiSuccess;
 

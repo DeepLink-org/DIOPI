@@ -14,8 +14,11 @@ endif()
 find_library(DIOPI_DROPLET_LIB NAMES ${DEVICEIMPL} HINTS ${DIOPI_DROPLET_DIR}/lib)
 message(STATUS "DIOPI-IMPL lib: ${DIOPI_DROPLET_LIB}")
 if(NOT DIOPI_DROPLET_LIB)
-    message(FATAL_ERROR "${DEVICEIMPL} library not found !")
+  message(FATAL_ERROR "${DEVICEIMPL} library not found !")
 endif()
+
+add_library(${DEVICEIMPL} SHARED IMPORTED GLOBAL)
+set_target_properties(${DEVICEIMPL} PROPERTIES IMPORTED_LOCATION ${DIOPI_DROPLET_LIB})
 
 if (TEST)
   add_subdirectory(test)

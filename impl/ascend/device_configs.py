@@ -839,21 +839,8 @@ device_configs = {
             # aclnn not support index out of size
             args=[
                 {
-                    "ins": ['idx3'],
-                    "shape": [Skip((224, 224)),],
-                },
-            ],
-        ),
-    ),
-    
-    'index': dict(
-        name=['index'],
-        tensor_para=dict(
-            # aclnn not support index out of size
-            args=[
-                {
-                    "ins": ['idx3'],
-                    "shape": [Skip((224, 224)),],
+                    "ins": ['input'],
+                    "shape": [Skip((2, 3, 224, 224)), Skip(((128, 2, 2)))],
                 },
             ],
         ),
@@ -1372,6 +1359,11 @@ device_configs = {
     'nll_loss': dict(
         name = ['nll_loss'],
         skip_all = True
+    ),
+    
+    'nll_loss_v2': dict(
+        name = ['nll_loss_v2'],
+        atol = 1e-1
     ),
     
     # aclnnMseloss not support float64

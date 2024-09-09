@@ -210,7 +210,14 @@ decltype(auto) convertType(T&& param) {
 }
 
 template <class T>
-void releaseConverted(T&& param [[maybe_unused]]) {}  // no conversion, do nothing
+struct NeedReleaseType : std::disjunction<std::is_same<std::remove_cv_t<T>, aclTensor*>, std::is_same<std::remove_cv_t<T>, aclTensorList*>,
+                                          std::is_same<std::remove_cv_t<T>, aclScalar*>, std::is_same<std::remove_cv_t<T>, aclScalarList*>,
+                                          std::is_same<std::remove_cv_t<T>, aclIntArray*>, std::is_same<std::remove_cv_t<T>, aclBoolArray*>,
+                                          std::is_same<std::remove_cv_t<T>, aclFloatArray*>> {};
+
+// For the case that the input is not NeedReleaseType , do nothing.
+template <class T, std::enable_if_t<!NeedReleaseType<T>::value, int> = 0>
+void releaseConverted(T param [[maybe_unused]]) {}  // no conversion, do nothing
 
 #define IMPL_ASCEND_ACLNN_REGISTER_DESTRUCTOR(Type)        \
     inline void releaseConverted(const acl##Type* param) { \

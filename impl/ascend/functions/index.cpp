@@ -63,7 +63,7 @@ AscendTensor nonZeroTensor(diopiContextHandle_t ctx, const AscendTensor& self) {
 
     auto aclNZTensor = ::aclCreateTensor(
         nShape.data(), nShape.size(), aclDataType::ACL_INT64, nStride.data(), 0, aclFormat::ACL_FORMAT_ND, &numELem, 1, const_cast<void*>(nzTensor.data()));
-    DIOPI_ASCEND_CALL_ACLNN(aclnnNonzero, ctx, self, aclNZTensor);
+    DIOPI_ASCEND_CALL_ACLNN_SYNC(aclnnNonzero, ctx, self, aclNZTensor);
 
     int64_t* vDims = nullptr;
     uint64_t vDimsNum = 0;
@@ -107,8 +107,23 @@ std::vector<AscendTensor> expandIndicesTensors(diopiContextHandle_t ctx, const A
                                        srcIdx);
                 }
                 AscendTensor non = nonZeroTensor(ctx, t);
-                for (int64_t j = 0; j < t.dim(); j++) {
-                    result.push_back(non.select(0, j));
+
+                auto shape = non.shape();
+                shape[0] = 1;
+                diopiSize_t size = vectorToDiopiSize(shape);
+                std::vector<diopiTensorHandle_t> nons;
+
+                for (int i = 0; i < non.shape(0); i++) {
+                    diopiTensorHandle_t tmp = nullptr;
+                    diopiRequireTensor(ctx, &tmp, &size, nullptr, diopi_dtype_int64, diopi_device);
+                    nons.push_back(tmp);
+                }
+                std::vector<int64_t> splitSize(non.shape(0), 1);
+                diopiSize_t splitSizeDiopi = vectorToDiopiSize(splitSize);
+                DIOPI_ASCEND_CALL_ACLNN(aclnnSplitWithSize, ctx, non, splitSizeDiopi, 0, nons);
+                for (const auto nj : nons) {
+                    AscendTensor njTensor(nj);
+                    result.push_back(njTensor.squeeze(0));
                 }
             } else {
                 result.push_back(t);
@@ -272,11 +287,12 @@ diopiError_t diopiIndex(diopiContextHandle_t ctx, diopiTensorHandle_t* out, diop
     auto indicesExpanded = indexProcess::expandIndicesTensors(ctx, inputAt, indicesList);
 
     std::vector<aclTensor*> allDefinedIndices;
-    auto emptyTensor = indexProcess::createEmptyAclTensor();
+ 
     for (const auto& idx : indicesExpanded) {
         if (idx.defined()) {
             allDefinedIndices.push_back(aclnn_adaptor::createAclTensorFromAscendTensor(idx));
         } else {
+            auto emptyTensor = createEmptyAclTensor();
             allDefinedIndices.push_back(emptyTensor);
         }
     }

@@ -692,6 +692,49 @@ diopiTensorHandle_t hostToDevice(diopiContextHandle_t ctx, diopiConstTensorHandl
     }
 }
 
+AscendTensor hostToDeviceAsync(diopiContextHandle_t ctx, const AscendTensor& hostTensor) {
+    diopiDevice_t device = hostTensor.device();
+
+    if (device == diopi_host) {
+        diopiTensorHandle_t dst;
+        diopiSize_t size{hostTensor.shape().data(), hostTensor.dim()};
+        diopiSize_t stride{hostTensor.stride().data(), (int64_t)hostTensor.stride().size()};
+        diopiDtype_t dtype = hostTensor.dtype();
+        diopiRequireTensor(ctx, &dst, &size, &stride, dtype, diopi_device);
+        const void* srcPtr = hostTensor.data();
+        void* dstPtr;
+        diopiGetTensorData(dst, &dstPtr);
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        int64_t elemsize = hostTensor.numel() * hostTensor.elemsize();
+        CALL_ACLRT(aclrtMemcpyAsync(dstPtr, elemsize, const_cast<void*>(srcPtr), elemsize, ACL_MEMCPY_HOST_TO_DEVICE, stream));
+        return AscendTensor(dst);
+    } else {
+        return hostTensor;
+    }
+}
+
+AscendTensor deviceToHostSync(diopiContextHandle_t ctx, const AscendTensor& deviceTensor) {
+    if (deviceTensor.device() == diopi_device) {
+        diopiTensorHandle_t dst;
+        diopiSize_t size{deviceTensor.shape().data(), deviceTensor.dim()};
+        diopiSize_t stride{deviceTensor.stride().data(), (int64_t)deviceTensor.stride().size()};
+        diopiDtype_t dtype = deviceTensor.dtype();
+        diopiRequireTensor(ctx, &dst, &size, &stride, dtype, diopi_host);
+        const void* srcPtr = deviceTensor.data();
+        void* dstPtr;
+        diopiGetTensorData(dst, &dstPtr);
+        diopiStreamHandle_t stream;
+        diopiGetStream(ctx, &stream);
+        int64_t elemsize = deviceTensor.numel() * deviceTensor.elemsize();
+        CALL_ACLRT(aclrtMemcpyAsync(dstPtr, elemsize, const_cast<void*>(srcPtr), elemsize, ACL_MEMCPY_DEVICE_TO_HOST, stream));
+        CALL_ACLRT(aclrtSynchronizeStream(stream));
+        return AscendTensor(dst);
+    } else {
+        return deviceTensor;
+    }
+}
+
 static diopiError_t choiceDtype(const std::set<diopiDtype_t>& opSupportedDtypes, diopiDtype_t* dtype) {
     if (opSupportedDtypes.find(diopi_dtype_float32) != opSupportedDtypes.end()) {
         *dtype = diopi_dtype_float32;

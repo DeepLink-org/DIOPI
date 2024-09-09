@@ -199,6 +199,20 @@ AscendTensor& AscendTensor::unsqueeze(int dim) {
     return *this;
 }
 
+AscendTensor& AscendTensor::squeeze(int dim) {
+    auto shape = this->shape();
+    if (shape[dim] != 1) {
+        return *this;
+    }
+    auto strides = this->stride();
+
+    shape.erase(shape.begin() + dim);
+    strides.erase(strides.begin() + dim);
+
+    this->asStrided(shape, strides);
+    return *this;
+}
+
 AscendTensor& AscendTensor::view(const std::vector<int64_t>& shape) {
     // must be contiguous
     ASCEND_CHECK_ABORT(this->isContiguous(), "now only contiguous tensor support view by shape.");

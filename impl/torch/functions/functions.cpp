@@ -1069,6 +1069,23 @@ diopiError_t diopiLog10Inp(diopiContextHandle_t ctx, diopiTensorHandle_t input) 
     return diopiSuccess;
 }
 
+diopiError_t diopiLog1p(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    CALL_ATEN_CUDA_FUNC(log1p_out, atOut, atInput);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiLog1pInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    CALL_ATEN_CUDA_FUNC(log1p_, atInput);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
@@ -2810,6 +2827,34 @@ diopiError_t diopiMeshGrid(diopiContextHandle_t ctx, diopiTensorHandle_t* outs, 
     atOuts = at::meshgrid(atInputs);
     for (int i = 0; i < outsNum; ++i) {
         impl::aten::updateATen2Tensor(ctx, atOuts[i].contiguous(), outs[i]);
+    }
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiFusedAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
+                             diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps, int64_t nums,
+                             float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize) {
+    impl::aten::setCurStream(ctx);
+    DIOPI_CHECK_PTR(params);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atParam, params, nums);
+    DIOPI_CHECK_PTR(grads);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atGrad, grads, nums);
+    DIOPI_CHECK_PTR(exp_avgs);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvg, exp_avgs, nums);
+    DIOPI_CHECK_PTR(exp_avg_sqs);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvgSq, exp_avg_sqs, nums);
+    DIOPI_CHECK_PTR(max_exp_avg_sqs);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atMaxExpAvgSq, max_exp_avg_sqs, nums);
+    DIOPI_CHECK_PTR(state_steps);
+    DIOPI_IMPL_BUILD_ATEN_LIST(atstep, state_steps, nums);
+
+    if (amsgrad) {
+        CALL_ATEN_CUDA_FUNC(
+            _fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, atMaxExpAvgSq, atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
+    } else {
+        std::vector<at::Tensor> tensorList;
+        CALL_ATEN_CUDA_FUNC(_fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, tensorList, atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
     }
 
     return diopiSuccess;
