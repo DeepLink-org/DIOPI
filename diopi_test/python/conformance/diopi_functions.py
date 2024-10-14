@@ -6206,3 +6206,16 @@ def spmm(input, mat2) -> Tensor:
     ret = func(input.context(), out, input, mat2)
     check_returncode(ret)
     return out
+
+def spconv(in_feat, kernel,neighbor_map,sum_nnz,neighbor_address,q_neighbor_address,output_size,
+           qsum_nnz,transpose,allow_tf32,allow_fp16) -> Tensor:
+
+    out_channel = kernel.size().data[2]
+    func = check_function("diopiSpConv")
+    # at::Tensor out_feat = torch::zeros({output_size, out_channel}, 
+    #         at::device(in_feat.device()).dtype(in_feat.scalar_type()));
+    out_feat = Tensor(list([output_size, out_channel]), dtype=in_feat.get_dtype())
+    ret = func(in_feat.context(),out_feat,in_feat,kernel,neighbor_map,sum_nnz,neighbor_address,
+               q_neighbor_address,output_size,qsum_nnz,transpose,allow_tf32,allow_fp16 )
+    check_returncode(ret)
+    return out_feat
