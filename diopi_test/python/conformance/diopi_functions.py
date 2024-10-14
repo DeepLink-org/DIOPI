@@ -3982,7 +3982,33 @@ def norm(input, p, dim=None, keepdim=False, dtype=None):
     func = check_function("diopiNorm")
     ret = func(input.context(), out, input, p, dim)
     check_returncode(ret)
+    
+    GLOBAL_STATE["norm"] = out
     return out
+
+def norm_backward(grad_outputs, input, p, dim, keepdim=False, dtype=None):
+    if p == 0:
+        return {'input': None}
+    else: 
+        grad_input = raw_like(input)
+
+    p = Scalar(p)
+
+    dim, _ = reduce_op_process(input, dim, keepdim, dtype)
+
+    dim = Sizes(list(dim))
+
+    grad_output = grad_outputs[0]
+
+    out = {"input": grad_input}
+    
+    func = check_function("diopiNormBackward")
+
+    norm = GLOBAL_STATE.pop("norm")
+    ret = func(input.context(), grad_input, grad_output, input, norm, dim, p)
+    check_returncode(ret)
+
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 
 def group_norm(input, num_groups, weight=None, bias=None, eps=1e-05):
@@ -4076,6 +4102,35 @@ def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05):
     GLOBAL_STATE["layer_norm_save_invstd"] = save_invstd
     return out
 
+def layer_normGB(input, normalized_shape, weight=None, bias=None, eps=1e-05):
+    sizeI = input.size().data
+    dims = len(sizeI) - len(normalized_shape)
+    size = [i for i in sizeI[0:dims]]
+    save_mean = Tensor(size, input.get_dtype())
+    save_invstd = raw_like(save_mean)
+
+    weight = None if weight is None else weight
+    bias = None if bias is None else bias
+
+    out = raw_like(input)
+    func = check_function("diopiLayerNormGB")
+    ret = func(
+        input.context(),
+        out,
+        save_mean,
+        save_invstd,
+        input,
+        weight,
+        bias,
+        eps,
+        dims
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["layer_norm_save_mean"] = save_mean
+    GLOBAL_STATE["layer_norm_save_invstd"] = save_invstd
+    return out
+
+   
 
 def layer_norm_backward(
     input,
@@ -4127,6 +4182,98 @@ def layer_norm_backward(
     check_returncode(ret)
     return {k: v for k, v in out.items() if v.requires_grad}
 
+def layer_normGB_backward(
+    input,
+    grad_outputs,
+    normalized_shape,
+    weight=None,
+    bias=None,
+    eps=1e-05,
+    **kwargs,
+) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    save_mean = GLOBAL_STATE.pop("layer_norm_save_mean")
+    save_invstd = GLOBAL_STATE.pop("layer_norm_save_invstd")
+    grad_input = raw_like(input)
+    out = {"input": grad_input}
+
+    sizeI = input.size().data
+    dim = len(sizeI) - len(normalized_shape)
+
+    if weight is None:
+        weight = None
+        grad_weight_capsule = None
+    else:
+        grad_weight = raw_like(weight)
+        weight = weight
+        grad_weight_capsule = grad_weight
+        out["weight"] = grad_weight
+
+    if bias is None:
+        bias = None
+        grad_bias_capsule = None
+    else:
+        grad_bias = raw_like(bias)
+        bias = bias
+        grad_bias_capsule = grad_bias
+        out["bias"] = grad_bias
+
+    func = check_function("diopiLayerNormGBBackward")
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_weight_capsule,
+        grad_bias_capsule,
+        grad_outputs[0],
+        input,
+        weight,
+        bias,
+        save_mean,
+        save_invstd,
+        dim
+    )
+    check_returncode(ret)
+    return {k: v for k, v in out.items() if v.requires_grad}
+
+def normalize(input, p, dim, eps):
+    output = raw_like(input)
+
+    func = check_function("diopiNormalize")
+
+    ret = func(
+        input.context(),
+        output,
+        input,
+        p,
+        dim,
+        eps
+    )
+
+    check_returncode(ret)
+
+    return output
+
+def normalize_backward(grad_outputs, input, p, dim, eps):
+
+    grad_output = grad_outputs[0]
+    
+    func = check_function("diopiNormalizeBackward")
+
+    grad_input = raw_like(input)
+
+    out = {'input': grad_input}
+
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_output,
+        input,
+        p,
+        dim,
+        eps
+
+    )
+    return {k: v for k, v in out.items() if v.requires_grad}
 
 def adaptive_avg_pool3d(input, output_size):
     sizeI = input.size().data
@@ -6331,3 +6478,14 @@ def spmm(input, mat2) -> Tensor:
     ret = func(input.context(), out, input, mat2)
     check_returncode(ret)
     return out
+
+
+def layer_norm(input, axis, weight, bias, eps):
+    out = raw_like(input)
+    running_mean = raw_like(input)
+    running_var = raw_like(input)
+    func = check_function("diopiLayerNorm")
+    ret = func(input.context(), out, running_mean, running_var, input, axis, weight, bias, eps)
+    check_returncode(ret)
+    return out, running_mean, running_var
+

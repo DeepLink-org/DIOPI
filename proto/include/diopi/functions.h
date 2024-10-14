@@ -3139,6 +3139,16 @@ DIOPI_API diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t o
  */
 DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim);
 
+DIOPI_API diopiError_t diopiNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t self, diopiConstTensorHandle_t norm, diopiSize_t dim, const diopiScalar_t* p);
+/**
+ *
+ *
+ *
+ *
+ *
+ */
+DIOPI_API diopiError_t diopiLayerNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, const double eps, const int64_t begin_norm_axis);
+
 /**
  * @brief Returns the matrix norm or vector norm of a given tensor list.
  * @param[in] ctx Context environment.
@@ -3566,6 +3576,16 @@ DIOPI_API diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
                                               diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean,
                                               diopiConstTensorHandle_t rstd, diopiSize_t normalized_shape);
+
+DIOPI_API diopiError_t diopiLayerNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_std, const int64_t begin_norm_axis);
+
+
+DIOPI_API diopiError_t diopiInstanceNorm(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const int64_t axis, diopiConstTensorHandle_t scale, diopiConstTensorHandle_t bias, const double eps);
+
+DIOPI_API diopiError_t diopiNormalize(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const float p, const int64_t axis, const double eps);
+
+DIOPI_API diopiError_t diopiNormalizeBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, const float p, const int64_t axis, const double eps);
+
 
 /**
  * @brief Copies the elements from src into dest tensor.

@@ -6561,6 +6561,7 @@ diopi_configs = {
                               (0,), (0, 12), (13, 0, 4)),
                     "dtype": [np.float32, np.float64, np.float16],
                     "gen_fn": 'Genfunc.randn',
+                    "requires_grad": [True],
                 },
             ],
         ),
@@ -7649,6 +7650,44 @@ diopi_configs = {
         )
     ),
 
+    'layer_normGB': dict(
+        name=["layer_normGB"],
+        dtype=[np.float32, np.float64, np.float16],
+        atol=1e-5,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            eps=[1e-5, 1e-5, 1e-12, 0, -1e-5, 2],
+            normalized_shape=[(5, 3, 5), (128, ), (64, ), (32,),
+                              (3, 5), (2, 16, 128)],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad": [True],
+                    "shape": ((2, 5, 3, 5), (2, 3136, 128), (2, 64), (32,),
+                              (2, 5, 3, 5), (2, 16, 128)),
+                },
+                {
+                    "ins": ["weight"],
+                    "requires_grad": [True],
+                    "shape": (None, (128,), (64,), (32,),
+                              (3, 5), (2, 16, 128)),
+                },
+                {
+                    "ins": ["bias"],
+                    "requires_grad": [True],
+                    "shape": (None, (128,), (64,), (32,),
+                              (3, 5), (2, 16, 128)),
+                },
+            ]
+        )
+    ),
+
+
+
     'layer_norm_empty_tensor': dict(
         name=["layer_norm"],
         dtype=[np.float32, np.float64, np.float16],
@@ -7671,6 +7710,28 @@ diopi_configs = {
                 {
                     "ins": ["bias"],
                     "shape": ((0,), (0, 12), (9,)),
+                },
+            ]
+        )
+    ),
+
+    'normalize': dict(
+        name=["normalize"],
+        interface=['torch.nn.functional'],
+        dtype=[np.float32, np.float64, np.float16],
+        atol=1e-5,
+        para=dict(
+            eps=[1e-2, 1e-8, -3],
+            p=[1, 2, 3],
+            dim=[1, 1, 1],
+        ),
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((3, 3), (3, 12), (6, 3, 9)),
+                    "requires_grad": [True],
                 },
             ]
         )
