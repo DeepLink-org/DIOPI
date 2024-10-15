@@ -1079,6 +1079,7 @@ def pool1d(input, kernel_size=0, stride=None, padding=0, dilation=1, ceil_mode=F
 
     sizeI = input.size().data
     assert len(sizeI) == 3 or len(sizeI) == 2, "input must be 2d or 3d tensors"
+    assert mode in ["avg", "max"] and adaptive in [True, False], "mode or adaptive has wrong type"
     sizeO = []
     sizeO.append(sizeI[0])
     if len(sizeI) == 3:
@@ -1175,6 +1176,11 @@ def pool1d(input, kernel_size=0, stride=None, padding=0, dilation=1, ceil_mode=F
             else:
                 sizeO.append(output_size[i])
     
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
         nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
         out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
         output_size = Sizes(list([sizeO[-1],]))
@@ -1204,6 +1210,11 @@ def pool1d(input, kernel_size=0, stride=None, padding=0, dilation=1, ceil_mode=F
             else:
                 sizeO.append(output_size[i])
     
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
         nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
         out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
         output_size = Sizes(list([sizeO[-1],]))
@@ -1228,21 +1239,24 @@ def pool1d(input, kernel_size=0, stride=None, padding=0, dilation=1, ceil_mode=F
         return out
     
         
-def pool1d_backward(input, grad_outputs, kernel_size=0, stride=0, padding=0, dilation=0, ceil_mode=0, count_include_pad=True, mode="avg", adaptive=False, **kwargs,) -> Tensor:
+def pool1d_backward(input, grad_outputs, kernel_size=0, stride=0, padding=0, dilation=0, ceil_mode=0, count_include_pad=True, mode="avg", adaptive=False, output_size=0, **kwargs,) -> Tensor:
 
     assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    assert mode in ["avg", "max"] and adaptive in [True, False], "mode or adaptive has wrong type"
     grad_input = raw_like(input)
 
     if isinstance(kernel_size, int):
         kernel_size = (kernel_size,)
-        if stride is None:
-            stride = kernel_size
-        if isinstance(stride, int):
-            stride = (stride,)
-        if isinstance(padding, int):
-            padding = (padding,)
-        if isinstance(dilation, int):
-            dilation = (dilation,)
+    if stride is None:
+        stride = kernel_size
+    if isinstance(stride, int):
+        stride = (stride,)
+    if isinstance(padding, int):
+        padding = (padding,)
+    if isinstance(dilation, int):
+        dilation = (dilation,)
+    if isinstance(output_size, int):
+        output_size = (output_size, )
 
     
     if mode == "avg" and adaptive == False:
@@ -1304,12 +1318,63 @@ def pool1d_backward(input, grad_outputs, kernel_size=0, stride=0, padding=0, dil
         )
         check_returncode(ret)
         return {"input": grad_input} if grad_input.requires_grad else {}
- 
-        
-          
-  
+    elif mode == "avg" and adaptive == True:
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
 
+        indices = raw_like(input)
+    
+        func = check_function("diopiPool1dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "avg",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+    elif mode == "max" and adaptive == True:
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
 
+        _, indices = adaptive_max_pool1d(input, output_size, return_indices=True)
+    
+        func = check_function("diopiPool1dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "max",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+           
 def avg_pool1d(
     input,
     kernel_size,
@@ -1619,6 +1684,306 @@ def adaptive_max_pool1d_backward(input, grad_outputs, output_size, **kwargs) -> 
     check_returncode(ret)
     return {"input": grad_input} if grad_input.requires_grad else {}
 
+def pool2d(input, kernel_size=0, stride=None, padding=0, dilation=1, ceil_mode=False, count_include_pad=True, output_size=0, mode="avg", adaptive=False) -> Tensor:
+
+    sizeI = input.size().data
+    assert len(sizeI) == 4 or len(sizeI) == 3, "input must be 3d or 4d tensors"
+    assert mode in ["avg", "max"] and adaptive in [True, False], "mode or adaptive has wrong type"
+    sizeO = []
+    sizeO.append(sizeI[0])
+    if len(sizeI) == 4:
+        sizeO.append(sizeI[1])
+
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation)
+    if isinstance(output_size, int):
+        output_size = (output_size, output_size)
+
+    if mode == "avg" and adaptive == False:
+        for i in range(-2, 0):
+            if ceil_mode:
+                sizeO.append(
+                    math.ceil((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1
+                )
+            else:
+                sizeO.append(
+                    math.floor((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1
+                )
+    
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+        output_size = Sizes(list(output_size))
+        nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
+        out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
+    
+        func = check_function("diopiPool2d")
+        ret = func(
+                input.context(),
+                out,
+                input,
+                "avg",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                False,
+                output_size,
+        )
+        check_returncode(ret)
+        return out
+    elif mode == "max" and adaptive == False:
+        for i in range(-2, 0):
+            tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
+            tmp_size = (sizeI[i] - tmp_ker_size + 2 * padding[i]) / stride[i] + 1
+            tmp_size = tmp_size if tmp_size > 1 else 1
+            if ceil_mode:
+                sizeO.append(math.ceil(tmp_size))
+            else:
+                sizeO.append(math.floor(tmp_size))
+    
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+        output_size = Sizes(list(output_size))
+        nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
+        out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)  
+
+        func = check_function("diopiPool2d")
+        ret = func(
+                input.context(),
+                out,
+                input,
+                "max",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                False,
+                output_size,
+        )
+        check_returncode(ret)
+        return out
+    elif mode == "avg" and adaptive == True:
+        for i in range(-2, 0):
+            if output_size[i] is None:
+                sizeO.append(sizeI[i])
+            else:
+                sizeO.append(output_size[i])
+    
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
+        nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
+        out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
+        output_size = Sizes(list([sizeO[-2], sizeO[-1]]))
+    
+        func = check_function("diopiPool2d")
+        ret = func(
+                input.context(),
+                out,
+                input,
+                "avg",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                output_size,
+        )
+ 
+        check_returncode(ret)
+        return out
+    else:
+        for i in range(-2, 0):
+            if output_size[i] is None:
+                sizeO.append(sizeI[i])
+            else:
+                sizeO.append(output_size[i])
+    
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
+        nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
+        out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
+        output_size = Sizes(list([sizeO[-2], sizeO[-1]]))
+    
+        func = check_function("diopiPool2d")
+        ret = func(
+                input.context(),
+                out,
+                input,
+                "max",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                output_size,
+        )
+ 
+        check_returncode(ret)
+        return out
+    
+        
+def pool2d_backward(input, grad_outputs, kernel_size=0, stride=0, padding=0, dilation=0, ceil_mode=0, count_include_pad=True, mode="avg", adaptive=False, output_size=0, **kwargs,) -> Tensor:
+
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    assert mode in ["avg", "max"] and adaptive in [True, False], "mode or adaptive has wrong type"
+    grad_input = raw_like(input)
+
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation)
+    if isinstance(output_size, int):
+        output_size = (output_size, output_size)
+
+    
+    if mode == "avg" and adaptive == False:
+       
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+        
+        indices = raw_like(input)
+    
+        func = check_function("diopiPool2dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "avg",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                False,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+    elif mode == "max" and adaptive == False:
+
+        _, indices = max_pool2d(
+           input, kernel_size, stride, padding, dilation, ceil_mode, True
+        )
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+    
+        func = check_function("diopiPool2dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "max",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                False,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+    elif mode == "avg" and adaptive == True:
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
+        indices = raw_like(input)
+    
+        func = check_function("diopiPool2dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "avg",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+    elif mode == "max" and adaptive == True:
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
+        _, indices = adaptive_max_pool2d(input, output_size, return_indices=True)
+    
+        func = check_function("diopiPool2dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "max",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+        
 def avg_pool2d(
     input,
     kernel_size,
@@ -4818,6 +5183,306 @@ def normalize_backward(grad_outputs, input, p, dim, eps):
     )
     return {k: v for k, v in out.items() if v.requires_grad}
 
+def pool3d(input, kernel_size=0, stride=None, padding=0, dilation=1, ceil_mode=False, count_include_pad=True, output_size=0, mode="avg", adaptive=False) -> Tensor:
+
+    sizeI = input.size().data
+    assert len(sizeI) == 5 or len(sizeI) == 4, "input must be 4d or 5d tensors"
+    assert mode in ["avg", "max"] and adaptive in [True, False], "mode or adaptive has wrong type"
+    sizeO = []
+    sizeO.append(sizeI[0])
+    if len(sizeI) == 5:
+        sizeO.append(sizeI[1])
+
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+    if isinstance(output_size, int):
+        output_size = (output_size, output_size, output_size)
+
+    if mode == "avg" and adaptive == False:
+        for i in range(-3, 0):
+            if ceil_mode:
+                sizeO.append(
+                    math.ceil((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1
+                )
+            else:
+                sizeO.append(
+                    math.floor((sizeI[i] - kernel_size[i] + 2 * padding[i]) / stride[i]) + 1
+                )
+    
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+        output_size = Sizes(list(output_size))
+        nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
+        out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
+    
+        func = check_function("diopiPool3d")
+        ret = func(
+                input.context(),
+                out,
+                input,
+                "avg",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                False,
+                output_size,
+        )
+        check_returncode(ret)
+        return out
+    elif mode == "max" and adaptive == False:
+        for i in range(-3, 0):
+            tmp_ker_size = kernel_size[i] + (kernel_size[i] - 1) * (dilation[i] - 1)
+            tmp_size = (sizeI[i] - tmp_ker_size + 2 * padding[i]) / stride[i] + 1
+            tmp_size = tmp_size if tmp_size > 1 else 1
+            if ceil_mode:
+                sizeO.append(math.ceil(tmp_size))
+            else:
+                sizeO.append(math.floor(tmp_size))
+    
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+        output_size = Sizes(list(output_size))
+        nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
+        out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)  
+
+        func = check_function("diopiPool3d")
+        ret = func(
+                input.context(),
+                out,
+                input,
+                "max",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                False,
+                output_size,
+        )
+        check_returncode(ret)
+        return out
+    elif mode == "avg" and adaptive == True:
+        for i in range(-3, 0):
+            if output_size[i] is None:
+                sizeO.append(sizeI[i])
+            else:
+                sizeO.append(output_size[i])
+    
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
+        nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
+        out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
+        output_size = Sizes(list([sizeO[-3], sizeO[-2], sizeO[-1]]))
+    
+        func = check_function("diopiPool3d")
+        ret = func(
+                input.context(),
+                out,
+                input,
+                "avg",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                output_size,
+        )
+ 
+        check_returncode(ret)
+        return out
+    else:
+        for i in range(-3, 0):
+            if output_size[i] is None:
+                sizeO.append(sizeI[i])
+            else:
+                sizeO.append(output_size[i])
+    
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
+        nhwc_stride = compute_nhwc_stride_1d(sizeO) if glob_vars.nhwc else None
+        out = Tensor(sizeO, input.get_dtype(), stride=nhwc_stride)
+        output_size = Sizes(list([sizeO[-3], sizeO[-2], sizeO[-1]]))
+    
+        func = check_function("diopiPool3d")
+        ret = func(
+                input.context(),
+                out,
+                input,
+                "max",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                output_size,
+        )
+ 
+        check_returncode(ret)
+        return out
+    
+        
+def pool3d_backward(input, grad_outputs, kernel_size=0, stride=0, padding=0, dilation=0, ceil_mode=0, count_include_pad=True, mode="avg", adaptive=False, output_size=0, **kwargs,) -> Tensor:
+
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    assert mode in ["avg", "max"] and adaptive in [True, False], "mode or adaptive has wrong type"
+    grad_input = raw_like(input)
+
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size, kernel_size)
+    if stride is None:
+        stride = kernel_size
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+    if isinstance(output_size, int):
+        output_size = (output_size, output_size, output_size)
+
+    
+    if mode == "avg" and adaptive == False:
+       
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+        
+        indices = raw_like(input)
+    
+        func = check_function("diopiPool3dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "avg",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                False,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+    elif mode == "max" and adaptive == False:
+
+        _, indices = max_pool3d(
+           input, kernel_size, stride, padding, dilation, ceil_mode, True
+        )
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+    
+        func = check_function("diopiPool3dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "max",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                False,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+    elif mode == "avg" and adaptive == True:
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
+        indices = raw_like(input)
+    
+        func = check_function("diopiPool3dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "avg",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+    elif mode == "max" and adaptive == True:
+        stride = Sizes(list(stride))
+        padding = Sizes(list(padding))
+        kernel_size = Sizes(list(kernel_size))
+        dilation = Sizes(list(dilation))
+
+        _, indices = adaptive_max_pool3d(input, output_size, return_indices=True)
+    
+        func = check_function("diopiPool3dBackward")
+        ret = (
+            func(
+                input.context(),
+                grad_input,
+                grad_outputs[0],
+                input,
+                "max",
+                kernel_size,
+                stride,
+                padding,
+                dilation,
+                ceil_mode,
+                not count_include_pad,
+                True,
+                indices, 
+            )
+        )
+        check_returncode(ret)
+        return {"input": grad_input} if grad_input.requires_grad else {}
+        
 def avg_pool3d(
     input,
     kernel_size,

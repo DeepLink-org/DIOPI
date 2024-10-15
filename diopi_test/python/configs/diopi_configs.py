@@ -747,14 +747,15 @@ diopi_configs = {
         name=['pool1d'],
         interface=['CustomizedTest'],
         para=dict(
-            kernel_size=[2, 2, 6, 2, 3, 6, 5],
-            stride=[None, None, 3, 1, 2, None, 2],
-            padding=[0, 0, 2, 1, 0, 0, 2],
-            dilation=[0, 0, 0, 0, 0, 1, 3],
-            ceil_mode=[False, True, False, True, False, False, True],
-            count_include_pad=[True, True, False, True, False, False, False],
-            mode=["avg", "avg", "avg", "avg", "avg", "max", "max"],
-            adaptive=[False, False, False, False, False, False, False],
+            kernel_size=[2, 2, 6, 2, 3, 6, 5, 0, 0, 0, 0],
+            stride=[None, None, 3, 1, 2, None, 2, 0, 0, 0, 0],
+            padding=[0, 0, 2, 1, 0, 0, 2, 0, 0, 0, 0],
+            dilation=[0, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0],
+            ceil_mode=[False, True, False, True, False, False, True, False, False, False, False],
+            count_include_pad=[True, True, False, True, False, False, False, False, False, False, False],
+            mode=["avg", "avg", "avg", "avg", "avg", "max", "max", "avg", "avg", "max", "max"],
+            adaptive=[False, False, False, False, False, False, False, True, True, True, True],
+            output_size=[0, 0, 0, 0, 0, 0, 0, 5, 26, 3, 2]
         ),
         tensor_para=dict(
             args=[
@@ -762,7 +763,7 @@ diopi_configs = {
                     "ins": ['input'],
                     "requires_grad": [True],
                     "shape": ((2, 16), (5, 2, 16), (3, 4, 16),
-                              (2, 1024, 14), (256, 28, 28), (3, 12), (5, 4, 17)),
+                              (2, 1024, 14), (256, 28, 28), (3, 12), (5, 4, 17), (3, 16), (4, 7, 27), (4, 16), (288, 33)),
                     "dtype": [np.float16, np.float32, np.float64],
                 },
             ]
@@ -912,6 +913,32 @@ diopi_configs = {
         ),
     ),
 
+    'pool2d': dict(
+        name=['pool2d'],
+        interface=['CustomizedTest'],
+        para=dict(
+            kernel_size=[2, 2, 6, 2, 3, 6, 5, 0, 0, 0, 0],
+            stride=[None, None, 3, 1, 2, None, 2, 0, 0, 0, 0],
+            padding=[0, 0, 2, 1, 0, 0, 2, 0, 0, 0, 0],
+            dilation=[0, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0],
+            ceil_mode=[False, True, False, True, False, False, True, False, False, False, False],
+            count_include_pad=[True, True, False, True, False, False, False, False, False, False, False],
+            mode=["avg", "avg", "avg", "avg", "avg", "max", "max", "avg", "avg", "max", "max"],
+            adaptive=[False, False, False, False, False, False, False, True, True, True, True],
+            output_size=[0, 0, 0, 0, 0, 0, 0, 5, 26, 3, 2]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((2, 16, 16), (5, 2, 16, 16), (3, 4, 16, 16),
+                              (2, 1024, 14, 16), (256, 28, 28, 16), (3, 12, 12), (5, 4, 17, 17), (3, 16, 16), (4, 7, 27, 27), (4, 16, 17), (288, 33, 33)),
+                    "dtype": [np.float16, np.float32, np.float64],
+                },
+            ]
+        ),
+    ), 
     'avg_pool2d': dict(
         name=["avg_pool2d"],
         para=dict(
@@ -6099,6 +6126,33 @@ diopi_configs = {
             ]
         ),
     ),
+
+    'pool3d': dict(
+        name=['pool3d'],
+        interface=['CustomizedTest'],
+        para=dict(
+            kernel_size=[2, 2, 6, 2, 3, 6, 5, 0, 0, 0, 0],
+            stride=[None, None, 3, 1, 2, None, 2, 0, 0, 0, 0],
+            padding=[0, 0, 2, 1, 0, 0, 2, 0, 0, 0, 0],
+            dilation=[0, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0],
+            ceil_mode=[False, True, False, True, False, False, True, False, False, False, False],
+            count_include_pad=[True, True, False, True, False, False, False, False, False, False, False],
+            mode=["avg", "avg", "avg", "avg", "avg", "max", "max", "avg", "avg", "max", "max"],
+            adaptive=[False, False, False, False, False, False, False, True, True, True, True],
+            output_size=[0, 0, 0, 0, 0, 0, 0, 5, 26, 3, 2]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((2, 16, 16, 16), (5, 2, 16, 16, 17), (3, 4, 16, 16, 18),
+                              (2, 1024, 14, 16, 20), (256, 28, 28, 16, 17), (3, 12, 12, 18), (5, 4, 17, 17, 21), (3, 16, 16, 20), (4, 7, 27, 27, 26), (4, 16, 17, 23), (288, 33, 33, 35)),
+                    "dtype": [np.float16, np.float32, np.float64],
+                },
+            ]
+        ),
+    ), 
 
     'avg_pool3d': dict(
         name=["avg_pool3d"],
