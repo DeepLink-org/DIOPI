@@ -4367,6 +4367,7 @@ diopiError_t diopiAvgPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_
   c10::optional<int64_t> atDivisorOverride = divisor_override ? c10::optional<int64_t>(*divisor_override) : c10::nullopt;
   auto atGradInput = impl::aten::buildATen(grad_input);
   CALL_ATEN_CUDA_FUNC(avg_pool3d_backward_out, atGradInput, atGradOutput, atInput, atKernelSize, atStride, atPadding, ceil_mode, count_include_pad, atDivisorOverride);
+  return diopiSuccess;
 }
 
 diopiError_t diopiPool3d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive, diopiSize_t output_size) {
