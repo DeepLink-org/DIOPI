@@ -824,3 +824,9 @@ class CustomizedTest(object):
             input, target, weight, None, ignore_index, None, reduction
         )
         return out
+
+    def pool1d(input, kernel_size, stride, padding, dilation, ceil_mode, count_include_pad, mode, adaptive):
+        if mode == "avg" and adaptive == False:
+            return torch.avg_pool1d(input, kernel_size, stride, padding, ceil_mode, count_include_pad)
+        elif mode == "max" and adaptive == False:
+            return torch.max_pool1d(input, kernel_size, stride, padding, dilation, ceil_mode)

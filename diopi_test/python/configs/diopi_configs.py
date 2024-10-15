@@ -743,6 +743,32 @@ diopi_configs = {
         ),
     ),
 
+    'pool1d': dict(
+        name=['pool1d'],
+        interface=['CustomizedTest'],
+        para=dict(
+            kernel_size=[2, 2, 6, 2, 3, 6, 5],
+            stride=[None, None, 3, 1, 2, None, 2],
+            padding=[0, 0, 2, 1, 0, 0, 2],
+            dilation=[0, 0, 0, 0, 0, 1, 3],
+            ceil_mode=[False, True, False, True, False, False, True],
+            count_include_pad=[True, True, False, True, False, False, False],
+            mode=["avg", "avg", "avg", "avg", "avg", "max", "max"],
+            adaptive=[False, False, False, False, False, False, False],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((2, 16), (5, 2, 16), (3, 4, 16),
+                              (2, 1024, 14), (256, 28, 28), (3, 12), (5, 4, 17)),
+                    "dtype": [np.float16, np.float32, np.float64],
+                },
+            ]
+        ),
+    ), 
+
     'avg_pool1d': dict(
         name=["avg_pool1d"],
         para=dict(
@@ -866,12 +892,12 @@ diopi_configs = {
         ),
     ),
 
-    'adaptive_max_pool2d_return_indices': dict(
-        name=["adaptive_max_pool2d"],
+    'adaptive_max_pool1d_return_indices': dict(
+        name=["adaptive_max_pool1d"],
         atol=1e-5,
         rtol=1e-4,
         para=dict(
-            output_size=[5, (26, 40), (None, None), (0, 0)],
+            output_size=[5, 26, 3, 0],
             return_indices=[True, True, True, True]
         ),
         tensor_para=dict(
@@ -879,7 +905,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
-                    "shape": ((3, 16, 8), (4, 7, 27, 39), (4, 16, 12), (4, 16, 12)),
+                    "shape": ((3, 16), (4, 7, 27), (4, 16), (4, 16)),
                     "dtype": [np.float32, np.float16, np.float64],
                 },
             ]
