@@ -7896,8 +7896,45 @@ diopi_configs = {
         )
     ),
 
+    'instance_norm': dict(
+        name=["instance_norm"],
+        dtype=[np.float32, np.float64],
+        atol=1e-5,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            eps=[1e-5, 1e-5, 1e-12, 0, -1e-5, 2],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((3, 5, 3, 5), (2, 16, 128), (2, 64, 16), (2, 32, 16),
+                              (4, 5, 3, 5), (5, 16, 128)),
+                    'gen_fn':'Genfunc.randn',
+                    'requires_grad': [True],
+                },
+                {
+                    "ins": ["weight"],
+                    "shape": ((5,), (16,), (64,), (32,),
+                              (5,), (16,)),
+                    'gen_fn':'Genfunc.randn',
+                    'requires_grad': [True],
+                },
+                {
+                    "ins": ["bias"],
+                    "shape": ((5,), (16,), (64,), (32,),
+                              (5,), (16,)),
+                    'gen_fn':'Genfunc.randn',
+                    'requires_grad': [True],
+                },
+            ]
+        )
+    ),
+
     'layer_normGB': dict(
         name=["layer_normGB"],
+        interface=['CustomizedTest'],
         dtype=[np.float32, np.float64, np.float16],
         atol=1e-5,
         atol_half=1e-1,

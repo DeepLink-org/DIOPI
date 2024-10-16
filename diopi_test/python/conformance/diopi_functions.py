@@ -4981,6 +4981,62 @@ def group_norm_backward(
     check_returncode(ret)
     return {k: v for k, v in out.items() if v.requires_grad}
 
+def instance_norm(input, axis=2, weight=None, bias=None, eps=1e-05):
+    weight = None if weight is None else weight
+    bias = None if bias is None else bias
+
+    out = raw_like(input)
+    func = check_function("diopiInstanceNorm")
+    ret = func(
+        input.context(),
+        out,
+        input,
+        axis,
+        weight,
+        bias,
+        eps,
+    )
+    check_returncode(ret)
+    return out
+
+def instance_norm_backward(input, grad_outputs, axis=2, weight=None, bias=None, eps=1e-05, **kwargs):
+    grad_input = raw_like(input)
+    out = {"input": grad_input}
+
+    if weight is None:
+        weight = None
+        grad_weight_capsule = None
+    else:
+        grad_weight = raw_like(weight)
+        weight = weight
+        grad_weight_capsule = grad_weight
+        out["weight"] = grad_weight
+
+    if bias is None:
+        bias = None
+        grad_bias_capsule = None
+    else:
+        grad_bias = raw_like(bias)
+        bias = bias
+        grad_bias_capsule = grad_bias
+        out["bias"] = grad_bias
+
+    func = check_function("diopiInstanceNormBackward")
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_weight_capsule,
+        grad_bias_capsule,
+        grad_outputs[0],
+        input,
+        weight,
+        bias,
+        axis,
+        eps,
+    )
+    check_returncode(ret)
+    return {k: v for k, v in out.items() if v.requires_grad}
+
 
 def layer_norm(input, normalized_shape, weight=None, bias=None, eps=1e-05):
     sizeI = input.size().data

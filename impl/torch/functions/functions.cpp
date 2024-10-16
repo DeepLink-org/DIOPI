@@ -4179,30 +4179,90 @@ diopiError_t diopiLayerNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandl
 
 diopiError_t diopiInstanceNorm(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const int64_t axis, diopiConstTensorHandle_t scale, diopiConstTensorHandle_t bias, const double eps) {
   impl::aten::setCurStream(ctx);
-  diopiSize_t input_size;
-  diopiGetTensorShape(input, &input_size);
 
-  std::vector<int64_t> array(input_size.data, input_size.data + input_size.len);
+  auto atInput = impl::aten::buildATen(input);
+  auto atScale = impl::aten::buildATen(scale);
+  auto atBias = impl::aten::buildATen(bias);
+  auto input_size = atInput.sizes().vec();
 
-  int64_t batch_channel = 1;
-  for (int i = 0; i < axis; i++) {
-    batch_channel *= array[i];
+  std::vector<int64_t> reshaped_size = {1};
+  int64_t shape = 1;
+  for (int i = 0; i < std::min(axis, (int64_t)input_size.size()); i++) {
+    shape = shape * input_size[i];
+  }
+  reshaped_size.push_back(shape);
+  for (int i = axis; i < input_size.size(); i++) {
+    reshaped_size.push_back(input_size[i]);
   }
 
-  std::vector<int64_t> array2 = {1, batch_channel};
+  auto atInputReshaped = atInput.contiguous().view(reshaped_size);
+  auto atScale_ = atScale.repeat(input_size[0]);
+  auto atBias_ = atBias.repeat(input_size[0]);
 
-  for (int i = axis; i < array.size(); i++) {
-    array2.push_back(array[i]);
-  }
-
-  diopiSize_t reshaped_size;
-  reshaped_size.data = array2.data();
-  reshaped_size.len = static_cast<int64_t>(array2.size());
-
-  // input->reset_shape(reshaped_size);
-
-  // diopiBatchNorm(ctx, output, nullptr, nullptr, input, scale, bias, nullptr, nullptr, true, 0.0, eps);
+  // auto atRunningMean = torch::empty({reshaped_size[1]}, torch::TensorOptions().device(torch::kCUDA));
+  // auto atRunningStd = torch::empty({reshaped_size[1]}, torch::TensorOptions().device(torch::kCUDA));
   
+
+  auto atOutput = CALL_ATEN_FUNC(batch_norm, atInputReshaped, atScale_, atBias_, c10::nullopt, c10::nullopt, true, 0.0, eps, false);
+  impl::aten::updateATen2Tensor(ctx, atOutput, output);
+  return diopiSuccess;
+}
+
+diopiError_t diopiInstanceNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_scale, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t scale, diopiConstTensorHandle_t bias, const int64_t axis, const double eps) {
+  impl::aten::setCurStream(ctx);
+
+  auto atGradOutput = impl::aten::buildATen(grad_output);
+  auto atInput = impl::aten::buildATen(input);
+  auto atScale = impl::aten::buildATen(scale);
+  auto atBias = impl::aten::buildATen(bias);
+  auto input_size = atInput.sizes().vec();
+
+  auto atScale_ = atScale.repeat(input_size[0]);
+
+  std::vector<int64_t> reshaped_size = {1};
+  int64_t shape = 1;
+  for (int i = 0; i < std::min(axis, (int64_t)input_size.size()); i++) {
+    shape = shape * input_size[i];
+  }
+  reshaped_size.push_back(shape);
+  for (int i = axis; i < input_size.size(); i++) {
+    reshaped_size.push_back(input_size[i]);
+  }
+
+  std::vector<int64_t> mean_dim = {0};
+  for (int i = 2; i < reshaped_size.size(); i++) {
+    mean_dim.push_back(i);
+  }
+
+  auto atInputReshaped = atInput.contiguous().view(reshaped_size);
+  auto atGradOutputReshaped = atGradOutput.contiguous().view(reshaped_size);
+
+  auto atMean = torch::mean(atInputReshaped, mean_dim);
+  auto atStd = torch::std(atInputReshaped, mean_dim);
+
+  auto grad_input_mask = std::array<bool, 3>{grad_input != nullptr, grad_scale != nullptr, grad_bias != nullptr};
+
+  auto atOut = at::native_batch_norm_backward(atGradOutputReshaped, atInputReshaped, atScale_, c10::nullopt, c10::nullopt, atMean, atStd, true, eps, grad_input_mask);
+
+  if (grad_input) {
+    impl::aten::updateATen2Tensor(ctx, std::get<0>(atOut), grad_input);
+  }
+  if (grad_scale) {
+    auto atGradScaleOrigin = torch::zeros_like(atScale);
+    for (int i = 0; i < std::get<1>(atOut).size(0); i++) {
+      atGradScaleOrigin[i % (atScale_.size(0) / input_size[0])] += std::get<1>(atOut)[i];
+    }
+    impl::aten::updateATen2Tensor(ctx, atGradScaleOrigin, grad_scale);
+  }
+  if (grad_bias) {
+    auto atGradBiasOrigin = torch::zeros_like(atBias);
+    for (int i = 0; i < std::get<2>(atOut).size(0); i++) {
+      atGradBiasOrigin[i % (atScale_.size(0) / input_size[0])] += std::get<2>(atOut)[i];
+    }
+    impl::aten::updateATen2Tensor(ctx, atGradBiasOrigin, grad_bias);
+  }
+ 
+
   return diopiSuccess;
 }
 

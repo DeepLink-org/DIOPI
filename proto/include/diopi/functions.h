@@ -3621,6 +3621,8 @@ DIOPI_API diopiError_t diopiLayerNormGBBackward(diopiContextHandle_t ctx, diopiT
 
 DIOPI_API diopiError_t diopiInstanceNorm(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const int64_t axis, diopiConstTensorHandle_t scale, diopiConstTensorHandle_t bias, const double eps);
 
+DIOPI_API diopiError_t diopiInstanceNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_scale, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t scale, diopiConstTensorHandle_t bias, const int64_t axis, const double eps);
+
 DIOPI_API diopiError_t diopiNormalize(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const float p, const int64_t axis, const double eps);
 
 DIOPI_API diopiError_t diopiNormalizeBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, const float p, const int64_t axis, const double eps);

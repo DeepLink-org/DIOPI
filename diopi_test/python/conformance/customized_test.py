@@ -854,3 +854,7 @@ class CustomizedTest(object):
             return torch.nn.functional.adaptive_avg_pool3d(input, output_size)
         elif mode == "max" and adaptive == True:
             return torch.nn.functional.adaptive_max_pool3d(input, output_size, return_indices=False)
+
+    def layer_normGB(input, weight, bias, eps, normalized_shape):
+        return torch.nn.functional.layer_norm(input=input, weight=weight, bias=bias, eps=eps, normalized_shape=normalized_shape)
+
