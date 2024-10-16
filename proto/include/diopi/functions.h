@@ -302,39 +302,44 @@ DIOPI_API diopiError_t diopiLeakyReluInp(diopiContextHandle_t ctx, diopiTensorHa
 DIOPI_API diopiError_t diopiLeakyReluBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                               diopiConstTensorHandle_t input, const diopiScalar_t* negative_slope, bool input_is_result);
 
-DIOPI_API diopiError_t diopiMaxPool1d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride,
-                            diopiSize_t padding, diopiSize_t dilation, bool ceil_mode);
+DIOPI_API diopiError_t diopiMaxPool1d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size,
+                                      diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode);
 
 DIOPI_API diopiError_t diopiMaxPool1dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                    diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation,
-                                    bool ceil_mode, diopiConstTensorHandle_t indices);
+                                              diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding,
+                                              diopiSize_t dilation, bool ceil_mode, diopiConstTensorHandle_t indices);
 
 DIOPI_API diopiError_t diopiMaxPool1dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
-                                       diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode);
+                                                 diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, bool ceil_mode);
 
-DIOPI_API diopiError_t diopiAvgPool1d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride,
-                            diopiSize_t padding, bool ceil_mode, bool count_include_pad);
+DIOPI_API diopiError_t diopiAvgPool1d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size,
+                                      diopiSize_t stride, diopiSize_t padding, bool ceil_mode, bool count_include_pad);
 
 DIOPI_API diopiError_t diopiAvgPool1dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                    diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, bool ceil_mode,
-                                    bool count_include_pad);
+                                              diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, bool ceil_mode,
+                                              bool count_include_pad);
 
 DIOPI_API diopiError_t diopiAdaptiveMaxPool1d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t output_size);
 
-DIOPI_API diopiError_t diopiAdaptiveMaxPool1dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices, diopiConstTensorHandle_t input,
-                                               diopiSize_t output_size);
+DIOPI_API diopiError_t diopiAdaptiveMaxPool1dWithIndices(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t indices,
+                                                         diopiConstTensorHandle_t input, diopiSize_t output_size);
 
 DIOPI_API diopiError_t diopiAdaptiveMaxPool1dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t indices);
+                                                      diopiConstTensorHandle_t input, diopiConstTensorHandle_t indices);
 
 DIOPI_API diopiError_t diopiAdaptiveAvgPool1dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
-                                            diopiConstTensorHandle_t input);
+                                                      diopiConstTensorHandle_t input);
 
 DIOPI_API diopiError_t diopiAdaptiveAvgPool1d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t output_size);
 
-DIOPI_API diopiError_t diopiPool1d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive, diopiSize_t output_size);
+DIOPI_API diopiError_t diopiPool1d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize,
+                                   diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive,
+                                   const bool adaptive, diopiSize_t output_size);
 
-DIOPI_API diopiError_t diopiPool1dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive, diopiConstTensorHandle_t indices);
+DIOPI_API diopiError_t diopiPool1dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                           diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding,
+                                           diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive,
+                                           diopiConstTensorHandle_t indices);
 /**
  * @brief Applies 2D average-pooling operation in kH×kW regions by step size sH×sW steps.
  * @param[in] ctx Context environment.
@@ -421,9 +426,14 @@ DIOPI_API diopiError_t diopiMaxPool2dBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding,
                                               diopiSize_t dilation, bool ceil_mode, diopiConstTensorHandle_t indices);
 
-DIOPI_API diopiError_t diopiPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive, diopiSize_t output_size);
+DIOPI_API diopiError_t diopiPool2d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize,
+                                   diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive,
+                                   const bool adaptive, diopiSize_t output_size);
 
-DIOPI_API diopiError_t diopiPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive, diopiConstTensorHandle_t indices);
+DIOPI_API diopiError_t diopiPool2dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                           diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding,
+                                           diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive,
+                                           diopiConstTensorHandle_t indices);
 
 /**
  * @brief Applies a 2D adaptive average pooling over an input signal composed of several input planes.
@@ -2944,9 +2954,12 @@ DIOPI_API diopiError_t diopiConvolution3dBackward(diopiContextHandle_t ctx, diop
                                                   diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
                                                   diopiSize_t dilation, int64_t groups);
 
-DIOPI_API diopiError_t diopiAvgPool3d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, bool ceil_mode, bool count_include_pad, const int64_t* divisor_override);
+DIOPI_API diopiError_t diopiAvgPool3d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t kernel_size,
+                                      diopiSize_t stride, diopiSize_t padding, bool ceil_mode, bool count_include_pad, const int64_t* divisor_override);
 
-DIOPI_API diopiError_t diopiAvgPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, bool ceil_mode, bool count_include_pad, const int64_t* divisor_override);
+DIOPI_API diopiError_t diopiAvgPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                              diopiConstTensorHandle_t input, diopiSize_t kernel_size, diopiSize_t stride, diopiSize_t padding, bool ceil_mode,
+                                              bool count_include_pad, const int64_t* divisor_override);
 /**
  * \brief Applies a 3D max pooling over an input signal composed of several input planes.
  * @param[in] ctx Context environment.
@@ -3043,10 +3056,14 @@ DIOPI_API diopiError_t diopiAdaptiveMaxPool3dWithIndices(diopiContextHandle_t ct
 DIOPI_API diopiError_t diopiAdaptiveMaxPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
                                                       diopiConstTensorHandle_t input, diopiConstTensorHandle_t indices);
 
-DIOPI_API diopiError_t diopiPool3d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive, diopiSize_t output_size);
+DIOPI_API diopiError_t diopiPool3d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize,
+                                   diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive,
+                                   const bool adaptive, diopiSize_t output_size);
 
-DIOPI_API diopiError_t diopiPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding, diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive, diopiConstTensorHandle_t indices);
-
+DIOPI_API diopiError_t diopiPool3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                           diopiConstTensorHandle_t input, const char* mode, diopiSize_t ksize, diopiSize_t stride, diopiSize_t padding,
+                                           diopiSize_t dilation, const bool ceil_mode, const bool exclusive, const bool adaptive,
+                                           diopiConstTensorHandle_t indices);
 
 /**
  * \brief Returns a new 1-D tensor which indexes the input tensor according to the boolean mask.
@@ -3212,7 +3229,8 @@ DIOPI_API diopiError_t diopiFlip(diopiContextHandle_t ctx, diopiTensorHandle_t o
  */
 DIOPI_API diopiError_t diopiNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* p, diopiSize_t dim);
 
-DIOPI_API diopiError_t diopiNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t self, diopiConstTensorHandle_t norm, diopiSize_t dim, const diopiScalar_t* p);
+DIOPI_API diopiError_t diopiNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                         diopiConstTensorHandle_t self, diopiConstTensorHandle_t norm, diopiSize_t dim, const diopiScalar_t* p);
 /**
  *
  *
@@ -3220,7 +3238,9 @@ DIOPI_API diopiError_t diopiNormBackward(diopiContextHandle_t ctx, diopiTensorHa
  *
  *
  */
-DIOPI_API diopiError_t diopiLayerNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, const double eps, const int64_t begin_norm_axis);
+DIOPI_API diopiError_t diopiLayerNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var,
+                                        diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, const double eps,
+                                        const int64_t begin_norm_axis);
 
 /**
  * @brief Returns the matrix norm or vector norm of a given tensor list.
@@ -3650,17 +3670,23 @@ DIOPI_API diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTen
                                               diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t mean,
                                               diopiConstTensorHandle_t rstd, diopiSize_t normalized_shape);
 
-DIOPI_API diopiError_t diopiLayerNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_std, const int64_t begin_norm_axis);
+DIOPI_API diopiError_t diopiLayerNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+                                                diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, diopiConstTensorHandle_t running_mean,
+                                                diopiConstTensorHandle_t running_std, const int64_t begin_norm_axis);
 
+DIOPI_API diopiError_t diopiInstanceNorm(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const int64_t axis,
+                                         diopiConstTensorHandle_t scale, diopiConstTensorHandle_t bias, const double eps);
 
-DIOPI_API diopiError_t diopiInstanceNorm(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const int64_t axis, diopiConstTensorHandle_t scale, diopiConstTensorHandle_t bias, const double eps);
+DIOPI_API diopiError_t diopiInstanceNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_scale,
+                                                 diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                 diopiConstTensorHandle_t scale, diopiConstTensorHandle_t bias, const int64_t axis, const double eps);
 
-DIOPI_API diopiError_t diopiInstanceNormBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_scale, diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t scale, diopiConstTensorHandle_t bias, const int64_t axis, const double eps);
+DIOPI_API diopiError_t diopiNormalize(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const float p, const int64_t axis,
+                                      const double eps);
 
-DIOPI_API diopiError_t diopiNormalize(diopiContextHandle_t ctx, diopiTensorHandle_t output, diopiConstTensorHandle_t input, const float p, const int64_t axis, const double eps);
-
-DIOPI_API diopiError_t diopiNormalizeBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, const float p, const int64_t axis, const double eps);
-
+DIOPI_API diopiError_t diopiNormalizeBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                              diopiConstTensorHandle_t input, const float p, const int64_t axis, const double eps);
 
 /**
  * @brief Copies the elements from src into dest tensor.
