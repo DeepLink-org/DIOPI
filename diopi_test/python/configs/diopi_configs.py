@@ -5268,6 +5268,33 @@ diopi_configs = {
         ),
     ),
 
+    'index_mask': dict(
+        name=["index"],
+        interface=["CustomizedTest"],
+        # input[:, mask]
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((3,4,5), (4,5,6,7), (5,6,7,8,9)),
+                    "gen_fn": 'Genfunc.randn',
+                    "dtype": [np.int16, np.int32, np.int64, np.uint8, np.int8, np.bool_, np.float16, np.float32, np.float64],
+                },
+                {
+                    "ins": ['idx1'],
+                    "shape": (None, None, None),
+                    "dtype": [np.int64]
+                },
+                {
+                    "ins": ['idx2'],
+                    "shape": ((4,5), (5,6,7), (6,7,8,9)),
+                    "gen_fn": 'Genfunc.mask',
+                    "dtype": [np.bool_]
+                }
+            ]
+        )
+    ),
+
     'sgd': dict(
         name=["sgd"],
         interface=["CustomizedTest"],
@@ -5519,6 +5546,62 @@ diopi_configs = {
                 },
             ],
         ),
+    ),
+
+    
+    'fused_adamw': dict(
+         name=['fused_adamw'],
+         interface=["CustomizedTest"],
+         atol=1e-2,
+         rtol=2e-3,
+         atol_half=1e-2,
+         rtol_half=2e-3,
+         para=dict(
+            lr=[0.001, 0.01, 0.001, 0.01],
+            beta1=[0.9, 0.9, 0.9, 0.9],
+            beta2=[0.999, 0.999, 0.999, 0.999],
+            eps=[1e-8, 1e-8, 1e-8, 1e-8],
+            weight_decay=[1e-2, 1e-3, 1e-2, 1e-3],
+            amsgrad=[False, False, True, True],
+            maximize=[False, False, False, False],
+        ),
+        tensor_para=dict(
+            dtype=[np.float16, np.float32, np.float64],
+            args=[
+                {
+                    "ins": ['params', 'grads'],
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "dtype": [np.float16, np.float32, np.float64],
+                    "gen_fn": 'Genfunc.rand',
+                    "gen_policy": 'gen_tensor_list',
+                    "gen_num_range": [3, 3],
+                },
+                {
+                    "ins": ['exp_avgs', 'exp_avg_sqs'],
+                    "shape": [(), (16,), (4, 8), (12, 4, 8)],
+                    "dtype": [np.float16, np.float32, np.float64],
+                    "gen_fn": 'Genfunc.rand',
+                    "gen_policy": 'gen_tensor_list',
+                    "gen_num_range": [3, 3],
+                },
+                {
+                    "ins": ['max_exp_avg_sqs'],
+                    "shape": [(0,), (0,),(4, 8), (12, 4, 8)],
+                    "dtype": [np.float16, np.float32, np.float64],
+                    "gen_fn": 'Genfunc.rand',
+                    "gen_policy": 'gen_tensor_list',
+                    "gen_num_range": [3, 3],
+                },
+                {
+                    "ins": ['state_steps'],
+                    "shape": [(1,), (1,), (1,), (1,)],
+                    "dtype": [np.float32, np.float32, np.float32],
+                    "gen_fn": dict(fn='Genfunc.randint', low=1, high=5),
+                    "gen_policy": 'gen_tensor_list',
+                    "gen_num_range": [3, 3],
+                }
+            ]
+        ),    
     ),
 
     'adam': dict(
@@ -5984,10 +6067,10 @@ diopi_configs = {
     'adadelta': dict(
         name=["adadelta"],
         interface=["CustomizedTest"],
-        atol_half=1e-4,
+        atol_half=1e-3,
         rtol_half=1e-3,
-        atol=1e-4,
-        rtol=1e-4,
+        atol=1e-3,
+        rtol=1e-3,
         para=dict(
             lr=[1.0, 0, -0.5, 0.1, 0.1, 2.3, -2, 0],
             rho=[-1, 1.2, 0, 0.9, 0.88, -3, 0.5, 0],

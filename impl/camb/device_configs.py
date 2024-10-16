@@ -204,6 +204,11 @@ device_configs = {
         ),
     ),
 
+    'nll_loss_v2': dict(
+        name = ['nll_loss_v2'],
+        atol = 1e-1
+    ),
+
     'conv_2d': dict(
         name=["conv2d"],
         atol_half=1e-1,

@@ -133,9 +133,9 @@ extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorStorageOffset(dio
 extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorStorageNbytes(diopiConstTensorHandle_t th, size_t* pNbytes);
 extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorDeviceIndex(diopiConstTensorHandle_t th, diopiDeviceIndex_t* pDevIndex);
 
-extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorCrowIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* crow_indices);
-extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, diopiTensorHandle_t* col_indices);
-extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diopiTensorHandle_t* values);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorCrowIndices(diopiConstTensorHandle_t th, diopiConstTensorHandle_t* crow_indices);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorColIndices(diopiConstTensorHandle_t th, diopiConstTensorHandle_t* col_indices);
+extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetTensorValues(diopiConstTensorHandle_t th, diopiConstTensorHandle_t* values);
 extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiIsTensorSparse(diopiConstTensorHandle_t th, bool* is_sparse);
 extern DIOPI_RT_API DIOPI_ATTR_WEAK diopiError_t diopiGetCurrentDeviceIndex(diopiDeviceIndex_t* pDevIndex);
 

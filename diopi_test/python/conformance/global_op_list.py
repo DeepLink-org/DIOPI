@@ -70,6 +70,7 @@ ops_with_states = {
     "embedding": {"weight"},
     "adam": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
     "adamw": {"param", "exp_avg", "exp_avg_sq", "max_exp_avg_sq"},
+    "fused_adamw": {"params", "exp_avgs", "exp_avg_sqs", "max_exp_avg_sqs"},
     "adadelta": {"param", "square_avg", "acc_delta"},
     "rmsprop": {"param", "square_avg", "grad_avg", "momentum_buffer"},
     "copy_": {"input"},
