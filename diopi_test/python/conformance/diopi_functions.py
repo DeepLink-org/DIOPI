@@ -3549,6 +3549,70 @@ def conv_transpose2d_backward(
     check_returncode(ret)
     return {k: v for k, v in out.items() if v.requires_grad}
 
+def conv_transpose3d_backward(
+    input,
+    grad_outputs,
+    weight,
+    bias=None,
+    stride=1,
+    padding=0,
+    dilation=1,
+    groups=1,
+    output_padding=0,
+    **kwargs,
+) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    sizeI = input.size().data
+    sizeW = weight.size().data
+    assert len(sizeI) == 5 and len(sizeW) == 5, "input and weight must be 5d tensors"
+
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+    if isinstance(output_padding, int):
+        output_padding = (output_padding, output_padding, output_padding)
+
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    dilation = Sizes(list(dilation))
+    output_padding = Sizes(list(output_padding))
+
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    out = {"input": grad_input, "weight": grad_weight}
+
+    if bias is None:
+        grad_bias = None
+        sizeBias = None
+    else:
+        gradBias = raw_like(bias)
+        grad_bias = gradBias
+        sizeBias = bias.size()
+        out.update({"bias": grad_bias})
+
+    func = check_function("diopiConvTranspose3dBackward")
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_weight,
+        grad_bias,
+        grad_outputs[0],
+        input,
+        weight,
+        sizeBias,
+        stride,
+        padding,
+        dilation,
+        output_padding,
+        groups,
+    )
+    check_returncode(ret)
+    return {k: v for k, v in out.items() if v.requires_grad}
+
+
 
 def hardtanh_backward(
     input, grad_outputs, min_val=-1.0, max_val=1.0, **kwargs
@@ -4302,6 +4366,70 @@ def conv_transpose2d(
     )
     check_returncode(ret)
     return out
+
+def conv_transpose3d(
+    input,
+    weight,
+    bias=None,
+    stride=1,
+    padding=0,
+    output_padding=0,
+    groups=1,
+    dilation=1,
+) -> Tensor:
+    if bias is not None:
+        assert isinstance(bias, Tensor), "bias must be a Tensor"
+
+    sizeI = input.size().data
+    sizeW = list(weight.size().data)
+    assert len(sizeI) == 5 and len(sizeW) == 5, "input and weight must be 5d tensors"
+
+    sizeO = []
+    sizeO.append(sizeI[0])
+    sizeO.append(sizeW[1] * groups)
+
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(output_padding, int):
+        output_padding = (output_padding, output_padding, output_padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+    for i in range(-3, 0):
+        # equivalent kernel size
+        sizeW[i] = (sizeW[i] - 1) * dilation[i]
+        sizeO.append(
+            int(
+                (sizeI[i] - 1) * stride[i]
+                - 2 * padding[i]
+                + sizeW[i]
+                + output_padding[i]
+            )
+            + 1
+        )
+    stride = Sizes(list(stride))
+    padding = Sizes(list(padding))
+    output_padding = Sizes(list(output_padding))
+    dilation = Sizes(list(dilation))
+
+    out = Tensor(sizeO, input.get_dtype())
+    func = check_function("diopiConvTranspose3d")
+    ret = func(
+        input.context(),
+        out,
+        input,
+        weight,
+        bias,
+        stride,
+        padding,
+        output_padding,
+        groups,
+        dilation,
+    )
+    check_returncode(ret)
+    return out
+
 
 
 def cumsum(input, dim, dtype=None):

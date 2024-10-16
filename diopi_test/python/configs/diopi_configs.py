@@ -5618,6 +5618,49 @@ diopi_configs = {
         ),
     ),
 
+    'conv_transpose3d': dict(
+        name=["conv_transpose3d"],
+        atol=1e-3,
+        rtol=1e-3,
+        atol_half=1e2,
+        rtol_half=1e2,
+        para=dict(
+            stride=[1, 1, 2, 1, 2, (2, 2, 2), 1],
+            padding=[0, 0, 1, 0, 1, (1, 0, 1), 0],
+            output_padding=[0, 0, 1, 0, 1, (0, 1, 1), 0],
+            groups=[1, 1, 8, 1, 1, 1, 1],
+            dilation=[1, 1, 2, 1, 2, (1, 2, 2), 1],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad": [True],
+                    "shape": ((6, 16, 20, 8, 5),
+                              (2, 256, 14, 14, 5), (2, 128, 32, 32, 4),
+                              (2, 64, 160, 160, 5), (2, 64, 320, 320, 5), (2, 64, 320, 320, 5),
+                              (0, 16, 20, 8, 5)),
+                    "dtype": [np.float32, np.float64, np.float16],
+                },
+                {
+                    "ins": ["weight"],
+                    "requires_grad": [True],
+                    "shape": ((16, 2, 12, 2, 2),
+                              (256, 256, 2, 2, 2), (128, 128, 4, 4, 4),
+                              (64, 64, 2, 2, 2), (64, 1, 2, 2, 2), (64, 1, 2, 2, 2),
+                              (16, 2, 12, 2, 2)),
+                    "dtype": [np.float32, np.float64, np.float16],
+                },
+                {
+                    "ins": ["bias"],
+                    "requires_grad": [True],
+                    "shape": (None, (256,), None, (64,), (1,), (1,), None),
+                    "dtype": [np.float32, np.float64, np.float16],
+                },
+            ]
+        ),
+    ),
+
     'unfold': dict(
         name=["unfold"],
         interface=['torch.Tensor'],

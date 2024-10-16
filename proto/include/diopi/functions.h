@@ -2699,6 +2699,14 @@ DIOPI_API diopiError_t diopiConvTranspose2dBackward(diopiContextHandle_t ctx, di
                                                     diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
                                                     diopiSize_t dilation, diopiSize_t output_padding, int64_t groups);
 
+DIOPI_API diopiError_t diopiConvTranspose3d(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                            diopiConstTensorHandle_t bias, diopiSize_t stride, diopiSize_t padding, diopiSize_t output_padding, int64_t groups,
+                                            diopiSize_t dilation);
+
+DIOPI_API diopiError_t diopiConvTranspose3dBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+                                                    diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                    diopiConstTensorHandle_t weight, diopiSize_t* bias_sizes, diopiSize_t stride, diopiSize_t padding,
+                                                    diopiSize_t dilation, diopiSize_t output_padding, int64_t groups);
 /**
  * @brief Extracts sliding local blocks from a batched input tensor.
  * @param[in] ctx Context environment.
