@@ -8062,14 +8062,3 @@ def spmm(input, mat2) -> Tensor:
     ret = func(input.context(), out, input, mat2)
     check_returncode(ret)
     return out
-
-
-def layer_norm(input, axis, weight, bias, eps):
-    out = raw_like(input)
-    running_mean = raw_like(input)
-    running_var = raw_like(input)
-    func = check_function("diopiLayerNorm")
-    ret = func(input.context(), out, running_mean, running_var, input, axis, weight, bias, eps)
-    check_returncode(ret)
-    return out, running_mean, running_var
-
