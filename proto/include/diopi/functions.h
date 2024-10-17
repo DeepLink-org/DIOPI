@@ -3488,7 +3488,8 @@ DIOPI_API diopiError_t diopiNormBackward(diopiContextHandle_t ctx, diopiTensorHa
 
 /**
  * @brief Applies Layer Normalization over a mini-batch of inputs.
- * type=[float32, float64, float16].
+ * Note that, this is the national standard GB operator version, which is different from the diopiLayerNorm interface definition, normalized_shape has changed
+ * to begin_norm_axis. type=[float32, float64, float16].
  * @param[in] ctx Context environment.
  * @param[in] save_mean Mean tensor,the mean value for each feature channel of the input tensor. type=[float32, float64, float16].
  * @param[in] save_invstd Backup of inverse standard deviation computed during training. type=[float32, float64, float16].
@@ -3933,6 +3934,8 @@ DIOPI_API diopiError_t diopiLayerNormBackward(diopiContextHandle_t ctx, diopiTen
 
 /**
  * @brief Compute the backward pass for diopiLayerNormGB(). Computes gradients for input, weight, and bias.
+ * Note that, this is the national standard GB operator version, which is different from the diopiLayerNormBackward interface definition, normalized_shape has
+ * changed to begin_norm_axis
  * @param[in] ctx Context environment.
  * @param[in] grad_output the grad tensor of output. type=[float32, float64, float16].
  * @param[in] grad_bias the grad of bias. type=[float32, float64, float16].

@@ -7986,6 +7986,7 @@ diopi_configs = {
         ),
     ),
 
+    #This test config is for the national standard GB operator version of diopiLayerNorm, which is different from the original interface definition.
     'layer_norm': dict(
         name=["layer_norm"],
         dtype=[np.float32, np.float64, np.float16],

@@ -5270,6 +5270,8 @@ def layer_normGB(input, normalized_shape, weight=None, bias=None, eps=1e-05):
     bias = None if bias is None else bias
 
     out = raw_like(input)
+
+    # Note that, this is the national standard GB operator version, which is different from the diopiLayerNorm interface definition, normalized_shape has changed to begin_norm_axis.
     func = check_function("diopiLayerNormGB")
     ret = func(
         input.context(),
