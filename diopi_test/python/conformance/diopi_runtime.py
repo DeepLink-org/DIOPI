@@ -138,6 +138,19 @@ def to_numpy_dtype(dtype: Dtype) -> np.dtype:
 def is_dtype(dtype) -> bool:
     return isinstance(dtype, Dtype)
 
+def compute_nhwc_stride_1d(sizes, itemsize=1):
+   dim = len(sizes) 
+   strides = [itemsize for i in range(dim)]
+   assert dim == 2 or dim == 3, "not supported dim"
+   if dim == 2:
+      strides[0] = itemsize
+      strides[1] = strides[0] * sizes[0]
+   elif dim == 3:
+      strides[1] = itemsize
+      strides[2] = strides[0] * sizes[1]
+      strides[0] = strides[2] * sizes[2]
+   return strides
+
 
 def compute_nhwc_stride_2d(sizes, itemsize=1):
     dim = len(sizes)

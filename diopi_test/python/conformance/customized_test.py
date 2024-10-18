@@ -857,3 +857,37 @@ class CustomizedTest(object):
             input, target, weight, None, ignore_index, None, reduction
         )
         return out
+
+    def pool1d(input, kernel_size, stride, padding, dilation, ceil_mode, count_include_pad, mode, adaptive, output_size):
+        if mode == "avg" and adaptive == False:
+            return torch.nn.functional.avg_pool1d(input, kernel_size, stride, padding, ceil_mode, count_include_pad)
+        elif mode == "max" and adaptive == False:
+            return torch.nn.functional.max_pool1d(input, kernel_size, stride, padding, dilation, ceil_mode, return_indices=False)
+        elif mode == "avg" and adaptive == True:
+            return torch.nn.functional.adaptive_avg_pool1d(input, output_size)
+        elif mode == "max" and adaptive == True:
+            return torch.nn.functional.adaptive_max_pool1d(input, output_size, return_indices=False)
+
+    def pool2d(input, kernel_size, stride, padding, dilation, ceil_mode, count_include_pad, mode, adaptive, output_size):
+        if mode == "avg" and adaptive == False:
+            return torch.nn.functional.avg_pool2d(input, kernel_size, stride, padding, ceil_mode, count_include_pad)
+        elif mode == "max" and adaptive == False:
+            return torch.nn.functional.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode, return_indices=False)
+        elif mode == "avg" and adaptive == True:
+            return torch.nn.functional.adaptive_avg_pool2d(input, output_size)
+        elif mode == "max" and adaptive == True:
+            return torch.nn.functional.adaptive_max_pool2d(input, output_size, return_indices=False)
+
+    def pool3d(input, kernel_size, stride, padding, dilation, ceil_mode, count_include_pad, mode, adaptive, output_size):
+        if mode == "avg" and adaptive == False:
+            return torch.nn.functional.avg_pool3d(input, kernel_size, stride, padding, ceil_mode, count_include_pad)
+        elif mode == "max" and adaptive == False:
+            return torch.nn.functional.max_pool3d(input, kernel_size, stride, padding, dilation, ceil_mode, return_indices=False)
+        elif mode == "avg" and adaptive == True:
+            return torch.nn.functional.adaptive_avg_pool3d(input, output_size)
+        elif mode == "max" and adaptive == True:
+            return torch.nn.functional.adaptive_max_pool3d(input, output_size, return_indices=False)
+
+    def layer_normGB(input, weight, bias, eps, normalized_shape):
+        return torch.nn.functional.layer_norm(input=input, weight=weight, bias=bias, eps=eps, normalized_shape=normalized_shape)
+
