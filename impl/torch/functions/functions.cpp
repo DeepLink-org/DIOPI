@@ -3370,12 +3370,12 @@ diopiError_t diopiFusedAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* para
     DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvg, exp_avgs, nums);
     DIOPI_CHECK_PTR(exp_avg_sqs);
     DIOPI_IMPL_BUILD_ATEN_LIST(atExpAvgSq, exp_avg_sqs, nums);
-    DIOPI_CHECK_PTR(max_exp_avg_sqs);
-    DIOPI_IMPL_BUILD_ATEN_LIST(atMaxExpAvgSq, max_exp_avg_sqs, nums);
     DIOPI_CHECK_PTR(state_steps);
     DIOPI_IMPL_BUILD_ATEN_LIST(atstep, state_steps, nums);
 
     if (amsgrad) {
+        DIOPI_CHECK_PTR(max_exp_avg_sqs);
+        DIOPI_IMPL_BUILD_ATEN_LIST(atMaxExpAvgSq, max_exp_avg_sqs, nums);
         CALL_ATEN_CUDA_FUNC(
             _fused_adamw_, atParam, atGrad, atExpAvg, atExpAvgSq, atMaxExpAvgSq, atstep, lr, beta1, beta2, weight_decay, eps, amsgrad, maximize);
     } else {
