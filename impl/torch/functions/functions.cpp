@@ -65,35 +65,38 @@ const char* diopiGetImplVersion() {
     return version;
 }
 
-diopiError_t diopiEmpty(diopiContextHandle_t ctx, const diopiDtype_t dtype, const diopiDevice_t device, const diopiSize_t* shape, diopiTensorHandle_t out) {
+diopiError_t diopiEmpty(diopiContextHandle_t ctx, const diopiSize_t shape, diopiTensorHandle_t out) {
     impl::aten::setCurStream(ctx);
-    return diopiRequireTensor(ctx, &out, shape, nullptr, dtype, device);
+    auto atOut = impl::aten::buildATen(out);
+    auto atSize = impl::aten::buildAtIntArray(shape);
+    CALL_ATEN_FUNC(empty_out, atOut, atSize);
+    return diopiSuccess;
 }
 
-diopiError_t diopiFull(diopiContextHandle_t ctx, const diopiDtype_t dtype, const diopiDevice_t device, const diopiSize_t* shape,
-                       const diopiScalar_t* fill_value, diopiTensorHandle_t out) {
+diopiError_t diopiFull(diopiContextHandle_t ctx, const diopiSize_t shape, const diopiScalar_t* fill_value, diopiTensorHandle_t out) {
     impl::aten::setCurStream(ctx);
 
-    auto status = diopiRequireTensor(ctx, &out, shape, nullptr, dtype, device);
+    auto status = diopiEmpty(ctx, shape, out);
     if (status != diopiSuccess) {
         return status;
     }
     auto atOut = impl::aten::buildATen(out);
+    auto atSize = impl::aten::buildAtIntArray(shape);
     auto atFillValue = impl::aten::buildAtScalar(fill_value);
-    CALL_ATEN_FUNC(fill_, atOut, atFillValue);
+    CALL_ATEN_FUNC(full_out, atOut, atSize, atFillValue);
     return diopiSuccess;
 }
 
-diopiError_t diopiRandNormal(diopiContextHandle_t ctx, const diopiDtype_t dtype, diopiDevice_t device, diopiTensorHandle_t out, const diopiScalar_t* mean,
-                             const diopiScalar_t* std, const int64_t seed, const diopiSize_t* shape) {
+diopiError_t diopiRandNormal(diopiContextHandle_t ctx, const diopiScalar_t* mean, const diopiScalar_t* std, const int64_t seed, const diopiSize_t shape,
+                             diopiTensorHandle_t out) {
+    auto status = diopiEmpty(ctx, shape, out);
+    if (status != diopiSuccess) return status;
+
+    impl::aten::setCurStream(ctx);
+    auto atOut = impl::aten::buildATen(out);
     auto atMean = impl::aten::buildAtScalar(mean);
     auto atStd = impl::aten::buildAtScalar(std);
     auto atShape = impl::aten::buildAtIntArray(shape);
-
-    auto status = diopiRequireTensor(ctx, &out, shape, nullptr, dtype, device);
-    if (status != diopiSuccess) return status;
-
-    auto atOut = impl::aten::buildATen(out);
 
     if (seed != 0) {
         at::manual_seed(seed);
