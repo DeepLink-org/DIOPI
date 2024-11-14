@@ -3360,7 +3360,7 @@ diopiError_t diopiGridSample(diopiContextHandle_t ctx, diopiTensorHandle_t out, 
 
 diopiError_t diopiFusedAdamW(diopiContextHandle_t ctx, diopiTensorHandle_t* params, diopiConstTensorHandle_t* grads, diopiTensorHandle_t* exp_avgs,
                              diopiTensorHandle_t* exp_avg_sqs, diopiTensorHandle_t* max_exp_avg_sqs, diopiConstTensorHandle_t* state_steps, int64_t nums,
-                             float lr, float beta1, float beta2, float eps, float weight_decay, bool amsgrad, bool maximize) {
+                             double lr, double beta1, double beta2, double eps, double weight_decay, bool amsgrad, bool maximize) {
     impl::aten::setCurStream(ctx);
     DIOPI_CHECK_PTR(params);
     DIOPI_IMPL_BUILD_ATEN_LIST(atParam, params, nums);
