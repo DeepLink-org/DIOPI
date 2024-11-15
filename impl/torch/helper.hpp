@@ -104,6 +104,8 @@ inline bool isFloat(const diopiScalar_t* scalar) { return scalar->stype > 7; }
 
 at::Scalar buildAtScalar(const diopiScalar_t* scalar);
 
+at::Tensor buildAtScalarTensor(const diopiScalar_t* scalar);
+
 inline at::IntArrayRef buildAtIntArray(const diopiSize_t* size) { return at::IntArrayRef(size->data, size->len); }
 
 inline at::IntArrayRef buildAtIntArray(diopiSize_t size) { return at::IntArrayRef(size.data, size.len); }

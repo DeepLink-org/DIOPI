@@ -94,6 +94,13 @@ at::Scalar buildAtScalar(const diopiScalar_t* scalar) {
     }
 }
 
+at::Tensor buildAtScalarTensor(const diopiScalar_t* scalar) {
+    auto atScalar = buildAtScalar(scalar);
+    at::Tensor atScalarTensor = c10::scalar_to_tensor(atScalar);
+    atScalarTensor.unsafeGetTensorImpl()->set_wrapped_number(true);
+    return atScalarTensor;
+}
+
 void buildDiopiTensor(diopiContextHandle_t ctx, const at::Tensor& input, diopiTensorHandle_t* out) {
     at::IntArrayRef atSize = input.sizes();
     at::IntArrayRef atStride = input.strides();
