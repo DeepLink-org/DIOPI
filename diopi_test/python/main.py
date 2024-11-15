@@ -50,10 +50,9 @@ def parse_args():
     gen_data_args = parser.add_argument_group("gen_data")
     gen_data_args.add_argument(
         "--fname",
-        type=str,
-        default=["all_ops"],
-        nargs="*",
-        help="the name of the function for which the test will run (default: all_ops)",
+        type=lambda arg: [s.strip() for s in arg.split(',')],
+        default="all_ops",
+        help="the names of the functions for which the test will run, separated by comma (default: all_ops)",
     )
     gen_data_args.add_argument(
         "--model_name", type=str, default="", help="Get op list of given model name"
