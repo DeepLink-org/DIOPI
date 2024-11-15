@@ -41,6 +41,12 @@
 - diopiConvolution2dBackward:
     dtype: (float64)->float32
 
+- diopiConvTranspose2d:
+    dtype: (float64)->float32
+
+- diopiConvTranspose2dBackward:
+    dtype: (float64)->float32
+
 - diopiAdaptiveAvgPool2d:
     dtype: (float64)->float32
 

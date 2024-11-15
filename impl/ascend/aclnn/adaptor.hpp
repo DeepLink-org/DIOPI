@@ -53,7 +53,7 @@ inline void* getOpApiFuncAddr(const char* apiName) {
     constexpr const char kOpApiLibName[] = "libopapi.so";
     static void* opApiHandler = getOpApiLibHandler(kOpApiLibName);
     if (opApiHandler == nullptr) {
-        return nullptr;
+        error(__FILE__, __LINE__, __FUNCTION__, "Error: Failed to get opApi handler for %s.", apiName);
     }
     return getOpApiFuncAddrInLib(opApiHandler, kOpApiLibName, apiName);
 }
