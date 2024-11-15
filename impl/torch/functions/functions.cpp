@@ -65,6 +65,52 @@ const char* diopiGetImplVersion() {
     return version;
 }
 
+diopiError_t diopiEmpty(diopiContextHandle_t ctx, const diopiSize_t shape, diopiTensorHandle_t out) {
+    impl::aten::setCurStream(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atSize = impl::aten::buildAtIntArray(shape);
+    CALL_ATEN_FUNC(empty_out, atOut, atSize);
+    return diopiSuccess;
+}
+
+diopiError_t diopiFull(diopiContextHandle_t ctx, const diopiSize_t shape, const diopiScalar_t* fill_value, diopiTensorHandle_t out) {
+    impl::aten::setCurStream(ctx);
+
+    auto status = diopiEmpty(ctx, shape, out);
+    if (status != diopiSuccess) {
+        return status;
+    }
+    auto atOut = impl::aten::buildATen(out);
+    auto atSize = impl::aten::buildAtIntArray(shape);
+    auto atFillValue = impl::aten::buildAtScalar(fill_value);
+    CALL_ATEN_FUNC(full_out, atOut, atSize, atFillValue);
+    return diopiSuccess;
+}
+
+diopiError_t diopiRandNormal(diopiContextHandle_t ctx, const diopiScalar_t* mean, const diopiScalar_t* std, const int64_t seed, const diopiSize_t shape,
+                             diopiTensorHandle_t out) {
+    auto status = diopiEmpty(ctx, shape, out);
+    if (status != diopiSuccess) return status;
+
+    impl::aten::setCurStream(ctx);
+    auto atOut = impl::aten::buildATen(out);
+    auto atMean = impl::aten::buildAtScalar(mean);
+    auto atStd = impl::aten::buildAtScalar(std);
+    auto atShape = impl::aten::buildAtIntArray(shape);
+
+    if (seed != 0) {
+        at::manual_seed(seed);
+    }
+
+    auto standardNormal = at::randn(atShape);
+
+    auto scaled = standardNormal.mul(atStd).add(atMean);
+
+    at::native::copy_(atOut, scaled);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
     auto atOut = impl::aten::buildATen(out);
