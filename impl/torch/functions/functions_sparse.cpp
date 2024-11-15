@@ -51,5 +51,29 @@ diopiError_t diopiSpMM(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiErrorOccurred;
 }
 
+
+extern "C" diopiError_t diopiSpConv(diopiContextHandle_t ctx, diopiTensorHandle_t out_feat, diopiTensorHandle_t in_feat,
+        diopicTensorHandle_t kernel, diopiTensorHandle_t neighbor_map,const int sum_nnz, 
+        diopiTensorHandle_t neighbor_address, diopiTensorHandle_t q_neighbor_address, const int output_size, 
+        const int qsum_nnz, const bool transpose, const bool allow_tf32, const bool allow_fp16 ) {
+    
+    impl::aten::setCurStream(ctx);
+
+    auto atIn_feat = impl::aten::buildATen(in_feat);
+    auto atOut_feat = impl::aten::buildATen(out_feat);
+    auto atKernel = impl::aten::buildATen(kernel);
+    auto atNeighbor_map = impl::aten::buildATen(neighbor_map);
+    auto atNeighbor_address = impl::aten::buildATen(neighbor_address);
+    auto atQ_neighbor_address = impl::aten::buildATen(q_neighbor_address);
+    atOut_feat.zero_();
+
+    sparse::ops::conv_forward_fetch_on_demand_cuda(atIn_feat, atOut_feat, atKernel, atNeighbor_map, sum_nnz, 
+            atNeighbor_address,atQ_neighbor_address,output_size,
+            qsum_nnz,transpose,allow_tf32,allow_fp16);
+            
+    return diopiSuccess;
+
+}
+
 }  // namespace cuda
 }  // namespace impl
