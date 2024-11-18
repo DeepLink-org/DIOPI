@@ -32,6 +32,24 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
                                             diopiConstTensorHandle_t sin, const bool conj, const bool interleaved);
 
 /**
+ * @brief Apply rotary embedding operation to an input tensor.
+ * @param[in] ctx The diopi context.
+ * @param[out] out1 The output tensor containing the rotary embeddings. type = [bfloat16, float16, float32, float64].
+ * @param[out] out2 The output tensor containing the rotary embeddings. type = [bfloat16, float16, float32, float64].
+ * @param[in] x1 The input tensor which rotary embedding will be applied. type = [bfloat16, float16, float32, float64].
+ * @param[in] x2 The input tensor which rotary embedding will be applied. type = [bfloat16, float16, float32, float64].
+ * @param[in] cos The cosine values. type = [bfloat16, float16, float32, float64].
+ * @param[in] sin The sine values. type = [bfloat16, float16, float32, float64].
+ * @param[in] conj bool: If `false`, compute rotary embeddings for forward. If `true`, computes the backward of rotary embeddings according to the conjugate of
+ * the rotary matrix.
+ * @param[in] interleaved bool:
+ *   - When set to `false`, rotary embedding is applied by splitting 'x' in half and separately applying sine and cosine to each half.
+ *   - When set to `true`, rotary embedding is applied by pairing every two elements in 'x' and applying sine and cosine to each pair.
+ */
+DIOPI_API diopiError_t diopiApplyRotary(diopiContextHandle_t ctx, diopiTensorHandle_t out1, diopiTensorHandle_t out2, diopiConstTensorHandle_t x1, diopiConstTensorHandle_t x2, diopiConstTensorHandle_t cos,
+                                            diopiConstTensorHandle_t sin, const bool conj, const bool interleaved);
+
+/**
  * @brief Apply Root Mean Square (RMS) Normalization to the input tensor.
  * @param[in] ctx The diopi context.
  * @param[out] out The output tensor containing the normalized values. type = [bfloat16, float16, float32, float64].
