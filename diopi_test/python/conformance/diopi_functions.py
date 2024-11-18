@@ -7040,8 +7040,8 @@ def apply_rotary(input1, input2, cos, sin, conj, interleaved):
     call = "diopiApplyRotary"
     func = check_function(call)
     out1 = Tensor(list(input1.size().data), input1.get_dtype())
-    out1 = Tensor(list(input2.size().data), input2.get_dtype())
-    ret = func(input.context(), out1, out2, input1, input2, cos, sin, conj, interleaved)
+    out2 = Tensor(list(input2.size().data), input2.get_dtype())
+    ret = func(input1.context(), out1, out2, input1, input2, cos, sin, conj, interleaved)
     check_returncode(ret)
     return (out1, out2)
 
