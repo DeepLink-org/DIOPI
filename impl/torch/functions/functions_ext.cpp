@@ -63,8 +63,9 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
-diopiError_t diopiApplyRotary(diopiContextHandle_t ctx, diopiTensorHandle_t out1, diopiTensorHandle_t out2, diopiConstTensorHandle_t x1, diopiConstTensorHandle_t x2, diopiConstTensorHandle_t cos,
-                                  diopiConstTensorHandle_t sin, const bool conj, const bool interleaved=false) {
+diopiError_t diopiApplyRotary(diopiContextHandle_t ctx, diopiTensorHandle_t out1, diopiTensorHandle_t out2, diopiConstTensorHandle_t x1,
+                              diopiConstTensorHandle_t x2, diopiConstTensorHandle_t cos, diopiConstTensorHandle_t sin, const bool conj,
+                              const bool interleaved = false) {
     if (interleaved) {
         set_last_error_string("interleaved rotary embedding is not supported yet");
         return diopiNoImplement;

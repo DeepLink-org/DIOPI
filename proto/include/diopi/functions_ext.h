@@ -46,8 +46,9 @@ DIOPI_API diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTenso
  *   - When set to `false`, rotary embedding is applied by splitting 'x' in half and separately applying sine and cosine to each half.
  *   - When set to `true`, rotary embedding is applied by pairing every two elements in 'x' and applying sine and cosine to each pair.
  */
-DIOPI_API diopiError_t diopiApplyRotary(diopiContextHandle_t ctx, diopiTensorHandle_t out1, diopiTensorHandle_t out2, diopiConstTensorHandle_t x1, diopiConstTensorHandle_t x2, diopiConstTensorHandle_t cos,
-                                            diopiConstTensorHandle_t sin, const bool conj, const bool interleaved);
+DIOPI_API diopiError_t diopiApplyRotary(diopiContextHandle_t ctx, diopiTensorHandle_t out1, diopiTensorHandle_t out2, diopiConstTensorHandle_t x1,
+                                        diopiConstTensorHandle_t x2, diopiConstTensorHandle_t cos, diopiConstTensorHandle_t sin, const bool conj,
+                                        const bool interleaved);
 
 /**
  * @brief Apply Root Mean Square (RMS) Normalization to the input tensor.
