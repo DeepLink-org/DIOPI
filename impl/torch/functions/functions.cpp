@@ -65,6 +65,63 @@ const char* diopiGetImplVersion() {
     return version;
 }
 
+diopiError_t diopiHasInf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    CALL_ATEN_FUNC(isinf_out, atOut, atInput);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiTrunc(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    CALL_ATEN_FUNC(trunc_out, atOut, atInput);
+    return diopiSuccess;
+}
+
+diopiError_t diopiRound(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    CALL_ATEN_FUNC(round_out, atOut, atInput);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiHardSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    CALL_ATEN_FUNC(hardsigmoid_out, atOut, atInput);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiThresholdRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
+                                const diopiScalar_t* value) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    auto atThreshold = impl::aten::buildAtScalar(threshold);
+    auto atValue = impl::aten::buildAtScalar(value);
+    CALL_ATEN_FUNC(threshold_out, atOut, atInput, atThreshold, atValue);
+
+    return diopiSuccess;
+}
+
+diopiError_t diopiElu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* alpha) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    auto atAlpha = impl::aten::buildAtScalar(alpha);
+    CALL_ATEN_FUNC(elu_out, atOut, atInput, atAlpha);
+    return diopiSuccess;
+}
+
 diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
     auto atOut = impl::aten::buildATen(out);

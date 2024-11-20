@@ -3,6 +3,110 @@ import numpy as np
 
 
 diopi_configs = {
+    'has_inf': dict(
+        name=["isinf"],
+        interface=["torch"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+                args=[
+                    {
+                  "ins": ['input'],
+                    "shape": ((), (1024,), (2, 4096), (64, 28, 28),
+                              (32, 64, 112, 112), (64, 3, 7, 28, 28),
+                              (0,), (256, 0), (8, 0, 128)),
+                    "dtype": [np.float16, np.float32, np.float64,
+                              np.int16, np.int32, np.int64,
+                              np.uint8, np.int8],
+                    },
+                ],
+        ),
+    ),
+    
+    'trunc': dict(
+        name=["trunc"],
+        interface=["torch"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'round': dict(
+        name=["round"],
+        interface=["torch"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'round': dict(
+        name=["hardsigmoid"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'elu': dict(
+        name=["elu"],
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            alpha=[0.234, 4.8, -10, 1.0],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype":  [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'threshold_relu': dict(
+        name=["threshold"],
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            threshold=[0.234, 4.8, -10, 1.0],
+            value=[0.2, 4.2, -10, 2.0],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype":  [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
     # FIXME batch_norm输入0size的张量报错
     'batch_norm': dict(
         name=["batch_norm"],

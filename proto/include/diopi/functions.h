@@ -19,6 +19,36 @@ extern "C" {
 DIOPI_RT_API DIOPI_ATTR_WEAK const char* diopiGetVendorName();
 DIOPI_RT_API DIOPI_ATTR_WEAK const char* diopiGetImplVersion();
 DIOPI_RT_API DIOPI_ATTR_WEAK const char* diopiGetLastErrorString();
+/**
+ * @brief Returns whether the input tensor contains any Inf values.
+ */
+DIOPI_API diopiError_t diopiHasInf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Truncates the input tensor to an integer value.
+ */
+DIOPI_API diopiError_t diopiTrunc(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Rounds the input tensor to the nearest integer value.
+ */
+DIOPI_API diopiError_t diopiRound(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Applies the hard sigmoid activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiHardSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Applies a thresholded rectified linear unit (ReLU) activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiThresholdRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
+                                          const diopiScalar_t* value);
+
+/**
+ * @brief Applies the exponential linear unit (ELU) activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiElu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* alpha);
 
 /**
  * @brief Applies a 2D convolution over an input image composed of several input planes.

@@ -224,6 +224,51 @@ def promote_type(input: Tensor, promoted_dtype: Dtype) -> Dtype:
     ]
     return dtype1 if dtype1 not in need_promote_types else promoted_dtype
 
+def isinf(input) -> Tensor:
+    func = check_function("diopiHasInf")
+    out = Tensor(size=input.size(), dtype=Dtype.bool)
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def trunc(input) -> Tensor:
+    func = check_function("diopiTrunc")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def round(input) -> Tensor:
+    func = check_function("diopiTRound")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def hardsigmoid(input) -> Tensor:
+    func = check_function("diopiHardSigmoid")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def elu(input, alpha) -> Tensor:
+    func = check_function("diopiElu")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    value = Scalar(alpha)
+    ret = func(input.context(), out, input, value)
+    check_returncode(ret)
+    return out
+
+
+def threshold(input, threshold, value) -> Tensor:
+    func = check_function("diopiThresholdRelu")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    threshold = Scalar(threshold)
+    value = Scalar(value)
+    ret = func(input.context(), out, input, threshold, value)
+    check_returncode(ret)
+    return out
 
 def fill_(input, value):
     func = check_function("diopiFill")
