@@ -138,6 +138,16 @@ diopiError_t diopiSoftplus(diopiContextHandle_t ctx, diopiTensorHandle_t out, di
     return diopiSuccess;
 }
 
+diopiError_t diopiSoftsign(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input){
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atAbsInput = CALL_ATEN_FUNC(abs, atInput);
+    auto atDenominator = CALL_ATEN_FUNC(add, atAbsInput, 1.0);
+    auto atOut = CALL_ATEN_FUNC(div, atInput, atDenominator);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
 diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
     auto atOut = impl::aten::buildATen(out);

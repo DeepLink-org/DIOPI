@@ -285,6 +285,13 @@ def softplus(input, beta, threshold):
     check_returncode(ret)
     return out
 
+def softsign(input):
+    func = check_function("diopiSoftsign")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
 def fill_(input, value):
     func = check_function("diopiFill")
     value = Scalar(value)

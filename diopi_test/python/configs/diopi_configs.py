@@ -137,6 +137,21 @@ diopi_configs = {
         ),
     ),
     
+    'softsign': dict(
+        name=["softsign"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
     # FIXME batch_norm输入0size的张量报错
     'batch_norm': dict(
         name=["batch_norm"],

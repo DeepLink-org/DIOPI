@@ -61,6 +61,11 @@ DIOPI_API diopiError_t diopiSoftplus(diopiContextHandle_t ctx, diopiTensorHandle
                                      const diopiScalar_t* threshold);
 
 /**
+ * @brief Applies the softsign activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiSoftsign(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
  * @brief Applies a 2D convolution over an input image composed of several input planes.
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor. type = [float32, float16, float64].
