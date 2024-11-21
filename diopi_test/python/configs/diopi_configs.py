@@ -9,17 +9,13 @@ diopi_configs = {
         atol=1e-3,
         rtol=1e-4,
         tensor_para=dict(
-                args=[
-                    {
-                  "ins": ['input'],
-                    "shape": ((), (1024,), (2, 4096), (64, 28, 28),
-                              (32, 64, 112, 112), (64, 3, 7, 28, 28),
-                              (0,), (256, 0), (8, 0, 128)),
-                    "dtype": [np.float16, np.float32, np.float64,
-                              np.int16, np.int32, np.int64,
-                              np.uint8, np.int8],
-                    },
-                ],
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1024,), (2, 4096), (64, 28, 28), (32, 64, 112, 112), (64, 3, 7, 28, 28), (0,), (256, 0), (8, 0, 128)),
+                    "dtype": [np.float16, np.float32, np.float64, np.int16, np.int32, np.int64, np.uint8, np.int8],
+                },
+            ],
         ),
     ),
     
@@ -80,28 +76,62 @@ diopi_configs = {
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['input'],
+                    "ins": ["input"],
                     "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
-                    "dtype":  [np.float32, np.float16, np.float64],
+                    "dtype": [np.float32, np.float16, np.float64],
                 },
             ],
         ),
     ),
     
-    'threshold_relu': dict(
-        name=["threshold"],
+    'prelu': dict(
+        name=["prelu"],
+        atol=1e-3,
+        rtol=1e-4,
+        dtype=[np.float32, np.float16, np.float64],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                },
+                {
+                    "ins": ["weight"],
+                    "shape": ((16,), (64,), (96,), (1,)),
+                },
+            ],
+        ),
+    ),
+    
+    'selu': dict(
+        name=["selu"],
+        dtype=[np.float32, np.float16, np.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                },
+            ],
+        ),
+    ),
+    
+    'softplus': dict(
+        name=["softplus"],
         atol=1e-3,
         rtol=1e-4,
         para=dict(
-            threshold=[0.234, 4.8, -10, 1.0],
-            value=[0.2, 4.2, -10, 2.0],
+            beta=[0.234, 4.8, -10, 1.0],
+            threshold=[0.234, 4.8, -10, 1.0]
         ),
         tensor_para=dict(
             args=[
                 {
-                    "ins": ['input'],
+                    "ins": ["input"],
                     "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
-                    "dtype":  [np.float32, np.float16, np.float64],
+                    "dtype": [np.float32, np.float16, np.float64],
                 },
             ],
         ),

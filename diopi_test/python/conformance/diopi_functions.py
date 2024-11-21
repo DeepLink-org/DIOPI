@@ -261,12 +261,27 @@ def elu(input, alpha) -> Tensor:
     return out
 
 
-def threshold(input, threshold, value) -> Tensor:
-    func = check_function("diopiThresholdRelu")
+def prelu(input, weight) -> Tensor:
+    func = check_function("diopiPrelu")
     out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input, weight)
+    check_returncode(ret)
+    return out
+
+
+def selu(input):
+    func = check_function("diopiSelu")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def softplus(input, beta, threshold):
+    func = check_function("diopiSoftplus")
+    beta = Scalar(beta)
     threshold = Scalar(threshold)
-    value = Scalar(value)
-    ret = func(input.context(), out, input, threshold, value)
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input, beta, threshold)
     check_returncode(ret)
     return out
 

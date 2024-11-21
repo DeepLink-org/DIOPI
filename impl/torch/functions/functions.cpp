@@ -101,24 +101,40 @@ diopiError_t diopiHardSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
-diopiError_t diopiThresholdRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
-                                const diopiScalar_t* value) {
-    impl::aten::setCurStream(ctx);
-    auto atInput = impl::aten::buildATen(input);
-    auto atOut = impl::aten::buildATen(out);
-    auto atThreshold = impl::aten::buildAtScalar(threshold);
-    auto atValue = impl::aten::buildAtScalar(value);
-    CALL_ATEN_FUNC(threshold_out, atOut, atInput, atThreshold, atValue);
-
-    return diopiSuccess;
-}
-
 diopiError_t diopiElu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* alpha) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atOut = impl::aten::buildATen(out);
     auto atAlpha = impl::aten::buildAtScalar(alpha);
     CALL_ATEN_FUNC(elu_out, atOut, atInput, atAlpha);
+    return diopiSuccess;
+}
+
+diopiError_t diopiPrelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiTensorHandle_t weight) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atWeight = impl::aten::buildATen(weight);
+    auto atOut = CALL_ATEN_FUNC(prelu, atInput, atWeight);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiSelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = CALL_ATEN_FUNC(selu, atInput);
+    impl::aten::updateATen2Tensor(ctx, atOut, out);
+    return diopiSuccess;
+}
+
+diopiError_t diopiSoftplus(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* beta,
+                           const diopiScalar_t* threshold) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto atOut = impl::aten::buildATen(out);
+    auto atBeta = impl::aten::buildAtScalar(beta);
+    auto atThreshold = impl::aten::buildAtScalar(threshold);
+    CALL_ATEN_FUNC(softplus_out, atOut, atInput, atBeta, atThreshold);
     return diopiSuccess;
 }
 

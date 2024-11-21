@@ -40,15 +40,25 @@ DIOPI_API diopiError_t diopiRound(diopiContextHandle_t ctx, diopiTensorHandle_t 
 DIOPI_API diopiError_t diopiHardSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
- * @brief Applies a thresholded rectified linear unit (ReLU) activation function to an input tensor.
- */
-DIOPI_API diopiError_t diopiThresholdRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* threshold,
-                                          const diopiScalar_t* value);
-
-/**
  * @brief Applies the exponential linear unit (ELU) activation function to an input tensor.
  */
 DIOPI_API diopiError_t diopiElu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* alpha);
+
+/**
+ * @brief Applies the parametric rectified linear unit (PReLU) activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiPrelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiTensorHandle_t weight);
+
+/**
+ *  @brief Applies the SELU activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiSelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Applies the softplus activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiSoftplus(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* beta,
+                                     const diopiScalar_t* threshold);
 
 /**
  * @brief Applies a 2D convolution over an input image composed of several input planes.
