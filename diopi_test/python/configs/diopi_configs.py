@@ -5552,8 +5552,8 @@ diopi_configs = {
     'fused_adamw': dict(
          name=['fused_adamw'],
          interface=["CustomizedTest"],
-         atol=1e-2,
-         rtol=2e-3,
+         atol=3e-5,
+         rtol=3e-5,
          atol_half=1e-2,
          rtol_half=2e-3,
          para=dict(

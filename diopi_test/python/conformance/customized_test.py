@@ -163,7 +163,7 @@ class CustomizedTest(object):
         amsgrad,
         maximize,
     ):
-        torch.optim._functional.adamw(
+        torch._fused_adamw_(
             params,
             grads,
             exp_avgs,
@@ -171,13 +171,12 @@ class CustomizedTest(object):
             max_exp_avg_sqs,
             state_steps,
             amsgrad=amsgrad,
+            lr=lr,
             beta1=beta1,
             beta2=beta2,
-            lr=lr,
             weight_decay=weight_decay,
             eps=eps,
             maximize=maximize,
-            fused=True,
         )
         return params, exp_avgs, exp_avg_sqs, max_exp_avg_sqs
 
