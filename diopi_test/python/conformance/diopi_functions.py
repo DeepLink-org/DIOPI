@@ -423,6 +423,15 @@ def relu(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiRelu")
 
 
+def relu_backward(input, grad_outputs, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiReluBackward")
+    ret = func(input.context(), grad_input, grad_outputs[0], input)
+    check_returncode(ret)
+    return {"input": grad_input} if grad_input.requires_grad else {}
+
+
 def abs(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiAbs")
 

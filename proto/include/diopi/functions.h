@@ -237,6 +237,11 @@ DIOPI_API diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTen
 DIOPI_API diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
+ * @brief Computes the gradient of the rectified linear unit function.
+ */
+DIOPI_API diopiError_t diopiReluBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out, diopiConstTensorHandle_t input);
+
+/**
  * @brief The in-place version of diopiRelu().
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor and will be stored result tensor.type = [float32, float64].
@@ -701,6 +706,13 @@ DIOPI_API diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, 
  */
 DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
                                     bool train, diopiGeneratorHandle_t generator);
+
+/**
+ *@brief Randomly zeroes some of the elements of the input tensor with probability p
+ */
+DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
+                                    bool train, diopiGeneratorHandle_t generator);
+
 /**
  * @brief The in-place version of diopiDropout().
  * @param[in] ctx Context environment.

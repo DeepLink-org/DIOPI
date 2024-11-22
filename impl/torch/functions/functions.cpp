@@ -158,6 +158,18 @@ diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiC
     return diopiSuccess;
 }
 
+diopiError_t diopiReluBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in,  diopiTensorHandle_t grad_out, diopiConstTensorHandle_t input){
+    impl::aten::setCurStream(ctx);
+
+    auto atGradOut = impl::aten::buildATen(grad_out);
+    auto atInput = impl::aten::buildATen(input);
+    auto atGradIn = impl::aten::buildATen(grad_in); 
+    auto mask = (atInput > 0).to(atGradOut.dtype());
+    atGradIn.copy_(atGradOut * mask);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiReluInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
@@ -4000,6 +4012,7 @@ diopiError_t diopiLinspace(diopiContextHandle_t ctx, diopiTensorHandle_t out, co
 
     return diopiSuccess;
 }
+
 
 diopiError_t diopiRoll(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiSize_t shifts, diopiSize_t dims) {
     impl::aten::setCurStream(ctx);
