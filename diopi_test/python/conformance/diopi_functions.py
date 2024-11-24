@@ -540,6 +540,15 @@ def log1p(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiLog1p", promote_type(input, Dtype.float32))
 
 
+def erf_backward(input, grad_outputs, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiErfBackward")
+    ret = func(input.context(), grad_input, grad_outputs[0], input)
+    check_returncode(ret)
+    return {"input": grad_input} if grad_input.requires_grad else {}
+
+
 def erf(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiErf", promote_type(input, Dtype.float32))
 

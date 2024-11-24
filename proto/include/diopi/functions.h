@@ -242,6 +242,12 @@ DIOPI_API diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t o
 DIOPI_API diopiError_t diopiReluBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out, diopiConstTensorHandle_t input);
 
 /**
+ * @brief Comput the gradient of the error function.
+ */
+DIOPI_API diopiError_t diopiErfBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out, diopiConstTensorHandle_t input);
+
+
+/**
  * @brief The in-place version of diopiRelu().
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor and will be stored result tensor.type = [float32, float64].

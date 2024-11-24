@@ -666,6 +666,24 @@ diopi_configs = {
             ],
         ),
     ),
+    
+    'erf': dict(
+        name=['erf'],
+        interface=['torch'],
+        dtype=[np.float16, np.float32, np.float64],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40), (0,), (16, 0)),
+                },
+            ],
+        ),
+    ),
 
     'relu_no_contiguous': dict(
         name=["relu"],

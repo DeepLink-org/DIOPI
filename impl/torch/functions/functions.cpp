@@ -1600,6 +1600,19 @@ diopiError_t diopiErf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiCo
     return diopiSuccess;
 }
 
+diopiError_t diopiErfBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out, 
+                              diopiConstTensorHandle_t input){
+    impl::aten::setCurStream(ctx);
+    auto atGradIn = impl::aten::buildATen(grad_in);
+    auto atGradOut = impl::aten::buildATen(grad_out);
+    auto atInput = impl::aten::buildATen(input);
+    auto local_grad = (2.0 / std::sqrt(M_PI)) * at::exp(-atInput * atInput);
+    atGradIn.copy_(atGradOut * local_grad);
+
+    return diopiSuccess;
+}
+
+
 diopiError_t diopiErfInp(diopiContextHandle_t ctx, diopiTensorHandle_t input) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
