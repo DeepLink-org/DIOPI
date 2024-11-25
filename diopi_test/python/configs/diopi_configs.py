@@ -152,6 +152,46 @@ diopi_configs = {
         ),
     ),
     
+    "batch_norm_GB": dict(
+        name=["batch_norm_GB"],
+        interface=['CustomizedTest'],
+        dtype=[np.float32, np.float16, np.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            training=[True, True, True],
+            momentum=[0.01, 0.01, 0.01],
+            axis=[0, 1, 2],
+            eps=[1e-4, 1e-4, 1e-4],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 64, 32, 32),(2, 64, 32, 32),(2, 64, 32, 32)),
+                    "gen_fn": "Genfunc.randn",
+                },
+                {
+                    "ins": ["running_mean"],
+                    "shape": ((2,), (64,), (32,)),
+                    "gen_fn": "Genfunc.zeros",
+                },
+                {
+                    "ins": ["running_var"],
+                    "shape": ((2,), (64,), (32,)),
+                    "gen_fn": "Genfunc.ones",
+                },
+                {
+                    "ins": ["weight", "bias"],
+                    "shape": ((2,), (64,), (32,)),
+                    "gen_fn": "Genfunc.randn",
+                },
+            ]
+        ),
+    ),
+    
     # FIXME batch_norm输入0size的张量报错
     'batch_norm': dict(
         name=["batch_norm"],

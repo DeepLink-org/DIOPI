@@ -2823,6 +2823,52 @@ def batch_norm(
     return out
 
 
+def batch_norm_GB(
+    input,
+    running_mean,
+    running_var,
+    weight,
+    bias,
+    training=False,
+    momentum=0.1,
+    eps=1e-05,
+    axis=1
+) -> Tensor:
+    dim = input.size().len
+    dim = [i for i in range(dim) if i!= axis]
+    dtype = Dtype.float32 if input.get_dtype() == Dtype.float16 else None
+    _, save_mean = reduce_op_process(input, dim, dtype=dtype)
+    save_invstd = raw_like(save_mean)
+
+    if not training:
+        assert (
+            running_mean is not None and running_var is not None
+        ), "if not trainging, running_mean and running_var must be defined"
+
+    out = raw_like(input)
+    func = check_function("diopiBatchNormGB")
+    ret = func(
+        input.context(),
+        out,
+        save_mean,
+        save_invstd,
+        input,
+        weight,
+        bias,
+        running_mean,
+        running_var,
+        training,
+        momentum,
+        eps,
+        axis
+    )
+
+    check_returncode(ret)
+    GLOBAL_STATE["batch_norm_save_mean"] = save_mean
+    GLOBAL_STATE["batch_norm_save_invstd"] = save_invstd
+    return out
+
+
 def batch_norm_stats(input, eps):
     func = check_function("diopiBatchNormStats")
     # cuda accumulate dtype mapping

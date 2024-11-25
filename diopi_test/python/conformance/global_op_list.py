@@ -11,6 +11,7 @@ nhwc_op = {
     "conv2d": ["2d", "input", "weight"],
     "conv3d": ["3d", "input", "weight"],
     "batch_norm": ["input"],
+    "batch_norm_GB": ["input", "running_mean", "running_var"],
     "adaptive_avg_pool2d": ["2d", "input"],
     "adaptive_max_pool2d": ["2d", "input"],
     "adaptive_avg_pool3d": ["3d", "input"],
@@ -64,6 +65,7 @@ dtype_out_op = {
 
 ops_with_states = {
     "batch_norm": {"running_mean", "running_var"},
+    "batch_norm_GB": {"running_mean", "running_var"},
     "sgd": {"buf", "param"},
     "fill_": {"input"},
     "zero_": {"input"},
