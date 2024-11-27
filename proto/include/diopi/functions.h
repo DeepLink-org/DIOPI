@@ -21,6 +21,46 @@ DIOPI_RT_API DIOPI_ATTR_WEAK const char* diopiGetImplVersion();
 DIOPI_RT_API DIOPI_ATTR_WEAK const char* diopiGetLastErrorString();
 
 /**
+ * @brief Creates an empty tensor with the specified data type, device, and shape.
+ * @param[in] ctx Context environment.
+ * @param[in] dtype The desired data type for the tensor.
+ * @param[in] device The device where the tensor will be allocated.
+ * @param[in] shape the shape of the tensor to be created.
+ * @param[out] output Pointer to a tensor handle that will hold the reference to the created tensor.
+ * @return diopiError_t Status of the operation; diopiSuccess on successful tensor creation.
+ */
+DIOPI_API diopiError_t diopiEmpty(diopiContextHandle_t ctx, const diopiDtype_t dtype, const diopiDevice_t device, const diopiSize_t* shape,
+                                  diopiTensorHandle_t out);
+
+/**
+ * @brief Creates a tensor filled with a specified value, with the specified data type, device, and shape.
+ * @param[in] ctx Context environment.
+ * @param[in] dtype The desired data type for the tensor.
+ * @param[in] device The device where the tensor will be allocated.
+ * @param[in] shape The shape of the tensor to be created.
+ * @param[in] fill_value A pointer to the value that will fill the tensor.
+ * @param[out] out Pointer to a tensor handle that will hold the reference to the created tensor.
+ * @return diopiError_t Status of the operation; diopiSuccess on successful tensor creation.
+ */
+DIOPI_API diopiError_t diopiFull(diopiContextHandle_t ctx, const diopiDtype_t dtype, const diopiDevice_t device, const diopiSize_t* shape,
+                                 const diopiScalar_t* fill_value, diopiTensorHandle_t out);
+
+/**
+ * @brief Creates a tensor filled with random numbers drawn from a normal distribution with specified mean and standard deviation.
+ * @param[in] ctx Context environment.
+ * @param[in] dtype The desired data type for the tensor.
+ * @param[in] device The device where the tensor will be allocated.
+ * @param[in] mean A pointer to the mean value of the normal distribution.
+ * @param[in] std A pointer to the standard deviation of the normal distribution.
+ * @param[in] seed The random seed for reproducibility.
+ * @param[in] shape The shape of the tensor to be created.
+ * @param[out] out Pointer to a tensor handle that will hold the reference to the created tensor.
+ * @return diopiError_t Status of the operation; diopiSuccess on successful tensor creation.
+ */
+DIOPI_API diopiError_t diopiRandNormal(diopiContextHandle_t ctx, const diopiDtype_t dtype, diopiDevice_t device, const diopiScalar_t* mean,
+                                       const diopiScalar_t* std, const int64_t seed, const diopiSize_t* shape, diopiTensorHandle_t out);
+
+/**
  * @brief Applies a 2D convolution over an input image composed of several input planes.
  * @param[in] ctx Context environment.
  * @param[in] input the input tensor. type = [float32, float16, float64].
