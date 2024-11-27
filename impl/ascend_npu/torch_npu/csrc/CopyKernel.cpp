@@ -351,7 +351,28 @@ void copy_d2d_dtype_baseformat(at::Tensor& self, const at::Tensor& src, bool non
                 }
                 // custom_ops::npu_stride_copy_out(src, src.sizes(), src.strides(), src.storage_offset(), self);
                 auto shape = inferOriginShape(source.sizes(), source.strides());
+
+                // store the storage before calling npu_stride_copy_out that may change the storage of tensor self.
+                at::Storage selfStorage = self.storage();
+                c10::IntArrayRef selfStrideBefore = self.strides();
+                c10::IntArrayRef selfSizesBefore = self.sizes();
+                int64_t storageOffsetBefore = self.storage_offset();
+                void* storagePtrBefore = selfStorage.data_ptr().get();
+
                 custom_ops::npu_stride_copy_out(impl::aten::viewStorage(source, shape), source.sizes(), source.strides(), source.storage_offset(), self);
+
+                void* storagePtrAfter = self.storage().data_ptr().get();
+                // if npu_stride_copy_out changed the storage of tensor self, we will copy the data into the origin storage.
+                if (storagePtrAfter != storagePtrBefore) {
+                    DIOPI_CHECK_THROW(selfStrideBefore == self.strides(), "%s", "strides not match");
+                    DIOPI_CHECK_THROW(selfSizesBefore == self.sizes(), "%s", "sizes not match");
+                    DIOPI_CHECK_THROW(storageOffsetBefore == self.storage_offset(), "%s", "storage_offset not match");
+                    int64_t storageNbytes = self.storage().nbytes();
+                    c10_npu::NPUStream stream = c10_npu::getCurrentNPUStream();
+                    aclrtMemcpyAsync(
+                        storagePtrBefore, storageNbytes, storagePtrAfter, storageNbytes, ACL_MEMCPY_DEVICE_TO_DEVICE, static_cast<aclrtStream>(stream));
+                    self.set_(selfStorage);
+                }
                 return;
             }
         }
