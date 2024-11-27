@@ -117,8 +117,6 @@ ascend:
 - diopiHardtanhInp
 - diopiIndex
 - diopiIndexBackward
-- diopiIndexPut
-- diopiIndexPutInp
 - diopiIndexSelect
 - diopiIndexSelectBackward
 - diopiIsNan
@@ -272,6 +270,8 @@ ascend_npu:
 - diopiApplyPenalty
 - diopiContextAttentionInference
 - diopiGetNativeMemoryFormat
+- diopiIndexPut
+- diopiIndexPutInp
 - diopiNLLLoss
 - diopiNLLLossBackward
 - diopiNLLLossV2
