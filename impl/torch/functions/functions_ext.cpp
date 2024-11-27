@@ -63,6 +63,25 @@ diopiError_t diopiRotaryEmbedding(diopiContextHandle_t ctx, diopiTensorHandle_t 
     return diopiSuccess;
 }
 
+diopiError_t diopiApplyRotary(diopiContextHandle_t ctx, diopiTensorHandle_t out1, diopiTensorHandle_t out2, diopiConstTensorHandle_t x1,
+                              diopiConstTensorHandle_t x2, diopiConstTensorHandle_t cos, diopiConstTensorHandle_t sin, const bool conj,
+                              const bool interleaved = false) {
+    if (interleaved) {
+        set_last_error_string("interleaved rotary embedding is not supported yet");
+        return diopiNoImplement;
+    }
+    impl::aten::setCurStream(ctx);
+    auto atX1 = impl::aten::buildATen(x1);
+    auto atX2 = impl::aten::buildATen(x2);
+    auto atCos = impl::aten::buildATen(cos);
+    auto atSin = impl::aten::buildATen(sin);
+    auto atOut1 = impl::aten::buildATen(out1);
+    auto atOut2 = impl::aten::buildATen(out2);
+    ext::ops::apply_rotary_cuda(atX1, atX2, atCos, atSin, atOut1, atOut2, conj);
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiRMSNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t invRMS, diopiConstTensorHandle_t input,
                           diopiSize_t normalized_shape, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, double eps) {
     impl::aten::setCurStream(ctx);

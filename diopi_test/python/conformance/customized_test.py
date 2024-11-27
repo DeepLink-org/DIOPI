@@ -388,6 +388,22 @@ class CustomizedTest(object):
         out2 = out2.to(data_type)
         out = torch.cat((out1, out2), dim=-1)
         return out
+   
+    def apply_rotary(input1, input2, cos, sin, conj, interleaved):
+        data_type = input1.dtype
+        input1 = input1.to(torch.float32)
+        ipnut2 = input2.to(torch.float32)
+        cos = cos.to(torch.float32)
+        sin = sin.to(torch.float32)
+        if not conj:
+            out1 = input1 * cos - input2 * sin
+            out2 = input1 * sin + input2 * cos
+        else:
+            out1 = input1 * cos + input2 * sin
+            out2 = -input1 * sin + input2 * cos
+        out1 = out1.to(data_type)
+        out2 = out2.to(data_type)
+        return (out1, out2)
 
     def rms_norm(input, normalized_shape, weight, bias, eps):
         if normalized_shape is not None:
