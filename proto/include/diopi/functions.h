@@ -754,6 +754,16 @@ DIOPI_API diopiError_t diopiCrossEntropyLossBackward(diopiContextHandle_t ctx, d
                                                      diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
                                                      diopiReduction_t reduction, int64_t ignore_index, double label_smoothing);
 
+DIOPI_API diopiError_t diopiCrossEntropyLossWithTotalWeight(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t total_weight,
+                                                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
+                                                            diopiReduction_t reduction, int64_t ignore_index, double label_smoothing);
+
+DIOPI_API diopiError_t diopiCrossEntropyLossWithTotalWeightBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input,
+                                                                    diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                                    diopiConstTensorHandle_t target, diopiConstTensorHandle_t weight,
+                                                                    diopiConstTensorHandle_t total_weight, diopiReduction_t reduction, int64_t ignore_index,
+                                                                    double label_smoothing);
+
 /**
  * @brief Measures the NLL loss between the target and input probabilities.
  * @param[in] ctx Context environment.

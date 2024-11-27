@@ -992,10 +992,12 @@ def cross_entropy(
         out = Tensor((), input.get_dtype())
 
     reduction_mode = convert_reduction(reduction)
-    func = check_function("diopiCrossEntropyLoss")
+    totalWeight = Tensor((1,), input.get_dtype())
+    func = check_function("diopiCrossEntropyLossWithTotalWeight")
     ret = func(
         input.context(),
         out,
+        totalWeight,
         input,
         target,
         weight,
@@ -1004,6 +1006,7 @@ def cross_entropy(
         label_smoothing,
     )
     check_returncode(ret)
+    GLOBAL_STATE["cross_entropy_totalWeight"] = totalWeight
     return out
 
 
@@ -6561,7 +6564,8 @@ def cross_entropy_backward(
         weight = None
 
     reduction_mode = convert_reduction(reduction)
-    func = check_function("diopiCrossEntropyLossBackward")
+    func = check_function("diopiCrossEntropyLossWithTotalWeightBackward")
+    totalWeight = GLOBAL_STATE.pop("cross_entropy_totalWeight")
     ret = func(
         input.context(),
         grad_input,
@@ -6569,6 +6573,7 @@ def cross_entropy_backward(
         input,
         target,
         weight,
+        totalWeight,
         reduction_mode,
         ignore_index,
         label_smoothing,

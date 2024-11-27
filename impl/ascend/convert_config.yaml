@@ -480,6 +480,14 @@
     tensor_dtype:
         indices: (int64)->int32
 
+- diopiCrossEntropyLossWithTotalWeight:
+    dtype: (float64)->float32
+    layout: ND
+
+- diopiCrossEntropyLossWithTotalWeightBackward:
+    dtype: (float64)->float32
+    layout: ND
+
 - diopiBatchNormStats:
     dtype: (float64)->float32
 
