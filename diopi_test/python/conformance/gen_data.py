@@ -3,6 +3,7 @@
 import os
 import sys
 import shutil
+from typing import Iterable
 from .utils import logger
 from configs import model_config
 from .model_list import model_op_list
@@ -14,7 +15,7 @@ from .exception import GenDataFailedException
 sys.path.append("../python/configs")
 
 
-def gen_data(model_name: str = "", cache_path=".", fname=[""], diopi_case_item_file="diopi_case_items.cfg"):
+def gen_data(model_name: str = "", cache_path = ".", fname: Iterable[str] = (), diopi_case_item_file = "diopi_case_items.cfg"):
     model_name = model_name.lower()
     if model_name != "":
         logger.info(
