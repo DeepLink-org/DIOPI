@@ -7202,6 +7202,35 @@ diopi_configs = {
             ]
         ),
     ),
+    
+    'group_norm_GB': dict(
+        name=['group_norm_GB'],
+        interface=['CustomizedTest'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            num_groups=[32, 4, 5, 1],
+            eps=[1e-05, 1e-05, 1e-05, 1e-05],
+            reduced_axes = [[2, 3], [1, 3], [0, 3], [2, 3]],
+            channel_axis = [1, 2, 1, 0]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 256, 7, 10), (2, 256, 12, 12),
+                            (12, 15, 8, 9),(3, 6, 9, 0)),
+                    "dtype": [np.float32, np.float64, np.float16],
+                },
+                {
+                    "ins": ["weight", "bias"],
+                    "shape": ((256,), (12,),
+                               (15,), (3,)),
+                    "dtype": [np.float32, np.float64, np.float16],
+                },
+            ]
+        ),
+    ),
 
     'unique': dict(
         name=['unique'],

@@ -3601,6 +3601,13 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
                                       double eps);
 
 /**
+ * @brief Applies Group Normalization over a mini-batch of inputs.
+ */
+DIOPI_API diopiError_t diopiGroupNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
+                                      diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups,
+                                      double eps, diopiSize_t reduced_axes, const int64_t channel_axis);
+
+/**
  * @brief Compute the backward pass of diopiGroupNorm().
  * @param[in] ctx Context environment.
  * @param[in] grad_output the grad of output. type=[float32, float64, float16].

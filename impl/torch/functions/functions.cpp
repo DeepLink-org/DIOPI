@@ -4183,8 +4183,66 @@ diopiError_t diopiForeachnormScalar(diopiContextHandle_t ctx, diopiTensorHandle_
     return diopiSuccess;
 }
 
+diopiError_t diopiGroupNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
+                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups,
+                            double eps, diopiSize_t reduced_axes, const int64_t channel_axis) {
+    impl::aten::setCurStream(ctx);
+    auto atInput = impl::aten::buildATen(input);
+    auto axisSize = atInput.size(channel_axis);
+    auto k = axisSize / num_groups;
+    at::IntArrayRef atReducedAxes = impl::aten::buildAtIntArray(reduced_axes);
+    std::vector<int64_t> dims; 
+    int64_t N = 1;
+    for (int i = 0; i < atInput.dim(); i++) {
+        if (i == channel_axis) {
+            continue;
+        } else {
+            bool is_reduced_axis = false;
+            for (int m = 0; m < reduced_axes.len; m++) {
+                if (i == reduced_axes.data[m]) {
+                    is_reduced_axis = true;
+                    break;
+                }
+            }
+            if (is_reduced_axis) {
+                continue;
+            } else {
+                dims.push_back(i);
+                N *= atInput.size(i);
+            }
+        }
+    }
+    dims.push_back(channel_axis);
+    int64_t HxW = 1;
+    for(auto i = 0; i < reduced_axes.len; i++) {
+        dims.push_back(reduced_axes.data[i]);
+        HxW *= atInput.size(reduced_axes.data[i]);
+    }
+    auto C = atInput.size(channel_axis);
+    auto permutedInput = atInput.permute(dims);
+    auto permutedShape = permutedInput.sizes();
+    auto reshapedInput = permutedInput.reshape({N, C, HxW, 1}).contiguous();
+
+    auto atWeight = impl::aten::buildATen(weight);
+    auto atBias = impl::aten::buildATen(bias);
+    auto atOut = impl::aten::buildATen(out);
+    auto atSaveMean = impl::aten::buildATen(save_mean);
+    auto atSaveInvstd = impl::aten::buildATen(save_invstd);
+
+    std::vector<int64_t> reverse_order(dims.size());
+    for (auto i = 0; i < atInput.dim(); i++) {
+        reverse_order[dims[i]] = i;
+    }
+    auto tempOut = CALL_ATEN_CUDA_FUNC(native_group_norm, reshapedInput, atWeight, atBias, N, C, HxW, num_groups, eps);
+    at::native::copy_(atOut, std::get<0>(tempOut).reshape(permutedShape).permute(reverse_order), true);
+    at::native::copy_(atSaveMean, std::get<1>(tempOut), true);
+    at::native::copy_(atSaveInvstd, std::get<2>(tempOut), true);
+    return diopiSuccess;
+}
+
 diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
-                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups, double eps) {
+                            diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups,
+                            double eps) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
     auto atWeight = impl::aten::buildATen(weight);

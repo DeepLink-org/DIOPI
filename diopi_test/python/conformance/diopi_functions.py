@@ -2864,8 +2864,8 @@ def batch_norm_GB(
     )
 
     check_returncode(ret)
-    GLOBAL_STATE["batch_norm_save_mean"] = save_mean
-    GLOBAL_STATE["batch_norm_save_invstd"] = save_invstd
+    GLOBAL_STATE["batch_norm_GB_save_mean"] = save_mean
+    GLOBAL_STATE["batch_norm_GB_save_invstd"] = save_invstd
     return out
 
 
@@ -5242,6 +5242,38 @@ def norm_backward(grad_outputs, input, p, dim, keepdim=False, dtype=None):
 
     return {k: v for k, v in out.items() if v.requires_grad}
 
+def group_norm_GB(input, num_groups, weight=None, bias=None, eps=1e-05, reduced_axes=[2, 3], channel_axis=1):
+    dim = list(input.size().data)
+    N = 1
+    for i in range(len(dim)):
+        if i not in reduced_axes and i != channel_axis:
+            N = N * dim[i]
+    save_mean = Tensor((N, num_groups), input.get_dtype())
+    save_invstd = raw_like(save_mean)
+
+    weight = None if weight is None else weight
+    bias = None if bias is None else bias
+
+    reduced_axes = Sizes(reduced_axes)
+    out = raw_like(input)
+    func = check_function("diopiGroupNormGB")
+    ret = func(
+        input.context(),
+        out,
+        save_mean,
+        save_invstd,
+        input,
+        weight,
+        bias,
+        num_groups,
+        eps,
+        reduced_axes,
+        channel_axis
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["group_norm_GB_save_mean"] = save_mean
+    GLOBAL_STATE["group_norm_GB_save_invstd"] = save_invstd
+    return out
 
 def group_norm(input, num_groups, weight=None, bias=None, eps=1e-05):
     dim = list(input.size().data)
