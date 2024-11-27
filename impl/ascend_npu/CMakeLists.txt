@@ -201,6 +201,7 @@ set(OLD_IMPL_SRC
     ${OLD_IMPL_DIR}/functions_ext/adamw.cpp
     ${OLD_IMPL_DIR}/functions_ext/destindex_copy_kv.cpp
     ${OLD_IMPL_DIR}/functions_ext/apply_penalty.cpp
+    ${OLD_IMPL_DIR}/functions_ext/context_attention_inference.cpp
     ${OLD_IMPL_DIR}/functions_ext/flash_attention.cpp
     ${OLD_IMPL_DIR}/functions_ext/flash_attention_varlen.cpp
     ${OLD_IMPL_DIR}/functions_ext/prompt_flash_attention.cpp
