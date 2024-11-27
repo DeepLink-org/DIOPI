@@ -898,15 +898,26 @@ device_configs = {
         para=dict(
             accumulate=[Skip(False),],
         ),
-    ),
-
-    'index_put_bool_indices_value': dict( # llm used
-        name=['index_put'],
         tensor_para=dict(
             args=[
                 {
                     "ins": ['input'],
-                    "shape": [Skip((3, 2, 2, 20)),],
+                    "shape": [Skip((16, 4, 4)),],
+                },
+            ]
+        ),
+    ),
+
+    'index_put_bool_indices_value': dict( # llm used
+        name=['index_put'],
+        para=dict(
+            accumulate=[Skip(False),],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": [Skip((3, 2, 2, 20)), Skip((4, 2, 2, 6, 2))],
                 },
             ]
         ),
