@@ -4188,9 +4188,6 @@ diopiError_t diopiGroupNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out,
                             double eps, diopiSize_t reduced_axes, const int64_t channel_axis) {
     impl::aten::setCurStream(ctx);
     auto atInput = impl::aten::buildATen(input);
-    auto axisSize = atInput.size(channel_axis);
-    auto k = axisSize / num_groups;
-    at::IntArrayRef atReducedAxes = impl::aten::buildAtIntArray(reduced_axes);
     std::vector<int64_t> dims; 
     int64_t N = 1;
     for (int i = 0; i < atInput.dim(); i++) {
