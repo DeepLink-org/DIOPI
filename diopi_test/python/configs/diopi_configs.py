@@ -7218,12 +7218,14 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
+                    "requires_grad": [True],
                     "shape": ((2, 256, 7, 10), (2, 256, 12, 12),
                             (12, 15, 8, 9),(3, 6, 9, 0)),
                     "dtype": [np.float32, np.float64, np.float16],
                 },
                 {
                     "ins": ["weight", "bias"],
+                    "requires_grad": [True],
                     "shape": ((256,), (12,),
                                (15,), (3,)),
                     "dtype": [np.float32, np.float64, np.float16],
