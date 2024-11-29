@@ -3609,6 +3609,13 @@ DIOPI_API diopiError_t diopiGroupNormGB(diopiContextHandle_t ctx, diopiTensorHan
 
 /**
  * @brief Compute the backward pass of diopiGroupNorm().
+ */
+DIOPI_API diopiError_t diopiGroupNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+                                              diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                              diopiConstTensorHandle_t weight, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd,
+                                              int64_t num_groups, diopiSize_t reduced_axes, const int64_t channel_axis);
+/**
+ * @brief Compute the backward pass of diopiGroupNorm().
  * @param[in] ctx Context environment.
  * @param[in] grad_output the grad of output. type=[float32, float64, float16].
  * @param[in] input the input tensor. type=[float32, float64, float16].

@@ -5275,6 +5275,48 @@ def group_norm_GB(input, num_groups, weight=None, bias=None, eps=1e-05, reduced_
     GLOBAL_STATE["group_norm_GB_save_invstd"] = save_invstd
     return out
 
+
+def group_norm_GB_backward(
+    input,
+    grad_outputs,
+    num_groups,
+    weight=None,
+    bias=None,
+    eps=1e-05,
+    reduced_axes=[2, 3], 
+    channel_axis=1,
+    **kwargs,
+) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    save_mean = GLOBAL_STATE.pop("group_norm_GB_save_mean")
+    save_invstd = GLOBAL_STATE.pop("group_norm_GB_save_invstd")
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    grad_bias = raw_like(bias)
+    weight = None if weight is None else weight
+    bias = None if bias is None else bias
+
+    out = {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+    func = check_function("diopiGroupNormGBBackward")
+    reduced_axes = Sizes(reduced_axes)
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_weight,
+        grad_bias,
+        grad_outputs[0],
+        input,
+        weight,
+        save_mean,
+        save_invstd,
+        num_groups,
+        reduced_axes, 
+        channel_axis,
+    )
+    check_returncode(ret)
+    return {k: v for k, v in out.items() if v.requires_grad}
+
+
 def group_norm(input, num_groups, weight=None, bias=None, eps=1e-05):
     dim = list(input.size().data)
     save_mean = Tensor((dim[0], num_groups), input.get_dtype())

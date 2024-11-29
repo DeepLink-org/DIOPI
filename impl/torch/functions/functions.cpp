@@ -4251,6 +4251,72 @@ diopiError_t diopiGroupNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out,
     return diopiSuccess;
 }
 
+diopiError_t diopiGroupNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight, diopiTensorHandle_t grad_bias,
+                                    diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight,
+                                    diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd, int64_t num_groups, diopiSize_t reduced_axes, const int64_t channel_axis) {
+    impl::aten::setCurStream(ctx);
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atInput = impl::aten::buildATen(input);
+    auto atWeight = impl::aten::buildATen(weight);
+    auto atSaveMean = impl::aten::buildATen(mean);
+    auto atSaveVar = impl::aten::buildATen(rstd);
+    auto atGradWeight = impl::aten::buildATen(grad_weight);
+    auto atGradBias = impl::aten::buildATen(grad_bias);
+    std::vector<int64_t> dims; 
+    int64_t N = 1;
+    for (int i = 0; i < atInput.dim(); i++) {
+        if (i == channel_axis) {
+            continue;
+        } else {
+            bool is_reduced_axis = false;
+            for (int m = 0; m < reduced_axes.len; m++) {
+                if (i == reduced_axes.data[m]) {
+                    is_reduced_axis = true;
+                    break;
+                }
+            }
+            if (is_reduced_axis) {
+                continue;
+            } else {
+                dims.push_back(i);
+                N *= atInput.size(i);
+            }
+        }
+    }
+    dims.push_back(channel_axis);
+    int64_t HxW = 1;
+    for(auto i = 0; i < reduced_axes.len; i++) {
+        dims.push_back(reduced_axes.data[i]);
+        HxW *= atInput.size(reduced_axes.data[i]);
+    }
+    auto C = atInput.size(channel_axis);
+    auto permutedInput = atInput.permute(dims);
+    auto permutedShape = permutedInput.sizes();
+    auto reshapedInput = permutedInput.reshape({N, C, HxW, 1}).contiguous();
+
+    std::vector<int64_t> reverse_order(dims.size());
+    for (auto i = 0; i < atInput.dim(); i++) {
+        reverse_order[dims[i]] = i;
+    }
+
+    if (grad_weight && grad_bias) {
+        auto atGradInput = impl::aten::buildATen(grad_input).permute(dims).reshape({N, C, HxW, 1});
+          
+        at::native_group_norm_backward_out(
+            atGradInput, atGradWeight, atGradBias, atGradOutput.permute(dims).reshape({N, C, HxW, 1}), reshapedInput, atSaveMean, atSaveVar, atWeight, N, C, HxW, num_groups, {true, true, true});
+        atGradInput = atGradInput.reshape(permutedShape).permute(reverse_order);
+        impl::aten::updateATen2Tensor(ctx, atGradInput, grad_input);
+    } else {
+        auto atOuts = at::native_group_norm_backward(
+            atGradOutput.permute(dims).reshape({N, C, HxW, 1}), reshapedInput, atSaveMean, atSaveVar, atWeight, N, C, HxW, num_groups, {true, grad_weight != nullptr, grad_bias != nullptr});
+        impl::aten::updateATen2Tensor(ctx, std::get<0>(atOuts).reshape(permutedShape).permute(reverse_order), grad_input);
+        impl::aten::updateATen2Tensor(ctx, std::get<1>(atOuts), grad_weight);
+        impl::aten::updateATen2Tensor(ctx, std::get<2>(atOuts), grad_bias);
+    }
+
+    return diopiSuccess;
+}
+
 diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
                             diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups,
                             double eps) {
