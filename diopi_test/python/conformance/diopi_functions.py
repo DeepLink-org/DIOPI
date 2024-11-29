@@ -2868,6 +2868,56 @@ def batch_norm_GB(
     GLOBAL_STATE["batch_norm_GB_save_invstd"] = save_invstd
     return out
 
+def batch_norm_GB_backward(
+    input,
+    grad_outputs,
+    running_mean,
+    running_var,
+    weight,
+    bias,
+    training=False,
+    eps=1e-05,
+    axis = 1,
+    **kwargs,
+) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    save_mean = GLOBAL_STATE.pop("batch_norm_GB_save_mean")
+    save_invstd = GLOBAL_STATE.pop("batch_norm_GB_save_invstd")
+
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    grad_bias = raw_like(bias)
+
+    if not training:
+        assert (
+            running_mean is not None and running_var is not None
+        ), "if not trainging, running_mean and running_var must be defined"
+    # running_mean = running_mean if running_mean is None else running_mean
+    # running_var = running_var if running_var is None else running_var
+    keys = ["input", "weight", "bias"]
+    grads = [grad_input, grad_weight, grad_bias]
+    out = {k: v for k, v in zip(keys, grads) if v.requires_grad}
+
+    func = check_function("diopiBatchNormGBBackward")
+    grad_output = grad_outputs[0]
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_weight,
+        grad_bias,
+        grad_output,
+        input,
+        weight,
+        running_mean,
+        running_var,
+        save_mean,
+        save_invstd,
+        training,
+        eps,
+        axis
+    )
+    check_returncode(ret)
+    return out
 
 def batch_norm_stats(input, eps):
     func = check_function("diopiBatchNormStats")

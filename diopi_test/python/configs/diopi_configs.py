@@ -170,6 +170,7 @@ diopi_configs = {
             args=[
                 {
                     "ins": ["input"],
+                    "requires_grad": [True],
                     "shape": ((2, 64, 32, 32),(2, 64, 32, 32),(2, 64, 32, 32)),
                     "gen_fn": "Genfunc.randn",
                 },
@@ -185,6 +186,7 @@ diopi_configs = {
                 },
                 {
                     "ins": ["weight", "bias"],
+                    "requires_grad": [True],
                     "shape": ((2,), (64,), (32,)),
                     "gen_fn": "Genfunc.randn",
                 },

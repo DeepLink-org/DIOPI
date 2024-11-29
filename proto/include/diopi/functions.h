@@ -128,6 +128,15 @@ DIOPI_API diopiError_t diopiBatchNormGB(diopiContextHandle_t ctx, diopiTensorHan
                                       diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps, int64_t axis);
 
 /**
+ * @brief Backward pass for Batch Normalization.
+ */
+DIOPI_API diopiError_t diopiBatchNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+                                              diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                              diopiConstTensorHandle_t weight, diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_var,
+                                              diopiConstTensorHandle_t save_mean, diopiConstTensorHandle_t save_invstd, bool training, double eps, int64_t axis);
+
+
+/**
  * @brief Computes the mean and inverse standard deviation across a batch of data for Synchronized Batch Normalization (SyncBN).
  * @param[in] ctx Context environment.
  * @param[in] input Input tensor. type = [float32, float16, float64].
