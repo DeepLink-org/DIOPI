@@ -2496,6 +2496,20 @@ diopiError_t diopiDropoutInp(diopiContextHandle_t ctx, diopiTensorHandle_t input
     return diopiSuccess;
 }
 
+diopiError_t diopiDropoutBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                  diopiTensorHandle_t mask, double p){
+    impl::aten::setCurStream(ctx);
+    auto atGradInput = impl::aten::buildATen(grad_input);
+    auto atGradOutput = impl::aten::buildATen(grad_output);
+    auto atMask = impl::aten::buildATen(mask);
+    
+    atMask.mul_(atGradOutput);
+    atMask.div_(1 - p);
+    impl::aten::updateATen2Tensor(ctx, atMask, grad_input);
+
+    return diopiSuccess;                                           
+}
+
 diopiError_t diopiMSELoss(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiConstTensorHandle_t target,
                           diopiReduction_t reduction) {
     impl::aten::setCurStream(ctx);

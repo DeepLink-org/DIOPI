@@ -721,10 +721,10 @@ DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_
                                     bool train, diopiGeneratorHandle_t generator);
 
 /**
- *@brief Randomly zeroes some of the elements of the input tensor with probability p
+ *@brief Compute the backward pass of diopiDropout().
  */
-DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
-                                    bool train, diopiGeneratorHandle_t generator);
+DIOPI_API diopiError_t diopiDropoutBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                            diopiTensorHandle_t mask, double p);
 
 /**
  * @brief The in-place version of diopiDropout().
