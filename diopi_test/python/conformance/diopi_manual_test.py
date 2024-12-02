@@ -13,7 +13,7 @@ class ManualTest(object):
         import torch
         grad_in = Tensor(input.size().data, input.get_dtype())
         torch_input = torch.from_numpy(input.numpy()).requires_grad_(False)
-        torch_input[torch_input==0] = 0.1
+        torch_input[torch_input==0] = 0.5
         torch_input = torch_input.requires_grad_()
         torch_ones = torch.ones_like(torch_input)
         grad_outputs = Tensor.from_numpy(torch_ones.numpy())
