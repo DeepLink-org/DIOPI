@@ -124,17 +124,18 @@ DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandl
  * @brief Applies Batch Normalization.
  */
 DIOPI_API diopiError_t diopiBatchNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
-                                      diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias,
-                                      diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps, int64_t axis);
+                                        diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias,
+                                        diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps,
+                                        int64_t axis);
 
 /**
  * @brief Backward pass for Batch Normalization.
  */
 DIOPI_API diopiError_t diopiBatchNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
-                                              diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
-                                              diopiConstTensorHandle_t weight, diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_var,
-                                              diopiConstTensorHandle_t save_mean, diopiConstTensorHandle_t save_invstd, bool training, double eps, int64_t axis);
-
+                                                diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                diopiConstTensorHandle_t weight, diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_var,
+                                                diopiConstTensorHandle_t save_mean, diopiConstTensorHandle_t save_invstd, bool training, double eps,
+                                                int64_t axis);
 
 /**
  * @brief Computes the mean and inverse standard deviation across a batch of data for Synchronized Batch Normalization (SyncBN).
@@ -255,13 +256,14 @@ DIOPI_API diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t o
 /**
  * @brief Computes the gradient of the rectified linear unit function.
  */
-DIOPI_API diopiError_t diopiReluBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out, diopiConstTensorHandle_t input);
+DIOPI_API diopiError_t diopiReluBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out,
+                                         diopiConstTensorHandle_t input);
 
 /**
  * @brief Comput the gradient of the error function.
  */
-DIOPI_API diopiError_t diopiErfBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out, diopiConstTensorHandle_t input);
-
+DIOPI_API diopiError_t diopiErfBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out,
+                                        diopiConstTensorHandle_t input);
 
 /**
  * @brief The in-place version of diopiRelu().
@@ -3613,16 +3615,16 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
  * @brief Applies Group Normalization over a mini-batch of inputs.
  */
 DIOPI_API diopiError_t diopiGroupNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
-                                      diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups,
-                                      double eps, diopiSize_t reduced_axes, const int64_t channel_axis);
+                                        diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups,
+                                        double eps, diopiSize_t reduced_axes, const int64_t channel_axis);
 
 /**
  * @brief Compute the backward pass of diopiGroupNorm().
  */
 DIOPI_API diopiError_t diopiGroupNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
-                                              diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
-                                              diopiConstTensorHandle_t weight, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd,
-                                              int64_t num_groups, diopiSize_t reduced_axes, const int64_t channel_axis);
+                                                diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                diopiConstTensorHandle_t weight, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd,
+                                                int64_t num_groups, diopiSize_t reduced_axes, const int64_t channel_axis);
 /**
  * @brief Compute the backward pass of diopiGroupNorm().
  * @param[in] ctx Context environment.
