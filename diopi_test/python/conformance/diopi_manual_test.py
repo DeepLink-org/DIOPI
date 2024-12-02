@@ -11,6 +11,7 @@ class ManualTest(object):
         
     def test_dropout_backward(input, p, atol, rtol):
         import torch
+        import pytest
         grad_in = Tensor(input.size().data, input.get_dtype())
         torch_input = torch.from_numpy(input.numpy()).requires_grad_(False)
         torch_input[torch_input==0] = 0.5
@@ -20,9 +21,12 @@ class ManualTest(object):
         out = torch.nn.functional.dropout(torch_input, p=p, training=True)
         out.backward(torch_ones)
         mask = Tensor.from_numpy(out.ne(0).to(torch.float32).numpy())
-        
-        diopilib.diopiDropoutBackward(input.context(), grad_in, grad_outputs, mask, p)
-        assert np.allclose(grad_in.numpy(), torch_input.grad.numpy(), rtol=rtol, atol=atol)
+        if hasattr(diopilib, "diopiDropoutBackward"):
+            diopilib.diopiDropoutBackward(input.context(), grad_in, grad_outputs, mask, p)
+            assert np.allclose(grad_in.numpy(), torch_input.grad.numpy(), rtol=rtol, atol=atol)
+        else:
+            pytest.xfail("diopiDropoutBackward not support")
+
         
     def test_dropout_(func, input, p=0.5, training=True, inplace=False):
         input_numpy = input.numpy()
