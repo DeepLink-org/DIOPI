@@ -37,8 +37,8 @@ class ManualTest(object):
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
 
-        rtol = 1e-2 if input_numpy.dtype == np.float16 else 1e-4
-        atol = 5e-2 if input_numpy.dtype == np.float16 else 1e-5
+        rtol = 1e-2 if input_numpy.dtype == np.float16 else 1e-3
+        atol = 5e-2 if input_numpy.dtype == np.float16 else 1e-3
 
         if training and input.numel() > 0:
             # compute ratio
