@@ -2500,10 +2500,7 @@ diopiError_t diopiDropoutBackward(diopiContextHandle_t ctx, diopiTensorHandle_t 
     auto atGradInput = impl::aten::buildATen(grad_input);
     auto atGradOutput = impl::aten::buildATen(grad_output);
     auto atMask = impl::aten::buildATen(mask);
-
-    atMask.mul_(atGradOutput);
-    atMask.div_(1 - p);
-    impl::aten::updateATen2Tensor(ctx, atMask, grad_input);
+    CALL_ATEN_FUNC(native_dropout_backward_out, atGradInput, atGradOutput, atMask, 1.0 / (1 - p));
 
     return diopiSuccess;
 }

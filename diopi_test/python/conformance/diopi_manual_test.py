@@ -20,7 +20,7 @@ class ManualTest(object):
         grad_outputs = Tensor.from_numpy(torch_ones.numpy())
         out = torch.nn.functional.dropout(torch_input, p=p, training=True)
         out.backward(torch_ones)
-        mask = Tensor.from_numpy(out.ne(0).to(torch_input.dtype).numpy())
+        mask = Tensor.from_numpy(out.ne(0).numpy())
         if hasattr(diopilib, "diopiDropoutBackward"):
             diopilib.diopiDropoutBackward(input.context(), grad_in, grad_outputs, mask, p)
             assert np.allclose(grad_in.numpy(), torch_input.grad.numpy(), rtol=rtol, atol=atol)
