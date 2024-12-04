@@ -890,3 +890,59 @@ class CustomizedTest(object):
     def layer_normGB(input, weight, bias, eps, normalized_shape):
         return torch.nn.functional.layer_norm(input=input, weight=weight, bias=bias, eps=eps, normalized_shape=normalized_shape)
 
+    def batch_norm_GB(input, running_mean, running_var, weight, bias, training=False, momentum=0.1, eps=1e-05, axis=1):
+        dim = input.dim()
+        dims = list(range(dim))
+        dims.remove(axis)
+        dims.insert(1, axis)
+        permuted_input = input.permute(dims)
+        out = torch.nn.functional.batch_norm(
+            permuted_input,
+            running_mean,
+            running_var,
+            weight=weight,
+            bias=bias,
+            training=training,
+            momentum=momentum,
+            eps=eps,
+        )
+        out = out.permute(dims)
+        return out
+    
+    def group_norm_GB(input, num_groups, weight=None, bias=None, eps=1e-05, reduced_axes=[2, 3], channel_axis=1):
+        
+        input_dims = list(input.size())
+        reduced_axes_set = set(reduced_axes)
+        dims = []
+        non_reduced_dims = []
+
+        for i, size in enumerate(input_dims):
+            if i == channel_axis:
+                continue
+            elif i in reduced_axes_set:
+                continue
+            else:
+                non_reduced_dims.append(i)
+        N = 1
+        for i in non_reduced_dims:
+            N = N * input.size(i)
+        HxW = 1
+        for i in reduced_axes:
+            HxW = HxW * input.size(i)
+        C = input.size(channel_axis)
+        dims = non_reduced_dims + [channel_axis] + reduced_axes
+        permuted_input = input.permute(dims)
+        reshaped_input = permuted_input.reshape([N, C, HxW, 1]).contiguous()
+        out = torch.nn.functional.group_norm(
+            reshaped_input,
+            num_groups,
+            weight=weight,
+            bias=bias,
+            eps=eps
+        )
+        
+        reversed_order = [0]*len(dims)
+        for i in range(1, len(dims)):
+            reversed_order[dims[i]] = i
+        return out.reshape(permuted_input.shape).permute(reversed_order)
+        

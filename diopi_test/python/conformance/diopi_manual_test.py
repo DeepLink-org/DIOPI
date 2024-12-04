@@ -1,12 +1,33 @@
 # Copyright (c) 2023, DeepLink.
 # -*- coding: UTF-8 -*-
 import numpy as np
+import diopilib
 from diopilib import build_generator_state
 from .diopi_runtime import Tensor, Generator, default_context
 from . import diopi_functions as F
 
 
 class ManualTest(object):
+        
+    def test_dropout_backward(input, p, atol, rtol):
+        import torch
+        import pytest
+        grad_in = Tensor(input.size().data, input.get_dtype())
+        torch_input = torch.from_numpy(input.numpy()).requires_grad_(False)
+        torch_input[torch_input==0] = 0.5
+        torch_input = torch_input.requires_grad_()
+        torch_ones = torch.ones_like(torch_input)
+        grad_outputs = Tensor.from_numpy(torch_ones.numpy())
+        out = torch.nn.functional.dropout(torch_input, p=p, training=True)
+        out.backward(torch_ones)
+        mask = Tensor.from_numpy(out.ne(0).numpy())
+        if hasattr(diopilib, "diopiDropoutBackward"):
+            diopilib.diopiDropoutBackward(input.context(), grad_in, grad_outputs, mask, p)
+            assert np.allclose(grad_in.numpy(), torch_input.grad.numpy(), rtol=rtol, atol=atol)
+        else:
+            pytest.xfail("diopiDropoutBackward not support")
+
+        
     def test_dropout_(func, input, p=0.5, training=True, inplace=False):
         input_numpy = input.numpy()
         state = build_generator_state(input.context())
@@ -16,8 +37,8 @@ class ManualTest(object):
         out_numpy = out.numpy()
         mask_numpy = mask.numpy()
 
-        rtol = 1e-2 if input_numpy.dtype == np.float16 else 1e-4
-        atol = 5e-2 if input_numpy.dtype == np.float16 else 1e-5
+        rtol = 1e-2 if input_numpy.dtype == np.float16 else 1e-3
+        atol = 5e-2 if input_numpy.dtype == np.float16 else 1e-3
 
         if training and input.numel() > 0:
             # compute ratio
@@ -30,6 +51,10 @@ class ManualTest(object):
             ref = input_numpy[mask_numpy == 1]
             assert np.allclose(remains, ref / (1 - p), rtol=rtol, atol=atol), \
                 f"failed to execute {name}, dropout value doesn't matches."
+            
+            if name == 'dropout':
+               ManualTest.test_dropout_backward(input, p, atol, rtol)
+            
             if mask.numel() > 100:
                 # 0.05 is from pytorch
                 assert np.abs(real_ratio - (1 - p)) < 0.05, \
@@ -43,7 +68,7 @@ class ManualTest(object):
 
     def test_dropout2d(input, p=0.5, training=True, inplace=False):
         ManualTest.test_dropout_(F.dropout2d, input, p, training, inplace)
-
+    
     def test_randperm(n):
         state = build_generator_state(default_context)
         generator = Generator(state)

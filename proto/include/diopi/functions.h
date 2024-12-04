@@ -19,6 +19,51 @@ extern "C" {
 DIOPI_RT_API DIOPI_ATTR_WEAK const char* diopiGetVendorName();
 DIOPI_RT_API DIOPI_ATTR_WEAK const char* diopiGetImplVersion();
 DIOPI_RT_API DIOPI_ATTR_WEAK const char* diopiGetLastErrorString();
+/**
+ * @brief Returns whether the input tensor contains any Inf values.
+ */
+DIOPI_API diopiError_t diopiHasInf(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Truncates the input tensor to an integer value.
+ */
+DIOPI_API diopiError_t diopiTrunc(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Rounds the input tensor to the nearest integer value.
+ */
+DIOPI_API diopiError_t diopiRound(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Applies the hard sigmoid activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiHardSigmoid(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Applies the exponential linear unit (ELU) activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiElu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* alpha);
+
+/**
+ * @brief Applies the parametric rectified linear unit (PReLU) activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiPrelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, diopiTensorHandle_t weight);
+
+/**
+ *  @brief Applies the SELU activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiSelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Applies the softplus activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiSoftplus(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input, const diopiScalar_t* beta,
+                                     const diopiScalar_t* threshold);
+
+/**
+ * @brief Applies the softsign activation function to an input tensor.
+ */
+DIOPI_API diopiError_t diopiSoftsign(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
 
 /**
  * @brief Applies a 2D convolution over an input image composed of several input planes.
@@ -74,6 +119,23 @@ DIOPI_API diopiError_t diopiConvolution2dBackward(diopiContextHandle_t ctx, diop
 DIOPI_API diopiError_t diopiBatchNorm(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
                                       diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias,
                                       diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps);
+
+/**
+ * @brief Applies Batch Normalization.
+ */
+DIOPI_API diopiError_t diopiBatchNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
+                                        diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias,
+                                        diopiTensorHandle_t running_mean, diopiTensorHandle_t running_var, bool training, double momentum, double eps,
+                                        int64_t axis);
+
+/**
+ * @brief Backward pass for Batch Normalization.
+ */
+DIOPI_API diopiError_t diopiBatchNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+                                                diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                diopiConstTensorHandle_t weight, diopiConstTensorHandle_t running_mean, diopiConstTensorHandle_t running_var,
+                                                diopiConstTensorHandle_t save_mean, diopiConstTensorHandle_t save_invstd, bool training, double eps,
+                                                int64_t axis);
 
 /**
  * @brief Computes the mean and inverse standard deviation across a batch of data for Synchronized Batch Normalization (SyncBN).
@@ -190,6 +252,18 @@ DIOPI_API diopiError_t diopiBatchNormBackward(diopiContextHandle_t ctx, diopiTen
  * @param[out] out the result tensor. type = [float32, float64].
  */
 DIOPI_API diopiError_t diopiRelu(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiConstTensorHandle_t input);
+
+/**
+ * @brief Computes the gradient of the rectified linear unit function.
+ */
+DIOPI_API diopiError_t diopiReluBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out,
+                                         diopiConstTensorHandle_t input);
+
+/**
+ * @brief Comput the gradient of the error function.
+ */
+DIOPI_API diopiError_t diopiErfBackward(diopiContextHandle_t ctx, diopiConstTensorHandle_t grad_in, diopiTensorHandle_t grad_out,
+                                        diopiConstTensorHandle_t input);
 
 /**
  * @brief The in-place version of diopiRelu().
@@ -656,6 +730,13 @@ DIOPI_API diopiError_t diopiAdaptiveMaxPool2dBackward(diopiContextHandle_t ctx, 
  */
 DIOPI_API diopiError_t diopiDropout(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t mask, diopiConstTensorHandle_t input, double p,
                                     bool train, diopiGeneratorHandle_t generator);
+
+/**
+ *@brief Compute the backward pass of diopiDropout().
+ */
+DIOPI_API diopiError_t diopiDropoutBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiConstTensorHandle_t grad_output,
+                                            diopiTensorHandle_t mask, double p);
+
 /**
  * @brief The in-place version of diopiDropout().
  * @param[in] ctx Context environment.
@@ -3530,6 +3611,20 @@ DIOPI_API diopiError_t diopiGroupNorm(diopiContextHandle_t ctx, diopiTensorHandl
                                       diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups,
                                       double eps);
 
+/**
+ * @brief Applies Group Normalization over a mini-batch of inputs.
+ */
+DIOPI_API diopiError_t diopiGroupNormGB(diopiContextHandle_t ctx, diopiTensorHandle_t out, diopiTensorHandle_t save_mean, diopiTensorHandle_t save_invstd,
+                                        diopiConstTensorHandle_t input, diopiConstTensorHandle_t weight, diopiConstTensorHandle_t bias, int64_t num_groups,
+                                        double eps, diopiSize_t reduced_axes, const int64_t channel_axis);
+
+/**
+ * @brief Compute the backward pass of diopiGroupNorm().
+ */
+DIOPI_API diopiError_t diopiGroupNormGBBackward(diopiContextHandle_t ctx, diopiTensorHandle_t grad_input, diopiTensorHandle_t grad_weight,
+                                                diopiTensorHandle_t grad_bias, diopiConstTensorHandle_t grad_output, diopiConstTensorHandle_t input,
+                                                diopiConstTensorHandle_t weight, diopiConstTensorHandle_t mean, diopiConstTensorHandle_t rstd,
+                                                int64_t num_groups, diopiSize_t reduced_axes, const int64_t channel_axis);
 /**
  * @brief Compute the backward pass of diopiGroupNorm().
  * @param[in] ctx Context environment.

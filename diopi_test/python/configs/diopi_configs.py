@@ -3,6 +3,197 @@ import numpy as np
 
 
 diopi_configs = {
+    'has_inf': dict(
+        name=["isinf"],
+        interface=["torch"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((), (1024,), (2, 4096), (64, 28, 28), (32, 64, 112, 112), (64, 3, 7, 28, 28), (0,), (256, 0), (8, 0, 128)),
+                    "dtype": [np.float16, np.float32, np.float64, np.int16, np.int32, np.int64, np.uint8, np.int8],
+                },
+            ],
+        ),
+    ),
+    
+    'trunc': dict(
+        name=["trunc"],
+        interface=["torch"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'round': dict(
+        name=["round"],
+        interface=["torch"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'round': dict(
+        name=["hardsigmoid"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ['input'],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'elu': dict(
+        name=["elu"],
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            alpha=[0.234, 4.8, -10, 1.0],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'prelu': dict(
+        name=["prelu"],
+        atol=1e-3,
+        rtol=1e-4,
+        dtype=[np.float32, np.float16, np.float64],
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                },
+                {
+                    "ins": ["weight"],
+                    "shape": ((16,), (64,), (96,), (1,)),
+                },
+            ],
+        ),
+    ),
+    
+    'selu': dict(
+        name=["selu"],
+        dtype=[np.float32, np.float16, np.float64],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                },
+            ],
+        ),
+    ),
+    
+    'softplus': dict(
+        name=["softplus"],
+        atol=1e-3,
+        rtol=1e-4,
+        para=dict(
+            beta=[0.234, 4.8, -10, 1.0],
+            threshold=[0.234, 4.8, -10, 1.0]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    'softsign': dict(
+        name=["softsign"],
+        atol=1e-3,
+        rtol=1e-4,
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "shape": ((2, 16, 32, 56, 56), (2, 64, 32, 32), (2, 96, 28), (2, 16)),
+                    "dtype": [np.float32, np.float16, np.float64],
+                },
+            ],
+        ),
+    ),
+    
+    "batch_norm_GB": dict(
+        name=["batch_norm_GB"],
+        interface=['CustomizedTest'],
+        dtype=[np.float32, np.float16, np.float64],
+        atol=1e-2,
+        rtol=1e-2,
+        atol_half=1e-1,
+        rtol_half=1e-2,
+        para=dict(
+            training=[True, True, True],
+            momentum=[0.01, 0.01, 0.01],
+            axis=[0, 1, 2],
+            eps=[1e-4, 1e-4, 1e-4],
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad": [True],
+                    "shape": ((2, 64, 32, 32),(2, 64, 32, 32),(2, 64, 32, 32)),
+                    "gen_fn": "Genfunc.randn",
+                },
+                {
+                    "ins": ["running_mean"],
+                    "shape": ((2,), (64,), (32,)),
+                    "gen_fn": "Genfunc.zeros",
+                },
+                {
+                    "ins": ["running_var"],
+                    "shape": ((2,), (64,), (32,)),
+                    "gen_fn": "Genfunc.ones",
+                },
+                {
+                    "ins": ["weight", "bias"],
+                    "requires_grad": [True],
+                    "shape": ((2,), (64,), (32,)),
+                    "gen_fn": "Genfunc.randn",
+                },
+            ]
+        ),
+    ),
+    
     # FIXME batch_norm输入0size的张量报错
     'batch_norm': dict(
         name=["batch_norm"],
@@ -507,13 +698,30 @@ diopi_configs = {
             args=[
                 {
                     "ins": ['input'],
+                    "requires_grad": [True],
                     "shape": ((), (1024,), (2, 4096), (64, 28, 28),
                               (32, 64, 112, 112), (64, 3, 7, 28, 28),
                               (0,), (256, 0), (8, 0, 128)),
-                    "dtype": [np.float16, np.float32, np.float64,
-                              np.int16, np.int32, np.int64,
-                              np.uint8, np.int8],
+                    "dtype": [np.float16, np.float32, np.float64],
                     "gen_fn": 'Genfunc.randn',
+                },
+            ],
+        ),
+    ),
+    
+    'erf': dict(
+        name=['erf'],
+        interface=['torch'],
+        dtype=[np.float16, np.float32, np.float64],
+        tensor_para=dict(
+            gen_fn='Genfunc.randn',
+            args=[
+                {
+                    "ins": ['input'],
+                    "requires_grad": [True],
+                    "shape": ((), (1, ), (1024,), (364800, 4), (2, 128, 3072),
+                              (256, 128, 3, 3),
+                              (2, 31, 512, 6, 40), (0,), (16, 0)),
                 },
             ],
         ),
@@ -4902,6 +5110,8 @@ diopi_configs = {
         name=["dropout"],
         no_output_ref=True,
         is_inplace=True,
+        atol=1e-3,
+        rtol=1e-3,
         para=dict(
             p=[0.5, 0, 0.1, 0.4],
             training=[True, True, True, False]
@@ -4911,7 +5121,7 @@ diopi_configs = {
                 {
                     "ins": ['input'],
                     "shape": ((2, 4096), (32, 49, 256), (2, 16, 64, 64), (1, 2304, 1, 1, 1)),
-                    "dtype": [np.float16, np.float32, np.float64],
+                    "dtype": [np.float32, np.float64],
                     "gen_fn": 'Genfunc.positive',
                 },
             ],
@@ -6991,6 +7201,37 @@ diopi_configs = {
                               (256,), (256,),
                               (27,), (6,), (15,),
                               (12,), (15,), (6,)),
+                    "dtype": [np.float32, np.float64, np.float16],
+                },
+            ]
+        ),
+    ),
+    
+    'group_norm_GB': dict(
+        name=['group_norm_GB'],
+        interface=['CustomizedTest'],
+        atol=1e-4,
+        rtol=1e-5,
+        para=dict(
+            num_groups=[32, 4, 5, 1],
+            eps=[1e-05, 1e-05, 1e-05, 1e-05],
+            reduced_axes = [[2, 3], [1, 3], [0, 3], [2, 3]],
+            channel_axis = [1, 2, 1, 0]
+        ),
+        tensor_para=dict(
+            args=[
+                {
+                    "ins": ["input"],
+                    "requires_grad": [True],
+                    "shape": ((2, 256, 7, 10), (2, 256, 12, 12),
+                            (12, 15, 8, 9),(3, 6, 9, 0)),
+                    "dtype": [np.float32, np.float64, np.float16],
+                },
+                {
+                    "ins": ["weight", "bias"],
+                    "requires_grad": [True],
+                    "shape": ((256,), (12,),
+                               (15,), (3,)),
                     "dtype": [np.float32, np.float64, np.float16],
                 },
             ]

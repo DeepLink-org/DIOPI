@@ -224,6 +224,73 @@ def promote_type(input: Tensor, promoted_dtype: Dtype) -> Dtype:
     ]
     return dtype1 if dtype1 not in need_promote_types else promoted_dtype
 
+def isinf(input) -> Tensor:
+    func = check_function("diopiHasInf")
+    out = Tensor(size=input.size(), dtype=Dtype.bool)
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def trunc(input) -> Tensor:
+    func = check_function("diopiTrunc")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def round(input) -> Tensor:
+    func = check_function("diopiTRound")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def hardsigmoid(input) -> Tensor:
+    func = check_function("diopiHardSigmoid")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def elu(input, alpha) -> Tensor:
+    func = check_function("diopiElu")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    value = Scalar(alpha)
+    ret = func(input.context(), out, input, value)
+    check_returncode(ret)
+    return out
+
+
+def prelu(input, weight) -> Tensor:
+    func = check_function("diopiPrelu")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input, weight)
+    check_returncode(ret)
+    return out
+
+
+def selu(input):
+    func = check_function("diopiSelu")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
+
+def softplus(input, beta, threshold):
+    func = check_function("diopiSoftplus")
+    beta = Scalar(beta)
+    threshold = Scalar(threshold)
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input, beta, threshold)
+    check_returncode(ret)
+    return out
+
+def softsign(input):
+    func = check_function("diopiSoftsign")
+    out = Tensor(size=input.size(), dtype=input.get_dtype())
+    ret = func(input.context(), out, input)
+    check_returncode(ret)
+    return out
 
 def fill_(input, value):
     func = check_function("diopiFill")
@@ -356,6 +423,15 @@ def relu(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiRelu")
 
 
+def relu_backward(input, grad_outputs, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiReluBackward")
+    ret = func(input.context(), grad_input, grad_outputs[0], input)
+    check_returncode(ret)
+    return {"input": grad_input} if grad_input.requires_grad else {}
+
+
 def abs(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiAbs")
 
@@ -462,6 +538,15 @@ def log10(input, inplace=False) -> Tensor:
 
 def log1p(input, inplace=False) -> Tensor:
     return unary_op(input, inplace, "diopiLog1p", promote_type(input, Dtype.float32))
+
+
+def erf_backward(input, grad_outputs, **kwargs) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    grad_input = raw_like(input)
+    func = check_function("diopiErfBackward")
+    ret = func(input.context(), grad_input, grad_outputs[0], input)
+    check_returncode(ret)
+    return {"input": grad_input} if grad_input.requires_grad else {}
 
 
 def erf(input, inplace=False) -> Tensor:
@@ -2737,6 +2822,102 @@ def batch_norm(
     GLOBAL_STATE["batch_norm_save_invstd"] = save_invstd
     return out
 
+
+def batch_norm_GB(
+    input,
+    running_mean,
+    running_var,
+    weight,
+    bias,
+    training=False,
+    momentum=0.1,
+    eps=1e-05,
+    axis=1
+) -> Tensor:
+    dim = input.size().len
+    dim = [i for i in range(dim) if i!= axis]
+    dtype = Dtype.float32 if input.get_dtype() == Dtype.float16 else None
+    _, save_mean = reduce_op_process(input, dim, dtype=dtype)
+    save_invstd = raw_like(save_mean)
+
+    if not training:
+        assert (
+            running_mean is not None and running_var is not None
+        ), "if not trainging, running_mean and running_var must be defined"
+
+    out = raw_like(input)
+    func = check_function("diopiBatchNormGB")
+    ret = func(
+        input.context(),
+        out,
+        save_mean,
+        save_invstd,
+        input,
+        weight,
+        bias,
+        running_mean,
+        running_var,
+        training,
+        momentum,
+        eps,
+        axis
+    )
+
+    check_returncode(ret)
+    GLOBAL_STATE["batch_norm_GB_save_mean"] = save_mean
+    GLOBAL_STATE["batch_norm_GB_save_invstd"] = save_invstd
+    return out
+
+def batch_norm_GB_backward(
+    input,
+    grad_outputs,
+    running_mean,
+    running_var,
+    weight,
+    bias,
+    training=False,
+    eps=1e-05,
+    axis = 1,
+    **kwargs,
+) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    save_mean = GLOBAL_STATE.pop("batch_norm_GB_save_mean")
+    save_invstd = GLOBAL_STATE.pop("batch_norm_GB_save_invstd")
+
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    grad_bias = raw_like(bias)
+
+    if not training:
+        assert (
+            running_mean is not None and running_var is not None
+        ), "if not trainging, running_mean and running_var must be defined"
+    # running_mean = running_mean if running_mean is None else running_mean
+    # running_var = running_var if running_var is None else running_var
+    keys = ["input", "weight", "bias"]
+    grads = [grad_input, grad_weight, grad_bias]
+    out = {k: v for k, v in zip(keys, grads) if v.requires_grad}
+
+    func = check_function("diopiBatchNormGBBackward")
+    grad_output = grad_outputs[0]
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_weight,
+        grad_bias,
+        grad_output,
+        input,
+        weight,
+        running_mean,
+        running_var,
+        save_mean,
+        save_invstd,
+        training,
+        eps,
+        axis
+    )
+    check_returncode(ret)
+    return out
 
 def batch_norm_stats(input, eps):
     func = check_function("diopiBatchNormStats")
@@ -5109,6 +5290,80 @@ def norm_backward(grad_outputs, input, p, dim, keepdim=False, dtype=None):
     ret = func(input.context(), grad_input, grad_output, input, norm, dim, p)
     check_returncode(ret)
 
+    return {k: v for k, v in out.items() if v.requires_grad}
+
+def group_norm_GB(input, num_groups, weight=None, bias=None, eps=1e-05, reduced_axes=[2, 3], channel_axis=1):
+    dim = list(input.size().data)
+    N = 1
+    for i in range(len(dim)):
+        if i not in reduced_axes and i != channel_axis:
+            N = N * dim[i]
+    save_mean = Tensor((N, num_groups), input.get_dtype())
+    save_invstd = raw_like(save_mean)
+
+    weight = None if weight is None else weight
+    bias = None if bias is None else bias
+
+    reduced_axes = Sizes(reduced_axes)
+    out = raw_like(input)
+    func = check_function("diopiGroupNormGB")
+    ret = func(
+        input.context(),
+        out,
+        save_mean,
+        save_invstd,
+        input,
+        weight,
+        bias,
+        num_groups,
+        eps,
+        reduced_axes,
+        channel_axis
+    )
+    check_returncode(ret)
+    GLOBAL_STATE["group_norm_GB_save_mean"] = save_mean
+    GLOBAL_STATE["group_norm_GB_save_invstd"] = save_invstd
+    return out
+
+
+def group_norm_GB_backward(
+    input,
+    grad_outputs,
+    num_groups,
+    weight=None,
+    bias=None,
+    eps=1e-05,
+    reduced_axes=[2, 3], 
+    channel_axis=1,
+    **kwargs,
+) -> Tensor:
+    assert len(grad_outputs) == 1, "only accept 1 gradient to do backward"
+    save_mean = GLOBAL_STATE.pop("group_norm_GB_save_mean")
+    save_invstd = GLOBAL_STATE.pop("group_norm_GB_save_invstd")
+    grad_input = raw_like(input)
+    grad_weight = raw_like(weight)
+    grad_bias = raw_like(bias)
+    weight = None if weight is None else weight
+    bias = None if bias is None else bias
+
+    out = {"input": grad_input, "weight": grad_weight, "bias": grad_bias}
+    func = check_function("diopiGroupNormGBBackward")
+    reduced_axes = Sizes(reduced_axes)
+    ret = func(
+        input.context(),
+        grad_input,
+        grad_weight,
+        grad_bias,
+        grad_outputs[0],
+        input,
+        weight,
+        save_mean,
+        save_invstd,
+        num_groups,
+        reduced_axes, 
+        channel_axis,
+    )
+    check_returncode(ret)
     return {k: v for k, v in out.items() if v.requires_grad}
 
 
